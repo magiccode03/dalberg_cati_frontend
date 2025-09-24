@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiService } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -26,6 +27,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (uniqueId: string, password: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => void;
+  register: (userData: any) => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
   hasPermission: (permission: string) => boolean;
   hasRole: (role: string) => boolean;
@@ -37,6 +39,7 @@ export interface AuthContextType {
   deleteUser: (userId: string) => Promise<boolean>;
   getAllUsers: () => User[];
   generateUniqueId: (role: string) => string;
+  getRedirectUrl: (role: string) => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,20 +118,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Find user by unique ID
-      const foundUser = allUsers.find(u => u.uniqueId === uniqueId && u.isActive !== false);
+      // Use API service for login
+      const response = await apiService.login({ uniqueId, password });
       
-      if (foundUser && foundUser.password === password) {
-        const userData = {
-          ...foundUser,
-          lastLogin: new Date().toISOString(),
+      if (response.success && response.data) {
+        const { user: apiUser, token, refreshToken } = response.data;
+        
+        // Transform API user to our User interface
+        const userData: User = {
+          id: apiUser.id.toString(),
+          uniqueId: apiUser.uniqueId,
+          name: `${apiUser.firstName} ${apiUser.lastName}`,
+          email: apiUser.email,
+          role: apiUser.role.name,
+          avatar: '/logo.png',
+          permissions: getDefaultPermissions(apiUser.role.name),
+          lastLogin: apiUser.lastLoginAt,
+          department: 'Administration', // Default value
+          designation: apiUser.role.displayName,
+          createdBy: 'system',
+          createdAt: apiUser.createdAt,
+          isActive: apiUser.isActive,
         };
-
-        // Remove password from user data before storing
-        delete userData.password;
 
         setUser(userData);
         localStorage.setItem('isAuthenticated', 'true');
@@ -150,12 +161,77 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
-    localStorage.removeItem('rememberMe');
-    router.push('/login');
+  const getDefaultPermissions = (role: string): string[] => {
+    const permissions = {
+      'super_admin': ['*'],
+      'admin': ['admin:read', 'admin:write', 'dashboard:read'],
+      'pmt': ['pmt:read', 'pmt:write', 'dashboard:read'],
+      'qc_manager': ['qc:read', 'qc:write', 'dashboard:read'],
+      'quality_analyst': ['analysis:read', 'dashboard:read'],
+      'start_qc': ['qc:read', 'dashboard:read'],
+      'data_quality': ['data:read', 'data:write', 'dashboard:read'],
+      'convergent_analysis': ['analysis:read', 'analysis:write', 'dashboard:read'],
+    };
+    return permissions[role as keyof typeof permissions] || ['dashboard:read'];
+  };
+
+  const logout = async () => {
+    try {
+      // Call API logout endpoint
+      await apiService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local state
+      setUser(null);
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
+      router.push('/login');
+    }
+  };
+
+  const register = async (userData: any): Promise<boolean> => {
+    try {
+      setIsLoading(true);
+
+      // Use API service for registration
+      const response = await apiService.register(userData);
+      
+      if (response.success && response.data) {
+        const { user: apiUser, token, refreshToken } = response.data;
+        
+        // Transform API user to our User interface
+        const userData: User = {
+          id: apiUser.id.toString(),
+          uniqueId: apiUser.uniqueId,
+          name: `${apiUser.firstName} ${apiUser.lastName}`,
+          email: apiUser.email,
+          role: apiUser.role.name,
+          avatar: '/logo.png',
+          permissions: getDefaultPermissions(apiUser.role.name),
+          lastLogin: apiUser.lastLoginAt,
+          department: 'Administration', // Default value
+          designation: apiUser.role.displayName,
+          createdBy: 'system',
+          createdAt: apiUser.createdAt,
+          isActive: apiUser.isActive,
+        };
+
+        setUser(userData);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error('Registration error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {
@@ -194,22 +270,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      const newUser: User = {
-        ...userData,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        createdBy: user.id,
-        isActive: true,
-      };
+      // Use API service to create user
+      const response = await apiService.createUser({
+        uniqueId: userData.uniqueId,
+        email: userData.email || '',
+        firstName: userData.name.split(' ')[0] || '',
+        lastName: userData.name.split(' ').slice(1).join(' ') || '',
+        password: userData.password || '',
+        roleId: getRoleId(userData.role),
+        isActive: userData.isActive ?? true,
+      });
 
-      const updatedUsers = [...allUsers, newUser];
-      setAllUsers(updatedUsers);
-      localStorage.setItem('allUsers', JSON.stringify(updatedUsers));
-      return true;
+      if (response.success) {
+        // Update local users list
+        const newUser: User = {
+          ...userData,
+          id: response.data.id.toString(),
+          createdAt: response.data.createdAt,
+          createdBy: user.id,
+          isActive: response.data.isActive,
+        };
+
+        const updatedUsers = [...allUsers, newUser];
+        setAllUsers(updatedUsers);
+        localStorage.setItem('allUsers', JSON.stringify(updatedUsers));
+        return true;
+      }
+
+      return false;
     } catch (error) {
       console.error('Error creating user:', error);
       return false;
     }
+  };
+
+  const getRoleId = (roleName: string): number => {
+    const roleMap = {
+      'super_admin': 1,
+      'admin': 2,
+      'pmt': 3,
+      'qc_manager': 4,
+      'quality_analyst': 5,
+      'start_qc': 6,
+      'data_quality': 7,
+      'convergent_analysis': 8,
+    };
+    return roleMap[roleName as keyof typeof roleMap] || 2;
   };
 
   const updateUserById = async (userId: string, userData: Partial<User>): Promise<boolean> => {
@@ -218,12 +324,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      const updatedUsers = allUsers.map(u => 
-        u.id === userId ? { ...u, ...userData } : u
-      );
-      setAllUsers(updatedUsers);
-      localStorage.setItem('allUsers', JSON.stringify(updatedUsers));
-      return true;
+      // Use API service to update user
+      const response = await apiService.updateUser(userId, {
+        email: userData.email,
+        firstName: userData.name?.split(' ')[0] || '',
+        lastName: userData.name?.split(' ').slice(1).join(' ') || '',
+        password: userData.password,
+        roleId: userData.role ? getRoleId(userData.role) : undefined,
+        isActive: userData.isActive,
+      });
+
+      if (response.success) {
+        const updatedUsers = allUsers.map(u => 
+          u.id === userId ? { ...u, ...userData } : u
+        );
+        setAllUsers(updatedUsers);
+        localStorage.setItem('allUsers', JSON.stringify(updatedUsers));
+        return true;
+      }
+
+      return false;
     } catch (error) {
       console.error('Error updating user:', error);
       return false;
@@ -241,10 +361,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
 
-      const updatedUsers = allUsers.filter(u => u.id !== userId);
-      setAllUsers(updatedUsers);
-      localStorage.setItem('allUsers', JSON.stringify(updatedUsers));
-      return true;
+      // Use API service to delete user
+      const response = await apiService.deleteUser(userId);
+      
+      if (response.success) {
+        const updatedUsers = allUsers.filter(u => u.id !== userId);
+        setAllUsers(updatedUsers);
+        localStorage.setItem('allUsers', JSON.stringify(updatedUsers));
+        return true;
+      }
+
+      return false;
     } catch (error) {
       console.error('Error deleting user:', error);
       return false;
@@ -281,12 +408,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return newId;
   };
 
+  const getRedirectUrl = (role: string): string => {
+    const roleRedirects: { [key: string]: string } = {
+      'super_admin': '/super-admin/dashboard',
+      'admin': '/dashboard',
+      'pmt': '/pmt/dashboard',
+      'qc': '/dashboard/qc',
+      'quality_analyst': '/dashboard/quality-analyst',
+      'start_qc': '/dashboard/start-qc',
+      'data_quality': '/dashboard/data-quality',
+    };
+
+    return roleRedirects[role] || '/dashboard';
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated,
     isLoading,
     login,
     logout,
+    register,
     updateUser,
     hasPermission,
     hasRole,
@@ -297,6 +439,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     deleteUser,
     getAllUsers,
     generateUniqueId,
+    getRedirectUrl,
   };
 
   return (

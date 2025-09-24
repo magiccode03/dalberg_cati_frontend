@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAppSelector } from '@/hooks/redux';
 import { useAuth } from '@/contexts/AuthContext';
 import { Bell, User, LogOut, Settings, Sun, Moon, ChevronDown } from 'lucide-react';
 
 export default function Header() {
   const { user: authUser, logout } = useAuth();
-  const { notifications } = useAppSelector((state) => state.app);
   const user = authUser; // Use auth user instead of Redux user
+  const notifications = []; // Empty notifications array for now
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);

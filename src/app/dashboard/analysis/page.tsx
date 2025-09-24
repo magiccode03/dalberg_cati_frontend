@@ -1,6 +1,6 @@
 'use client';
 
-import { useAppSelector } from '@/hooks/redux';
+import { useAuth } from '@/contexts/AuthContext';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import VoteShareChart from '@/components/charts/VoteShareChart';
 import ProgressChart from '@/components/charts/ProgressChart';
@@ -11,7 +11,10 @@ import Card from '@/components/ui/Card';
 import { generateVoteShareData, generateProgressData } from '@/lib/mock-data';
 
 export default function AnalysisPage() {
-  const { voteShareData, progressData } = useAppSelector((state) => state.analysis);
+  const { user } = useAuth();
+  // Use mock data for now instead of Redux state
+  const voteShareData = generateVoteShareData();
+  const progressData = generateProgressData();
 
   const breadcrumbItems = [
     { label: 'Analysis', active: true }

@@ -1,13 +1,13 @@
 'use client';
 
-import { useAppSelector } from '@/hooks/redux';
+import { useAuth } from '@/contexts/AuthContext';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { Download, Filter, RefreshCw, TrendingUp, Users, CheckCircle, Clock } from 'lucide-react';
 
 export default function ProgressOverviewPage() {
-  const user = useAppSelector((state) => state.app.user);
+  const { user } = useAuth();
 
   const breadcrumbItems = [
     { label: 'Home', href: '/dashboard' },
