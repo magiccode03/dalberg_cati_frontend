@@ -1,0 +1,68 @@
+---
+globs: src/components/**/*.tsx
+description: Component development patterns and standards
+---
+
+# Component Development Patterns
+
+## Component Structure
+- Use functional components with TypeScript
+- Add `'use client'` directive for client components
+- Export as default with proper naming
+- Use proper prop interfaces extending React.HTMLAttributes
+
+## UI Component Standards
+- All UI components in [src/components/ui/](mdc:src/components/ui/)
+- Use Tailwind CSS for styling
+- Support dark mode with `dark:` classes
+- Include proper accessibility attributes
+- Use Lucide React icons consistently
+
+## Layout Components
+- Header: [src/components/layout/Header.tsx](mdc:src/components/layout/Header.tsx)
+- Navigation: [src/components/layout/HorizontalNav.tsx](mdc:src/components/layout/HorizontalNav.tsx)
+- Conditional Layout: [src/components/layout/ConditionalLayout.tsx](mdc:src/components/layout/ConditionalLayout.tsx)
+
+## Form Components
+- Use React Hook Form with Zod validation
+- Include proper error handling and display
+- Support loading states
+- Use consistent form field patterns
+
+## Modal and Dialog Components
+- Use Modal component for overlays
+- Include proper focus management
+- Support keyboard navigation
+- Use proper ARIA attributes
+
+## State Management in Components
+- Use local state for component-specific data
+- Use Redux for global application state
+- Use Context for authentication and theme
+- Avoid prop drilling with proper state management
+
+## Styling Guidelines
+- Use Tailwind CSS utility classes
+- Support responsive design (mobile-first)
+- Include dark mode support
+- Use consistent spacing and typography
+- Follow design system patterns
+
+## Component Props
+- Use proper TypeScript interfaces
+- Include optional props with defaults
+- Use proper event handlers
+- Support className merging with cn() utility
+
+## Error Handling
+- Use ErrorBoundary for component errors
+- Provide fallback UI for loading states
+- Handle async operations properly
+- Display user-friendly error messages
+
+## Accessibility
+- Use proper semantic HTML
+- Include ARIA labels and roles
+- Support keyboard navigation
+- Ensure proper color contrast
+- Use proper heading hierarchy
