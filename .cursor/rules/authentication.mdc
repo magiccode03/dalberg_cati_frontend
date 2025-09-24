@@ -1,0 +1,52 @@
+---
+description: Authentication system guidelines and patterns
+---
+
+# Authentication System Guidelines
+
+## Core Authentication
+- **Login Method**: Users login with unique alphanumeric/numeric IDs (NOT email)
+- **SUPER ADMIN**: Role with full system access and user management capabilities
+- **Protected Routes**: Use ProtectedRoute component for authentication checks
+- **Context**: Authentication state managed in [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx)
+
+## User Management (SUPER ADMIN only)
+- **Create Users**: SUPER ADMIN can create new users with auto-generated unique IDs
+- **Edit Users**: Update user information, roles, and reset passwords
+- **Delete Users**: Remove users (cannot delete self)
+- **User Management Page**: [src/app/dashboard/user-management/page.tsx](mdc:src/app/dashboard/user-management/page.tsx)
+
+## Unique ID System
+- **Format**: `ROLE###` (e.g., SUPER001, ADMIN001, PMT001, QC001, QA001)
+- **Auto-Generation**: Automatically generates next available ID for each role
+- **Role Prefixes**: SUPER, ADMIN, PMT, QC, QA, SQC, DQ, CA
+
+## Role-Based Access Control
+- **SUPER_ADMIN**: Full system access + user management
+- **ADMIN**: Administrative access
+- **PMT**: PMT module access
+- **QC_MANAGER**: QC module access
+- **QUALITY_ANALYST**: Analysis module access
+- **START_QC**: Start QC access
+- **DATA_QUALITY**: Data quality access
+- **CONVERGENT_ANALYSIS**: Convergent analysis access
+
+## Authentication Patterns
+- Use `useAuth()` hook for authentication state
+- Check `isAuthenticated` before rendering protected content
+- Use `hasRole()` and `hasPermission()` for access control
+- Redirect to `/login` for unauthenticated users
+- Redirect to `/unauthorized` for insufficient permissions
+
+## Demo Accounts
+- SUPER001 / super123 (Super Admin)
+- ADMIN001 / admin123 (Admin)
+- PMT001 / pmt123 (PMT Manager)
+- QC001 / qc123 (QC Manager)
+- QA001 / analyst123 (Quality Analyst)
+
+## Security Considerations
+- Passwords stored in localStorage (demo only - use proper backend in production)
+- Session persistence with remember me option
+- Automatic logout on token expiration
+- Role-based menu filtering in [src/lib/menu-data.ts](mdc:src/lib/menu-data.ts)

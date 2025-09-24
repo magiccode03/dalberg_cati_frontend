@@ -1,0 +1,73 @@
+---
+globs: *.css,*.tsx,*.ts
+description: Styling and design system guidelines
+---
+
+# Styling and Design Guidelines
+
+## Tailwind CSS Usage
+- Use Tailwind CSS utility classes for styling
+- Follow mobile-first responsive design
+- Use consistent spacing scale (4, 8, 12, 16, 24, 32px)
+- Use semantic color names from Tailwind palette
+
+## Dark Mode Support
+- Always include dark mode variants with `dark:` prefix
+- Use consistent dark mode color scheme
+- Test components in both light and dark themes
+- Use CSS variables for theme switching
+
+## Color Palette
+- **Primary**: Blue (blue-600, blue-700, blue-800)
+- **Secondary**: Gray (gray-100 to gray-900)
+- **Success**: Green (green-500, green-600)
+- **Warning**: Yellow (yellow-500, yellow-600)
+- **Error**: Red (red-500, red-600)
+- **Info**: Blue (blue-500, blue-600)
+
+## Typography
+- Use Inter font family (configured in layout)
+- Heading hierarchy: h1 (text-3xl), h2 (text-2xl), h3 (text-xl)
+- Body text: text-base (16px)
+- Small text: text-sm (14px)
+- Use proper font weights: font-normal, font-medium, font-semibold, font-bold
+
+## Spacing and Layout
+- Container: max-w-7xl mx-auto px-6
+- Section padding: py-8 or py-12
+- Card padding: p-6 or p-8
+- Form spacing: space-y-4 or space-y-6
+- Grid gaps: gap-4, gap-6, gap-8
+
+## Component Styling Patterns
+- Cards: bg-white dark:bg-gray-800 shadow-lg rounded-lg
+- Buttons: Use consistent button variants (primary, secondary, outline, ghost)
+- Forms: Use consistent form field styling
+- Tables: Use proper table styling with hover states
+- Modals: Use backdrop blur and proper z-index
+
+## Responsive Design
+- Mobile: Default styles (no prefix)
+- Tablet: sm: prefix (640px+)
+- Desktop: md: prefix (768px+)
+- Large: lg: prefix (1024px+)
+- Extra Large: xl: prefix (1280px+)
+
+## Animation and Transitions
+- Use consistent transition durations (150ms, 300ms)
+- Use ease-in-out for smooth transitions
+- Include hover states for interactive elements
+- Use proper loading states and spinners
+
+## Global Styles
+- Defined in [src/app/globals.css](mdc:src/app/globals.css)
+- Include custom scrollbar styles
+- Use CSS custom properties for theming
+- Include proper base styles and resets
+
+## Accessibility
+- Ensure proper color contrast ratios
+- Use focus states for keyboard navigation
+- Include proper ARIA attributes
+- Test with screen readers
+- Use semantic HTML elements

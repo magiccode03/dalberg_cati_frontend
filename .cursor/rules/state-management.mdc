@@ -1,0 +1,69 @@
+---
+description: State management patterns and Redux guidelines
+---
+
+# State Management Guidelines
+
+## Redux Store Structure
+- **App Store**: [src/stores/app-store.ts](mdc:src/stores/app-store.ts) - Global app state
+- **Analysis Store**: [src/stores/analysis-store.ts](mdc:src/stores/analysis-store.ts) - Analysis-specific state
+- **Store Configuration**: [src/stores/store.ts](mdc:src/stores/store.ts) - Store setup
+
+## Authentication State
+- **Context**: [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx) - Authentication state
+- **User Management**: SUPER ADMIN functions for user CRUD operations
+- **Session Persistence**: localStorage for authentication state
+
+## State Serialization
+- **Important**: All Redux state must be serializable
+- **Dates**: Use ISO strings instead of Date objects
+- **Functions**: Avoid storing functions in Redux state
+- **Complex Objects**: Ensure proper serialization
+
+## Redux Patterns
+- Use Redux Toolkit (RTK) for store configuration
+- Use createSlice for reducers
+- Use createAsyncThunk for async operations
+- Use proper TypeScript types for state
+
+## Context Usage
+- Use React Context for authentication
+- Use Context for theme management
+- Avoid prop drilling with Context
+- Keep Context providers at appropriate levels
+
+## Local State vs Global State
+- **Local State**: Component-specific data, form inputs, UI state
+- **Global State**: User data, application settings, shared data
+- **Context State**: Authentication, theme, modal state
+
+## State Updates
+- Use immutable update patterns
+- Use proper action creators
+- Handle loading and error states
+- Use proper TypeScript types
+
+## Data Fetching
+- Use React Query for server state (when implemented)
+- Use Redux for client state
+- Handle loading states properly
+- Implement proper error handling
+
+## State Persistence
+- Use localStorage for authentication
+- Use sessionStorage for temporary data
+- Implement proper state hydration
+- Handle state restoration on page reload
+
+## Performance Considerations
+- Use selectors for computed state
+- Avoid unnecessary re-renders
+- Use React.memo for expensive components
+- Implement proper state normalization
+
+## Testing State
+- Test Redux reducers
+- Test Context providers
+- Test state updates
+- Test error handling
+- Test loading states

@@ -1,0 +1,77 @@
+---
+description: Development workflow and best practices
+---
+
+# Development Workflow
+
+## Project Setup
+- **Framework**: Next.js 15+ with App Router
+- **Language**: TypeScript with strict mode
+- **Styling**: Tailwind CSS v3.4.0
+- **State Management**: Redux Toolkit + React Context
+- **Forms**: React Hook Form + Zod validation
+- **Icons**: Lucide React
+- **Charts**: ECharts (not Recharts)
+
+## Development Commands
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript checks
+
+## File Organization
+- Follow Next.js App Router conventions
+- Group related components in folders
+- Use index files for clean imports
+- Keep components small and focused
+- Separate business logic from UI components
+
+## Code Quality
+- Use TypeScript strict mode
+- Follow ESLint rules
+- Use Prettier for code formatting
+- Write meaningful commit messages
+- Use proper error handling
+
+## Testing Strategy
+- Test authentication flows
+- Test role-based access control
+- Test responsive design
+- Test dark mode functionality
+- Test form validation
+
+## Performance Considerations
+- Use Next.js Image component for images
+- Implement proper loading states
+- Use React.memo for expensive components
+- Optimize bundle size
+- Use proper caching strategies
+
+## Security Best Practices
+- Validate all user inputs
+- Use proper authentication checks
+- Sanitize data before display
+- Use HTTPS in production
+- Implement proper CORS policies
+
+## Deployment
+- Use Vercel for deployment
+- Set up proper environment variables
+- Configure proper build settings
+- Use proper error monitoring
+- Set up analytics tracking
+
+## Git Workflow
+- Use feature branches
+- Write descriptive commit messages
+- Use pull requests for code review
+- Keep commits atomic
+- Use proper .gitignore (already configured)
+
+## Documentation
+- Document component props and usage
+- Keep README updated
+- Document API endpoints
+- Include setup instructions
+- Document deployment process
