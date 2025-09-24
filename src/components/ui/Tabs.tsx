@@ -298,6 +298,7 @@ export function TabPanels({ children, className }: TabPanelsProps) {
     </div>
   );
 }
+<<<<<<< HEAD
 // Tab Panel Component
 export interface TabPanelProps {
   children: React.ReactNode;
@@ -312,3 +313,5 @@ export function TabPanel({ children, className }: TabPanelProps) {
   );
 }
 
+=======
+>>>>>>> e291121fb3bd6bdee997c7ef8e671ab6b6edf541

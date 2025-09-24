@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import Button from './Button';
-import { Download, FileText, FileSpreadsheet, FileImage, FilePdf, Loader2 } from 'lucide-react';
+import { Download, FileText, FileSpreadsheet, FileImage, Loader2 } from 'lucide-react';
 
 export interface ExportButtonProps {
   data: any;
@@ -43,7 +43,7 @@ const defaultFormats = [
   {
     value: 'pdf',
     label: 'PDF',
-    icon: <FilePdf className="h-4 w-4" />,
+    icon: <FileText className="h-4 w-4" />,
   },
   {
     value: 'png',
