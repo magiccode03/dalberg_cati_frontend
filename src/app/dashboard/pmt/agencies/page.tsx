@@ -89,7 +89,7 @@ export default function AgenciesPage() {
   ]);
 
   const breadcrumbItems = [
-    { label: 'PMT System', href: '/dashboard/pmt' },
+    { label: 'PMT System', href: '/pmt/dashboard' },
     { label: 'Agency List', active: true }
   ];
 

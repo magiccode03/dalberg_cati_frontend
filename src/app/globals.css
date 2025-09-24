@@ -2,6 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Bootstrap-like table styles for PMT Dashboard */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+  border-collapse: collapse;
+}
+
+.table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #dee2e6;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.bg-primary {
+  background-color: #0d6efd !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+.text-end {
+  text-align: right !important;
+}
+
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Dark mode table styles */
+.dark .table {
+  color: #e5e7eb;
+}
+
+.dark .table-bordered {
+  border-color: #374151;
+}
+
+.dark .table-bordered th,
+.dark .table-bordered td {
+  border-color: #374151;
+}
+
+.dark .table th,
+.dark .table td {
+  border-top-color: #374151;
+}
+
+.dark .table thead th {
+  border-bottom-color: #374151;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;

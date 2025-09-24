@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality';
+  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality';
   avatar?: string;
   permissions: string[];
 }
