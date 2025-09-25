@@ -34,7 +34,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, getRedirectUrl } = useAuth();
+  const { login, getRedirectUrl, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,13 +63,13 @@ export default function LoginPage() {
     setSuccess(null);
 
     try {
-      const success = await login(data.uniqueId, data.password, data.rememberMe);
+      const result = await login(data.uniqueId, data.password, data.rememberMe);
       
-      if (success) {
+      if (result.success && result.user) {
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => {
-          // Get the appropriate redirect URL based on user role
-          const redirectUrl = getRedirectUrl(data.uniqueId.includes('PMT') ? 'pmt' : 'super_admin');
+          // Get the appropriate redirect URL based on actual user role
+          const redirectUrl = getRedirectUrl(result.user.role);
           router.push(redirectUrl);
         }, 1500);
       } else {

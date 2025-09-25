@@ -25,7 +25,7 @@ export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (uniqueId: string, password: string, rememberMe?: boolean) => Promise<boolean>;
+  login: (uniqueId: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; user?: User }>;
   logout: () => void;
   register: (userData: any) => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (uniqueId: string, password: string, rememberMe = false): Promise<boolean> => {
+  const login = async (uniqueId: string, password: string, rememberMe = false): Promise<{ success: boolean; user?: User }> => {
     try {
       setIsLoading(true);
 
@@ -149,13 +149,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.setItem('rememberMe', 'true');
         }
 
-        return true;
+        return { success: true, user: userData };
       }
 
-      return false;
+      return { success: false };
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { success: false };
     } finally {
       setIsLoading(false);
     }
