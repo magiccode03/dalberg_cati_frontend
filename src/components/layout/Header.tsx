@@ -7,7 +7,22 @@ import { Bell, User, LogOut, Settings, Sun, Moon, ChevronDown } from 'lucide-rea
 export default function Header() {
   const { user: authUser, logout } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
-  const notifications = []; // Empty notifications array for now
+  const notifications: any[] = []; // Empty notifications array for now
+
+  // Helper function to get role display name
+  const getRoleDisplayName = (role: string | undefined): string => {
+    const roleDisplayNames: { [key: string]: string } = {
+      'super_admin': 'Super Administrator',
+      'admin': 'Administrator',
+      'pmt': 'Project Progress Monitoring',
+      'qc_manager': 'Quality Control Manager',
+      'quality_analyst': 'Quality Analyst',
+      'start_qc': 'Start QC',
+      'data_quality': 'Data Quality',
+      'convergent_analysis': 'Convergent Analysis',
+    };
+    return roleDisplayNames[role || ''] || role || 'admin';
+  };
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -98,17 +113,17 @@ export default function Header() {
                 <span className="text-white font-bold text-lg">BE</span>
               </div>
             </div>
-            <div className="hidden md:block">
+            {/* <div className="hidden md:block">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">Bihar Election</h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">Analysis Dashboard</p>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Center - Project Title */}
         <div className="flex-1 text-center">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            Bihar 2025 Baseline - PMT
+          West Bengal Opinion Poll 2025
           </h1>
         </div>
 
@@ -221,7 +236,7 @@ export default function Header() {
                   {user?.name || 'Admin User'}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {user?.role || 'admin'}
+                  {user?.roleDisplayName || getRoleDisplayName(user?.role) || 'admin'}
                 </p>
               </div>
               <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />

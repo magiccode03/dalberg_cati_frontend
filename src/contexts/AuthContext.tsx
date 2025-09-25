@@ -10,6 +10,7 @@ export interface User {
   name: string;
   email?: string; // Optional email for notifications
   role: string;
+  roleDisplayName?: string; // Display name for the role
   avatar?: string;
   permissions?: string[];
   lastLogin?: string;
@@ -27,6 +28,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (uniqueId: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; user?: User }>;
   logout: () => void;
+  clearUserData: () => void;
   register: (userData: any) => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
   hasPermission: (permission: string) => boolean;
@@ -131,6 +133,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
           role: apiUser.role.name,
+          roleDisplayName: apiUser.role.displayName,
           avatar: '/logo.png',
           permissions: getDefaultPermissions(apiUser.role.name),
           lastLogin: apiUser.lastLoginAt,
@@ -191,6 +194,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Function to clear stored user data and force re-login (for updating user structure)
+  const clearUserData = () => {
+    setUser(null);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    router.push('/login');
+  };
+
   const register = async (userData: any): Promise<boolean> => {
     try {
       setIsLoading(true);
@@ -208,6 +220,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
           role: apiUser.role.name,
+          roleDisplayName: apiUser.role.displayName,
           avatar: '/logo.png',
           permissions: getDefaultPermissions(apiUser.role.name),
           lastLogin: apiUser.lastLoginAt,
@@ -412,7 +425,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const roleRedirects: { [key: string]: string } = {
       'super_admin': '/super-admin/dashboard',
       'admin': '/dashboard',
-      'pmt': '/pmt/dashboard',
+      'pmt': '/pmt/ppmp',
       'qc': '/dashboard/qc',
       'quality_analyst': '/dashboard/quality-analyst',
       'start_qc': '/dashboard/start-qc',
@@ -428,6 +441,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    clearUserData,
     register,
     updateUser,
     hasPermission,

@@ -23,6 +23,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const loginSchema = z.object({
   uniqueId: z.string().min(3, 'Unique ID must be at least 3 characters'),
@@ -220,13 +221,13 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2025 Bihar Election Analysis System. All rights reserved.</p>
-          <p className="mt-1">
+          <p><Link href="https://convergentview.com" target="_blank">© 2025 Convergent view. All rights reserved.</Link></p>
+          {/* <p className="mt-1">
             For technical support, contact{' '}
             <a href="mailto:support@bihar2025.gov.in" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
               support@bihar2025.gov.in
             </a>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
