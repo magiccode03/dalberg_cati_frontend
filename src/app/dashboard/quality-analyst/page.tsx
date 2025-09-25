@@ -141,7 +141,7 @@ export default function QualityAnalystPage() {
               
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Poor (<75%)
+                  Poor (&lt;75%)
                 </span>
                 <span className="text-lg font-bold text-red-600 dark:text-red-400">
                   20%

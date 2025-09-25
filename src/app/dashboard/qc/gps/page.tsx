@@ -105,7 +105,7 @@ export default function GPSPage() {
             center={[25.5941, 85.1376]}
             zoom={8}
             height={500}
-            clusterRadius=100000
+            clusterRadius={100000}
           />
         );
       default:

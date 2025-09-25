@@ -237,7 +237,7 @@ export function BadgeGroup({
 }
 
 // Status Badge (using the existing StatusBadge component)
-export { StatusBadge } from './StatusBadge';
+export { default as StatusBadge } from './StatusBadge';
 
 // Preset badges
 export function PrimaryBadge({ children, ...props }: Omit<BadgeProps, 'variant'>) {
