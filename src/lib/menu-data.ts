@@ -223,7 +223,7 @@ export const menuData: MenuItem[] = [
   {
     id: 'qc-fail-report',
     label: 'QC Fail Report',
-    href: '/pmt/progress/default/qcrejectreport',
+    href: '/pmt/progress/qcrejectrepor',
     icon: 'XCircle',
     roles: ['pmt'],
   },
