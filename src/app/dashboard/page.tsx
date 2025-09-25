@@ -1,10 +1,10 @@
 'use client';
 
-import { useAppSelector } from '@/hooks/redux';
+import { useAuth } from '@/contexts/AuthContext';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 
 export default function DashboardPage() {
-  const user = useAppSelector((state) => state.app.user);
+  const { user } = useAuth();
 
   const breadcrumbItems = [
     { label: 'PMT', active: true }

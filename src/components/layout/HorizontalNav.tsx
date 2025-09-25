@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useAppSelector } from '@/hooks/redux';
+import { useAuth } from '@/contexts/AuthContext';
 import { getMenuByRole } from '@/lib/menu-data';
 import { 
   ChevronDown, 
@@ -24,7 +24,8 @@ import {
   TrendingUp, 
   ClipboardList, 
   UserCog, 
-  Sliders 
+  Sliders,
+  Server
 } from 'lucide-react';
 
 const iconMap = {
@@ -45,11 +46,12 @@ const iconMap = {
   ClipboardList,
   UserCog,
   Sliders,
+  Server,
 };
 
 export default function HorizontalNav() {
   const pathname = usePathname();
-  const { user } = useAppSelector((state) => state.app);
+  const { user } = useAuth();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [isSticky, setIsSticky] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);

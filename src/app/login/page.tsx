@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
@@ -33,6 +34,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, getRedirectUrl } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,33 +63,21 @@ export default function LoginPage() {
     setSuccess(null);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Mock authentication logic
-      if (data.uniqueId === 'SUPER001' && data.password === 'super123') {
+      const success = await login(data.uniqueId, data.password, data.rememberMe);
+      
+      if (success) {
         setSuccess('Login successful! Redirecting...');
-        
-        // Store authentication data
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify({
-          id: '1',
-          uniqueId: data.uniqueId,
-          name: 'Super Administrator',
-          email: 'superadmin@bihar2025.gov.in',
-          role: 'super_admin',
-          avatar: '/logo.png',
-        }));
-
-        // Redirect to dashboard
         setTimeout(() => {
-          router.push('/dashboard');
+          // Get the appropriate redirect URL based on user role
+          const redirectUrl = getRedirectUrl(data.uniqueId.includes('PMT') ? 'pmt' : 'super_admin');
+          router.push(redirectUrl);
         }, 1500);
       } else {
         setError('Invalid Unique ID or password. Please try again.');
       }
     } catch (err) {
       setError('An error occurred during login. Please try again.');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -137,12 +127,6 @@ export default function LoginPage() {
               </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Bihar Election 2025
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Analysis Dashboard System
-          </p>
         </div>
 
         {/* Login Form */}
@@ -178,7 +162,6 @@ export default function LoginPage() {
                 label="Unique ID"
                 placeholder="Enter your unique ID"
                 error={errors.uniqueId?.message}
-                icon={<User className="h-4 w-4" />}
                 disabled={isLoading}
                 className="w-full"
               />
@@ -191,18 +174,8 @@ export default function LoginPage() {
                 label="Password"
                 placeholder="Enter your password"
                 error={errors.password?.message}
-                icon={<Lock className="h-4 w-4" />}
                 disabled={isLoading}
                 className="w-full"
-                rightIcon={
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                }
               />
             </div>
 
@@ -225,76 +198,24 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="lg"
               disabled={!isValid || isLoading}
-              loading={isLoading}
-              className="w-full"
+              className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
                   <LoadingSpinner size="sm" />
-                  Signing in...
+                  <span className="ml-2">Signing in...</span>
                 </>
               ) : (
                 <>
                   <LogIn className="h-4 w-4" />
-                  Sign In
+                  <span className="ml-2">Sign In</span>
                 </>
               )}
-            </Button>
+            </button>
           </form>
-
-          {/* Demo Login Buttons */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-4">
-              Demo Accounts
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDemoLogin('super-admin')}
-                disabled={isLoading}
-                className="text-xs"
-              >
-                <Shield className="h-3 w-3 mr-1" />
-                Super Admin
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDemoLogin('admin')}
-                disabled={isLoading}
-                className="text-xs"
-              >
-                <Shield className="h-3 w-3 mr-1" />
-                Admin
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDemoLogin('pmt')}
-                disabled={isLoading}
-                className="text-xs"
-              >
-                <User className="h-3 w-3 mr-1" />
-                PMT
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleDemoLogin('qc')}
-                disabled={isLoading}
-                className="text-xs"
-              >
-                <Shield className="h-3 w-3 mr-1" />
-                QC
-              </Button>
-            </div>
-          </div>
         </Card>
 
         {/* Footer */}
