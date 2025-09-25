@@ -34,7 +34,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, getRedirectUrl } = useAuth();
+  const { login, getRedirectUrl, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,11 +67,7 @@ export default function LoginPage() {
       
       if (success) {
         setSuccess('Login successful! Redirecting...');
-        setTimeout(() => {
-          // Get the appropriate redirect URL based on user role
-          const redirectUrl = getRedirectUrl(data.uniqueId.includes('PMT') ? 'pmt' : 'super_admin');
-          router.push(redirectUrl);
-        }, 1500);
+        // AuthContext will handle the redirect automatically
       } else {
         setError('Invalid Unique ID or password. Please try again.');
       }
