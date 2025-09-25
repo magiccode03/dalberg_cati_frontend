@@ -597,17 +597,17 @@ export default function DemographicPage() {
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2"></th>
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2"></th>
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2"></th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Quota</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Covered</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Min Sample</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Achieved Sample</th>
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Balance</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Quota</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Covered</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Min Sample</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Achieved Sample</th>
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Balance</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Quota</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Covered</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Min Sample</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Achieved Sample</th>
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Balance</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Quota</th>
-              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Covered</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Min Sample</th>
+              <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Achieved Sample</th>
               <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">Balance</th>
             </tr>
           </thead>
@@ -617,17 +617,17 @@ export default function DemographicPage() {
                   <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.ac_name}</td>
                   <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.ac_code}</td>
                   <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sample_achieved}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["18_24"].min_sample}</td>
-                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["18_24"].achieved_sample > row.age_groups["18_24"].min_sample ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["18_24"].achieved_sample}</td>
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["18_24"].quota}</td>
+                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["18_24"].covered > row.age_groups["18_24"].quota ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["18_24"].covered}</td>
                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["18_24"].balance}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["25_34"].min_sample}</td>
-                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["25_34"].achieved_sample > row.age_groups["25_34"].min_sample ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["25_34"].achieved_sample}</td>
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["25_34"].quota}</td>
+                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["25_34"].covered > row.age_groups["25_34"].quota ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["25_34"].covered}</td>
                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["25_34"].balance}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["35_50"].min_sample}</td>
-                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["35_50"].achieved_sample > row.age_groups["35_50"].min_sample ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["35_50"].achieved_sample}</td>
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["35_50"].quota}</td>
+                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["35_50"].covered > row.age_groups["35_50"].quota ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["35_50"].covered}</td>
                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["35_50"].balance}</td>
-                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["50_above"].min_sample}</td>
-                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["50_above"].achieved_sample > row.age_groups["50_above"].min_sample ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["50_above"].achieved_sample}</td>
+                <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["50_above"].quota}</td>
+                <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.age_groups["50_above"].covered > row.age_groups["50_above"].quota ? 'bg-red-500 text-white' : 'text-gray-900 dark:text-gray-100'}`}>{row.age_groups["50_above"].covered}</td>
                 <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["50_above"].balance}</td>
               </tr>
             ))}
