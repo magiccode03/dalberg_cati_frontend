@@ -135,7 +135,7 @@ export const menuData: MenuItem[] = [
       {
         id: 'interview-log',
         label: 'Interview Log',
-        href: '/pmt/interviewdetail',
+        href: '/pmt/interview-log',
         icon: 'FileText',
         roles: ['pmt'],
       },
