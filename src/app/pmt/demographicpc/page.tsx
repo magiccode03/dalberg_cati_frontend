@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Card from '@/components/ui/Card';
 import { Users, BarChart3, MapPin, Home, Building } from 'lucide-react';
+import { apiService, GenderWiseResponse, DemographicConstituency } from '@/lib/api';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface DemographicData {
   pcName: string;
@@ -15,20 +17,34 @@ interface DemographicData {
 export default function DemographicPcPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('gender-wise');
+  const [genderWiseData, setGenderWiseData] = useState<DemographicConstituency[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for Gender Wise
-  const genderWiseData: DemographicData[] = [
-    { pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, maleQuota: 0, maleCovered: 1292, maleBalance: -1292, femaleQuota: 0, femaleCovered: 673, femaleBalance: -673 },
-    { pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, maleQuota: 0, maleCovered: 1266, maleBalance: -1266, femaleQuota: 0, femaleCovered: 558, femaleBalance: -558 },
-    { pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, maleQuota: 0, maleCovered: 599, maleBalance: -599, femaleQuota: 0, femaleCovered: 510, femaleBalance: -510 },
-    { pcName: 'Sheohar', pcCode: 4, sampleAchieved: 1053, maleQuota: 0, maleCovered: 646, maleBalance: -646, femaleQuota: 0, femaleCovered: 407, femaleBalance: -407 },
-    { pcName: 'Sitamarhi', pcCode: 5, sampleAchieved: 1567, maleQuota: 0, maleCovered: 914, maleBalance: -914, femaleQuota: 0, femaleCovered: 653, femaleBalance: -653 },
-    { pcName: 'Madhubani', pcCode: 6, sampleAchieved: 1932, maleQuota: 0, maleCovered: 1385, maleBalance: -1385, femaleQuota: 0, femaleCovered: 547, femaleBalance: -547 },
-    { pcName: 'Jhanjharpur', pcCode: 7, sampleAchieved: 1695, maleQuota: 0, maleCovered: 1131, maleBalance: -1131, femaleQuota: 0, femaleCovered: 564, femaleBalance: -564 },
-    { pcName: 'Supaul', pcCode: 8, sampleAchieved: 1697, maleQuota: 0, maleCovered: 1075, maleBalance: -1075, femaleQuota: 0, femaleCovered: 622, femaleBalance: -622 },
-    { pcName: 'Araria', pcCode: 9, sampleAchieved: 144, maleQuota: 0, maleCovered: 80, maleBalance: -80, femaleQuota: 0, femaleCovered: 64, femaleBalance: -64 },
-    { pcName: 'Kishanganj', pcCode: 10, sampleAchieved: 613, maleQuota: 0, maleCovered: 385, maleBalance: -385, femaleQuota: 0, femaleCovered: 228, femaleBalance: -228 },
-  ];
+  // Fetch gender-wise data from API
+  useEffect(() => {
+    const fetchGenderWiseData = async () => {
+      if (activeTab === 'gender-wise') {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await apiService.getGenderWiseData();
+          if (response.success && response.data) {
+            setGenderWiseData(response.data.constituencies);
+          } else {
+            setError(response.message || 'Failed to fetch gender-wise data');
+          }
+        } catch (err) {
+          setError('An error occurred while fetching data');
+          console.error('Error fetching gender-wise data:', err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchGenderWiseData();
+  }, [activeTab]);
 
   // Mock data for Age Wise
   const ageWiseData: DemographicData[] = [
@@ -82,15 +98,15 @@ export default function DemographicPcPage() {
         <tbody>
           {genderWiseData.map((row, index) => (
             <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.pcName}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.pcCode}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sampleAchieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.maleQuota}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.maleCovered}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.maleBalance}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.femaleQuota}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.femaleCovered}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.femaleBalance}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.pc_name}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.pc_code}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sample_achieved}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.male.quota}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.male.covered}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.male.balance}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.female.quota}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.female.covered}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.female.balance}</td>
             </tr>
           ))}
         </tbody>
@@ -197,6 +213,34 @@ export default function DemographicPcPage() {
   );
 
   const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center py-12">
+          <LoadingSpinner size="lg" />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="text-center py-8">
+          <div className="text-red-600 dark:text-red-400 mb-4">
+            <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Error Loading Data</h3>
+          <p className="text-gray-500 dark:text-gray-400 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+
     switch (activeTab) {
       case 'gender-wise':
         return renderGenderWiseTable();
