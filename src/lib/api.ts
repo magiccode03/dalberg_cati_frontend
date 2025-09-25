@@ -111,6 +111,15 @@ export const API_ENDPOINTS = {
     METRICS: '/data-quality/metrics',
     ISSUES: '/data-quality/issues',
   },
+  
+  // Demographic Data
+  DEMOGRAPHIC: {
+    GENDER_WISE: '/demographicpc/genderwise',
+    AGE_WISE: '/demographicpc/agewise',
+    LOCALITY_WISE: '/demographicpc/localitywise',
+    RELIGION_WISE: '/demographicpc/religionwise',
+    SOCIAL_CATEGORY_WISE: '/demographicpc/socialcategorywise',
+  },
 } as const;
 
 // API Response Types
@@ -199,6 +208,43 @@ export interface UpdateUserRequest {
   password?: string;
   roleId?: number;
   isActive?: boolean;
+}
+
+// Demographic Data Types
+export interface GenderData {
+  quota: number;
+  covered: number;
+  balance: number;
+}
+
+export interface DemographicConstituency {
+  pc_name: string;
+  pc_code: number;
+  sample_achieved: number;
+  male: GenderData;
+  female: GenderData;
+}
+
+export interface DemographicSummary {
+  total_sample_achieved: number;
+  total_male_quota: number;
+  total_male_covered: number;
+  total_male_balance: number;
+  total_female_quota: number;
+  total_female_covered: number;
+  total_female_balance: number;
+}
+
+export interface DemographicMetadata {
+  generated_at: string;
+  total_constituencies: number;
+  report_type: string;
+}
+
+export interface GenderWiseResponse {
+  constituencies: DemographicConstituency[];
+  summary: DemographicSummary;
+  metadata: DemographicMetadata;
 }
 
 // API Service Class
@@ -492,6 +538,27 @@ class ApiService {
 
   async getQualityIssues(): Promise<ApiResponse<any[]>> {
     return this.request<any[]>(API_ENDPOINTS.DATA_QUALITY.ISSUES);
+  }
+
+  // Demographic Methods
+  async getGenderWiseData(): Promise<ApiResponse<GenderWiseResponse>> {
+    return this.request<GenderWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.GENDER_WISE);
+  }
+
+  async getAgeWiseData(): Promise<ApiResponse<any>> {
+    return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.AGE_WISE);
+  }
+
+  async getLocalityWiseData(): Promise<ApiResponse<any>> {
+    return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.LOCALITY_WISE);
+  }
+
+  async getReligionWiseData(): Promise<ApiResponse<any>> {
+    return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.RELIGION_WISE);
+  }
+
+  async getSocialCategoryWiseData(): Promise<ApiResponse<any>> {
+    return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.SOCIAL_CATEGORY_WISE);
   }
 
   // Super Admin Methods - Role Management
