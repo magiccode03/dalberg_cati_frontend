@@ -247,6 +247,84 @@ export interface GenderWiseResponse {
   metadata: DemographicMetadata;
 }
 
+// Age-wise data types
+export interface AgeGroupData {
+  min_sample: number;
+  achieved_sample: number;
+  balance: number;
+}
+
+export interface AgeGroups {
+  "18_24": AgeGroupData;
+  "25_34": AgeGroupData;
+  "35_50": AgeGroupData;
+  "50_above": AgeGroupData;
+}
+
+export interface AgeWiseConstituency {
+  pc_name: string;
+  pc_code: number;
+  sample_achieved: number;
+  age_groups: AgeGroups;
+}
+
+export interface AgeWiseSummary {
+  total_sample_achieved: number;
+  total_18_24_min_sample: number;
+  total_18_24_achieved_sample: number;
+  total_18_24_balance: number;
+  total_25_34_min_sample: number;
+  total_25_34_achieved_sample: number;
+  total_25_34_balance: number;
+  total_35_50_min_sample: number;
+  total_35_50_achieved_sample: number;
+  total_35_50_balance: number;
+  total_50_above_min_sample: number;
+  total_50_above_achieved_sample: number;
+  total_50_above_balance: number;
+}
+
+export interface AgeWiseResponse {
+  constituencies: AgeWiseConstituency[];
+  summary: AgeWiseSummary;
+  metadata: DemographicMetadata;
+}
+
+// Locality-wise data types
+export interface LocalityData {
+  population: string;
+  sample: number;
+  difference: number;
+}
+
+export interface Locality {
+  urban: LocalityData;
+  rural: LocalityData;
+}
+
+export interface LocalityWiseConstituency {
+  pc_name: string;
+  pc_code: number;
+  sample_achieved: number;
+  locality: Locality;
+}
+
+export interface LocalityWiseSummary {
+  total_sample_achieved: number;
+  total_urban_population: string;
+  total_urban_sample: number;
+  total_urban_difference: number;
+  total_rural_population: string;
+  total_rural_sample: number;
+  total_rural_difference: number;
+}
+
+export interface LocalityWiseResponse {
+  constituencies: LocalityWiseConstituency[];
+  summary: LocalityWiseSummary;
+  metadata: DemographicMetadata;
+}
+
 // API Service Class
 class ApiService {
   private baseURL: string;
@@ -545,12 +623,12 @@ class ApiService {
     return this.request<GenderWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.GENDER_WISE);
   }
 
-  async getAgeWiseData(): Promise<ApiResponse<any>> {
-    return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.AGE_WISE);
+  async getAgeWiseData(): Promise<ApiResponse<AgeWiseResponse>> {
+    return this.request<AgeWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.AGE_WISE);
   }
 
-  async getLocalityWiseData(): Promise<ApiResponse<any>> {
-    return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.LOCALITY_WISE);
+  async getLocalityWiseData(): Promise<ApiResponse<LocalityWiseResponse>> {
+    return this.request<LocalityWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.LOCALITY_WISE);
   }
 
   async getReligionWiseData(): Promise<ApiResponse<any>> {

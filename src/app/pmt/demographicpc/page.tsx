@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Card from '@/components/ui/Card';
 import { Users, BarChart3, MapPin, Home, Building } from 'lucide-react';
-import { apiService, GenderWiseResponse, DemographicConstituency } from '@/lib/api';
+import { apiService, GenderWiseResponse, DemographicConstituency, AgeWiseResponse, AgeWiseConstituency, LocalityWiseResponse, LocalityWiseConstituency } from '@/lib/api';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 interface DemographicData {
@@ -18,51 +18,51 @@ export default function DemographicPcPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('gender-wise');
   const [genderWiseData, setGenderWiseData] = useState<DemographicConstituency[]>([]);
+  const [ageWiseData, setAgeWiseData] = useState<AgeWiseConstituency[]>([]);
+  const [localityWiseData, setLocalityWiseData] = useState<LocalityWiseConstituency[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch gender-wise data from API
+  // Fetch data from API based on active tab
   useEffect(() => {
-    const fetchGenderWiseData = async () => {
-      if (activeTab === 'gender-wise') {
-        setLoading(true);
-        setError(null);
-        try {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        if (activeTab === 'gender-wise') {
           const response = await apiService.getGenderWiseData();
           if (response.success && response.data) {
             setGenderWiseData(response.data.constituencies);
           } else {
             setError(response.message || 'Failed to fetch gender-wise data');
           }
-        } catch (err) {
-          setError('An error occurred while fetching data');
-          console.error('Error fetching gender-wise data:', err);
-        } finally {
-          setLoading(false);
+        } else if (activeTab === 'age-wise') {
+          const response = await apiService.getAgeWiseData();
+          if (response.success && response.data) {
+            setAgeWiseData(response.data.constituencies);
+          } else {
+            setError(response.message || 'Failed to fetch age-wise data');
+          }
+        } else if (activeTab === 'locality-wise') {
+          const response = await apiService.getLocalityWiseData();
+          if (response.success && response.data) {
+            setLocalityWiseData(response.data.constituencies);
+          } else {
+            setError(response.message || 'Failed to fetch locality-wise data');
+          }
         }
+      } catch (err) {
+        setError('An error occurred while fetching data');
+        console.error('Error fetching data:', err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchGenderWiseData();
+    fetchData();
   }, [activeTab]);
 
-  // Mock data for Age Wise
-  const ageWiseData: DemographicData[] = [
-    { pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, age18_24Min: 0, age18_24Achieved: 265, age18_24Balance: -265, age25_34Min: 0, age25_34Achieved: 518, age25_34Balance: -518, age35_50Min: 0, age35_50Achieved: 810, age35_50Balance: -810, age50PlusMin: 0, age50PlusAchieved: 372, age50PlusBalance: -372 },
-    { pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, age18_24Min: 0, age18_24Achieved: 246, age18_24Balance: -246, age25_34Min: 0, age25_34Achieved: 581, age25_34Balance: -581, age35_50Min: 0, age35_50Achieved: 649, age35_50Balance: -649, age50PlusMin: 0, age50PlusAchieved: 348, age50PlusBalance: -348 },
-    { pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, age18_24Min: 0, age18_24Achieved: 167, age18_24Balance: -167, age25_34Min: 0, age25_34Achieved: 285, age25_34Balance: -285, age35_50Min: 0, age35_50Achieved: 388, age35_50Balance: -388, age50PlusMin: 0, age50PlusAchieved: 269, age50PlusBalance: -269 },
-    { pcName: 'Sheohar', pcCode: 4, sampleAchieved: 1053, age18_24Min: 0, age18_24Achieved: 102, age18_24Balance: -102, age25_34Min: 0, age25_34Achieved: 247, age25_34Balance: -247, age35_50Min: 0, age35_50Achieved: 405, age35_50Balance: -405, age50PlusMin: 0, age50PlusAchieved: 299, age50PlusBalance: -299 },
-    { pcName: 'Sitamarhi', pcCode: 5, sampleAchieved: 1567, age18_24Min: 0, age18_24Achieved: 117, age18_24Balance: -117, age25_34Min: 0, age25_34Achieved: 298, age25_34Balance: -298, age35_50Min: 0, age35_50Achieved: 537, age35_50Balance: -537, age50PlusMin: 0, age50PlusAchieved: 615, age50PlusBalance: -615 },
-  ];
 
-  // Mock data for Locality Wise
-  const localityWiseData: DemographicData[] = [
-    { pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, urbanPopulation: 8.10, urbanSample: 6.8, urbanDifference: 1.2, ruralPopulation: 91.90, ruralSample: 93.2, ruralDifference: 2.2 },
-    { pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, urbanPopulation: 13.00, urbanSample: 16, urbanDifference: 3, ruralPopulation: 87.00, ruralSample: 84, ruralDifference: 3 },
-    { pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, urbanPopulation: 6.80, urbanSample: 6.7, urbanDifference: 0.7, ruralPopulation: 93.20, ruralSample: 93.3, ruralDifference: 0.3 },
-    { pcName: 'Sheohar', pcCode: 4, sampleAchieved: 1053, urbanPopulation: 6.80, urbanSample: 2.6, urbanDifference: 3.4, ruralPopulation: 93.20, ruralSample: 97.4, ruralDifference: 4.4 },
-    { pcName: 'Sitamarhi', pcCode: 5, sampleAchieved: 1567, urbanPopulation: 4.60, urbanSample: 0.1, urbanDifference: 3.9, ruralPopulation: 95.40, ruralSample: 99.9, ruralDifference: 4.9 },
-  ];
 
   const tabItems = [
     { id: 'gender-wise', label: 'Gender Wise', icon: Users },
@@ -148,21 +148,21 @@ export default function DemographicPcPage() {
         <tbody>
           {ageWiseData.map((row, index) => (
             <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.pcName}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.pcCode}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sampleAchieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age18_24Min}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age18_24Achieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age18_24Balance}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age25_34Min}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age25_34Achieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age25_34Balance}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age35_50Min}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age35_50Achieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age35_50Balance}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age50PlusMin}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age50PlusAchieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age50PlusBalance}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.pc_name}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.pc_code}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sample_achieved}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["18_24"].min_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["18_24"].achieved_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["18_24"].balance}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["25_34"].min_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["25_34"].achieved_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["25_34"].balance}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["35_50"].min_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["35_50"].achieved_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["35_50"].balance}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["50_above"].min_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["50_above"].achieved_sample}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.age_groups["50_above"].balance}</td>
             </tr>
           ))}
         </tbody>
@@ -196,15 +196,15 @@ export default function DemographicPcPage() {
         <tbody>
           {localityWiseData.map((row, index) => (
             <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'}>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.pcName}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.pcCode}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sampleAchieved}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.urbanPopulation}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.urbanSample}</td>
-              <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.urbanDifference > 2 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'text-gray-900 dark:text-gray-100'}`}>{row.urbanDifference}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.ruralPopulation}</td>
-              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.ruralSample}</td>
-              <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${row.ruralDifference > 2 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'text-gray-900 dark:text-gray-100'}`}>{row.ruralDifference}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100">{row.pc_name}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.pc_code}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.sample_achieved}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.locality.urban.population}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.locality.urban.sample}</td>
+              <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${Math.abs(row.locality.urban.difference) > 2 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'text-gray-900 dark:text-gray-100'}`}>{row.locality.urban.difference.toFixed(2)}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.locality.rural.population}</td>
+              <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-center">{row.locality.rural.sample}</td>
+              <td className={`border border-gray-300 dark:border-gray-600 px-4 py-2 text-sm text-center ${Math.abs(row.locality.rural.difference) > 2 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' : 'text-gray-900 dark:text-gray-100'}`}>{row.locality.rural.difference.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
