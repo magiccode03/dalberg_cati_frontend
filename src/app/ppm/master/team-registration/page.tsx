@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-// import { Card } from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
+import Card from '@/components/ui/Card';
+import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-// import { Heading } from '@/components/ui/Heading';
-// import { Text } from '@/components/ui/Text';
-// import { Container } from '@/components/ui/Container';
-// import { Button } from '@/components/ui/Button';
-// import { Badge } from '@/components/ui/Badge';
 
 const TeamRegistrationPage = () => {
   // Sample agency data
@@ -137,151 +137,96 @@ const TeamRegistrationPage = () => {
   const getReQcStatusBadge = (status: string) => {
     switch (status) {
       case 'Enable':
-        return <span className="badge bg-green-500 text-white px-2 py-1 rounded-full text-xs">Enable</span>;
+        return <Badge variant="success" size="sm">Enable</Badge>;
       case 'Disable':
-        return <span className="badge bg-red-500 text-white px-2 py-1 rounded-full text-xs">Disable</span>;
+        return <Badge variant="error" size="sm">Disable</Badge>;
       default:
-        return <span className="badge bg-gray-500 text-white px-2 py-1 rounded-full text-xs">{status}</span>;
+        return <Badge variant="secondary" size="sm">{status}</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Active':
-        return <span className="badge bg-green-500 text-white px-2 py-1 rounded-full text-xs">Active</span>;
+        return <Badge variant="success" size="sm">Active</Badge>;
       case 'Inactive':
-        return <span className="badge bg-red-500 text-white px-2 py-1 rounded-full text-xs">Inactive</span>;
+        return <Badge variant="error" size="sm">Inactive</Badge>;
       default:
-        return <span className="badge bg-gray-500 text-white px-2 py-1 rounded-full text-xs">{status}</span>;
+        return <Badge variant="secondary" size="sm">{status}</Badge>;
     }
   };
 
   return (
-    <div className="main-content horizontal-content">
-      <div className="main-container container mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <div className="breadcrumb-header justify-content-between">
-          <div className="left-content">
-            <h1 className="main-content-title mg-b-0 mg-b-lg-1 text-2xl font-bold text-gray-800">
-              Agency List
-            </h1>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Heading level={1} className="mb-6">
+        Agency List
+      </Heading>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <Card className="bg-purple-600 text-white">
+          <div className="p-6 text-center">
+            <Heading level={3} className="text-white mb-2">
+              Total Interview
+            </Heading>
+            <Text className="text-white text-2xl font-semibold">
+              1,08,333
+            </Text>
           </div>
-          <div className="justify-content-center mt-2"></div>
-          <div className="right-content">
-            <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
+        </Card>
+        
+        <Card className="bg-green-600 text-white">
+          <div className="p-6 text-center">
+            <Heading level={3} className="text-white mb-2">
+              Valid Interview
+            </Heading>
+            <Text className="text-white text-2xl font-semibold">
+              50,025
+            </Text>
           </div>
+        </Card>
+        
+        <Card className="bg-red-600 text-white">
+          <div className="p-6 text-center">
+            <Heading level={3} className="text-white mb-2">
+              Reject Interview
+            </Heading>
+            <Text className="text-white text-2xl font-semibold">
+              58,308
+            </Text>
+          </div>
+        </Card>
+        
+        <Card className="bg-blue-600 text-white">
+          <div className="p-6 text-center">
+            <Heading level={3} className="text-white mb-2">
+              Interview Under QC
+            </Heading>
+            <Text className="text-white text-2xl font-semibold">
+              0
+            </Text>
+          </div>
+        </Card>
+      </div>
+
+      {/* Agency List Table */}
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <Heading level={4}>Agency List</Heading>
+          <Button variant="primary">
+            <i className="fa fa-plus mr-2"></i>
+            New Agency
+          </Button>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="row mb-6">
-          <div className="col-md-3">
-            <div className="card bg-purple-600 text-white shadow-lg rounded-lg border border-gray-200">
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-12">
-                    <div className="mt-0 text-center">
-                      <h3 className="text-white mb-0 text-lg font-semibold">
-                        Total Interview
-                      </h3>
-                    </div>
-                    <div className="pb-0 mt-2 text-center">
-                      <h4 className="text-white font-weight-semibold mb-0 text-2xl">
-                        1,08,333
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card bg-green-600 text-white shadow-lg rounded-lg border border-gray-200">
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-12">
-                    <div className="mt-0 text-center">
-                      <h3 className="text-white mb-0 text-lg font-semibold">
-                        Valid Interview
-                      </h3>
-                    </div>
-                    <div className="pb-0 mt-2 text-center">
-                      <h4 className="text-white font-weight-semibold mb-0 text-2xl">
-                        50,025
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card bg-red-600 text-white shadow-lg rounded-lg border border-gray-200">
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-12">
-                    <div className="mt-0 text-center">
-                      <h3 className="text-white mb-0 text-lg font-semibold">
-                        Reject Interview
-                      </h3>
-                    </div>
-                    <div className="pb-0 mt-2 text-center">
-                      <h4 className="text-white font-weight-semibold mb-0 text-2xl">
-                        58,308
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card bg-blue-600 text-white shadow-lg rounded-lg border border-gray-200">
-              <div className="card-body">
-                <div className="row">
-                  <div className="col-12">
-                    <div className="mt-0 text-center">
-                      <h3 className="text-white mb-0 text-lg font-semibold">
-                        Interview Under QC
-                      </h3>
-                    </div>
-                    <div className="pb-0 mt-2 text-center">
-                      <h4 className="text-white font-weight-semibold mb-0 text-2xl">
-                        0
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Total <strong>8</strong> items.
+          </Text>
         </div>
-
-        {/* Agency List Table */}
-        <div className="row">
-          <div className="col-xl-12">
-            <div className="card shadow-sm bg-white rounded-lg border border-gray-200">
-              <div className="card-header pb-0">
-                <div className="d-flex justify-content-between">
-                  <h4 className="card-title mg-b-0 text-lg font-semibold">
-                    Agency List
-                  </h4>
-                  <span className="text-end">
-                    <button className="btn btn-primary ml-5">
-                      <i className="fa fa-plus mr-2"></i>
-                      New Agency
-                    </button>
-                  </span>
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="table-responsive">
-                  <div className="summary mb-4">
-                    <span className="text-sm text-gray-600">
-                      Total <strong>8</strong> items.
-                    </span>
-                  </div>
                   
-                  <Table className="table table-vcenter text-nowrap table-bordered border-bottom">
+        <div className="table-responsive">
+          <Table className="table table-vcenter text-nowrap table-bordered border-bottom">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700">Agency ID</th>
@@ -340,33 +285,31 @@ const TeamRegistrationPage = () => {
                             {getStatusBadge(item.status)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            <button
-                              className="btn btn-info"
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => console.log(`Update Agency ${item.agencyId}`)}
                             >
                               Update
-                            </button>
+                            </Button>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            <button
-                              className={`btn ${item.reQcStatus === 'Enable' ? 'btn-success' : 'btn-danger'}`}
+                            <Button
+                              variant={item.reQcStatus === 'Enable' ? 'primary' : 'destructive'}
+                              size="sm"
                               onClick={() => console.log(`${item.reQcStatus} Re-QC for Agency ${item.agencyId}`)}
                               title={`${item.reQcStatus} Re-QC for this agency`}
                             >
                               {item.reQcStatus}
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </Card>
+    </Container>
   );
 };
 

@@ -1,20 +1,23 @@
 'use client';
 
 import React, { useState } from 'react';
-// import { Card } from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
+import Card from '@/components/ui/Card';
+import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
+import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
-// import { Heading } from '@/components/ui/Heading';
-// import { Text } from '@/components/ui/Text';
-// import { Container } from '@/components/ui/Container';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-// import { Button } from '@/components/ui/Button';
-// import { Select } from '@/components/ui/Select';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 
 const ACListPage = () => {
   const [filters, setFilters] = useState({
     agencyId: '',
     acCode: '',
   });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   // Sample data for dropdowns
   const agencyOptions = [
@@ -251,83 +254,57 @@ const ACListPage = () => {
   };
 
   return (
-    <div className="main-content horizontal-content">
-      <div className="main-container container mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <div className="breadcrumb-header justify-content-between">
-          <div className="left-content">
-            <h1 className="main-content-title mg-b-0 mg-b-lg-1 text-2xl font-bold text-gray-800">
-              AC List
-            </h1>
-          </div>
-          <div className="justify-content-center mt-2"></div>
-          <div className="right-content">
-            <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
-          </div>
-        </div>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Heading level={1} className="mb-6">
+        AC List
+      </Heading>
 
-        {/* Search Form */}
-        <div className="pb-device-ac-form mb-6">
-          <form onSubmit={handleSearch} className="bg-white p-4 rounded-lg shadow-sm border">
-            <div className="row">
-              <div className="form-group col-md-2">
-                <select
-                  className="form-select"
-                  value={filters.agencyId}
-                  onChange={(e) => handleFilterChange('agencyId', e.target.value)}
-                >
-                  {agencyOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group col-md-2">
-                <select
-                  className="form-select"
-                  value={filters.acCode}
-                  onChange={(e) => handleFilterChange('acCode', e.target.value)}
-                >
-                  {acOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group col-md-2">
-                <button type="submit" className="btn btn-primary">
-                  <i className="fa fa-search mr-1"></i>
-                  Search
-                </button>
-              </div>
+      {/* Search Form */}
+      <Card className="mb-6 p-6">
+        <form onSubmit={handleSearch} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Text className="text-sm font-medium mb-2">State Teams</Text>
+              <SelectDropdown
+                options={agencyOptions}
+                value={filters.agencyId}
+                onChange={(value) => handleFilterChange('agencyId', value as string)}
+                placeholder="Select State Teams"
+              />
             </div>
-          </form>
+            <div>
+              <Text className="text-sm font-medium mb-2">AC</Text>
+              <SelectDropdown
+                options={acOptions}
+                value={filters.acCode}
+                onChange={(value) => handleFilterChange('acCode', value as string)}
+                placeholder="Select AC"
+              />
+            </div>
+            <div className="flex items-end">
+              <Button type="submit" className="w-full">
+                <i className="fa fa-search mr-2"></i>
+                Search
+              </Button>
+            </div>
+          </div>
+        </form>
+      </Card>
+
+      {/* AC List Table */}
+      <Card className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <Heading level={4}>AC List</Heading>
+          <Button variant="primary">
+            Update Data Agency Wise
+          </Button>
         </div>
 
-        {/* AC List Table */}
-        <div className="row">
-          <div className="col-xl-12">
-            <div className="card shadow-sm bg-white rounded-lg border border-gray-200">
-              <div className="card-header pb-0">
-                <div className="d-flex justify-content-between">
-                  <h4 className="card-title mg-b-0 text-lg font-semibold">
-                    AC List
-                  </h4>
-                  <span className="text-end">
-                    <button className="btn btn-primary ml-5">
-                      Update Data Agency Wise
-                    </button>
-                  </span>
-                </div>
-              </div>
-              <div className="card-body">
-                <div className="summary mb-4">
-                  <span className="text-sm text-gray-600">
-                    Showing <strong>1-20</strong> of <strong>243</strong> items.
-                  </span>
-                </div>
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Showing <strong>1-20</strong> of <strong>243</strong> items.
+          </Text>
+        </div>
                 
                 <div className="table-responsive">
                   <Table className="table table-bordered table-striped table-hover">
@@ -377,87 +354,18 @@ const ACListPage = () => {
                   </Table>
                 </div>
 
-                {/* Pagination */}
-                <nav className="pagination pagination-primary mg-sm-b-0 mt-4">
-                  <ul className="pagination flex justify-center space-x-2">
-                    <li className="page-item first disabled">
-                      <a className="page-link px-3 py-2 bg-gray-100 text-gray-400 rounded cursor-not-allowed" tabIndex={-1}>
-                        First
-                      </a>
-                    </li>
-                    <li className="page-item prev disabled">
-                      <a className="page-link px-3 py-2 bg-gray-100 text-gray-400 rounded cursor-not-allowed" tabIndex={-1}>
-                        <span aria-hidden="true">«</span>
-                      </a>
-                    </li>
-                    <li className="page-item active">
-                      <a className="page-link px-3 py-2 bg-blue-600 text-white rounded">
-                        1
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        2
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        3
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        4
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        5
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        6
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        7
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        8
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        9
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        10
-                      </a>
-                    </li>
-                    <li className="page-item next">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        <span aria-hidden="true">»</span>
-                      </a>
-                    </li>
-                    <li className="page-item last">
-                      <a className="page-link px-3 py-2 bg-white text-blue-600 border border-gray-300 rounded hover:bg-gray-50">
-                        Last
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
-          </div>
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={Math.ceil(243 / pageSize)}
+            totalItems={243}
+            itemsPerPage={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+            className="justify-center"
+          />
         </div>
-      </div>
-    </div>
+      </Card>
+    </Container>
   );
 };
 
