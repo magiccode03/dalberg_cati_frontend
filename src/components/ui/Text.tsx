@@ -488,13 +488,6 @@ export function TextSecondary({ children, className, ...props }: Omit<TextProps,
   );
 }
 
-export function TextMuted({ children, className, ...props }: Omit<TextProps, 'color'>) {
-  return (
-    <Text color="muted" className={className} {...props}>
-      {children}
-    </Text>
-  );
-}
 
 export function TextAccent({ children, className, ...props }: Omit<TextProps, 'color'>) {
   return (
