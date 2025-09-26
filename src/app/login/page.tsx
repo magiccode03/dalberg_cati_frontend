@@ -23,6 +23,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const loginSchema = z.object({
   uniqueId: z.string().min(3, 'Unique ID must be at least 3 characters'),
@@ -34,7 +35,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, getRedirectUrl } = useAuth();
+  const { login, getRedirectUrl, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,13 +64,13 @@ export default function LoginPage() {
     setSuccess(null);
 
     try {
-      const success = await login(data.uniqueId, data.password, data.rememberMe);
+      const result = await login(data.uniqueId, data.password, data.rememberMe);
       
-      if (success) {
+      if (result.success && result.user) {
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => {
-          // Get the appropriate redirect URL based on user role
-          const redirectUrl = getRedirectUrl(data.uniqueId.includes('PMT') ? 'pmt' : 'super_admin');
+          // Get the appropriate redirect URL based on actual user role
+          const redirectUrl = getRedirectUrl(result.user.role);
           router.push(redirectUrl);
         }, 1500);
       } else {
@@ -220,13 +221,13 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2025 Bihar Election Analysis System. All rights reserved.</p>
-          <p className="mt-1">
+          <p><Link href="https://convergentview.com" target="_blank">© 2025 Convergent view. All rights reserved.</Link></p>
+          {/* <p className="mt-1">
             For technical support, contact{' '}
             <a href="mailto:support@bihar2025.gov.in" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
               support@bihar2025.gov.in
             </a>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

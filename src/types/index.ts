@@ -96,12 +96,12 @@ export interface BaseComponentProps {
   children?: React.ReactNode;
 }
 
-export interface ButtonProps extends BaseComponentProps {
+export interface ButtonProps
+  extends BaseComponentProps,
+    React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
-  disabled?: boolean;
   loading?: boolean;
-  onClick?: () => void;
 }
 
 export interface CardProps extends BaseComponentProps {

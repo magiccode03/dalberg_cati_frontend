@@ -119,11 +119,12 @@ export const API_ENDPOINTS = {
   
   // Demographic Data
   DEMOGRAPHIC: {
-    GENDER_WISE: '/demographicpc/genderwise',
-    AGE_WISE: '/demographicpc/agewise',
-    LOCALITY_WISE: '/demographicpc/localitywise',
-    RELIGION_WISE: '/demographicpc/religionwise',
-    SOCIAL_CATEGORY_WISE: '/demographicpc/socialcategorywise',
+    GENDER_WISE: '/progress/demographic/genderwise',
+    AGE_WISE: '/progress/demographic/agewise',
+    LOCALITY_WISE: '/progress/demographic/localitywise',
+    RELIGION_WISE: '/progress/demographic/religionwise',
+    SOCIAL_CATEGORY_WISE: '/progress/demographic/socialcategorywise',
+    CASTE_WISE: '/progress/demographic/castewise',
   },
 } as const;
 
@@ -223,8 +224,8 @@ export interface GenderData {
 }
 
 export interface DemographicConstituency {
-  pc_name: string;
-  pc_code: number;
+  ac_code: number;
+  ac_name: string;
   sample_achieved: number;
   male: GenderData;
   female: GenderData;
@@ -240,16 +241,9 @@ export interface DemographicSummary {
   total_female_balance: number;
 }
 
-export interface DemographicMetadata {
-  generated_at: string;
-  total_constituencies: number;
-  report_type: string;
-}
-
 export interface GenderWiseResponse {
-  constituencies: DemographicConstituency[];
   summary: DemographicSummary;
-  metadata: DemographicMetadata;
+  constituencies: DemographicConstituency[];
 }
 
 // Age-wise data types
@@ -267,8 +261,8 @@ export interface AgeGroups {
 }
 
 export interface AgeWiseConstituency {
-  pc_name: string;
-  pc_code: number;
+  ac_name: string;
+  ac_code: number;
   sample_achieved: number;
   age_groups: AgeGroups;
 }
@@ -328,6 +322,33 @@ export interface LocalityWiseResponse {
   constituencies: LocalityWiseConstituency[];
   summary: LocalityWiseSummary;
   metadata: DemographicMetadata;
+}
+
+// Caste-wise data types
+export interface CasteData {
+  caste_name: string;
+  caste_code: string;
+  quota: number;
+  covered: number;
+  balance: number;
+  rank: number;
+}
+
+export interface CasteWiseConstituency {
+  ac_code: number;
+  ac_name: string;
+  sample_achieved: number;
+  castes: CasteData[];
+}
+
+export interface CasteWiseSummary {
+  total_sample_achieved: number;
+  total_castes: number;
+}
+
+export interface CasteWiseResponse {
+  summary: CasteWiseSummary;
+  constituencies: CasteWiseConstituency[];
 }
 
 // API Service Class
@@ -664,6 +685,10 @@ class ApiService {
 
   async getSocialCategoryWiseData(): Promise<ApiResponse<any>> {
     return this.request<any>(API_ENDPOINTS.DEMOGRAPHIC.SOCIAL_CATEGORY_WISE);
+  }
+
+  async getCasteWiseData(): Promise<ApiResponse<CasteWiseResponse>> {
+    return this.request<CasteWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.CASTE_WISE);
   }
 
   // Super Admin Methods - Role Management
