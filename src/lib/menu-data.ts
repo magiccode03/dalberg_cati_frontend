@@ -116,7 +116,7 @@ export const menuData: MenuItem[] = [
       },
     ],
   },
-
+  
   // Project Progress Monitoring (PPM) Menu
   {
     id: 'ppm-overview',
@@ -479,28 +479,28 @@ export const menuData: MenuItem[] = [
   {
     id: 'dqmt-progress',
     label: 'Progress',
-    href: '/dqmt/progress/qc-user-progress',
+    href: '/dqmt/Progress/qc-user-progress',
     icon: 'BarChart3',
     roles: ['dqmt'],
     children: [
       {
         id: 'dqmt-qc-user-progress',
         label: 'QC User Progress',
-        href: '/dqmt/progress/qc-user-progress',
+        href: '/dqmt/Progress/qc-user-progress',
         icon: 'BarChart3',
         roles: ['dqmt'],
       },
       {
         id: 'dqmt-interview-list',
         label: 'Interview List',
-        href: '/dqmt/progress/interview-list',
+        href: '/dqmt/Progress/interview-list',
         icon: 'FileText',
         roles: ['dqmt'],
       },
       {
         id: 'dqmt-qc-user-pending-data',
         label: 'QC User - Pending Data',
-        href: '/dqmt/progress/qc-user-pending-data',
+        href: '/dqmt/Progress/qc-user-pending-data',
         icon: 'Clock',
         roles: ['dqmt'],
       },
@@ -509,7 +509,7 @@ export const menuData: MenuItem[] = [
   {
     id: 'dqmt-ac-wise-pending-data',
     label: 'AC Wise - Pending Data',
-    href: '/dqmt/progress/ac-wise-pending-data',
+    href: '/dqmt/ac-wise-pending-data',
     icon: 'MapPin',
     roles: ['dqmt'],
   },
