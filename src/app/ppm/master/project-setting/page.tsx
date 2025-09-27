@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-// import { Card } from '@/components/ui/Card';
-// import { Heading } from '@/components/ui/Heading';
-// import { Text } from '@/components/ui/Text';
-// import { Container } from '@/components/ui/Container';
-// import { Button } from '@/components/ui/Button';
-// import { Input } from '@/components/ui/Input';
-// import { Select } from '@/components/ui/Select';
-// import { Label } from '@/components/ui/Label';
+import Container from '@/components/ui/Container';
+import Card from '@/components/ui/Card';
+import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import SelectDropdown from '@/components/ui/SelectDropdown';
 import { 
   Info, 
   Filter, 
@@ -87,197 +86,157 @@ const ProjectSettingPage = () => {
   };
 
   return (
-    <div className="main-content horizontal-content">
-      <div className="main-container container mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <div className="breadcrumb-header justify-content-between">
-          <div className="left-content">
-            <h1 className="main-content-title mg-b-0 mg-b-lg-1 text-2xl font-bold text-gray-800">
-              Project Settings
-            </h1>
-          </div>
-          <div className="justify-content-center mt-2"></div>
-          <div className="right-content">
-            <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
-          </div>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Heading level={1} className="mb-6">
+        Project Settings
+      </Heading>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Settings Sidebar */}
+        <div className="lg:col-span-3">
+          <Card className="p-6">
+            <Heading level={4} className="mb-4">
+              Settings
+            </Heading>
+            <nav className="space-y-2">
+              {settingsMenu.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors text-left ${
+                      activeTab === item.id
+                        ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-500'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                    }`}
+                    onClick={() => handleTabClick(item.id)}
+                  >
+                    <IconComponent className="w-4 h-4 mr-3" />
+                    <Text className="font-medium">{item.label}</Text>
+                  </button>
+                );
+              })}
+            </nav>
+          </Card>
         </div>
 
-        <div className="row">
-          {/* Settings Sidebar */}
-          <div className="col-lg-4 col-xl-3">
-            <div className="card custom-card shadow-sm bg-white rounded-lg border border-gray-200">
-              <div className="card-header">
-                <h4 className="card-title text-lg font-semibold">
-                  Settings
-                </h4>
-              </div>
-              <div className="main-content-left main-content-left-mail card-body">
-                <div className="main-settings-menu">
-                  <nav className="nav main-nav-column">
-                    {settingsMenu.map((item) => {
-                      const IconComponent = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          className={`nav-link thumb mb-2 w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                            activeTab === item.id
-                              ? 'bg-blue-100 text-blue-700 border-l-4 border-blue-500'
-                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                          }`}
-                          onClick={() => handleTabClick(item.id)}
-                        >
-                          <IconComponent className="inline w-4 h-4 mr-3" />
-                          {item.label}
-                        </button>
-                      );
-                    })}
-                  </nav>
+        {/* Main Content */}
+        <div className="lg:col-span-9">
+          <Card className="p-6">
+            <div className="mb-6">
+              <Heading level={4}>Project Info</Heading>
+              <Text className="text-sm text-gray-500 mt-1">
+                Last Update: 8 days ago
+              </Text>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Project Name */}
+              <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+                <div className="md:col-span-5">
+                  <div className="space-y-2">
+                    <Text className="text-sm font-medium">Project Name</Text>
+                    <Input
+                      type="text"
+                      value={formData.projectName}
+                      onChange={(e) => handleInputChange('projectName', e.target.value)}
+                      placeholder="Enter project name"
+                    />
+                  </div>
+                </div>
+
+                {/* Form ID */}
+                <div className="md:col-span-2">
+                  <div className="space-y-2">
+                    <Text className="text-sm font-medium">Form ID</Text>
+                    <Input
+                      type="text"
+                      value={formData.formId}
+                      onChange={(e) => handleInputChange('formId', e.target.value)}
+                      placeholder="Form ID"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Main Content */}
-          <div className="col-lg-8 col-xl-9">
-            <div className="card custom-card shadow-sm bg-white rounded-lg border border-gray-200">
-              <div className="card-header">
-                <h4 className="card-title text-lg font-semibold">
-                  Project Info
-                </h4>
-                <span className="text-sm text-gray-500 mt-1">
-                  Last Update: 8 days ago
-                </span>
-              </div>
-
-              <div className="card-body">
-                <form id="ac-form" onSubmit={handleSubmit}>
-                  <div className="row">
-                    {/* Project Name */}
-                    <div className="col-md-7">
-                      <div className="form-group mb-4">
-                        <label htmlFor="surveysetting-project_name" className="block text-sm font-medium text-gray-700 mb-2">
-                          Project Name
-                        </label>
-                        <input
-                          type="text"
-                          id="surveysetting-project_name"
-                          className="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={formData.projectName}
-                          onChange={(e) => handleInputChange('projectName', e.target.value)}
-                        />
-                        <div className="invalid-feedback"></div>
-                      </div>
-                    </div>
-
-                    {/* Form ID */}
-                    <div className="col-md-2">
-                      <div className="form-group mb-4">
-                        <label htmlFor="surveysetting-form_id" className="block text-sm font-medium text-gray-700 mb-2">
-                          Form ID
-                        </label>
-                        <input
-                          type="text"
-                          id="surveysetting-form_id"
-                          className="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={formData.formId}
-                          onChange={(e) => handleInputChange('formId', e.target.value)}
-                        />
-                        <div className="invalid-feedback"></div>
-                      </div>
-                    </div>
-
-                    {/* Voice Broadcast Announcement */}
-                    <div className="col-md-3">
-                      <div className="form-group mb-4">
-                        <label htmlFor="surveysetting-voice_broadcast_announcement_id" className="block text-sm font-medium text-gray-700 mb-2">
-                          Voice Broadcast Announcement
-                        </label>
-                        <select
-                          className="form-select"
-                          value={formData.voiceBroadcastAnnouncementId}
-                          onChange={(e) => handleInputChange('voiceBroadcastAnnouncementId', e.target.value)}
-                        >
-                          <option value="">Select Announcement</option>
-                        </select>
-                        <div className="invalid-feedback"></div>
-                      </div>
-                    </div>
-
-                    {/* Project Manager IDs */}
-                    <div className="col-md-6">
-                      <div className="form-group mb-4">
-                        <label htmlFor="surveysetting-pm_ids" className="block text-sm font-medium text-gray-700 mb-2">
-                          Project Manager (Enter in Comma Separated for Multiple User)
-                        </label>
-                        <input
-                          type="text"
-                          id="surveysetting-pm_ids"
-                          className="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={formData.pmIds}
-                          onChange={(e) => handleInputChange('pmIds', e.target.value)}
-                          placeholder="Enter in Comma Separated for Multiple User"
-                        />
-                        <div className="invalid-feedback"></div>
-                      </div>
-                    </div>
-
-                    {/* Audio QC Web Form ID */}
-                    <div className="col-md-2">
-                      <div className="form-group mb-4">
-                        <label htmlFor="surveysetting-audio_qc_form_id" className="block text-sm font-medium text-gray-700 mb-2">
-                          Audio QC Web Form ID
-                        </label>
-                        <input
-                          type="text"
-                          id="surveysetting-audio_qc_form_id"
-                          className="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={formData.audioQcFormId}
-                          onChange={(e) => handleInputChange('audioQcFormId', e.target.value)}
-                        />
-                        <div className="invalid-feedback"></div>
-                      </div>
-                    </div>
-
-                    {/* Audio Re-QC Web Form ID */}
-                    <div className="col-md-2">
-                      <div className="form-group mb-4">
-                        <label htmlFor="surveysetting-audio_re_qc_form_id" className="block text-sm font-medium text-gray-700 mb-2">
-                          Audio Re-QC Web Form ID
-                        </label>
-                        <input
-                          type="text"
-                          id="surveysetting-audio_re_qc_form_id"
-                          className="form-control w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={formData.audioReQcFormId}
-                          onChange={(e) => handleInputChange('audioReQcFormId', e.target.value)}
-                        />
-                        <div className="invalid-feedback"></div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="col-md-12">
-                      <div className="flex space-x-3">
-                        <button type="submit" className="btn btn-primary">
-                          Update
-                        </button>
-                        <button 
-                          type="button" 
-                          className="btn btn-danger"
-                          onClick={() => window.history.back()}
-                        >
-                          Back
-                        </button>
-                      </div>
-                    </div>
+              {/* Voice Broadcast Announcement */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="space-y-2">
+                    <Text className="text-sm font-medium">Voice Broadcast Announcement</Text>
+                    <SelectDropdown
+                      options={[
+                        { value: '', label: 'Select Announcement' },
+                        { value: '1', label: 'Announcement 1' },
+                        { value: '2', label: 'Announcement 2' },
+                      ]}
+                      value={formData.voiceBroadcastAnnouncementId}
+                      onChange={(value) => handleInputChange('voiceBroadcastAnnouncementId', value as string)}
+                      placeholder="Select Announcement"
+                    />
                   </div>
-                </form>
+                </div>
               </div>
-            </div>
-          </div>
+
+              {/* Project Manager IDs */}
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                <div className="md:col-span-4">
+                  <div className="space-y-2">
+                    <Text className="text-sm font-medium">Project Manager IDs</Text>
+                    <Input
+                      type="text"
+                      value={formData.pmIds}
+                      onChange={(e) => handleInputChange('pmIds', e.target.value)}
+                      placeholder="Enter in Comma Separated for Multiple User"
+                    />
+                  </div>
+                </div>
+
+                {/* Audio QC Web Form ID */}
+                <div className="md:col-span-1">
+                  <div className="space-y-2">
+                    <Text className="text-sm font-medium">Audio QC Web Form ID</Text>
+                    <Input
+                      type="text"
+                      value={formData.audioQcFormId}
+                      onChange={(e) => handleInputChange('audioQcFormId', e.target.value)}
+                      placeholder="Form ID"
+                    />
+                  </div>
+                </div>
+
+                {/* Audio Re-QC Web Form ID */}
+                <div className="md:col-span-1">
+                  <div className="space-y-2">
+                    <Text className="text-sm font-medium">Audio Re-QC Web Form ID</Text>
+                    <Input
+                      type="text"
+                      value={formData.audioReQcFormId}
+                      onChange={(e) => handleInputChange('audioReQcFormId', e.target.value)}
+                      placeholder="Form ID"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 pt-4">
+                <Button type="submit" variant="primary">
+                  Update
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="destructive"
+                  onClick={() => window.history.back()}
+                >
+                  Back
+                </Button>
+              </div>
+            </form>
+          </Card>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 
