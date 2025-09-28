@@ -3,6 +3,7 @@
  * Manages all backend API calls from one place
  */
 
+import apiClient from './api-client';
 import { tokenManager } from './token-manager';
 import { handleApiError, isTokenExpired } from './error-handler';
 

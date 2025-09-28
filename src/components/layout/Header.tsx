@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Bell, User, LogOut, Settings, Sun, Moon, ChevronDown } from 'lucide-react';
 
@@ -243,8 +244,8 @@ export default function Header() {
             </button>
 
             {/* Profile dropdown */}
-            {profileOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
+            {profileOpen && mounted && createPortal(
+              <div className="fixed right-4 top-16 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]">
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
@@ -273,7 +274,8 @@ export default function Header() {
                     <span>Sign Out</span>
                   </button>
                 </div>
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         </div>

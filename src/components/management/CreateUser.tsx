@@ -8,11 +8,10 @@ import { z } from 'zod';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import SelectDropdown from '@/components/ui/SelectDropdown';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import { ArrowLeft, UserPlus, Eye, EyeOff } from 'lucide-react';
-import { apiService } from '@/lib/api-service';
+import { apiService, Role } from '@/lib/api-service';
 
 // Form validation schema
 const userSchema = z.object({
@@ -31,13 +30,19 @@ const userSchema = z.object({
 
 type UserFormData = z.infer<typeof userSchema>;
 
-interface Role {
-  id: number;
-  name: string;
-  displayName: string;
+interface CreateUserProps {
+  title: string;
+  description: string;
+  backUrl: string;
+  userType?: 'users' | 'enumerators';
 }
 
-export default function CreateUserPage() {
+export default function CreateUser({
+  title,
+  description,
+  backUrl,
+  userType = 'users'
+}: CreateUserProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,22 +74,9 @@ export default function CreateUserPage() {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await fetch('http://localhost:4001/api/roles?isActive=true', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (data.success && data.data) {
-          setRoles(data.data);
+        const response = await apiService.getRoles();
+        if (response.success && response.data) {
+          setRoles(response.data);
         }
       } catch (err) {
         console.error('Error fetching roles:', err);
@@ -112,16 +104,16 @@ export default function CreateUserPage() {
       });
 
       if (result.success) {
-        setSuccess('User created successfully!');
+        setSuccess(`${userType === 'users' ? 'User' : 'Enumerator'} created successfully!`);
         reset();
         setTimeout(() => {
-          router.push('/super-admin/users');
+          router.push(backUrl);
         }, 1500);
       } else {
-        setError(result.message || 'Failed to create user');
+        setError(result.message || `Failed to create ${userType === 'users' ? 'user' : 'enumerator'}`);
       }
     } catch (err) {
-      setError('Error creating user');
+      setError(`Error creating ${userType === 'users' ? 'user' : 'enumerator'}`);
       console.error(err);
     } finally {
       setLoading(false);
@@ -141,7 +133,7 @@ export default function CreateUserPage() {
           <div className="flex items-center gap-4 mb-4">
             <Button
               variant="outline"
-              onClick={() => router.back()}
+              onClick={() => router.push(backUrl)}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -153,10 +145,10 @@ export default function CreateUserPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Create New User
+                  {title}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Add a new user to the system
+                  {description}
                 </p>
               </div>
             </div>
@@ -210,7 +202,7 @@ export default function CreateUserPage() {
                   </label>
                   <Input
                     {...register('uniqueId')}
-                    placeholder="e.g., USER001"
+                    placeholder={userType === 'users' ? 'e.g., USER001' : 'e.g., ENUM001'}
                     error={errors.uniqueId?.message}
                   />
                 </div>
@@ -230,7 +222,7 @@ export default function CreateUserPage() {
                   <Input
                     {...register('email')}
                     type="email"
-                    placeholder="user@example.com"
+                    placeholder={userType === 'users' ? 'user@example.com' : 'enumerator@example.com'}
                     error={errors.email?.message}
                   />
                 </div>
@@ -322,7 +314,7 @@ export default function CreateUserPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.back()}
+                onClick={() => router.push(backUrl)}
                 disabled={isSubmitting}
               >
                 Cancel
@@ -335,7 +327,7 @@ export default function CreateUserPage() {
                 className="flex items-center gap-2"
               >
                 <UserPlus className="h-4 w-4" />
-                Create User
+                Create {userType === 'users' ? 'User' : 'Enumerator'}
               </Button>
             </div>
           </form>

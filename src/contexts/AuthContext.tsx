@@ -399,6 +399,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const generateUniqueId = (role: string): string => {
     const rolePrefix = {
       'super_admin': 'SUPER',
+      'portal_admin': 'PORTAL',
       'admin': 'ADMIN',
       'pmt': 'PMT',
       'qc_manager': 'QC',
@@ -425,6 +426,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const getRedirectUrl = (role: string): string => {
     const roleRedirects: { [key: string]: string } = {
       'super_admin': '/super-admin/dashboard',
+      'portal_admin': '/portal-admin/users',
       'admin': '/dashboard',
       'pmt': '/pmt/dashboard',
       'qc': '/dashboard/qc',

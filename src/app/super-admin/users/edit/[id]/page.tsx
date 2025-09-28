@@ -1,18 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import SelectDropdown from '@/components/ui/SelectDropdown';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
-import { ArrowLeft, UserPlus, Eye, EyeOff } from 'lucide-react';
-import { apiService } from '@/lib/api-service';
+import { ArrowLeft, UserCog, Eye, EyeOff } from 'lucide-react';
+import { apiService, User, Role } from '@/lib/api-service';
 
 // Form validation schema
 const userSchema = z.object({
@@ -22,26 +21,30 @@ const userSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   roleId: z.number().min(1, 'Please select a role'),
   portalSlug: z.string().min(1, 'Portal slug is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Confirm password is required'),
-}).refine((data) => data.password === data.confirmPassword, {
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine((data) => {
+  if (data.password && data.confirmPassword) {
+    return data.password === data.confirmPassword;
+  }
+  return true;
+}, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
 
 type UserFormData = z.infer<typeof userSchema>;
 
-interface Role {
-  id: number;
-  name: string;
-  displayName: string;
-}
-
-export default function CreateUserPage() {
+export default function EditUserPage() {
   const router = useRouter();
+  const params = useParams();
+  const userId = params.id as string;
+  
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -51,6 +54,7 @@ export default function CreateUserPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -65,34 +69,47 @@ export default function CreateUserPage() {
     },
   });
 
-  // Fetch roles
+  // Fetch user data and roles
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:4001/api/roles?isActive=true', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        setInitialLoading(true);
+        
+        // Fetch user data
+        const userResponse = await apiService.getUser(userId);
+        if (userResponse.success && userResponse.data) {
+          setUser(userResponse.data);
+          reset({
+            uniqueId: userResponse.data.uniqueId,
+            email: userResponse.data.email,
+            firstName: userResponse.data.firstName,
+            lastName: userResponse.data.lastName,
+            roleId: userResponse.data.roleId,
+            portalSlug: userResponse.data.portalSlug,
+            password: '',
+            confirmPassword: '',
+          });
+        } else {
+          setError('Failed to load user data');
         }
 
-        const data = await response.json();
-        if (data.success && data.data) {
-          setRoles(data.data);
+        // Fetch roles
+        const rolesResponse = await apiService.getRoles();
+        if (rolesResponse.success && rolesResponse.data) {
+          setRoles(rolesResponse.data);
         }
       } catch (err) {
-        console.error('Error fetching roles:', err);
+        setError('Error loading data');
+        console.error(err);
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    fetchRoles();
-  }, []);
+    if (userId) {
+      fetchData();
+    }
+  }, [userId, reset]);
 
   const onSubmit = async (data: UserFormData) => {
     setLoading(true);
@@ -100,28 +117,31 @@ export default function CreateUserPage() {
     setSuccess(null);
 
     try {
-      const result = await apiService.createUser({
-        uniqueId: data.uniqueId,
+      const updateData: any = {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        password: data.password,
         roleId: data.roleId,
         portalSlug: data.portalSlug,
-        isActive: true,
-      });
+      };
+
+      // Only include password if provided
+      if (data.password && data.password.trim() !== '') {
+        updateData.password = data.password;
+      }
+
+      const result = await apiService.updateUser(userId, updateData);
 
       if (result.success) {
-        setSuccess('User created successfully!');
-        reset();
+        setSuccess('User updated successfully!');
         setTimeout(() => {
           router.push('/super-admin/users');
         }, 1500);
       } else {
-        setError(result.message || 'Failed to create user');
+        setError(result.message || 'Failed to update user');
       }
     } catch (err) {
-      setError('Error creating user');
+      setError('Error updating user');
       console.error(err);
     } finally {
       setLoading(false);
@@ -133,6 +153,24 @@ export default function CreateUserPage() {
     label: role.displayName || role.name,
   }));
 
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Alert type="error">
+          User not found
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
@@ -141,22 +179,22 @@ export default function CreateUserPage() {
           <div className="flex items-center gap-4 mb-4">
             <Button
               variant="outline"
-              onClick={() => router.back()}
+              onClick={() => router.push('/super-admin/users')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back
+              Back to Users
             </Button>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <UserPlus className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <UserCog className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Create New User
+                  Edit User
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400">
-                  Add a new user to the system
+                  Update user information and permissions
                 </p>
               </div>
             </div>
@@ -212,6 +250,8 @@ export default function CreateUserPage() {
                     {...register('uniqueId')}
                     placeholder="e.g., USER001"
                     error={errors.uniqueId?.message}
+                    disabled={true}
+                    className="bg-gray-100 dark:bg-gray-700"
                   />
                 </div>
               </div>
@@ -276,13 +316,13 @@ export default function CreateUserPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Password *
+                    Password
                   </label>
                   <div className="relative">
                     <Input
                       {...register('password')}
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Enter password"
+                      placeholder="Leave blank to keep current password"
                       error={errors.password?.message}
                     />
                     <button
@@ -296,7 +336,7 @@ export default function CreateUserPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Confirm Password *
+                    Confirm Password
                   </label>
                   <div className="relative">
                     <Input
@@ -322,7 +362,7 @@ export default function CreateUserPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.back()}
+                onClick={() => router.push('/super-admin/users')}
                 disabled={isSubmitting}
               >
                 Cancel
@@ -334,8 +374,8 @@ export default function CreateUserPage() {
                 loading={isSubmitting}
                 className="flex items-center gap-2"
               >
-                <UserPlus className="h-4 w-4" />
-                Create User
+                <UserCog className="h-4 w-4" />
+                Update User
               </Button>
             </div>
           </form>

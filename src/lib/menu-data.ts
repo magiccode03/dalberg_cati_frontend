@@ -1,6 +1,54 @@
 import { MenuItem } from '@/types';
 
 export const menuData: MenuItem[] = [
+  // Portal Admin Menu
+  {
+    id: 'portal-admin-users',
+    label: 'Users',
+    href: '/portal-admin/users',
+    icon: 'Users',
+    roles: ['portal_admin'],
+    children: [
+      {
+        id: 'portal-admin-users-list',
+        label: 'Users List',
+        href: '/portal-admin/users',
+        icon: 'List',
+        roles: ['portal_admin'],
+      },
+      {
+        id: 'portal-admin-create-user',
+        label: 'Create User',
+        href: '/portal-admin/users/create',
+        icon: 'UserPlus',
+        roles: ['portal_admin'],
+      },
+    ],
+  },
+  {
+    id: 'portal-admin-enumerators',
+    label: 'Enumerators',
+    href: '/portal-admin/enumerators',
+    icon: 'Users',
+    roles: ['portal_admin'],
+    children: [
+      {
+        id: 'portal-admin-enumerators-list',
+        label: 'Enumerator List',
+        href: '/portal-admin/enumerators',
+        icon: 'List',
+        roles: ['portal_admin'],
+      },
+      {
+        id: 'portal-admin-create-enumerator',
+        label: 'Create Enumerator',
+        href: '/portal-admin/enumerators/create',
+        icon: 'UserPlus',
+        roles: ['portal_admin'],
+      },
+    ],
+  },
+
   // Super Admin Menu
   {
     id: 'dashboard',
