@@ -3,14 +3,24 @@
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label?: string;
   error?: string;
   helperText?: string;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, error, helperText, ...props }, ref) => {
+  ({ className, label, error, helperText, onCheckedChange, ...props }, ref) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (onCheckedChange) {
+        onCheckedChange(e.target.checked);
+      }
+      if (props.onChange) {
+        props.onChange(e);
+      }
+    };
+
     return (
       <div className="space-y-2">
         <div className="flex items-center space-x-2">
@@ -22,6 +32,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               className
             )}
             ref={ref}
+            onChange={handleChange}
             {...props}
           />
           {label && (
