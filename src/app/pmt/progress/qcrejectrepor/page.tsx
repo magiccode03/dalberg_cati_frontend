@@ -233,34 +233,84 @@ const reQcFailData: QCReportData[] = [
 ];
 
 const qcColumns = [
-  { key: 'rowLabels' as keyof QCReportData, label: 'Row Labels', sortable: false },
-  { key: 'completedInterviews' as keyof QCReportData, label: 'Completed Interviews', sortable: true },
-  { key: 'passed' as keyof QCReportData, label: 'Passed', sortable: true },
-  { key: 'rejected' as keyof QCReportData, label: 'Rejected', sortable: true },
-  { key: 'rejectedAtQcAudioStatus' as keyof QCReportData, label: 'Rejected at qc_audio_status', sortable: true },
-  { key: 'rejectOnNotMatchedLogic' as keyof QCReportData, label: 'Reject on Not Matched Logic', sortable: true },
-  { key: 'rejectOnGender' as keyof QCReportData, label: 'Reject on Gender', sortable: true },
-  { key: 'rejectOnCaste' as keyof QCReportData, label: 'Reject on Caste', sortable: true },
-  { key: 'rejectOn2025PrefParty' as keyof QCReportData, label: 'Reject on 2025 Pref party', sortable: true },
-  { key: 'rejectOn2020AEParty' as keyof QCReportData, label: 'Reject on 2020 AE party', sortable: true },
-  { key: 'rejectOn2024PEParty' as keyof QCReportData, label: 'Reject on 2024 PE party', sortable: true },
-  { key: 'noAudio' as keyof QCReportData, label: 'No Audio', sortable: true },
+  { key: 'rowLabels' as keyof QCReportData, label: 'Row Labels', sortable: false, render: (value: any, row: QCReportData) => (
+    <span className={row.rowLabels === 'Grand Total' ? 'font-bold' : ''}>{value}</span>
+  )},
+  { key: 'completedInterviews' as keyof QCReportData, label: 'Completed Interviews', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'passed' as keyof QCReportData, label: 'Passed', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejected' as keyof QCReportData, label: 'Rejected', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectedAtQcAudioStatus' as keyof QCReportData, label: 'Rejected at qc_audio_status', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnNotMatchedLogic' as keyof QCReportData, label: 'Reject on Not Matched Logic', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnGender' as keyof QCReportData, label: 'Reject on Gender', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnCaste' as keyof QCReportData, label: 'Reject on Caste', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOn2025PrefParty' as keyof QCReportData, label: 'Reject on 2025 Pref party', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOn2020AEParty' as keyof QCReportData, label: 'Reject on 2020 AE party', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOn2024PEParty' as keyof QCReportData, label: 'Reject on 2024 PE party', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'noAudio' as keyof QCReportData, label: 'No Audio', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
 ];
 
 const reQcColumns = [
-  { key: 'rowLabels' as keyof QCReportData, label: 'Row Labels', sortable: false },
-  { key: 'completedInterviews' as keyof QCReportData, label: 'Completed Interviews', sortable: true },
-  { key: 'passed' as keyof QCReportData, label: 'Passed', sortable: true },
-  { key: 'rejected' as keyof QCReportData, label: 'Rejected', sortable: true },
-  { key: 'rejectedAtQcAudioStatus' as keyof QCReportData, label: 'Rejected at qc_audio_status', sortable: true },
-  { key: 'rejectOnNotMatchedLogic' as keyof QCReportData, label: 'Reject on Not Matched Logic', sortable: true },
-  { key: 'rejectOnGender' as keyof QCReportData, label: 'Reject on Gender', sortable: true },
-  { key: 'rejectOnCaste' as keyof QCReportData, label: 'Reject on Caste', sortable: true },
-  { key: 'rejectOn2025PrefParty' as keyof QCReportData, label: 'Reject on 2025 Pref party', sortable: true },
-  { key: 'rejectOn2020AEParty' as keyof QCReportData, label: 'Reject on 2020 AE party', sortable: true },
-  { key: 'rejectOn2024PEParty' as keyof QCReportData, label: 'Reject on 2024 PE party', sortable: true },
-  { key: 'rejectOnNotAskedLogic' as keyof QCReportData, label: 'Reject on Not Asked Logic more than 4', sortable: true },
-  { key: 'noAudio' as keyof QCReportData, label: 'No Audio', sortable: true },
+  { key: 'rowLabels' as keyof QCReportData, label: 'Row Labels', sortable: false, render: (value: any, row: QCReportData) => (
+    <span className={row.rowLabels === 'Grand Total' ? 'font-bold' : ''}>{value}</span>
+  )},
+  { key: 'completedInterviews' as keyof QCReportData, label: 'Completed Interviews', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'passed' as keyof QCReportData, label: 'Passed', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejected' as keyof QCReportData, label: 'Rejected', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectedAtQcAudioStatus' as keyof QCReportData, label: 'Rejected at qc_audio_status', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnNotMatchedLogic' as keyof QCReportData, label: 'Reject on Not Matched Logic', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnGender' as keyof QCReportData, label: 'Reject on Gender', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnCaste' as keyof QCReportData, label: 'Reject on Caste', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOn2025PrefParty' as keyof QCReportData, label: 'Reject on 2025 Pref party', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOn2020AEParty' as keyof QCReportData, label: 'Reject on 2020 AE party', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOn2024PEParty' as keyof QCReportData, label: 'Reject on 2024 PE party', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'rejectOnNotAskedLogic' as keyof QCReportData, label: 'Reject on Not Asked Logic more than 4', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
+  { key: 'noAudio' as keyof QCReportData, label: 'No Audio', sortable: true, render: (value: number) => (
+    <span className="text-right font-mono">{value.toLocaleString()}</span>
+  )},
 ];
 
 export default function QCFailReportPage() {
@@ -277,24 +327,6 @@ export default function QCFailReportPage() {
     console.log('Download Re-QC Report');
   };
 
-  const formatNumber = (value: number) => {
-    return value.toLocaleString();
-  };
-
-  const renderCell = (value: any, row: QCReportData, column: keyof QCReportData) => {
-    if (typeof value === 'number') {
-      return (
-        <span className="text-right font-mono">
-          {formatNumber(value)}
-        </span>
-      );
-    }
-    return (
-      <span className={row.rowLabels === 'Grand Total' ? 'font-bold' : ''}>
-        {value}
-      </span>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -336,7 +368,6 @@ export default function QCFailReportPage() {
                     className="w-full"
                     searchable={false}
                     pagination={false}
-                    renderCell={renderCell}
                   />
                 </div>
               </div>
@@ -369,7 +400,6 @@ export default function QCFailReportPage() {
                     className="w-full"
                     searchable={false}
                     pagination={false}
-                    renderCell={renderCell}
                   />
                 </div>
               </div>

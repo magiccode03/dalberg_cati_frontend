@@ -123,7 +123,7 @@ export default function Modal({
         className={cn(
           'relative w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl',
           'transform transition-all duration-300',
-          'focus:outline-none',
+          'focus:outline-none overflow-visible',
           sizeClasses[size],
           className
         )}
@@ -170,7 +170,7 @@ export default function Modal({
         {/* Body */}
         <div
           className={cn(
-            'p-6',
+            'p-6 overflow-visible',
             bodyClassName
           )}
         >

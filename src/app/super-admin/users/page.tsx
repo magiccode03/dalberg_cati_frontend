@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiService } from '@/lib/api';
 import Button from '@/components/ui/Button';
@@ -34,16 +35,19 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 
 const userSchema = z.object({
   uniqueId: z.string().min(3, 'Unique ID must be at least 3 characters'),
   email: z.string().email('Please enter a valid email'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(8, 'Confirm password must be at least 8 characters'),
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   roleId: z.number().min(1, 'Please select a role'),
   portalSlug: z.string().min(2, 'Portal slug must be at least 2 characters'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -55,12 +59,10 @@ interface User {
   firstName: string;
   lastName: string;
   portalSlug: string;
-  role: {
-    id: number;
-    name: string;
-    displayName: string;
-    level: number;
-  };
+  roleId: number;
+  roleName: string;
+  roleDisplayName: string;
+  roleLevel: number;
   isActive: boolean;
   lastLoginAt?: string;
   createdAt: string;
@@ -97,29 +99,59 @@ export default function SuperAdminUsersPage() {
 
   const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
+    defaultValues: {
+      uniqueId: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      firstName: '',
+      lastName: '',
+      roleId: 0,
+      portalSlug: '',
+    },
   });
 
   const fetchUsers = async (page = 1, limit = 10, search = '', role = '', status = '') => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(search && { search }),
-        ...(role && { role }),
-        ...(status && { status }),
-      });
-
-      const response = await apiService.request(`/users?${params.toString()}`);
+      console.log('Fetching users with filters:', { search, role, status });
+      const response = await apiService.getUsers();
       
       if (response.success && response.data) {
-        setUsers(response.data.users || []);
+        let filteredUsers = response.data.users || [];
+        
+        // Apply search filter
+        if (search) {
+          filteredUsers = filteredUsers.filter(user => 
+            user.firstName.toLowerCase().includes(search.toLowerCase()) ||
+            user.lastName.toLowerCase().includes(search.toLowerCase()) ||
+            user.email.toLowerCase().includes(search.toLowerCase()) ||
+            user.uniqueId.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+        
+        // Apply role filter
+        if (role) {
+          filteredUsers = filteredUsers.filter(user => 
+            user.roleName === role || user.role?.name === role
+          );
+        }
+        
+        // Apply status filter
+        if (status) {
+          const isActive = status === '1';
+          filteredUsers = filteredUsers.filter(user => 
+            user.isActive === isActive
+          );
+        }
+        
+        setUsers(filteredUsers);
         setPagination(response.data.pagination || {
           page: 1,
           limit: 10,
-          total: 0,
-          totalPages: 0,
+          total: filteredUsers.length,
+          totalPages: Math.ceil(filteredUsers.length / 10),
         });
       } else {
         setError('Failed to fetch users');
@@ -135,6 +167,7 @@ export default function SuperAdminUsersPage() {
   const fetchRoles = async () => {
     try {
       const response = await apiService.getRoles();
+      console.log('Roles response:', response);
       if (response.success && response.data) {
         setRoles(response.data);
       }
@@ -149,17 +182,7 @@ export default function SuperAdminUsersPage() {
   }, []);
 
   const handleCreateUser = () => {
-    setEditingUser(null);
-    reset({
-      uniqueId: '',
-      email: '',
-      password: '',
-      firstName: '',
-      lastName: '',
-      roleId: 0,
-      portalSlug: '',
-    });
-    setIsModalOpen(true);
+    router.push('/super-admin/users/create');
   };
 
   const handleEditUser = (user: User) => {
@@ -168,9 +191,10 @@ export default function SuperAdminUsersPage() {
       uniqueId: user.uniqueId,
       email: user.email,
       password: '', // Don't pre-fill password
+      confirmPassword: '', // Don't pre-fill confirm password
       firstName: user.firstName,
       lastName: user.lastName,
-      roleId: user.role.id,
+      roleId: user.roleId,
       portalSlug: user.portalSlug,
     });
     setIsModalOpen(true);
@@ -244,6 +268,7 @@ export default function SuperAdminUsersPage() {
   };
 
   const handleSearch = () => {
+    console.log('Search filters:', { searchTerm, filterRole, filterStatus });
     fetchUsers(1, pagination.limit, searchTerm, filterRole, filterStatus);
   };
 
@@ -254,15 +279,15 @@ export default function SuperAdminUsersPage() {
   const roleOptions = [
     { label: 'All Roles', value: '' },
     ...roles.map(role => ({
-      label: role.displayName,
-      value: role.name,
+      label: role.displayName || role.roleDisplayName,
+      value: role.name || role.roleName,
     })),
   ];
 
   const statusOptions = [
     { label: 'All Status', value: '' },
-    { label: 'Active', value: 'active' },
-    { label: 'Inactive', value: 'inactive' },
+    { label: 'Active', value: '1' },
+    { label: 'Inactive', value: '0' },
   ];
 
   if (currentUser?.role !== 'super_admin') {
@@ -325,13 +350,13 @@ export default function SuperAdminUsersPage() {
           <SelectDropdown
             options={roleOptions}
             value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            onChange={(value) => setFilterRole(value)}
             className="w-full lg:w-48"
           />
           <SelectDropdown
             options={statusOptions}
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(value) => setFilterStatus(value)}
             className="w-full lg:w-48"
           />
           <div className="flex gap-2">
@@ -390,7 +415,7 @@ export default function SuperAdminUsersPage() {
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => (
+                  (users || []).map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -414,10 +439,10 @@ export default function SuperAdminUsersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge 
-                          variant={user.role.name === 'super_admin' ? 'primary' : user.role.name === 'admin' ? 'info' : 'default'}
+                          variant={user.roleName === 'super_admin' ? 'primary' : user.roleName === 'admin' ? 'info' : 'default'}
                           size="sm"
                         >
-                          {user.role.displayName}
+                          {user.roleDisplayName}
                         </StatusBadge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -493,81 +518,117 @@ export default function SuperAdminUsersPage() {
         )}
       </Card>
 
-      {/* Create/Edit User Modal */}
+      {/* Edit User Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingUser ? 'Edit User' : 'Create New User'}
+        title="Edit User"
+        size="xl"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="First Name"
-              {...register('firstName')}
-              error={errors.firstName?.message}
-              disabled={isSubmitting}
-            />
-            <Input
-              label="Last Name"
-              {...register('lastName')}
-              error={errors.lastName?.message}
-              disabled={isSubmitting}
-            />
+          {/* Personal Information Section */}
+          <div className="space-y-3">
+            <h3 className="text-base font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Personal Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input
+                label="First Name"
+                {...register('firstName')}
+                error={errors.firstName?.message}
+                disabled={isSubmitting}
+                placeholder="Enter first name"
+              />
+              <Input
+                label="Last Name"
+                {...register('lastName')}
+                error={errors.lastName?.message}
+                disabled={isSubmitting}
+                placeholder="Enter last name"
+              />
+              <Input
+                label="Unique ID"
+                {...register('uniqueId')}
+                error={errors.uniqueId?.message}
+                disabled={isSubmitting || !!editingUser}
+                placeholder="e.g., USER001"
+              />
+            </div>
           </div>
 
-          <Input
-            label="Unique ID"
-            {...register('uniqueId')}
-            error={errors.uniqueId?.message}
-            disabled={isSubmitting || !!editingUser}
-            placeholder="e.g., USER001"
-          />
+          {/* Account Information Section */}
+          <div className="space-y-3">
+            <h3 className="text-base font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Account Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Email"
+                type="email"
+                {...register('email')}
+                error={errors.email?.message}
+                disabled={isSubmitting}
+                icon={<Mail className="h-4 w-4" />}
+                placeholder="user@example.com"
+              />
+              <Input
+                label="Portal Slug"
+                {...register('portalSlug')}
+                error={errors.portalSlug?.message}
+                disabled={isSubmitting}
+                placeholder="e.g., john-doe"
+              />
+            </div>
+          </div>
 
-          <Input
-            label="Email"
-            type="email"
-            {...register('email')}
-            error={errors.email?.message}
-            disabled={isSubmitting}
-            icon={<Mail className="h-4 w-4" />}
-          />
+          {/* Role and Security Section */}
+          <div className="space-y-3">
+            <h3 className="text-base font-medium text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-1">
+              Role & Security
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <SelectDropdown
+                label="Role"
+                options={roles.map(role => ({
+                  label: role.displayName,
+                  value: role.id.toString(),
+                }))}
+                {...register('roleId', { valueAsNumber: true })}
+                error={errors.roleId?.message}
+                disabled={isSubmitting}
+                placeholder="Select a role"
+              />
+              <Input
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                {...register('password')}
+                placeholder={editingUser ? 'Leave blank to keep current password' : 'Enter password'}
+                error={errors.password?.message}
+                icon={<KeyRound className="h-4 w-4" />}
+                rightIcon={showPassword ? <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(false)} /> : <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(true)} />}
+                disabled={isSubmitting}
+              />
+              <Input
+                label="Confirm Password"
+                type={showPassword ? 'text' : 'password'}
+                {...register('confirmPassword')}
+                placeholder="Confirm password"
+                error={errors.confirmPassword?.message}
+                icon={<KeyRound className="h-4 w-4" />}
+                rightIcon={showPassword ? <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(false)} /> : <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(true)} />}
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
 
-          <Input
-            label="Portal Slug"
-            {...register('portalSlug')}
-            error={errors.portalSlug?.message}
-            disabled={isSubmitting}
-            placeholder="e.g., john-doe"
-          />
-
-          <SelectDropdown
-            label="Role"
-            options={roles.map(role => ({
-              label: role.displayName,
-              value: role.id.toString(),
-            }))}
-            {...register('roleId', { valueAsNumber: true })}
-            error={errors.roleId?.message}
-            disabled={isSubmitting}
-          />
-
-          <Input
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            {...register('password')}
-            placeholder={editingUser ? 'Leave blank to keep current password' : 'Enter password'}
-            error={errors.password?.message}
-            icon={<KeyRound className="h-4 w-4" />}
-            rightIcon={showPassword ? <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(false)} /> : <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(true)} />}
-            disabled={isSubmitting}
-          />
-
-          <div className="flex justify-end space-x-2 mt-6">
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
             <Button 
               type="button" 
-              variant="secondary" 
+              variant="outline" 
               onClick={() => setIsModalOpen(false)} 
               disabled={isSubmitting}
+              className="px-6"
             >
               Cancel
             </Button>
@@ -576,8 +637,9 @@ export default function SuperAdminUsersPage() {
               variant="primary" 
               loading={isSubmitting} 
               disabled={isSubmitting}
+              className="px-6"
             >
-              {isSubmitting ? 'Saving...' : editingUser ? 'Update User' : 'Create User'}
+              {editingUser ? 'Update User' : 'Create User'}
             </Button>
           </div>
         </form>

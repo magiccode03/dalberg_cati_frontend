@@ -142,7 +142,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
   user: {
     id: number;
@@ -484,7 +484,7 @@ class ApiService {
 
     // Save tokens on successful login
     if (response.success && response.data) {
-      this.saveTokens(response.data.token, response.data.refreshToken);
+      this.saveTokens(response.data.accessToken, response.data.refreshToken);
     }
 
     return response;
