@@ -370,6 +370,7 @@ export const menuData: MenuItem[] = [
         icon: 'FileText',
         roles: ['dqm'],
       },
+      // 
       {
         id: 'dqm-qc-user-pending-data',
         label: 'QC User - Pending Data',
@@ -377,14 +378,14 @@ export const menuData: MenuItem[] = [
         icon: 'Clock',
         roles: ['dqm'],
       },
+      {
+        id: 'dqm-ac-wise-pending-data',
+        label: 'AC Wise - Pending Data',
+        href: '/dqm/progress/ac-wise-pending-data',
+        icon: 'MapPin',
+        roles: ['dqm'],
+      },
     ],
-  },
-  {
-    id: 'dqm-ac-wise-pending-data',
-    label: 'AC Wise - Pending Data',
-    href: '/dqm/ac-wise-pending-data',
-    icon: 'MapPin',
-    roles: ['dqm'],
   },
   {
     id: 'dqm-report',
@@ -504,15 +505,22 @@ export const menuData: MenuItem[] = [
         icon: 'Clock',
         roles: ['dqmt'],
       },
+      {
+        id: 'dqmt-ac-wise-pending-data',
+        label: 'AC Wise - Pending Data',
+        href: '/dqmt/Progress/ac-wise-pending-data',
+        icon: 'MapPin',
+        roles: ['dqmt'],
+      },
     ],
   },
-  {
-    id: 'dqmt-ac-wise-pending-data',
-    label: 'AC Wise - Pending Data',
-    href: '/dqmt/ac-wise-pending-data',
-    icon: 'MapPin',
-    roles: ['dqmt'],
-  },
+  // {
+  //   id: 'dqmt-ac-wise-pending-data',
+  //   label: 'AC Wise - Pending Data',
+  //   href: '/dqmt/ac-wise-pending-data',
+  //   icon: 'MapPin',
+  //   roles: ['dqmt'],
+  // },
   {
     id: 'dqmt-report',
     label: 'Report',
