@@ -87,6 +87,7 @@ export default function LoginPage() {
   const handleDemoLogin = (role: string) => {
     const demoCredentials = {
       'super-admin': { uniqueId: 'SUPER001', password: 'super123' },
+      'portal-admin': { uniqueId: 'PORTAL001', password: 'portal123' },
       admin: { uniqueId: 'ADMIN001', password: 'admin123' },
       pmt: { uniqueId: 'PMT001', password: 'pmt123' },
       qc: { uniqueId: 'QC001', password: 'qc123' },

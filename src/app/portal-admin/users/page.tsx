@@ -25,7 +25,6 @@ import {
   ArrowLeft
 } from 'lucide-react';
 
-
 interface User {
   id: number;
   uniqueId: string;
@@ -37,7 +36,7 @@ interface User {
   roleName: string;
   roleDisplayName: string;
   roleLevel: number;
-  isActive: boolean;
+  isActive: number;
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -50,7 +49,7 @@ interface Role {
   level: number;
 }
 
-export default function SuperAdminUsersPage() {
+export default function PortalAdminUsersPage() {
   const { user: currentUser } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
@@ -67,7 +66,6 @@ export default function SuperAdminUsersPage() {
     total: 0,
     totalPages: 0,
   });
-
 
   const fetchUsers = async (page = 1, limit = 10, search = '', role = '', status = '') => {
     setLoading(true);
@@ -91,7 +89,7 @@ export default function SuperAdminUsersPage() {
         // Apply role filter
         if (role) {
           filteredUsers = filteredUsers.filter(user => 
-            user.roleName === role || user.role?.name === role
+            user.roleName === role
           );
         }
         
@@ -99,7 +97,7 @@ export default function SuperAdminUsersPage() {
         if (status) {
           const isActive = status === '1';
           filteredUsers = filteredUsers.filter(user => 
-            user.isActive === isActive
+            user.isActive === (isActive ? 1 : 0)
           );
         }
         
@@ -137,13 +135,12 @@ export default function SuperAdminUsersPage() {
     fetchRoles();
   }, []);
 
-
   const handleCreateUser = () => {
-    router.push('/super-admin/users/create');
+    router.push('/portal-admin/users/create');
   };
 
   const handleEditUser = (user: User) => {
-    router.push(`/super-admin/users/edit/${user.id}`);
+    router.push(`/portal-admin/users/edit/${user.id}`);
   };
 
   const handleDeleteUser = async (userId: number) => {
@@ -168,7 +165,6 @@ export default function SuperAdminUsersPage() {
     }
   };
 
-
   const handleSearch = () => {
     fetchUsers(1, pagination.limit, searchTerm, filterRole, filterStatus);
   };
@@ -180,8 +176,8 @@ export default function SuperAdminUsersPage() {
   const roleOptions = [
     { label: 'All Roles', value: '' },
     ...roles.map(role => ({
-      label: role.displayName || role.roleDisplayName,
-      value: role.name || role.roleName,
+      label: role.displayName,
+      value: role.name,
     })),
   ];
 
@@ -191,7 +187,7 @@ export default function SuperAdminUsersPage() {
     { label: 'Inactive', value: '0' },
   ];
 
-  if (currentUser?.role !== 'super_admin') {
+  if (currentUser?.role !== 'portal_admin') {
     return (
       <div className="container mx-auto px-6 py-8">
         <Alert type="error" title="Access Denied">
@@ -209,19 +205,27 @@ export default function SuperAdminUsersPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/super-admin/dashboard')}
+            onClick={() => router.push('/portal-admin')}
             className="mr-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          User Management
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Manage system users, roles, and permissions.
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              User Management
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage portal users and their access.
+            </p>
+          </div>
+          <Button onClick={handleCreateUser}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create User
+          </Button>
+        </div>
       </div>
 
       {/* Alerts */}
@@ -278,10 +282,6 @@ export default function SuperAdminUsersPage() {
             <Button onClick={() => fetchUsers()} variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
-            </Button>
-            <Button onClick={handleCreateUser}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create User
             </Button>
           </div>
         </div>
@@ -350,7 +350,8 @@ export default function SuperAdminUsersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge 
-                          variant={user.roleName === 'super_admin' ? 'primary' : user.roleName === 'admin' ? 'info' : 'default'}
+                          status="active"
+                          variant={user.roleName === 'super_admin' ? 'info' : user.roleName === 'admin' ? 'info' : 'default'}
                           size="sm"
                         >
                           {user.roleDisplayName}
@@ -358,10 +359,11 @@ export default function SuperAdminUsersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge 
-                          variant={user.isActive ? 'success' : 'error'}
+                          status={user.isActive === 1 ? 'active' : 'inactive'}
+                          variant={user.isActive === 1 ? 'success' : 'error'}
                           size="sm"
                         >
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user.isActive === 1 ? 'Active' : 'Inactive'}
                         </StatusBadge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -385,7 +387,7 @@ export default function SuperAdminUsersPage() {
                             size="sm" 
                             onClick={() => handleDeleteUser(user.id)}
                             className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                            disabled={user.id === currentUser?.id} // Cannot delete self
+                            disabled={user.id === Number(currentUser?.id)} // Cannot delete self
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -428,7 +430,6 @@ export default function SuperAdminUsersPage() {
           </div>
         )}
       </Card>
-
     </div>
   );
 }
