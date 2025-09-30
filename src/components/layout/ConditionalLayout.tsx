@@ -3,8 +3,10 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 import Header from './Header';
 import HorizontalNav from './HorizontalNav';
+import Sidebar from './Sidebar';
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ interface ConditionalLayoutProps {
 export default function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const { isAuthenticated, isLoading } = useAuth();
+  const { isCollapsed } = useSidebar();
 
   // Public routes that don't need authentication
   const publicRoutes = ['/login', '/unauthorized'];
@@ -21,6 +24,13 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
   // Routes that should show header but NOT horizontal menu (home landing page)
   const noMenuRoutes = ['/home'];
   const isNoMenuRoute = noMenuRoutes.includes(pathname);
+  
+  // Routes that should show sidebar instead of horizontal menu
+  const sidebarRoutes = [
+    '/capi/fd/demographics/basic-demographics',
+    '/capi/fd/demographics/caste',
+  ];
+  const isSidebarRoute = sidebarRoutes.includes(pathname);
 
   // Don't render header and nav for public routes or when loading
   if (isPublicRoute || isLoading) {
@@ -37,6 +47,24 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
           <main className="flex-1">
             {children}
           </main>
+        </>
+      );
+    }
+    
+    // Sidebar pages: show header and sidebar, but NO horizontal menu
+    if (isSidebarRoute) {
+      return (
+        <>
+          <Header />
+          <div className="flex">
+            <Sidebar />
+            <main 
+              className="flex-1 pt-16 transition-all duration-300 ease-in-out"
+              style={{ marginLeft: isCollapsed ? '4rem' : '16rem' }}
+            >
+              {children}
+            </main>
+          </div>
         </>
       );
     }
