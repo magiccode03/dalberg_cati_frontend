@@ -20,6 +20,7 @@ export interface User {
   createdAt?: string;
   isActive?: boolean;
   password?: string; // Only for SUPER ADMIN user management
+  system?: 'capi' | 'cati'; // System assignment for CAPI/CATI users
 }
 
 export interface AuthContextType {
@@ -127,21 +128,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const { user: apiUser } = response.data;
         
         // Transform API user to our User interface
+        const roleName = apiUser.roleName || apiUser.role?.name || 'super_admin';
+        
+        // Determine system based on API response or default to 'capi' for system-specific roles
+        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc'];
+        const userSystem = apiUser.system || (systemRoles.includes(roleName) ? 'capi' : undefined);
+        
         const userData: User = {
           id: apiUser.id.toString(),
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          role: apiUser.roleName || apiUser.role?.name || 'super_admin',
+          role: roleName,
           roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
-          permissions: getDefaultPermissions(apiUser.roleName || apiUser.role?.name || 'super_admin'),
+          permissions: getDefaultPermissions(roleName),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
           designation: apiUser.roleDisplayName || apiUser.role?.displayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
+          system: userSystem,
         };
 
         setUser(userData);

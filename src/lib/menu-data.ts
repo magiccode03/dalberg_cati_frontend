@@ -165,27 +165,34 @@ export const menuData: MenuItem[] = [
     ],
   },
   
-  // Project Progress Monitoring (PPM) Menu
+  // ============================================
+  // CAPI SYSTEM MENUS
+  // ============================================
+  
+  // CAPI Project Progress Monitoring (PPM) Menu
   {
-    id: 'ppm-overview',
+    id: 'capi-ppm-overview',
     label: 'Overview',
     href: '/capi/ppm/overview/fieldwork-progress',
     icon: 'BarChart3',
     roles: ['ppm'],
+    system: 'capi',
     children: [
       {
-        id: 'ppm-fieldwork-progress',
+        id: 'capi-ppm-fieldwork-progress',
         label: 'Fieldwork Progress',
         href: '/capi/ppm/overview/fieldwork-progress',
         icon: 'BarChart3',
         roles: ['ppm'],
+        system: 'capi',
       },
       {
-        id: 'ppm-interview-log',
+        id: 'capi-ppm-interview-log',
         label: 'Interview Log',
         href: '/capi/ppm/overview/interview-log',
         icon: 'FileText',
         roles: ['ppm'],
+        system: 'capi',
       },
     ],
   },
@@ -950,15 +957,489 @@ export const menuData: MenuItem[] = [
       },
     ],
   },
+
+  // ============================================
+  // CATI ROLES - Similar structure but different routes
+  // ============================================
+
+  // CATI Project Progress Monitoring (PPM) Menu
+  {
+    id: 'cati-ppm-overview',
+    label: 'Overview',
+    href: '/cati/ppm/overview/fieldwork-progress',
+    icon: 'BarChart3',
+    roles: ['cati_ppm'],
+    children: [
+      {
+        id: 'cati-ppm-fieldwork-progress',
+        label: 'Fieldwork Progress',
+        href: '/cati/ppm/overview/fieldwork-progress',
+        icon: 'BarChart3',
+        roles: ['cati_ppm'],
+      },
+      {
+        id: 'cati-ppm-interview-log',
+        label: 'Interview Log',
+        href: '/cati/ppm/overview/interview-log',
+        icon: 'FileText',
+        roles: ['cati_ppm'],
+      },
+    ],
+  },
+  {
+    id: 'cati-ppm-master',
+    label: 'Master',
+    href: '/cati/ppm/master/aclist',
+    icon: 'Database',
+    roles: ['cati_ppm'],
+    children: [
+      {
+        id: 'cati-ppm-ac-list',
+        label: 'AC List',
+        href: '/cati/ppm/master/aclist',
+        icon: 'Users',
+        roles: ['cati_ppm'],
+      },
+      {
+        id: 'cati-ppm-team-registration',
+        label: 'Team Registration',
+        href: '/cati/ppm/master/team-registration',
+        icon: 'Users',
+        roles: ['cati_ppm'],
+      },
+      {
+        id: 'cati-ppm-project-setting',
+        label: 'Project Setting',
+        href: '/cati/ppm/master/project-setting',
+        icon: 'Settings',
+        roles: ['cati_ppm'],
+      },
+    ],
+  },
+  {
+    id: 'cati-ppm-progress-report',
+    label: 'Progress Report',
+    href: '/cati/ppm/progress-report',
+    icon: 'BarChart3',
+    roles: ['cati_ppm'],
+  },
+  {
+    id: 'cati-ppm-rejection-report',
+    label: 'Rejection Report',
+    href: '/cati/ppm/rejection-report',
+    icon: 'XCircle',
+    roles: ['cati_ppm'],
+  },
+  {
+    id: 'cati-ppm-demographic',
+    label: 'Demographic %',
+    href: '/cati/ppm/demographic',
+    icon: 'Users',
+    roles: ['cati_ppm'],
+  },
+
+  // CATI Project Progress Monitoring Team (PPMT) Menu
+  {
+    id: 'cati-ppmt-overview',
+    label: 'Overview',
+    href: '/cati/ppmt/overview/fieldwork-progress',
+    icon: 'BarChart3',
+    roles: ['cati_ppmt'],
+    children: [
+      {
+        id: 'cati-ppmt-fieldwork-progress',
+        label: 'Fieldwork Progress',
+        href: '/cati/ppmt/overview/fieldwork-progress',
+        icon: 'BarChart3',
+        roles: ['cati_ppmt'],
+      },
+      {
+        id: 'cati-ppmt-interview-log',
+        label: 'Interview Log',
+        href: '/cati/ppmt/overview/interview-log',
+        icon: 'FileText',
+        roles: ['cati_ppmt'],
+      },
+    ],
+  },
+  {
+    id: 'cati-ppmt-progress-report',
+    label: 'Progress Report',
+    href: '/cati/ppmt/progress-report',
+    icon: 'BarChart3',
+    roles: ['cati_ppmt'],
+  },
+  {
+    id: 'cati-ppmt-rejection-report',
+    label: 'Rejection Report',
+    href: '/cati/ppmt/rejection-report',
+    icon: 'XCircle',
+    roles: ['cati_ppmt'],
+  },
+  {
+    id: 'cati-ppmt-demographic',
+    label: 'Demographic %',
+    href: '/cati/ppmt/demographic',
+    icon: 'Users',
+    roles: ['cati_ppmt'],
+  },
+
+  // CATI Data Quality Management (DQM) Menu
+  {
+    id: 'cati-dqm-fieldwork-progress',
+    label: 'Fieldwork Progress',
+    href: '/cati/dqm/fieldwork-progress',
+    icon: 'BarChart3',
+    roles: ['cati_dqm'],
+  },
+  {
+    id: 'cati-dqm-qc-team-registration',
+    label: 'QC Team Registration',
+    href: '/cati/dqm/qc-team-registration',
+    icon: 'Users',
+    roles: ['cati_dqm'],
+  },
+  {
+    id: 'cati-dqm-qc-user-registration',
+    label: 'QC User Registration',
+    href: '/cati/dqm/qc-user-registration',
+    icon: 'UserPlus',
+    roles: ['cati_dqm'],
+  },
+  {
+    id: 'cati-dqm-progress',
+    label: 'Progress',
+    href: '/cati/dqm/progress/qc-user-progress',
+    icon: 'BarChart3',
+    roles: ['cati_dqm'],
+    children: [
+      {
+        id: 'cati-dqm-qc-user-progress',
+        label: 'QC User Progress',
+        href: '/cati/dqm/progress/qc-user-progress',
+        icon: 'BarChart3',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-interview-list',
+        label: 'Interview List',
+        href: '/cati/dqm/progress/interview-list',
+        icon: 'FileText',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-qc-user-pending-data',
+        label: 'QC User - Pending Data',
+        href: '/cati/dqm/progress/qc-user-pending-data',
+        icon: 'Clock',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-ac-wise-pending-data',
+        label: 'AC Wise - Pending Data',
+        href: '/cati/dqm/progress/ac-wise-pending-data',
+        icon: 'MapPin',
+        roles: ['cati_dqm'],
+      },
+    ],
+  },
+  {
+    id: 'cati-dqm-report',
+    label: 'Report',
+    href: '/cati/dqm/report/interview-date-wise',
+    icon: 'FileText',
+    roles: ['cati_dqm'],
+    children: [
+      {
+        id: 'cati-dqm-interview-date-wise',
+        label: 'Interview Date Wise',
+        href: '/cati/dqm/report/interview-date-wise',
+        icon: 'Calendar',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-enumerator-wise',
+        label: 'Enumerator Wise',
+        href: '/cati/dqm/report/enumerator-wise',
+        icon: 'Users',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-ac-wise-report',
+        label: 'AC Wise Report',
+        href: '/cati/dqm/report/acwisereport',
+        icon: 'MapPin',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-assigned-ac',
+        label: 'Assigned AC',
+        href: '/cati/dqm/report/assigned-ac',
+        icon: 'MapPin',
+        roles: ['cati_dqm'],
+      },
+    ],
+  },
+  {
+    id: 'cati-dqm-demographic',
+    label: 'Demographic %',
+    href: '/cati/dqm/demographic',
+    icon: 'Users',
+    roles: ['cati_dqm'],
+  },
+  {
+    id: 'cati-dqm-download',
+    label: 'Download',
+    href: '/cati/dqm/download/qc-data',
+    icon: 'Download',
+    roles: ['cati_dqm'],
+    children: [
+      {
+        id: 'cati-dqm-qc-data',
+        label: 'QC Data',
+        href: '/cati/dqm/download/qc-data',
+        icon: 'Download',
+        roles: ['cati_dqm'],
+      },
+      {
+        id: 'cati-dqm-update-request',
+        label: 'Update Request',
+        href: '/cati/dqm/download/update-request',
+        icon: 'Edit',
+        roles: ['cati_dqm'],
+      },
+    ],
+  },
+
+  // CATI Data Quality Management Team (DQMT) Menu
+  {
+    id: 'cati-dqmt-fieldwork-progress',
+    label: 'Fieldwork Progress',
+    href: '/cati/dqmt/fieldwork-progress',
+    icon: 'BarChart3',
+    roles: ['cati_dqmt'],
+  },
+  {
+    id: 'cati-dqmt-qc-user-registration',
+    label: 'QC User Registration',
+    href: '/cati/dqmt/qc-user-registration',
+    icon: 'UserPlus',
+    roles: ['cati_dqmt'],
+  },
+  {
+    id: 'cati-dqmt-progress',
+    label: 'Progress',
+    href: '/cati/dqmt/progress/qc-user-progress',
+    icon: 'BarChart3',
+    roles: ['cati_dqmt'],
+    children: [
+      {
+        id: 'cati-dqmt-qc-user-progress',
+        label: 'QC User Progress',
+        href: '/cati/dqmt/progress/qc-user-progress',
+        icon: 'BarChart3',
+        roles: ['cati_dqmt'],
+      },
+      {
+        id: 'cati-dqmt-interview-list',
+        label: 'Interview List',
+        href: '/cati/dqmt/progress/interview-list',
+        icon: 'FileText',
+        roles: ['cati_dqmt'],
+      },
+      {
+        id: 'cati-dqmt-qc-user-pending-data',
+        label: 'QC User - Pending Data',
+        href: '/cati/dqmt/progress/qc-user-pending-data',
+        icon: 'Clock',
+        roles: ['cati_dqmt'],
+      },
+      {
+        id: 'cati-dqmt-ac-wise-pending-data',
+        label: 'AC Wise - Pending Data',
+        href: '/cati/dqmt/progress/ac-wise-pending-data',
+        icon: 'MapPin',
+        roles: ['cati_dqmt'],
+      },
+    ],
+  },
+  {
+    id: 'cati-dqmt-report',
+    label: 'Report',
+    href: '/cati/dqmt/report/interview-date-wise',
+    icon: 'FileText',
+    roles: ['cati_dqmt'],
+    children: [
+      {
+        id: 'cati-dqmt-interview-date-wise',
+        label: 'Interview Date Wise',
+        href: '/cati/dqmt/report/interview-date-wise',
+        icon: 'Calendar',
+        roles: ['cati_dqmt'],
+      },
+      {
+        id: 'cati-dqmt-enumerator-wise',
+        label: 'Enumerator Wise',
+        href: '/cati/dqmt/report/enumerator-wise',
+        icon: 'Users',
+        roles: ['cati_dqmt'],
+      },
+      {
+        id: 'cati-dqmt-ac-wise-report',
+        label: 'AC Wise Report',
+        href: '/cati/dqmt/report/ac-wise-report',
+        icon: 'MapPin',
+        roles: ['cati_dqmt'],
+      },
+      {
+        id: 'cati-dqmt-assigned-ac',
+        label: 'Assigned AC',
+        href: '/cati/dqmt/report/assigned-ac',
+        icon: 'MapPin',
+        roles: ['cati_dqmt'],
+      },
+    ],
+  },
+  {
+    id: 'cati-dqmt-demographic',
+    label: 'Demographic %',
+    href: '/cati/dqmt/demographic',
+    icon: 'Users',
+    roles: ['cati_dqmt'],
+  },
+
+  // CATI Start QC Menu
+  {
+    id: 'cati-start-audio-qc',
+    label: 'Start Audio QC',
+    href: '/cati/start_qc/start-audio-qc',
+    icon: 'Mic',
+    roles: ['cati_start_qc'],
+  },
+  {
+    id: 'cati-start-re-qc',
+    label: 'Start Re-QC',
+    href: '/cati/start_qc/start-re-qc',
+    icon: 'RefreshCw',
+    roles: ['cati_start_qc'],
+  },
+
+  // CATI Findings Dashboard Menu
+  {
+    id: 'cati-fd-fieldwork-progress',
+    label: 'Fieldwork Progress',
+    href: '/cati/fd/fieldwork-progress',
+    icon: 'BarChart3',
+    roles: ['cati_fd'],
+  },
+  {
+    id: 'cati-fd-demographics',
+    label: 'Demographics',
+    href: '/cati/fd/demographics/basic-demographics',
+    icon: 'Users',
+    roles: ['cati_fd'],
+    children: [
+      {
+        id: 'cati-fd-basic-demographics',
+        label: 'Basic Demographics',
+        href: '/cati/fd/demographics/basic-demographics',
+        icon: 'Users',
+        roles: ['cati_fd'],
+      },
+      {
+        id: 'cati-fd-caste',
+        label: 'Caste',
+        href: '/cati/fd/demographics/caste',
+        icon: 'Users',
+        roles: ['cati_fd'],
+      },
+    ],
+  },
+  {
+    id: 'cati-fd-interview-audio',
+    label: 'Interview Audio',
+    href: '/cati/fd/interview-audio',
+    icon: 'Mic',
+    roles: ['cati_fd'],
+  },
+  {
+    id: 'cati-fd-findings',
+    label: 'Findings',
+    href: '/cati/fd/findings/vote-share-estimate',
+    icon: 'BarChart3',
+    roles: ['cati_fd'],
+    children: [
+      {
+        id: 'cati-fd-vote-share-estimate',
+        label: 'Vote Share Estimate',
+        href: '/cati/fd/findings/vote-share-estimate',
+        icon: 'BarChart3',
+        roles: ['cati_fd'],
+      },
+      {
+        id: 'cati-fd-gain-and-losses',
+        label: 'Gain & Losses',
+        href: '/cati/fd/findings/gain-and-losses',
+        icon: 'TrendingUp',
+        roles: ['cati_fd'],
+      },
+      {
+        id: 'cati-fd-second-choice',
+        label: 'Second Choice',
+        href: '/cati/fd/findings/second-choice',
+        icon: 'Target',
+        roles: ['cati_fd'],
+      },
+      {
+        id: 'cati-fd-approval-ratings',
+        label: 'Approval Ratings',
+        href: '/cati/fd/findings/approval-ratings',
+        icon: 'ThumbsUp',
+        roles: ['cati_fd'],
+      },
+      {
+        id: 'cati-fd-wisdom-of-crowds',
+        label: 'Wisdom of Crowds',
+        href: '/cati/fd/findings/wisdom-of-crowds',
+        icon: 'Users',
+        roles: ['cati_fd'],
+      },
+    ],
+  },
+  {
+    id: 'cati-fd-client-comparison',
+    label: 'Client Comparison',
+    href: '/cati/fd/client-comparison',
+    icon: 'GitCompare',
+    roles: ['cati_fd'],
+  },
 ];
 
-export const getMenuByRole = (role: string): MenuItem[] => {
-  return menuData.filter(item => 
-    item.roles.includes(role) || item.roles.includes('admin')
-  ).map(item => ({
+export const getMenuByRole = (role: string, userSystem?: 'capi' | 'cati'): MenuItem[] => {
+  return menuData.filter(item => {
+    const hasRole = item.roles.includes(role) || item.roles.includes('admin');
+    
+    // If item has no system specified (common menus), show for all users
+    if (!item.system) return hasRole;
+    
+    // If user has no system (admin roles), show common menus only
+    if (!userSystem) return hasRole && !item.system;
+    
+    // Match both role and system
+    return hasRole && item.system === userSystem;
+  }).map(item => ({
     ...item,
-    children: item.children ? item.children.filter(child => 
-      child.roles.includes(role) || child.roles.includes('admin')
-    ) : undefined,
+    children: item.children ? item.children.filter(child => {
+      const childHasRole = child.roles.includes(role) || child.roles.includes('admin');
+      
+      // If child has no system specified, show for all users
+      if (!child.system) return childHasRole;
+      
+      // If user has no system, show common menus only
+      if (!userSystem) return childHasRole && !child.system;
+      
+      // Match both role and system
+      return childHasRole && child.system === userSystem;
+    }) : undefined,
   }));
 };

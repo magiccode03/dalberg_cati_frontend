@@ -52,7 +52,7 @@ export default function Sidebar() {
   const { sidebarOpen, user } = useAppSelector((state) => state.app);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
-  const menuItems = user ? getMenuByRole(user.role) : [];
+  const menuItems = user ? getMenuByRole(user.role, user.system) : [];
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => ({ ...prev, [id]: !prev[id] }));

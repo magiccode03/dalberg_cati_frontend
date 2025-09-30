@@ -255,12 +255,12 @@ const ACListPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-      <Heading level={1} className="mb-6">
+      <Heading level={3} className="mb-6">
         AC List
       </Heading>
 
       {/* Search Form */}
-      <Card className="mb-6 p-6">
+      <Card className="mb-3">
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -292,7 +292,7 @@ const ACListPage = () => {
       </Card>
 
       {/* AC List Table */}
-      <Card className="p-6">
+      <Card>
         <div className="flex justify-between items-center mb-6">
           <Heading level={4}>AC List</Heading>
           <Button variant="primary">

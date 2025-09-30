@@ -56,7 +56,7 @@ export default function HorizontalNav() {
   const [isSticky, setIsSticky] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = user ? getMenuByRole(user.role) : [];
+  const menuItems = user ? getMenuByRole(user.role, user.system) : [];
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => {
