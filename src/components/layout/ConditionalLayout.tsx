@@ -17,6 +17,10 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
   // Public routes that don't need authentication
   const publicRoutes = ['/login', '/unauthorized'];
   const isPublicRoute = publicRoutes.includes(pathname);
+  
+  // Routes that should show header but NOT horizontal menu (home landing page)
+  const noMenuRoutes = ['/home'];
+  const isNoMenuRoute = noMenuRoutes.includes(pathname);
 
   // Don't render header and nav for public routes or when loading
   if (isPublicRoute || isLoading) {
@@ -25,6 +29,19 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
 
   // Only render header and nav for authenticated users
   if (isAuthenticated) {
+    // Home page: show header but no horizontal menu
+    if (isNoMenuRoute) {
+      return (
+        <>
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+        </>
+      );
+    }
+    
+    // All other pages: show both header and horizontal menu
     return (
       <>
         <Header />

@@ -24,7 +24,26 @@ import {
   TrendingUp,
   ClipboardList,
   UserCog,
-  Sliders
+  Sliders,
+  Server,
+  Phone,
+  Upload,
+  Download,
+  RefreshCw,
+  Edit,
+  Calendar,
+  MapPin,
+  Scale,
+  Send,
+  Mic,
+  Target,
+  ThumbsUp,
+  GitCompare,
+  Monitor,
+  UserPlus,
+  List,
+  Search,
+  Bell
 } from 'lucide-react';
 
 const iconMap = {
@@ -45,6 +64,25 @@ const iconMap = {
   ClipboardList,
   UserCog,
   Sliders,
+  Server,
+  Phone,
+  Upload,
+  Download,
+  RefreshCw,
+  Edit,
+  Calendar,
+  MapPin,
+  Scale,
+  Send,
+  Mic,
+  Target,
+  ThumbsUp,
+  GitCompare,
+  Monitor,
+  UserPlus,
+  List,
+  Search,
+  Bell,
 };
 
 export default function Sidebar() {
@@ -52,7 +90,7 @@ export default function Sidebar() {
   const { sidebarOpen, user } = useAppSelector((state) => state.app);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
-  const menuItems = user ? getMenuByRole(user.role) : [];
+  const menuItems = user ? getMenuByRole(user.role, user.system) : [];
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => ({ ...prev, [id]: !prev[id] }));
