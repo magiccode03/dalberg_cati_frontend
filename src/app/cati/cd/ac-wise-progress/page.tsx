@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
-import { MetricCard } from '@/components/ui/MetricCard';
-import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
+import DataTable from '@/components/tables/DataTable';
 import { CreditCard, Users, Phone, PhoneOff, CheckCircle } from 'lucide-react';
 
 interface ACData {
@@ -25,8 +23,38 @@ interface ACData {
 }
 
 export default function ACWiseProgressPage() {
-  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+
+  // Custom MetricCard component
+  const MetricCard = ({ 
+    icon: Icon, 
+    title, 
+    value, 
+    bgColor = 'bg-blue-500',
+    iconColor = 'text-white'
+  }: {
+    icon: any;
+    title: string;
+    value: string | number;
+    bgColor?: string;
+    iconColor?: string;
+  }) => (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center">
+        <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div className="flex-1">
+          <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            {title}
+          </Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+            {value}
+          </Text>
+        </div>
+      </div>
+    </div>
+  );
 
   // Sample data for AC Wise Progress
   const acData: ACData[] = [
@@ -174,201 +202,118 @@ export default function ACWiseProgressPage() {
     successfulInterviews: '3,00,354'
   };
 
-  // Calculate pagination
-  const totalPages = Math.ceil(acData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = acData.slice(startIndex, endIndex);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
 
   const tableColumns = [
-    { key: 'id', label: '#', width: '60px' },
-    { key: 'acName', label: 'AC Name', width: '200px' },
-    { key: 'acCode', label: 'AC Code', width: '100px' },
-    { key: 'totalNumbers', label: 'Total Numbers', width: '150px' },
-    { key: 'numberAssigned', label: 'Number Assigned', width: '150px' },
-    { key: 'numberPending', label: 'Number Pending', width: '150px' },
-    { key: 'numberExhausted', label: 'Number Exhausted', width: '150px' },
-    { key: 'successfulInterviews', label: 'Successful Interviews', width: '150px' },
-    { key: 'numberDoesNotExist', label: 'Number does not exist', width: '150px' },
-    { key: 'respondentDidNotPick', label: 'Respondent did not pick', width: '150px' },
-    { key: 'pickedAndRefused', label: 'Picked and Refused', width: '150px' }
+    { key: 'id' as keyof ACData, label: '#', width: '60px' },
+    { key: 'acName' as keyof ACData, label: 'AC Name', width: '200px' },
+    { key: 'acCode' as keyof ACData, label: 'AC Code', width: '100px' },
+    { key: 'totalNumbers' as keyof ACData, label: 'Total Numbers', width: '150px' },
+    { key: 'numberAssigned' as keyof ACData, label: 'Number Assigned', width: '150px' },
+    { key: 'numberPending' as keyof ACData, label: 'Number Pending', width: '150px' },
+    { key: 'numberExhausted' as keyof ACData, label: 'Number Exhausted', width: '150px' },
+    { key: 'successfulInterviews' as keyof ACData, label: 'Successful Interviews', width: '150px' },
+    { key: 'numberDoesNotExist' as keyof ACData, label: 'Number does not exist', width: '150px' },
+    { key: 'respondentDidNotPick' as keyof ACData, label: 'Respondent did not pick', width: '150px' },
+    { key: 'pickedAndRefused' as keyof ACData, label: 'Picked and Refused', width: '150px' }
   ];
 
   return (
-    <Container className="py-6">
-      {/* Page Header */}
-      <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
-          AC Wise Progress - Overall : State Survey
-        </Heading>
+    <Container maxWidth="full">
+      {/* Breadcrumb Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
+            AC Wise Progress - Overall : State Survey
+          </Heading>
+        </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
         {/* Number Summary */}
-        <Card className="p-6">
-          <div className="mb-6">
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Number Summary
+        <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+            <Heading level={3} className="text-base font-semibold text-gray-900 dark:text-white">
+              NUMBER SUMMARY
             </Heading>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center p-4 border-r border-gray-200 dark:border-gray-700">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Total Numbers
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.totalNumbers}
-                </Text>
-              </div>
-            </div>
-
-            <div className="flex items-center p-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Number Assigned
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.numberAssigned}
-                </Text>
-              </div>
-            </div>
-
-            <div className="flex items-center p-4 border-r border-gray-200 dark:border-gray-700">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Number Pending
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.numberPending}
-                </Text>
-              </div>
-            </div>
-
-            <div className="flex items-center p-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Number Exhausted
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.numberExhausted}
-                </Text>
-              </div>
-            </div>
+            <MetricCard
+              icon={CreditCard}
+              title="Total Numbers"
+              value={summaryData.totalNumbers}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={CreditCard}
+              title="Number Assigned"
+              value={summaryData.numberAssigned}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={CreditCard}
+              title="Number Pending"
+              value={summaryData.numberPending}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={CreditCard}
+              title="Number Exhausted"
+              value={summaryData.numberExhausted}
+              bgColor="bg-blue-500"
+            />
           </div>
         </Card>
 
         {/* Call Outcome */}
-        <Card className="p-6">
-          <div className="mb-6">
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white relative">
-              Call Outcome
-              <div className="absolute -left-2 top-0 w-1 h-6 bg-[#356b59]"></div>
+        <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-green-500 mr-3"></div>
+            <Heading level={3} className="text-base font-semibold text-gray-900 dark:text-white">
+              CALL OUTCOME
             </Heading>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center p-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <PhoneOff className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Number Does Not Exist
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.numberDoesNotExist}
-                </Text>
-              </div>
-            </div>
-
-            <div className="flex items-center p-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <PhoneOff className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Respondent Did Not Pick
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.respondentDidNotPick}
-                </Text>
-              </div>
-            </div>
-
-            <div className="flex items-center p-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <PhoneOff className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Picked And Refused
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.pickedAndRefused}
-                </Text>
-              </div>
-            </div>
-
-            <div className="flex items-center p-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CheckCircle className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  Successful Interviews
-                </Text>
-                <Text className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {summaryData.successfulInterviews}
-                </Text>
-              </div>
-            </div>
+            <MetricCard
+              icon={PhoneOff}
+              title="Number does not exist"
+              value={summaryData.numberDoesNotExist}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Respondent did not pick"
+              value={summaryData.respondentDidNotPick}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Picked and Refused"
+              value={summaryData.pickedAndRefused}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={CheckCircle}
+              title="Successful Interviews"
+              value={summaryData.successfulInterviews}
+              bgColor="bg-green-500"
+            />
           </div>
         </Card>
       </div>
 
       {/* Data Table */}
-      <Card className="p-6">
-        <div className="overflow-x-auto">
-          <Table
-            columns={tableColumns}
-            data={currentData}
-            className="min-w-full"
-          />
-        </div>
-        
-        {/* Pagination */}
-        <div className="mt-6 flex justify-between items-center">
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
-            Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, acData.length)}</span> of <span className="font-semibold">{acData.length}</span> results
-          </Text>
-          
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={acData.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-          />
-        </div>
+      <Card>
+        <DataTable
+          data={acData}
+          columns={tableColumns}
+          pagination={true}
+          pageSize={itemsPerPage}
+          searchable={false}
+          sortable={true}
+        />
       </Card>
     </Container>
   );
