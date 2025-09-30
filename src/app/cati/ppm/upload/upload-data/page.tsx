@@ -188,9 +188,12 @@ const UploadDataPage = () => {
       {/* Upload Form */}
       <Card className="mb-6">
         <div className="flex justify-between items-center mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            Upload Data
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              Upload Data
+            </Heading>
+          </div>
           <Button 
             variant="primary" 
             size="sm"
@@ -251,9 +254,12 @@ const UploadDataPage = () => {
       {/* Uploaded Files History */}
       <Card>
         <div className="mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            Uploaded files History
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              Uploaded files History
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -291,13 +297,13 @@ const UploadDataPage = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
+                  <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
                     <button
                       onClick={() => handleViewFileData(item.fileId)}
-                      className="text-green-600 hover:text-green-800 flex items-center"
+                      className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
+                      title="View File Data"
                     >
-                      <Eye className="w-4 h-4 mr-1" />
-                      View File Data
+                      <Eye className="w-4 h-4 text-white" />
                     </button>
                   </td>
                 </tr>

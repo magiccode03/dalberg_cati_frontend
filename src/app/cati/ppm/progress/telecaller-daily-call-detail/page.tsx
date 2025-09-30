@@ -175,7 +175,7 @@ const TelecallerDailyCallDetailPage = () => {
       </div>
 
       {/* Search Filters */}
-      <Card className="p-6">
+      <Card className="p-6 mb-5">
         <div className="flex flex-wrap items-end gap-4">
           {/* Report Days */}
           <div className="flex-1 min-w-[200px]">
@@ -301,7 +301,7 @@ const TelecallerDailyCallDetailPage = () => {
       </Card>
 
       {/* Performance Cards */}
-      <Card className="p-6">
+      <Card className="p-6 mb-5">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Caller Performance */}
           <div>
@@ -462,9 +462,12 @@ const TelecallerDailyCallDetailPage = () => {
       {/* Data Table */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <Heading level={2} className="text-xl font-semibold text-gray-900">
-            Call Detail
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900">
+              Call Detail
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

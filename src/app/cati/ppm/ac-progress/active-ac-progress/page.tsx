@@ -63,9 +63,12 @@ const ActiveACProgressPage = () => {
           {/* Number Summary */}
           <div>
             <div className="mb-4">
-              <Heading level={3} className="text-lg font-semibold text-gray-900">
-                Number Summary
-              </Heading>
+              <div className="flex items-center">
+                <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+                <Heading level={3} className="text-lg font-semibold text-gray-900">
+                  Number Summary
+                </Heading>
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Total Numbers */}
@@ -205,12 +208,15 @@ const ActiveACProgressPage = () => {
       {/* Master AC Progress Table */}
       <Card>
         <div className="flex justify-between items-center mb-4">
-          <Heading level={2} className="text-xl font-semibold text-gray-900">
-            Master AC Progress
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900">
+              Master AC Progress
+            </Heading>
+          </div>
           <button 
             onClick={handleDownload}
-            className="flex items-center text-blue-600 hover:text-blue-800"
+            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
           >
             <Download className="w-4 h-4 mr-2" />
             Download

@@ -628,9 +628,12 @@ const CompletedNumbersPage = () => {
       {/* Data Table */}
       <Card className="">
         <div className="flex justify-between items-center mb-6">
-          <Heading level={2} className="text-xl font-semibold text-gray-900">
-            Completed Numbers
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900">
+              Completed Numbers
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -727,16 +730,14 @@ const CompletedNumbersPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.talkDuration}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <Button 
-                        variant="primary" 
-                        size="sm"
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-center">
+                      <button
                         onClick={() => handlePlayAudio(item.audioFile)}
-                        className="flex items-center"
+                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
+                        title="Play Audio"
                       >
-                        <Volume2 className="w-4 h-4 mr-1" />
-                        Audio
-                      </Button>
+                        <Volume2 className="w-4 h-4 text-white" />
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <Button 
@@ -744,6 +745,7 @@ const CompletedNumbersPage = () => {
                         size="sm"
                         onClick={() => handleRejectInterview(item.serverId)}
                         className="flex items-center"
+                        title="Reject Interview"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

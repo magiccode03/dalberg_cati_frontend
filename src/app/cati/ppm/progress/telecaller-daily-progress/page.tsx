@@ -354,9 +354,12 @@ const TelecallerDailyProgressPage: React.FC = () => {
             {/* Caller Performance */}
             <div className="lg:col-span-1">
               <div className="mb-4">
-                <Heading level={3} className="text-lg font-semibold text-gray-900">
-                  Caller Performance
-                </Heading>
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+                  <Heading level={3} className="text-lg font-semibold text-gray-900">
+                    Caller Performance
+                  </Heading>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
@@ -560,9 +563,12 @@ const TelecallerDailyProgressPage: React.FC = () => {
         {/* Data Table */}
         <Card className="">
           <div className="flex justify-between items-center mb-6">
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
-              Caller Summary
-            </Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={2} className="text-xl font-semibold text-gray-900">
+                Caller Summary
+              </Heading>
+            </div>
             <Button variant="secondary" size="sm" className="flex items-center">
               <Download className="w-4 h-4 mr-2" />
               Download Data

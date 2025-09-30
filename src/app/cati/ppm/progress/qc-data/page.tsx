@@ -284,9 +284,12 @@ const QCDataPage = () => {
       {/* Data Table */}
       <Card>
         <div className="mb-4">
-          <Heading level={2} className="text-xl font-semibold text-gray-900">
-            QC Data
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900">
+              QC Data
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -342,16 +345,14 @@ const QCDataPage = () => {
                         {item.qcStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <Button
-                        variant="secondary"
-                        size="sm"
+                    <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
+                      <button
                         onClick={() => handleAudioPlay(item.audioFile)}
-                        className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
+                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
+                        title="Play Audio"
                       >
-                        <Volume2 className="w-3 h-3 mr-1" />
-                        Audio
-                      </Button>
+                        <Volume2 className="w-4 h-4 text-white" />
+                      </button>
                     </td>
                   </tr>
                 ))
