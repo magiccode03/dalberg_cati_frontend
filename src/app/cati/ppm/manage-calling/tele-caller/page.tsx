@@ -8,9 +8,10 @@ import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Checkbox from '@/components/ui/Checkbox';
+import { Edit, Plus, Search } from 'lucide-react';
 
 interface TeleUserData {
   id: number;
@@ -139,7 +140,7 @@ const TeleUserInfoPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <Heading level={1} className="text-2xl font-bold text-gray-900">
-              Tele User Info
+              Tele Caller
             </Heading>
           </div>
           <div className="text-sm text-gray-500">
@@ -194,9 +195,9 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div className="flex items-center justify-center">
+              <div>
                 <Button type="submit" className="w-full">
-                  <i className="fa fa-search mr-2"></i>
+                  <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
               </div>
@@ -244,82 +245,74 @@ const TeleUserInfoPage: React.FC = () => {
         <Card className="">
           <div className="flex justify-between items-center mb-6">
             <Heading level={2} className="text-xl font-semibold text-gray-900">
-              Tele User Info
+              Tele Caller
             </Heading>
             <div className="flex space-x-2">
               <Button variant="primary" size="sm">
-                <i className="fa fa-plus mr-1"></i>
+                <Plus className="w-4 h-4 mr-1" />
                 Add New User
               </Button>
               <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white">
-                <i className="fa fa-check mr-1"></i>
+                <Search className="w-4 h-4 mr-1" />
                 Calling User Check
               </Button>
               <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white">
-                <i className="fa fa-refresh mr-1"></i>
+                <Edit className="w-4 h-4 mr-1" />
                 Redistribute Pending Data
               </Button>
               <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
-                <i className="fa fa-sync mr-1"></i>
+                <Plus className="w-4 h-4 mr-1" />
                 Refresh Progress Data
               </Button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table responsive striped hover>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Caller Agency</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teleform User ID</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile Number</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Under Training</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Fill Form</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QC User</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QC Recheck</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tele Calling Group</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pending Data</TableHead>
-                  <TableHead className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Add Data</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          <div className="table-responsive">
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Caller Agency</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Teleform User ID</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Name</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Mobile Number</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Under Training</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">User Fill Form</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">QC User</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">QC Recheck</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Tele Calling Group</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    Actions <Edit className="inline w-4 h-4 ml-1" />
+                  </th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Pending Data</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    Add Data <Plus className="inline w-4 h-4 ml-1" />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
                 {teleUserData.map((user, index) => (
-                  <TableRow key={user.id} hover>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {index + 1}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.callerAgency}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                      {user.teleformUserId}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.name}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                      {user.mobileNumber}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
+                    <td className="px-4 py-3 border-b border-gray-200">{user.callerAgency}</td>
+                    <td className="px-4 py-3 border-b border-gray-200 font-mono">{user.teleformUserId}</td>
+                    <td className="px-4 py-3 border-b border-gray-200">{user.name}</td>
+                    <td className="px-4 py-3 border-b border-gray-200 font-mono">{user.mobileNumber}</td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <i className={`fe ${user.underTraining ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <i className={`fe ${user.userFillForm ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <i className={`fe ${user.qcUser ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <i className={`fe ${user.qcRecheck ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.teleCallingGroup}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200">{user.teleCallingGroup}</td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                         user.status === 'Active' 
                           ? 'bg-green-100 text-green-800' 
@@ -327,23 +320,21 @@ const TeleUserInfoPage: React.FC = () => {
                       }`}>
                         {user.status}
                       </span>
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <Button variant="primary" size="sm">
-                        <i className="fa fa-edit"></i>
+                        <Edit className="w-4 h-4" />
                       </Button>
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.pendingData}
-                    </TableCell>
-                    <TableCell className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200">{user.pendingData}</td>
+                    <td className="px-4 py-3 border-b border-gray-200">
                       <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white" title="Add 50 New Records">
-                        <i className="fa fa-plus"></i>
+                        <Plus className="w-4 h-4" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
+              </tbody>
             </Table>
           </div>
 
