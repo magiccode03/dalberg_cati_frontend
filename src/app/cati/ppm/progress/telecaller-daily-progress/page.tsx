@@ -642,6 +642,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
               <PaginationStandard
                 currentPage={currentPage}
                 totalItems={totalItems}
+                totalPages={Math.ceil(totalItems / itemsPerPage)}
                 itemsPerPage={itemsPerPage}
                 onPageChange={setCurrentPage}
               />

@@ -8,6 +8,7 @@ import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Trash2, Volume2 } from 'lucide-react';
 
@@ -637,7 +638,7 @@ const CompletedNumbersPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <Table striped bordered hover>
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
@@ -754,7 +755,7 @@ const CompletedNumbersPage = () => {
                 ))
               )}
             </tbody>
-          </table>
+          </Table>
         </div>
 
         {/* Pagination */}

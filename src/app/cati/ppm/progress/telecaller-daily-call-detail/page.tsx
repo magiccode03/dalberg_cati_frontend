@@ -471,94 +471,52 @@ const TelecallerDailyCallDetailPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Call Time
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Call Received
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Response
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  API Response
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  IVR Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Talk Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Audio file
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Update
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+          <Table striped bordered hover>
+            <TableHeader>
+              <TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Caller Name</TableHead>
+                <TableHead>Caller ID</TableHead>
+                <TableHead>Call Time</TableHead>
+                <TableHead>Call Received</TableHead>
+                <TableHead>Caller Response</TableHead>
+                <TableHead>API Response</TableHead>
+                <TableHead>IVR Duration</TableHead>
+                <TableHead>Talk Duration</TableHead>
+                <TableHead>Audio file</TableHead>
+                <TableHead>Update</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {callDetailData.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center text-gray-500">
                     No results found.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 callDetailData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callerName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callerId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callTime}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callReceived}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callerResponse}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.apiResponse}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.ivrDuration}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.talkDuration}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.audioFile}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.callerName}</TableCell>
+                    <TableCell>{item.callerId}</TableCell>
+                    <TableCell>{item.callTime}</TableCell>
+                    <TableCell>{item.callReceived}</TableCell>
+                    <TableCell>{item.callerResponse}</TableCell>
+                    <TableCell>{item.apiResponse}</TableCell>
+                    <TableCell>{item.ivrDuration}</TableCell>
+                    <TableCell>{item.talkDuration}</TableCell>
+                    <TableCell>{item.audioFile}</TableCell>
+                    <TableCell>
                       <Button variant="outline" size="sm">
                         Update
                       </Button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Card>
     </FluidContainer>

@@ -7,6 +7,7 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download } from 'lucide-react';
 
@@ -514,7 +515,7 @@ const MonthlyReportPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <Table striped bordered hover>
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
@@ -645,7 +646,7 @@ const MonthlyReportPage = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
 
         {/* Pagination */}
