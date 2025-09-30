@@ -432,15 +432,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const getRedirectUrl = (role: string): string => {
+    // Super Admin and Portal Admin go directly to their dashboards
+    if (role === 'super_admin') return '/super-admin/dashboard';
+    if (role === 'portal_admin') return '/portal-admin/users';
+    
+    // All other roles go to home page to select CAPI/CATI
+    const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'cd', 'ss', 'atrd', 'wba', 'nd'];
+    if (systemRoles.includes(role)) {
+      return '/home';
+    }
+    
+    // Fallback for legacy roles
     const roleRedirects: { [key: string]: string } = {
-      'super_admin': '/super-admin/dashboard',
-      'portal_admin': '/portal-admin/users',
       'admin': '/dashboard',
       'pmt': '/pmt/dashboard',
       'qc': '/dashboard/qc',
       'quality_analyst': '/dashboard/quality-analyst',
-      'start_qc': '/dashboard/start-qc',
-      'data_quality': '/dashboard/data-quality',
     };
 
     return roleRedirects[role] || '/dashboard';

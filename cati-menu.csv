@@ -1,0 +1,43 @@
+Role,Role short name,Main Menu,Sub-menu,page url,sub-page url
+Project Progress Monitoring,ppm,Manage Calling,Tele Caller,,/ppm/manage-calling/tele-caller
+,,,Calling Group,,/ppm/manage-calling/calling-group
+,,Progress,Telecaller Daily Progress,,/ppm/progress/telecaller-daily-progress
+,,,Telecaller Daily Call Detail,,/ppm/progress/telecaller-daily-call-detail
+,,,Completed Numbers,,/ppm/progress/completed-numbers
+,,,Monthly Report,,/ppm/progress/monthly-report
+,,,Telecaller Pending Data,,/ppm/progress/telecaller-pending-data
+,,,QC Data,,/ppm/progress/qc-data
+,,,QC Interview,,/ppm/progress/qc-interview
+,,,QC Summary,,/ppm/progress/qc-summary
+,,,Re-QC Data,,/ppm/progress/re-qc-Data
+,,Performance,Daily Performance,,/ppm/Performance/daily-performance
+,,,Hourly Performance,,/ppm/Performance/hourly-performance
+,,AC Progress,Overall AC Progress,,/ppm/ac-progress/overall ac-progress
+,,,Active AC Progress,,/ppm/ac-progress/active-ac-progress
+,,,Monthly: Sept 2023,,/ppm/ac-progress/monthly-sept-2023
+,,,Monthly: Oct 2023,,/ppm/ac-progress/monthly-oct-2023
+,,,Monthly: Nov 2023,,/ppm/ac-progress/monthly-nov-2023
+,,,Monthly: Dec 2023,,/ppm/ac-progress/monthly-dec-2023
+,,,Monthly: Jan 2024,,/ppm/ac-progress/monthly-jan-2024
+,,,Monthly: Feb 2024,,/ppm/ac-progress/monthly-feb-2024
+,,,Monthly: Mar 2024,,/ppm/ac-progress/monthly-mar-2024
+,,,Monthly: Apr 2024,,/ppm/ac-progress/monthly-apr-2024
+,,Upload,Upload Data,,/ppm/upload/upload-data
+,,,Upload Weight,,/ppm/upload/upload-weight
+,,,Upload Report,,/ppm/upload/upload-report
+,,,Update Interview,,/ppm/upload/update-interview
+,,Master Agency,,/ppm/master-agency,
+,,QC Download,,/ppm/qc-download,
+,,Generate New Data,,/ppm/generate-new-data,
+,,Download,,/ppm/download,
+,,Others,Invalid Numbers,,/ppm/others/invalid-numbers
+,,,Master Month,,/ppm/others/master-month
+,,,Data Overview,,/ppm/others/data-overview
+,,,Master AC,,/ppm/others/master-ac
+Client Dashboard,cd,Progress,,/cd/progress,
+,,AC Wise Progress,,/cd/ac-wise-progress,
+,,Data Analysis,,/cd/data-analysis,
+,,Tracking Dashboard,,/cd/tracking-dashboard,
+,,Download,Raw Data,,/cd/download/raw-data
+,,,Reports,,/cd/download/reports
+Start Survey,ss,Start Form Filling,,/ss/start-form-filling,
