@@ -1,0 +1,223 @@
+/**
+ * Modern API Service using Axios with Interceptors
+ * Centralized API management with automatic token handling
+ */
+
+import apiClient from './api-client';
+
+// API Response Interface
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  timestamp?: string;
+}
+
+// User Management Interfaces
+export interface User {
+  id: number;
+  uniqueId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roleId: number;
+  roleName: string;
+  roleDisplayName: string;
+  roleLevel: number;
+  portalSlug: string;
+  isActive: number;
+  lastLoginAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateUserRequest {
+  uniqueId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  roleId: number;
+  portalSlug: string;
+  isActive?: boolean;
+}
+
+export interface UpdateUserRequest {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  roleId?: number;
+  portalSlug?: string;
+  isActive?: boolean;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  displayName: string;
+  level: number;
+}
+
+export interface LoginRequest {
+  uniqueId: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: number;
+    uniqueId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    portalSlug: string;
+    roleId: number;
+    isActive: number;
+    lastLoginAt: string;
+    createdAt: string;
+    updatedAt: string;
+    roleName: string;
+    roleDisplayName: string;
+    roleLevel: number;
+  };
+}
+
+class ApiService {
+  // Generic request method using axios
+  private async request<T>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    endpoint: string,
+    data?: any,
+    config?: any
+  ): Promise<ApiResponse<T>> {
+    try {
+      const response = await apiClient.request({
+        method,
+        url: endpoint,
+        data,
+        ...config,
+      });
+
+      return {
+        success: response.data.success || true,
+        data: response.data.data || response.data,
+        message: response.data.message,
+        timestamp: response.data.timestamp || new Date().toISOString(),
+      };
+    } catch (error: any) {
+      console.error('API Request failed:', error);
+      
+      // Handle axios errors
+      if (error.response) {
+        const { status, data } = error.response;
+        throw new Error(data?.message || `HTTP error! status: ${status}`);
+      } else if (error.request) {
+        throw new Error('Network error - please check your connection');
+      } else {
+        throw new Error(error.message || 'An unexpected error occurred');
+      }
+    }
+  }
+
+  // Authentication Methods
+  async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    return this.request<LoginResponse>('POST', '/auth/login', credentials);
+  }
+
+  async logout(): Promise<ApiResponse> {
+    return this.request('POST', '/auth/logout');
+  }
+
+  async refreshToken(): Promise<ApiResponse<{ accessToken: string; refreshToken: string }>> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    return this.request<{ accessToken: string; refreshToken: string }>('POST', '/auth/refresh', { refreshToken });
+  }
+
+  // User Management Methods
+  async getUsers(): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
+    return this.request<{ users: User[]; pagination: any }>('GET', '/users');
+  }
+
+  async getUser(id: string): Promise<ApiResponse<User>> {
+    return this.request<User>('GET', `/users/${id}`);
+  }
+
+  async createUser(userData: CreateUserRequest): Promise<ApiResponse<User>> {
+    return this.request<User>('POST', '/users', userData);
+  }
+
+  async updateUser(id: string, userData: UpdateUserRequest): Promise<ApiResponse<User>> {
+    return this.request<User>('PUT', `/users/${id}`, userData);
+  }
+
+  async deleteUser(id: string): Promise<ApiResponse> {
+    return this.request('DELETE', `/users/${id}`);
+  }
+
+  // Role Management Methods
+  async getRoles(): Promise<ApiResponse<Role[]>> {
+    return this.request<Role[]>('GET', '/roles?isActive=true');
+  }
+
+  async getRole(id: string): Promise<ApiResponse<Role>> {
+    return this.request<Role>('GET', `/roles/${id}`);
+  }
+
+  async createRole(roleData: any): Promise<ApiResponse<Role>> {
+    return this.request<Role>('POST', '/roles', roleData);
+  }
+
+  async updateRole(id: string, roleData: any): Promise<ApiResponse<Role>> {
+    return this.request<Role>('PUT', `/roles/${id}`, roleData);
+  }
+
+  async deleteRole(id: string): Promise<ApiResponse> {
+    return this.request('DELETE', `/roles/${id}`);
+  }
+
+  // Dashboard Methods
+  async getDashboardOverview(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/overview');
+  }
+
+  async getStatusBreakdown(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/status-breakdown');
+  }
+
+  async getACProgress(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/ac-progress');
+  }
+
+  async getPollingStations(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/polling-stations');
+  }
+
+  async getSurveyDates(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/survey-dates');
+  }
+
+  async getSampleStatistics(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/sample-statistics');
+  }
+
+  // PMT Methods
+  async getQCFailReport(page: number = 1): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', `/pmt/qc-fail-report?page=${page}`);
+  }
+
+  async getMasterPollingStation(page: number = 1, limit: number = 10, filters: any = {}): Promise<ApiResponse<any>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...filters,
+    });
+    return this.request<any>('GET', `/pmt/master-polling-station?${params}`);
+  }
+}
+
+// Export singleton instance
+export const apiService = new ApiService();
+export default apiService;

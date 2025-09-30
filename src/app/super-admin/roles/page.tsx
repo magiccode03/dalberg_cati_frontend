@@ -102,15 +102,36 @@ export default function SuperAdminRolesPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiService.getRoles();
-      if (response.success && response.data) {
-        setRoles(response.data);
+      // Get token directly from localStorage
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+
+      // Make direct API call with proper headers
+      const response = await fetch('http://localhost:4001/api/roles?isActive=true', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && data.data) {
+        setRoles(data.data);
       } else {
         setError('Failed to fetch roles');
       }
     } catch (err) {
       setError('Error loading roles');
-      console.error(err);
+      console.error('Roles fetch error:', err);
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@
  * Manages all backend API calls from one place
  */
 
+import apiClient from './api-client';
 import { tokenManager } from './token-manager';
 import { handleApiError, isTokenExpired } from './error-handler';
 
@@ -81,6 +82,11 @@ export const API_ENDPOINTS = {
     STATS: '/dashboard/stats',
     OVERVIEW: '/dashboard/overview',
     RECENT_ACTIVITIES: '/dashboard/activities',
+    STATUS_BREAKDOWN: '/dashboard/status-breakdown',
+    AC_PROGRESS: '/dashboard/ac-progress',
+    POLLING_STATIONS: '/dashboard/polling-stations',
+    SURVEY_DATES: '/dashboard/survey-dates',
+    SAMPLE_STATISTICS: '/dashboard/sample-statistics',
   },
   
   // Analysis
@@ -137,7 +143,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
   refreshToken: string;
   user: {
     id: number;
@@ -479,7 +485,7 @@ class ApiService {
 
     // Save tokens on successful login
     if (response.success && response.data) {
-      this.saveTokens(response.data.token, response.data.refreshToken);
+      this.saveTokens(response.data.accessToken, response.data.refreshToken);
     }
 
     return response;
@@ -585,6 +591,28 @@ class ApiService {
 
   async getRecentActivities(): Promise<ApiResponse<any[]>> {
     return this.request<any[]>(API_ENDPOINTS.DASHBOARD.RECENT_ACTIVITIES);
+  }
+
+  async getStatusBreakdown(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.STATUS_BREAKDOWN);
+  }
+
+  async getACProgress(params?: any): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.AC_PROGRESS}${queryString}`);
+  }
+
+  async getPollingStations(params?: any): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.POLLING_STATIONS}${queryString}`);
+  }
+
+  async getSurveyDates(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.SURVEY_DATES);
+  }
+
+  async getSampleStatistics(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.SAMPLE_STATISTICS);
   }
 
   // Analysis Methods

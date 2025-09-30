@@ -124,7 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await apiService.login({ uniqueId, password });
       
       if (response.success && response.data) {
-        const { user: apiUser, token, refreshToken } = response.data;
+        const { user: apiUser } = response.data;
         
         // Transform API user to our User interface
         const userData: User = {
@@ -132,13 +132,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          role: apiUser.role.name,
-          roleDisplayName: apiUser.role.displayName,
+          role: apiUser.roleName || apiUser.role?.name || 'super_admin',
+          roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
-          permissions: getDefaultPermissions(apiUser.role.name),
+          permissions: getDefaultPermissions(apiUser.roleName || apiUser.role?.name || 'super_admin'),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
-          designation: apiUser.role.displayName,
+          designation: apiUser.roleDisplayName || apiUser.role?.displayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
@@ -151,6 +151,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (rememberMe) {
           localStorage.setItem('rememberMe', 'true');
         }
+
 
         return { success: true, user: userData };
       }
@@ -219,13 +220,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          role: apiUser.role.name,
-          roleDisplayName: apiUser.role.displayName,
+          role: apiUser.roleName || apiUser.role?.name || 'super_admin',
+          roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
-          permissions: getDefaultPermissions(apiUser.role.name),
+          permissions: getDefaultPermissions(apiUser.roleName || apiUser.role?.name || 'super_admin'),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
-          designation: apiUser.role.displayName,
+          designation: apiUser.roleDisplayName || apiUser.role?.displayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
@@ -398,6 +399,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const generateUniqueId = (role: string): string => {
     const rolePrefix = {
       'super_admin': 'SUPER',
+      'portal_admin': 'PORTAL',
       'admin': 'ADMIN',
       'pmt': 'PMT',
       'qc_manager': 'QC',
@@ -424,8 +426,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const getRedirectUrl = (role: string): string => {
     const roleRedirects: { [key: string]: string } = {
       'super_admin': '/super-admin/dashboard',
+      'portal_admin': '/portal-admin/users',
       'admin': '/dashboard',
-      'pmt': '/pmt/ppmp',
+      'pmt': '/pmt/dashboard',
       'qc': '/dashboard/qc',
       'quality_analyst': '/dashboard/quality-analyst',
       'start_qc': '/dashboard/start-qc',
