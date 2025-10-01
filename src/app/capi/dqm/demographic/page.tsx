@@ -605,7 +605,7 @@ export default function DemographicPage() {
 
         {/* Main Card */}
         <div className="w-full">
-          <Card className="p-6">
+          <Card>
             {/* Card Header */}
             <div className="pb-0 mb-6">
               <div className="flex justify-between items-center">
