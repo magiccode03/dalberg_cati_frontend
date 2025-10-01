@@ -10,8 +10,9 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
-import DataGrid from '@/components/ui/DataGrid';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Volume2, MapPin, Image, User } from 'lucide-react';
 
 const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
@@ -155,164 +156,6 @@ const InterviewLogPage = () => {
     },
   ];
 
-  // DataGrid columns configuration
-  const columns = [
-    {
-      key: 'index',
-      title: '#',
-      dataIndex: 'index',
-      width: 60,
-      align: 'center' as const,
-      render: (value: any, record: any, index: number) => (
-        <span className="text-gray-500 font-medium">{index + 1}</span>
-      ),
-    },
-    {
-      key: 'serverId',
-      title: 'Server ID',
-      dataIndex: 'serverId',
-      width: 120,
-      render: (value: string) => (
-        <span className="font-mono text-sm font-medium text-blue-600">{value}</span>
-      ),
-    },
-    {
-      key: 'interviewDate',
-      title: 'Interview Date',
-      dataIndex: 'interviewDate',
-      width: 120,
-    },
-    {
-      key: 'sampleType',
-      title: 'Sample Type',
-      dataIndex: 'sampleType',
-      width: 100,
-    },
-    {
-      key: 'acName',
-      title: 'AC Name',
-      dataIndex: 'acName',
-      width: 200,
-    },
-    {
-      key: 'psName',
-      title: 'PS Name',
-      dataIndex: 'psName',
-      width: 250,
-    },
-    {
-      key: 'deviceId',
-      title: 'Device ID',
-      dataIndex: 'deviceId',
-      width: 150,
-    },
-    {
-      key: 'interviewerId',
-      title: 'Interviewer ID',
-      dataIndex: 'interviewerId',
-      width: 120,
-    },
-    {
-      key: 'audioQc',
-      title: 'Audio QC',
-      dataIndex: 'audioQc',
-      width: 100,
-    },
-    {
-      key: 'audioQcId',
-      title: 'Audio QC ID',
-      dataIndex: 'audioQcId',
-      width: 120,
-    },
-    {
-      key: 'audioFailReason',
-      title: 'Audio Fail Reason',
-      dataIndex: 'audioFailReason',
-      width: 150,
-    },
-    {
-      key: 'qcOutcome',
-      title: 'QC Outcome',
-      dataIndex: 'qcOutcome',
-      width: 120,
-      align: 'center' as const,
-      render: (value: string) => getQcOutcomeBadge(value),
-    },
-    {
-      key: 'status',
-      title: 'Status',
-      dataIndex: 'status',
-      width: 150,
-    },
-    {
-      key: 'psImage',
-      title: 'PS Image',
-      dataIndex: 'psImage',
-      width: 100,
-      align: 'center' as const,
-      render: (value: string) => (
-        <div className="flex justify-center">
-          {value ? (
-            <img src={value} alt="PS Image" className="w-8 h-8 rounded object-cover" />
-          ) : (
-            <i className="fa fa-image text-gray-400 text-lg"></i>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'selfieImage',
-      title: 'Selfie Image',
-      dataIndex: 'selfieImage',
-      width: 100,
-      align: 'center' as const,
-      render: (value: string) => (
-        <div className="flex justify-center">
-          {value ? (
-            <img src={value} alt="Selfie Image" className="w-8 h-8 rounded object-cover" />
-          ) : (
-            <i className="fa fa-user-circle text-gray-400 text-lg"></i>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'gender',
-      title: 'Gender',
-      dataIndex: 'gender',
-      width: 80,
-      align: 'center' as const,
-      render: (value: string) => (
-        <span className={`font-medium ${value === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-          {value}
-        </span>
-      ),
-    },
-    {
-      key: 'playAudio',
-      title: 'Play Audio',
-      dataIndex: 'playAudio',
-      width: 100,
-      align: 'center' as const,
-      render: (value: any, record: any) => (
-        <Button size="sm" className="h-8 w-8 p-0 bg-teal-500 hover:bg-teal-600 text-white border-0" title="Play Audio">
-          <i className="fa fa-volume-up text-white text-sm"></i>
-        </Button>
-      ),
-    },
-    {
-      key: 'gpsMap',
-      title: 'GPS Map',
-      dataIndex: 'gpsMap',
-      width: 100,
-      align: 'center' as const,
-      render: (value: any, record: any) => (
-        <Button size="sm" className="h-8 w-8 p-0 bg-teal-500 hover:bg-teal-600 text-white border-0" title="GPS Map">
-          <i className="fa fa-map text-white text-sm"></i>
-        </Button>
-      ),
-    },
-  ];
 
   const getQcOutcomeBadge = (outcome: string) => {
     switch (outcome) {
@@ -490,8 +333,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.audioQc.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('audioQc', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('audioQc', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -512,8 +355,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.audioQcStatus.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('audioQcStatus', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('audioQcStatus', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -536,8 +379,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.audio1Status.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('audio1Status', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('audio1Status', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -558,8 +401,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.qcRecheckStatusAudio.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('qcRecheckStatusAudio', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('qcRecheckStatusAudio', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -583,8 +426,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.status.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('status', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('status', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -608,7 +451,7 @@ const InterviewLogPage = () => {
               </Button>
             </div>
             
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
@@ -616,13 +459,102 @@ const InterviewLogPage = () => {
                   </Text>
                 </div>
                 
-                <DataGrid
-                  data={interviewData}
-                  columns={columns}
-                  loading={false}
-                  size="small"
-                  className="border-0"
-                />
+                <div className="overflow-x-auto">
+                  <Table striped bordered hover className="min-w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-center w-16">#</TableHead>
+                        <TableHead className="w-32">Server ID</TableHead>
+                        <TableHead className="w-32">Interview Date</TableHead>
+                        <TableHead className="w-24">Sample Type</TableHead>
+                        <TableHead className="w-48">AC Name</TableHead>
+                        <TableHead className="w-64">PS Name</TableHead>
+                        <TableHead className="w-40">Device ID</TableHead>
+                        <TableHead className="w-32">Interviewer ID</TableHead>
+                        <TableHead className="w-24">Audio QC</TableHead>
+                        <TableHead className="w-32">Audio QC ID</TableHead>
+                        <TableHead className="w-40">Audio Fail Reason</TableHead>
+                        <TableHead className="text-center w-32">QC Outcome</TableHead>
+                        <TableHead className="w-48">Status</TableHead>
+                        <TableHead className="text-center w-24">PS Image</TableHead>
+                        <TableHead className="text-center w-24">Selfie Image</TableHead>
+                        <TableHead className="text-center w-20">Gender</TableHead>
+                        <TableHead className="text-center w-24">Play Audio</TableHead>
+                        <TableHead className="text-center w-24">GPS Map</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {interviewData.map((interview, index) => (
+                        <TableRow key={interview.id} className="hover:bg-gray-50">
+                          <TableCell className="text-center text-gray-500 font-medium w-16">
+                            {index + 1}
+                          </TableCell>
+                          <TableCell className="w-32">
+                            <span className="font-mono text-sm font-medium text-blue-600">
+                              {interview.serverId}
+                            </span>
+                          </TableCell>
+                          <TableCell className="w-32">{interview.interviewDate}</TableCell>
+                          <TableCell className="w-24">{interview.sampleType}</TableCell>
+                          <TableCell className="w-48">{interview.acName}</TableCell>
+                          <TableCell className="w-64">{interview.psName}</TableCell>
+                          <TableCell className="w-40">{interview.deviceId}</TableCell>
+                          <TableCell className="w-32">{interview.interviewerId}</TableCell>
+                          <TableCell className="w-24">{interview.audioQc}</TableCell>
+                          <TableCell className="w-32">{interview.audioQcId}</TableCell>
+                          <TableCell className="w-40">{interview.audioFailReason}</TableCell>
+                          <TableCell className="text-center w-32">
+                            {getQcOutcomeBadge(interview.qcOutcome)}
+                          </TableCell>
+                          <TableCell className="w-48">{interview.status}</TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                              {interview.psImage ? (
+                                <img src={interview.psImage} alt="PS Image" className="w-8 h-8 rounded object-cover" />
+                              ) : (
+                                <Image className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                              {interview.selfieImage ? (
+                                <img src={interview.selfieImage} alt="Selfie Image" className="w-8 h-8 rounded object-cover" />
+                              ) : (
+                                <User className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center w-20">
+                            <span className={`font-medium ${interview.gender === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                              {interview.gender}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                              <button 
+                                className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center transition-colors duration-200" 
+                                title="Play Audio"
+                              >
+                                <Volume2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                              <button 
+                                className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center transition-colors duration-200" 
+                                title="GPS Map"
+                              >
+                                <MapPin className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
                 
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard

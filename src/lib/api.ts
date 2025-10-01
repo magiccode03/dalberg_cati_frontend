@@ -87,6 +87,9 @@ export const API_ENDPOINTS = {
     POLLING_STATIONS: '/dashboard/polling-stations',
     SURVEY_DATES: '/dashboard/survey-dates',
     SAMPLE_STATISTICS: '/dashboard/sample-statistics',
+    MASTER_AC_LIST: '/dashboard/master-ac/list',
+    MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
+    MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
   },
   
   // Analysis
@@ -613,6 +616,21 @@ class ApiService {
 
   async getSampleStatistics(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.SAMPLE_STATISTICS);
+  }
+
+  async getMasterACList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_LIST}${queryString}`);
+  }
+
+  async getMasterACCasteList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_CASTE_LIST}${queryString}`);
+  }
+
+  async getMasterPollingStationList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
   }
 
   // Analysis Methods

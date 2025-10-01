@@ -20,7 +20,8 @@ export default function ReportsPage() {
         {/* Report Files Card */}
         <Card>
           {/* Card Header */}
-          <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center mb-3">
+            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
             <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
               Report Files
             </Heading>

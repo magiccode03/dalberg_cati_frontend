@@ -76,18 +76,18 @@ export default function CATIProgressPage() {
     const options = [{ value: '', label: 'Select Date' }];
     const startDate = new Date('2024-05-02');
     const endDate = new Date('2024-05-31');
-    
+
     for (let d = new Date(endDate); d >= startDate; d.setDate(d.getDate() - 1)) {
       const dateStr = d.toISOString().split('T')[0];
       options.push({ value: dateStr, label: dateStr });
     }
-    
+
     return options;
   };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
-    
+
     if (field === 'reportDays') {
       setShowCustomDate(value === 'custom');
     }
@@ -97,10 +97,10 @@ export default function CATIProgressPage() {
     console.log('Searching with filters:', filters);
   };
 
-  const MetricCard = ({ 
-    icon: Icon, 
-    title, 
-    value, 
+  const MetricCard = ({
+    icon: Icon,
+    title,
+    value,
     bgColor = 'bg-blue-500',
     iconColor = 'text-white'
   }: {
@@ -110,7 +110,7 @@ export default function CATIProgressPage() {
     bgColor?: string;
     iconColor?: string;
   }) => (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
       <div className="flex items-center">
         <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />
@@ -303,10 +303,15 @@ export default function CATIProgressPage() {
 
       {/* Daily Call Outcome Chart */}
       <Card>
+        <div className="flex items-center mb-4">
+          <div className="w-1 h-6 bg-green-500 mr-3"></div>
+          <Heading level={3} className="text-base font-semibold text-gray-900 dark:text-white">
+            Daily Call Outcome
+          </Heading>
+        </div>
         <LineChart
           data={chartData}
           xAxisData={xAxisData}
-          title="Daily Call Outcome"
           height={350}
           smooth={true}
           area={false}
