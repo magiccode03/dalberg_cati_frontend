@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Bihar Election Analysis Dashboard",
+  title: "West Bengal Opinion Poll 2025",
   description: "Comprehensive election analysis and management system for Bihar 2025",
 };
 
