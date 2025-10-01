@@ -373,13 +373,13 @@ export default function ProgressReportPage() {
   };
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-      <Heading level={1} className="mb-6">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={4} className="mb-6">
         Progress Report
       </Heading>
 
       {/* Filter Section */}
-      <Card className="mb-6 p-6">
+      <Card className="mb-6">
         <div className="flex items-center gap-4">
           <div className="flex-1">
             <Text className="text-sm font-medium mb-2">Report Days</Text>

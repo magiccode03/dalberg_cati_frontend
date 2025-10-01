@@ -97,7 +97,7 @@ export default function FieldworkProgressPage() {
   };
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="justify-content-center mt-2">
@@ -108,7 +108,7 @@ export default function FieldworkProgressPage() {
       </div>
 
       {/* Progress Summary Card */}
-      <Card className="p-6 mb-6">
+      <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <Heading level={4} className="card-title mg-b-0">

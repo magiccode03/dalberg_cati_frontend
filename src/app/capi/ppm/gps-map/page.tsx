@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
+import Heading from '@/components/ui/Heading';
 import { Search, MapPin, Filter, RefreshCw } from 'lucide-react';
 
 export default function GPSMapPage() {
@@ -98,9 +99,7 @@ export default function GPSMapPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            GPS Map
-          </h1>
+          <Heading level={4} className="mb-2">GPS Map</Heading>
           <p className="text-gray-600 dark:text-gray-400">
             View GPS locations and track interview progress on the map
           </p>
@@ -213,7 +212,6 @@ export default function GPSMapPage() {
 
         {/* GPS Map Card */}
         <Card>
-          <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                 GPS Map
@@ -278,7 +276,6 @@ export default function GPSMapPage() {
                 <span className="text-sm text-gray-600 dark:text-gray-400">Pending</span>
               </div>
             </div>
-          </div>
         </Card>
       </div>
     </div>

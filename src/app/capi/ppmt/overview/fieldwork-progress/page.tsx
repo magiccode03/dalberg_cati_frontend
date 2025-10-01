@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Table } from '@/components/ui/Table';
+import Heading from '@/components/ui/Heading';
 
 const FieldworkProgressPage = () => {
   // Progress Summary data
@@ -68,9 +69,7 @@ const FieldworkProgressPage = () => {
       <div className="max-w-8xl mx-auto px-20">
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Fieldwork Progress
-          </h1>
+          <Heading level={4}>Fieldwork Progress</Heading>
         </div>
 
         {/* Progress Summary Card */}

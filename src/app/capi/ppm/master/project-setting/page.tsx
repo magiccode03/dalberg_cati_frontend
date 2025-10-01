@@ -445,15 +445,15 @@ const ProjectSettingPage = () => {
   };
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-      <Heading level={1} className="mb-6">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={4} className="mb-6">
         Project Settings
       </Heading>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Settings Sidebar */}
         <div className="lg:col-span-3">
-          <Card className="p-6">
+          <Card>
             <Heading level={4} className="mb-4">
               Settings
             </Heading>
@@ -481,7 +481,7 @@ const ProjectSettingPage = () => {
 
         {/* Main Content */}
         <div className="lg:col-span-9">
-          <Card className="p-6">
+          <Card>
             {/* Project Info Tab */}
             {activeTab === 'project-info' && (
               <>

@@ -344,8 +344,8 @@ const InterviewLogPage = () => {
   };
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-      <Heading level={1} className="mb-6">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={4} className="mb-6">
         Interview Log
       </Heading>
 

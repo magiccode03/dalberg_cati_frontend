@@ -186,7 +186,7 @@ export default function QCUserProgressPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         {/* breadcrumb */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">

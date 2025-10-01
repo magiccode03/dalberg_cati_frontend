@@ -29,7 +29,7 @@ export default function UpdateRequestPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
@@ -45,7 +45,7 @@ export default function UpdateRequestPage() {
 
         {/* Form Card */}
         <div className="w-full mb-6">
-          <Card className="p-6">
+          <Card>
             {/* Card Header */}
             <div className="pb-0 mb-6">
               <div className="flex justify-between items-center">
@@ -103,7 +103,7 @@ export default function UpdateRequestPage() {
 
         {/* List Card */}
         <div className="w-full">
-          <Card className="p-6">
+          <Card>
             {/* Card Header */}
             <div className="pb-0 mb-6">
               <Heading level={4} className="text-lg font-semibold text-gray-900 mb-0">

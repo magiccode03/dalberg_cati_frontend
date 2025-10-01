@@ -1,12 +1,8 @@
 'use client';
 
 import React from 'react';
-// import { Card } from '@/components/ui/Card';
 import { Table } from '@/components/ui/Table';
-// import { Heading } from '@/components/ui/Heading';
-// import { Text } from '@/components/ui/Text';
-// import { Container } from '@/components/ui/Container';
-// import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import Heading from '@/components/ui/Heading';
 
 const FieldworkProgressPage = () => {
   // Progress Summary data
@@ -70,9 +66,7 @@ const FieldworkProgressPage = () => {
     <div className="main-container container mx-auto px-4 py-6">
       {/* Page Title */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Fieldwork Progress
-        </h1>
+        <Heading level={4}>Fieldwork Progress</Heading>
       </div>
 
       {/* Progress Summary Card */}
