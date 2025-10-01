@@ -9,7 +9,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download } from 'lucide-react';
+import { Search, Download, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -197,6 +197,36 @@ const MonthlyReportPage = () => {
     console.log('Download data');
   };
 
+  const MetricCard = ({ 
+    icon: Icon, 
+    title, 
+    value, 
+    bgColor = 'bg-blue-500',
+    iconColor = 'text-white'
+  }: {
+    icon: any;
+    title: string;
+    value: string | number;
+    bgColor?: string;
+    iconColor?: string;
+  }) => (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center">
+        <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div className="flex-1">
+          <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            {title}
+          </Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+            {value}
+          </Text>
+        </div>
+      </div>
+    </div>
+  );
+
   // Pagination calculations
   const totalItems = callerSummaryData.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -271,229 +301,136 @@ const MonthlyReportPage = () => {
       </Card>
 
       {/* Performance Cards */}
-      <Card className="mb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Caller Performance */}
-          <div>
-            <div className="flex items-center mb-4">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={3} className="text-lg font-bold uppercase text-gray-900">
-                Caller Performance
-              </Heading>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Total Callers */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  1
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Total Callers</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{performanceMetrics.totalCallers.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Month */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  2
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Month</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{performanceMetrics.month}</Text>
-                </div>
-              </div>
-
-              {/* Number of dials */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  3
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Number of dials</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{performanceMetrics.numberOfDials.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Total IVR Duration */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  4
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Total IVR Duration</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{performanceMetrics.totalIvrDuration}</Text>
-                </div>
-              </div>
-
-              {/* Caller did not pick */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  5
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Caller did not pick</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{performanceMetrics.callerDidNotPick.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Total Talk Duration */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  6
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Total Talk Duration</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{performanceMetrics.totalTalkDuration}</Text>
-                </div>
-              </div>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
+        {/* Caller Performance */}
+        <Card>
+          <Heading level={3} className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+            Caller Performance
+          </Heading>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MetricCard
+              icon={Users}
+              title="Total Callers"
+              value={performanceMetrics.totalCallers.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={Clock}
+              title="Month"
+              value={performanceMetrics.month}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Number of dials"
+              value={performanceMetrics.numberOfDials.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={Clock}
+              title="Total IVR Duration"
+              value={performanceMetrics.totalIvrDuration}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Caller did not pick"
+              value={performanceMetrics.callerDidNotPick.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Total Talk Duration"
+              value={performanceMetrics.totalTalkDuration}
+              bgColor="bg-blue-500"
+            />
           </div>
+        </Card>
 
-          {/* Call Outcome */}
-          <div>
-            <div className="flex items-center mb-4">
-              <div className="w-1 h-6 bg-green-600 mr-3"></div>
-              <Heading level={3} className="text-lg font-bold uppercase text-gray-900">
-                Call Outcome
-              </Heading>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Number does not exist */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  7
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Number does not exist</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{callOutcomeMetrics.numberDoesNotExist.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Respondent did not pick */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  8
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Respondent did not pick</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{callOutcomeMetrics.respondentDidNotPick.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Picked and Refused */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  9
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Picked and Refused</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{callOutcomeMetrics.pickedAndRefused.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Picked and Call Continue */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  10
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Picked and Call Continue</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{callOutcomeMetrics.pickedAndCallContinue.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Total Form Not Fill */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  11
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Total Form Not Fill</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{callOutcomeMetrics.totalFormNotFill.toLocaleString()}</Text>
-                </div>
-              </div>
-            </div>
+        {/* Call Outcome */}
+        <Card>
+          <Heading level={3} className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+            Call Outcome
+          </Heading>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MetricCard
+              icon={PhoneOff}
+              title="Number does not exist"
+              value={callOutcomeMetrics.numberDoesNotExist.toLocaleString()}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Respondent did not pick"
+              value={callOutcomeMetrics.respondentDidNotPick.toLocaleString()}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Picked and Refused"
+              value={callOutcomeMetrics.pickedAndRefused.toLocaleString()}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Picked and Call Continue"
+              value={callOutcomeMetrics.pickedAndCallContinue.toLocaleString()}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Total Form Not Fill"
+              value={callOutcomeMetrics.totalFormNotFill.toLocaleString()}
+              bgColor="bg-green-500"
+            />
           </div>
+        </Card>
 
-          {/* Number Summary */}
-          <div>
-            <div className="flex items-center mb-4">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={3} className="text-lg font-bold uppercase text-gray-900">
-                Number Summary
-              </Heading>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Number does not exist */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  12
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Number does not exist</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{numberSummaryMetrics.numberDoesNotExist.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Respondent did not pick */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  13
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Respondent did not pick</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{numberSummaryMetrics.respondentDidNotPick.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Picked and Refused */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  14
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Picked and Refused</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{numberSummaryMetrics.pickedAndRefused.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Picked and Call Continue */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  15
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Picked and Call Continue</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{numberSummaryMetrics.pickedAndCallContinue.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Total Number Exhausted */}
-              <div className="flex items-center p-3 border-r border-gray-200">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  16
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Total Number Exhausted</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{numberSummaryMetrics.totalNumberExhausted.toLocaleString()}</Text>
-                </div>
-              </div>
-
-              {/* Successful Interviews */}
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">
-                  17
-                </div>
-                <div>
-                  <Text className="text-xs text-gray-600 mb-1">Successful Interviews</Text>
-                  <Text className="text-lg font-semibold text-gray-900">{numberSummaryMetrics.successfulInterviews.toLocaleString()}</Text>
-                </div>
-              </div>
-            </div>
+        {/* Number Summary */}
+        <Card>
+          <Heading level={3} className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+            Number Summary
+          </Heading>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MetricCard
+              icon={PhoneOff}
+              title="Number does not exist"
+              value={numberSummaryMetrics.numberDoesNotExist.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Respondent did not pick"
+              value={numberSummaryMetrics.respondentDidNotPick.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Picked and Refused"
+              value={numberSummaryMetrics.pickedAndRefused.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Picked and Call Continue"
+              value={numberSummaryMetrics.pickedAndCallContinue.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Total Number Exhausted"
+              value={numberSummaryMetrics.totalNumberExhausted.toLocaleString()}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={CheckCircle}
+              title="Successful Interviews"
+              value={numberSummaryMetrics.successfulInterviews.toLocaleString()}
+              bgColor="bg-green-500"
+            />
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       {/* Data Table */}
       <Card>

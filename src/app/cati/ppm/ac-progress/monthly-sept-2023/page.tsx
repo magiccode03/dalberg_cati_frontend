@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
-import { Download, CreditCard } from 'lucide-react';
+import { Download, Users, Clock, PhoneCall, PhoneOff, CheckCircle, CreditCard } from 'lucide-react';
 
 // Interfaces
 interface MonthlyACProgressData {
@@ -126,6 +126,36 @@ const MonthlySept2023Page = () => {
     console.log('Download September 2023 progress data');
   };
 
+  const MetricCard = ({ 
+    icon: Icon, 
+    title, 
+    value, 
+    bgColor = 'bg-blue-500',
+    iconColor = 'text-white'
+  }: {
+    icon: any;
+    title: string;
+    value: string | number;
+    bgColor?: string;
+    iconColor?: string;
+  }) => (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center">
+        <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div className="flex-1">
+          <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            {title}
+          </Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+            {value}
+          </Text>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <FluidContainer>
       {/* Page Header */}
@@ -146,125 +176,54 @@ const MonthlySept2023Page = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Number Assigned */}
-          <div className="border-r border-gray-200 pr-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Number Assigned</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.numberAssigned.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Number Pending */}
-          <div className="border-r border-gray-200 pr-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Number Pending</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.numberPending.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Total Number Exhausted */}
-          <div className="border-r border-gray-200 pr-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Total Number Exhausted</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.totalNumberExhausted.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Number Does Not Exist */}
-          <div>
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Number Does Not Exist</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.numberDoesNotExist.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Respondent Did Not Pick */}
-          <div className="border-r border-gray-200 pr-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Respondent Did Not Pick</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.respondentDidNotPick.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Picked And Refused */}
-          <div className="border-r border-gray-200 pr-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Picked And Refused</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.pickedAndRefused.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Call Continue */}
-          <div className="border-r border-gray-200 pr-4">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Call Continue</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.callContinue.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
-
-          {/* Successful Interviews */}
-          <div>
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <Text className="text-sm text-gray-600 mb-1">Successful Interviews</Text>
-                <Text className="text-lg font-semibold text-gray-900">
-                  {callOutcomeMetrics.successfulInterviews.toLocaleString()}
-                </Text>
-              </div>
-            </div>
-          </div>
+          <MetricCard
+            icon={CreditCard}
+            title="Number Assigned"
+            value={callOutcomeMetrics.numberAssigned.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={Clock}
+            title="Number Pending"
+            value={callOutcomeMetrics.numberPending.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={PhoneOff}
+            title="Total Number Exhausted"
+            value={callOutcomeMetrics.totalNumberExhausted.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={PhoneOff}
+            title="Number Does Not Exist"
+            value={callOutcomeMetrics.numberDoesNotExist.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={PhoneOff}
+            title="Respondent Did Not Pick"
+            value={callOutcomeMetrics.respondentDidNotPick.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={PhoneOff}
+            title="Picked And Refused"
+            value={callOutcomeMetrics.pickedAndRefused.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={PhoneCall}
+            title="Call Continue"
+            value={callOutcomeMetrics.callContinue.toLocaleString()}
+            bgColor="bg-green-500"
+          />
+          <MetricCard
+            icon={CheckCircle}
+            title="Successful Interviews"
+            value={callOutcomeMetrics.successfulInterviews.toLocaleString()}
+            bgColor="bg-green-500"
+          />
         </div>
       </Card>
 

@@ -37,9 +37,12 @@ const InvalidNumbersPage = () => {
       {/* Invalid Numbers Table */}
       <Card>
         <div className="mb-4">
-          <Heading level={2} className="text-xl font-semibold text-gray-900">
-            Invalid Numbers
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900">
+              Invalid Numbers
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

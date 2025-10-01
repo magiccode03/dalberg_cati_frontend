@@ -79,9 +79,12 @@ const MasterACPage = () => {
       {/* Master AC Table */}
       <Card>
         <div className="flex justify-between items-center mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            Master AC
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              Master AC
+            </Heading>
+          </div>
         </div>
 
         {/* Summary */}

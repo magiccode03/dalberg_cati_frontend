@@ -569,7 +569,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
                 Caller Summary
               </Heading>
             </div>
-            <Button variant="secondary" size="sm" className="flex items-center">
+            <Button variant="secondary" size="sm" className="flex items-center bg-blue-600 hover:bg-blue-700 text-white">
               <Download className="w-4 h-4 mr-2" />
               Download Data
             </Button>

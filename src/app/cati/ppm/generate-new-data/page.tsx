@@ -5,12 +5,49 @@ import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Database, BarChart3 } from 'lucide-react';
 
 const GenerateNewDataPage = () => {
   const handleACWiseData = () => {
     console.log('Generate AC Wise Data');
   };
+
+  const MetricCard = ({ 
+    icon: Icon, 
+    title, 
+    description, 
+    bgColor = 'bg-blue-500',
+    iconColor = 'text-white',
+    onClick
+  }: {
+    icon: any;
+    title: string;
+    description: string;
+    bgColor?: string;
+    iconColor?: string;
+    onClick?: () => void;
+  }) => (
+    <button
+      onClick={onClick}
+      className="w-full text-left hover:bg-gray-50 rounded-lg transition-colors duration-200"
+    >
+      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+        <div className="flex items-center">
+          <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+            <Icon className={`w-5 h-5 ${iconColor}`} />
+          </div>
+          <div className="flex-1">
+            <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+              {title}
+            </Text>
+            <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+              {description}
+            </Text>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
 
   return (
     <FluidContainer>
@@ -33,25 +70,13 @@ const GenerateNewDataPage = () => {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* AC Wise Data */}
-          <div className="border-r border-gray-200 pr-4">
-            <button
-              onClick={handleACWiseData}
-              className="w-full text-left hover:bg-gray-50 rounded-lg transition-colors duration-200"
-            >
-              <div className="flex items-center p-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-                  <CreditCard className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <Text className="text-sm text-gray-600 mb-1">AC Wise Data</Text>
-                  <Text className="text-lg font-semibold text-gray-900">
-                    Generate Average Records from Each AC
-                  </Text>
-                </div>
-              </div>
-            </button>
-          </div>
+          <MetricCard
+            icon={Database}
+            title="AC Wise Data"
+            description="Generate Average Records from Each AC"
+            bgColor="bg-blue-500"
+            onClick={handleACWiseData}
+          />
         </div>
       </Card>
     </FluidContainer>

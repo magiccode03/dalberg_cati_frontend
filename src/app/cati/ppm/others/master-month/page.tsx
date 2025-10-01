@@ -125,9 +125,12 @@ const MasterMonthPage = () => {
       {/* Month List Table */}
       <Card>
         <div className="flex justify-between items-center mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            WB CATI | PMT | Months | West Bengal Telephonic Survey 2024
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              WB CATI | PMT | Months | West Bengal Telephonic Survey 2024
+            </Heading>
+          </div>
           <Button 
             variant="primary" 
             size="sm"
