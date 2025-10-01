@@ -85,9 +85,12 @@ const UploadReportPage = () => {
       {/* Upload Form */}
       <Card className="mb-6">
         <div className="mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            Upload Report File
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              Upload Report File
+            </Heading>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -154,9 +157,12 @@ const UploadReportPage = () => {
       {/* Uploaded Report Files History */}
       <Card>
         <div className="mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            Uploaded Report Files
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              Uploaded Report Files
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

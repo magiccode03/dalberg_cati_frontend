@@ -56,9 +56,12 @@ const TelecallingGroupPage: React.FC = () => {
         {/* Data Table */}
         <Card className="">
           <div className="flex justify-between items-center mb-6">
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
-              Calling Group
-            </Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={2} className="text-xl font-semibold text-gray-900">
+                Calling Group
+              </Heading>
+            </div>
             <div className="flex space-x-2">
               <Button variant="primary" size="sm">
                 <Plus className="w-4 h-4 mr-1" />
@@ -97,8 +100,8 @@ const TelecallingGroupPage: React.FC = () => {
                         {group.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <Button variant="primary" size="sm">
+                    <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
+                      <Button variant="primary" size="sm" title="Edit Group">
                         <Edit className="w-4 h-4" />
                       </Button>
                     </td>
