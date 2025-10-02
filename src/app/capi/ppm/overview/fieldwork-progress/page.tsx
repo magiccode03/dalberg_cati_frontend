@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Table } from '@/components/ui/Table';
 import Heading from '@/components/ui/Heading';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { config } from '@/lib/config';
 
 interface ProgressSummary {
   total_sample: number;
@@ -58,7 +59,7 @@ const FieldworkProgressPage = () => {
         throw new Error('No authentication token found. Please login again.');
       }
 
-      const response = await fetch('http://localhost:4001/api/dataquality', {
+      const response = await fetch(`${config.api.baseUrl}${config.api.version}/dataquality`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',

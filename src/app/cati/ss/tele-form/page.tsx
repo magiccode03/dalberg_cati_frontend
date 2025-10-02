@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,68 +8,294 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Radio from '@/components/ui/Radio';
+import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
-
-interface FormData {
-  ac_code: string;
-  ac_name: string;
-  pc_name: string;
-  pc_code: string;
-  district_name: string;
-  district_code: string;
-  region_name: string;
-  region_code: string;
-  mla_name: string;
-  mp_name: string;
-  number_status: string;
-  call_not_ring: string;
-  call_ring_status: string;
-  q_call_status: string;
-  call_reschedule: string;
-  telecaller_id: string;
-  telecaller_name: string;
-  callid: string;
-}
+import { FormData, initialFormData } from './types/form.types';
+import {
+  partyOptions2019,
+  partyOptions2020,
+  q10Options,
+  q11Options,
+  q12Options,
+  q13Options,
+  satisfactionOptions,
+  q17Options,
+  religionOptions,
+  socialCategoryOptions,
+  casteOptions,
+  femaleEducationOptions,
+  maleEducationOptions,
+  occupationOptions,
+  futureContactOptions,
+} from './utils/partyOptions';
 
 export default function TeleFormPage() {
   const [language, setLanguage] = useState<string>('english');
-  const [formData, setFormData] = useState<FormData>({
-    ac_code: '',
-    ac_name: '',
-    pc_name: '',
-    pc_code: '',
-    district_name: '',
-    district_code: '',
-    region_name: '',
-    region_code: '',
-    mla_name: '',
-    mp_name: '',
-    number_status: '',
-    call_not_ring: '',
-    call_ring_status: '',
-    q_call_status: '',
-    call_reschedule: '',
-    telecaller_id: '',
-    telecaller_name: '',
-    callid: '',
-  });
+  const [timer, setTimer] = useState<number>(0);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  // Timer effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer(prev => prev + 1);
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Comprehensive input change handler with clearing logic
+  const handleInputChange = (field: keyof FormData, value: string | string[]) => {
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Number Status clearing logic
+      if (field === 'number_status') {
+        if (value !== '1') {
+          newData.call_ring_status = '';
+          newData.q_call_status = '';
+          newData.call_reschedule = '';
+          newData.consent = '';
+          clearSection3And4And5And6(newData);
+        }
+        if (value !== '2') {
+          newData.call_not_ring = '';
+        }
+      }
+      
+      // Call Ring Status clearing logic
+      if (field === 'call_ring_status') {
+        if (value !== '1') {
+          newData.q_call_status = '';
+          newData.call_reschedule = '';
+          newData.consent = '';
+          clearSection3And4And5And6(newData);
+        }
+      }
+      
+      // Q Call Status clearing logic
+      if (field === 'q_call_status') {
+        if (value !== '1') {
+          newData.consent = '';
+          clearSection3And4And5And6(newData);
+        }
+        if (value !== '5') {
+          newData.call_reschedule = '';
+        }
+      }
+      
+      // Consent clearing logic
+      if (field === 'consent' && value !== '1') {
+        clearSection3And4And5And6(newData);
+      }
+      
+      // Age clearing logic
+      if (field === 'resp_age') {
+        const age = parseInt(value as string);
+        if (isNaN(age) || age < 18) {
+          newData.resp_registered_voter = '';
+          newData.resp_gender = '';
+          clearSection4And5And6(newData);
+        }
+        if (isNaN(age) || age < 19) {
+          newData.q6 = '';
+          newData.q6_oth = '';
+          newData.q6_ind = '';
+        }
+        if (isNaN(age) || age < 20) {
+          newData.q7 = '';
+          newData.q7_oth = '';
+          newData.q7_ind = '';
+        }
+        if (isNaN(age) || age < 22) {
+          newData.q5 = '';
+          newData.q5_oth = '';
+          newData.q5_ind = '';
+        }
+      }
+      
+      // Registered Voter clearing logic
+      if (field === 'resp_registered_voter' && value !== '1') {
+        newData.resp_gender = '';
+        clearSection4And5And6(newData);
+      }
+      
+      // Q5 "Others" field clearing
+      if (field === 'q5') {
+        if (value !== '44') newData.q5_oth = '';
+        if (value !== '12') newData.q5_ind = '';
+      }
+      
+      // Q6 "Others" field clearing
+      if (field === 'q6') {
+        if (value !== '44') newData.q6_oth = '';
+        if (value !== '12') newData.q6_ind = '';
+      }
+      
+      // Q7 "Others" field clearing
+      if (field === 'q7') {
+        if (value !== '44') newData.q7_oth = '';
+        if (value !== '12') newData.q7_ind = '';
+      }
+      
+      // Q8 "Others" field clearing
+      if (field === 'q8') {
+        if (value !== '44') newData.q8_oth = '';
+        if (value !== '12') newData.q8_ind = '';
+      }
+      
+      // Q9 "Others" field clearing
+      if (field === 'q9') {
+        if (value !== '44') newData.q9_oth = '';
+        if (value !== '12') newData.q9_ind = '';
+      }
+      
+      // Q17 "Others" field clearing
+      if (field === 'q17' && value !== '44') {
+        newData.q17_oth = '';
+      }
+      
+      // Q19 "Others" field clearing
+      if (field === 'q19' && value !== '44') {
+        newData.q19_oth = '';
+      }
+      
+      // Religion "Others" field clearing
+      if (field === 'resp_religion' && value !== '44') {
+        newData.resp_religion_oth = '';
+      }
+      
+      // Caste "Others" field clearing
+      if (field === 'resp_caste_jati' && value !== '44') {
+        newData.resp_caste_jati_oth = '';
+      }
+      
+      return newData;
+    });
+  };
+
+  // Checkbox change handler with exclusive "Don't know" logic
+  const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentValues = prev[field] as string[];
+      const dontKnowValues = ['99'];
+      const isDontKnow = dontKnowValues.includes(value);
+      
+      let newValues: string[];
+      
+      if (isDontKnow && checked) {
+        // Selecting "Don't know" - clear all others
+        newValues = [value];
+      } else if (checked) {
+        // Selecting option - remove "Don't know" if present
+        const filteredValues = currentValues.filter(v => !dontKnowValues.includes(v));
+        newValues = [...filteredValues, value];
+      } else {
+        // Unchecking
+        newValues = currentValues.filter(v => v !== value);
+      }
+      
+      const newData = { ...prev, [field]: newValues };
+      
+      // Handle "Others" text field clearing for checkboxes
+      if (field === 'q10' && !newValues.includes('44')) {
+        newData.q10_oth = '';
+      }
+      if (field === 'q11' && !newValues.includes('44')) {
+        newData.q11_oth = '';
+      }
+      if (field === 'q12' && !newValues.includes('44')) {
+        newData.q12_oth = '';
+      }
+      if (field === 'q13' && !newValues.includes('44')) {
+        newData.q13_oth = '';
+      }
+      
+      return newData;
+    });
+  };
+
+  // Helper functions to clear sections
+  const clearSection3And4And5And6 = (data: FormData) => {
+    data.resp_age = '';
+    data.resp_registered_voter = '';
+    data.resp_gender = '';
+    clearSection4And5And6(data);
+  };
+
+  const clearSection4And5And6 = (data: FormData) => {
+    // Section 4
+    data.q5 = '';
+    data.q5_oth = '';
+    data.q5_ind = '';
+    data.q6 = '';
+    data.q6_oth = '';
+    data.q6_ind = '';
+    data.q7 = '';
+    data.q7_oth = '';
+    data.q7_ind = '';
+    data.q8 = '';
+    data.q8_oth = '';
+    data.q8_ind = '';
+    data.q9 = '';
+    data.q9_oth = '';
+    data.q9_ind = '';
+    data.q10 = [];
+    data.q10_oth = '';
+    data.q11 = [];
+    data.q11_oth = '';
+    data.q12 = [];
+    data.q12_oth = '';
+    data.q13 = [];
+    data.q13_oth = '';
+    
+    // Section 5
+    data.q14 = '';
+    data.q15 = '';
+    data.q16_a = '';
+    data.q16_b = '';
+    data.q17 = '';
+    data.q17_oth = '';
+    data.q19 = '';
+    data.q19_oth = '';
+    
+    // Section 6
+    data.resp_religion = '';
+    data.resp_religion_oth = '';
+    data.resp_social_cat = '';
+    data.resp_caste_jati = '';
+    data.resp_caste_jati_oth = '';
+    data.resp_female_edu = '';
+    data.resp_male_edu = '';
+    data.resp_occupation = '';
+    data.thanks_future = '';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Add API call here
+    
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const currentTime = new Date().toLocaleString();
+    
+    const submissionData = {
+      ...formData,
+      time: timer,
+      final_submit: 1,
+      user_timezone: timezone,
+      user_localdatetime: currentTime,
+    };
+    
+    console.log('Form submitted:', submissionData);
+    // API call here
   };
 
   const handleCallDrop = () => {
-    console.log('Call dropped by respondent');
-    // Handle call drop logic
+    if (window.confirm('Are you sure You Want to drop the Call?')) {
+      console.log('Call dropped by respondent');
+      // Handle redirect or close survey
+    }
   };
 
-  // Translations
+  // Translations (Section 1 only)
   const translations = {
     english: {
       title: 'WB Opinion Poll CATI 2025',
@@ -85,9 +311,6 @@ export default function TeleFormPage() {
       region_code: 'Region Code',
       mla_name: 'MLA Name',
       mp_name: 'MP Name',
-      telecallerId: 'Telecaller ID',
-      telecallerName: 'Telecaller Name',
-      callId: 'Call ID',
     },
     bengali: {
       title: 'WB Opinion Poll CATI 2025',
@@ -103,38 +326,66 @@ export default function TeleFormPage() {
       region_code: 'অঞ্চলের কোড',
       mla_name: 'MLA Name',
       mp_name: 'MP Name',
-      telecallerId: 'টেলিকলার আইডি',
-      telecallerName: 'টেলিকলার নাম',
-      callId: 'কল আইডি',
     }
   };
 
   const t = translations[language as keyof typeof translations];
 
+  // Conditional visibility logic
   const showCallNotRing = formData.number_status === '2';
   const showCallRingStatus = formData.number_status === '1';
   const showCallStatus = formData.call_ring_status === '1';
   const showReschedule = formData.q_call_status === '5';
+  const showSection2 = formData.q_call_status === '1';
+  const showSection3 = formData.consent === '1';
+  const showRegisteredVoter = parseInt(formData.resp_age) >= 18;
+  const showGender = formData.resp_registered_voter === '1' && formData.consent === '1';
+  const showSection4 = formData.resp_registered_voter === '1';
+  const showQ5 = showSection4 && parseInt(formData.resp_age) >= 22;
+  const showQ6 = showSection4 && parseInt(formData.resp_age) >= 19;
+  const showQ7 = showSection4 && parseInt(formData.resp_age) >= 20;
+  const showQ8 = showSection3;
+  const showQ9 = showSection3;
+  const showQ10 = showSection3;
+  const showQ11 = showSection3;
+  const showQ12 = showSection3;
+  const showQ13 = showSection3;
+  const showSection5 = formData.consent === '1' && formData.resp_registered_voter === '1';
+  const showSection6 = formData.consent === '1' && formData.resp_registered_voter === '1';
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-6">
-      {/* Page Title with Language Selector */}
-      <div className="mb-6 flex items-center justify-between">
-        <Heading level={4}>{t.title}</Heading>
-        <div className="flex items-center gap-3">
-          <Text className="font-medium text-gray-700 dark:text-gray-300">Language:</Text>
-          <div className="w-48">
-            <SelectDropdown
-              options={[
-                { value: 'english', label: 'English' },
-                { value: 'bengali', label: 'Bengali (বাংলা)' },
-              ]}
-              value={language}
-              onChange={(value) => setLanguage(value as string)}
-              placeholder="Select Language"
-            />
+      {/* Timer and Language Selector */}
+      <div className="mb-6">
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <Heading level={4}>{t.title}</Heading>
+            <div className="flex items-center gap-6">
+              {/* Timer */}
+              <div>
+                <Text className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                  Time: <span className="text-blue-600 dark:text-blue-400 float-right">{timer}s</span>
+                </Text>
+              </div>
+              
+              {/* Language Selector */}
+              <div className="flex items-center gap-3">
+                <Text className="font-medium text-gray-700 dark:text-gray-300">Language:</Text>
+                <div className="w-48">
+                  <SelectDropdown
+                    options={[
+                      { value: 'english', label: 'English (English)' },
+                      { value: 'bengali', label: 'Bangla (বাংলা)' },
+                    ]}
+                    value={language}
+                    onChange={(value) => setLanguage(value as string)}
+                    placeholder="Select Language"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -144,125 +395,84 @@ export default function TeleFormPage() {
             <Heading level={4} className="text-gray-900 dark:text-white mb-4">
               {t.section1}
             </Heading>
-            <Heading level={4} className="text-gray-700 dark:text-gray-300">
+            <Heading level={5} className="text-gray-700 dark:text-gray-300">
               {t.identification}
             </Heading>
           </div>
 
           <div className="grid grid-cols-1 gap-6">
-            {/* AC Code */}
-            <div>
-              <Input
-                label={t.ac_code}
-                value={formData.ac_code}
-                onChange={(e) => handleInputChange('ac_code', e.target.value)}
-                required
-                placeholder=""
-              />
-            </div>
-
-            {/* AC Name */}
-            <div>
-              <Input
-                label={t.ac_name}
-                value={formData.ac_name}
-                onChange={(e) => handleInputChange('ac_name', e.target.value)}
-                required
-                placeholder=""
-              />
-            </div>
-
-            {/* PC Name */}
-            <div>
-              <Input
-                label={t.pc_name}
-                value={formData.pc_name}
-                onChange={(e) => handleInputChange('pc_name', e.target.value)}
-                placeholder=""
-              />
-            </div>
-
-            {/* PC Code */}
-            <div>
-              <Input
-                label={t.pc_code}
-                value={formData.pc_code}
-                onChange={(e) => handleInputChange('pc_code', e.target.value)}
-                placeholder=""
-              />
-            </div>
-
-            {/* District Name */}
-            <div>
-              <Input
-                label={t.district_name}
-                value={formData.district_name}
-                onChange={(e) => handleInputChange('district_name', e.target.value)}
-                placeholder=""
-              />
-            </div>
-
-            {/* District Code */}
-            <div>
-              <Input
-                label={t.district_code}
-                value={formData.district_code}
-                onChange={(e) => handleInputChange('district_code', e.target.value)}
-                placeholder=""
-              />
-            </div>
-
-            {/* Region Name */}
-            <div>
-              <Input
-                label={t.region_name}
-                value={formData.region_name}
-                onChange={(e) => handleInputChange('region_name', e.target.value)}
-                placeholder=""
-              />
-            </div>
-
-            {/* Region Code */}
-            <div>
-              <Input
-                label={t.region_code}
-                value={formData.region_code}
-                onChange={(e) => handleInputChange('region_code', e.target.value)}
-                placeholder=""
-              />
-            </div>
-
-            {/* MLA Name */}
-            <div>
-              <Input
-                label={t.mla_name}
-                value={formData.mla_name}
-                onChange={(e) => handleInputChange('mla_name', e.target.value)}
-                required
-                placeholder=""
-              />
-            </div>
-
-            {/* MP Name */}
-            <div>
-              <Input
-                label={t.mp_name}
-                value={formData.mp_name}
-                onChange={(e) => handleInputChange('mp_name', e.target.value)}
-                required
-                placeholder=""
-              />
-            </div>
+            <Input
+              label={t.ac_code}
+              value={formData.ac_code}
+              onChange={(e) => handleInputChange('ac_code', e.target.value)}
+              required
+              maxLength={150}
+            />
+            <Input
+              label={t.ac_name}
+              value={formData.ac_name}
+              onChange={(e) => handleInputChange('ac_name', e.target.value)}
+              required
+              maxLength={150}
+            />
+            <Input
+              label={t.pc_name}
+              value={formData.pc_name}
+              onChange={(e) => handleInputChange('pc_name', e.target.value)}
+              maxLength={150}
+            />
+            <Input
+              label={t.pc_code}
+              value={formData.pc_code}
+              onChange={(e) => handleInputChange('pc_code', e.target.value)}
+              maxLength={150}
+            />
+            <Input
+              label={t.district_name}
+              value={formData.district_name}
+              onChange={(e) => handleInputChange('district_name', e.target.value)}
+              maxLength={150}
+            />
+            <Input
+              label={t.district_code}
+              value={formData.district_code}
+              onChange={(e) => handleInputChange('district_code', e.target.value)}
+              maxLength={150}
+            />
+            <Input
+              label={t.region_name}
+              value={formData.region_name}
+              onChange={(e) => handleInputChange('region_name', e.target.value)}
+              maxLength={150}
+            />
+            <Input
+              label={t.region_code}
+              value={formData.region_code}
+              onChange={(e) => handleInputChange('region_code', e.target.value)}
+              maxLength={150}
+            />
+            <Input
+              label={t.mla_name}
+              value={formData.mla_name}
+              onChange={(e) => handleInputChange('mla_name', e.target.value)}
+              required
+              maxLength={150}
+            />
+            <Input
+              label={t.mp_name}
+              value={formData.mp_name}
+              onChange={(e) => handleInputChange('mp_name', e.target.value)}
+              required
+              maxLength={150}
+            />
           </div>
         </Card>
 
-        {/* Call Status Section - English Only */}
+        {/* Call Status Section */}
         <Card className="p-6 mb-6">
-          <div className="mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white">
-              Call Status
-            </Heading>
-          </div>
+          <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+            Call Status
+          </Heading>
 
           {/* Number Status */}
           <div className="mb-6">
@@ -297,7 +507,7 @@ export default function TeleFormPage() {
             </div>
           </div>
 
-          {/* Call Not Ring Status - Conditional */}
+          {/* Call Not Ring Status */}
           {showCallNotRing && (
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
@@ -332,7 +542,7 @@ export default function TeleFormPage() {
             </div>
           )}
 
-          {/* Call Ring Status - Conditional */}
+          {/* Call Ring Status */}
           {showCallRingStatus && (
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
@@ -359,7 +569,7 @@ export default function TeleFormPage() {
             </div>
           )}
 
-          {/* Q Call Status - Conditional */}
+          {/* Q Call Status */}
           {showCallStatus && (
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
@@ -394,7 +604,7 @@ export default function TeleFormPage() {
             </div>
           )}
 
-          {/* Reschedule Interview - Conditional */}
+          {/* Reschedule Interview */}
           {showReschedule && (
             <div className="mb-6">
               <Input
@@ -402,40 +612,871 @@ export default function TeleFormPage() {
                 label="Reschedule Interview"
                 value={formData.call_reschedule}
                 onChange={(e) => handleInputChange('call_reschedule', e.target.value)}
-                placeholder=""
               />
             </div>
           )}
 
-          {/* Telecaller Name - English Only */}
+          {/* Telecaller Name */}
           <div className="mb-6">
             <Input
               label="Telecaller Name"
               value={formData.telecaller_name}
               onChange={(e) => handleInputChange('telecaller_name', e.target.value)}
-              placeholder=""
+              maxLength={255}
             />
           </div>
 
-          {/* Call ID - English Only */}
+          {/* Call ID */}
           <div>
             <Input
               label="Call ID"
               value={formData.callid}
               onChange={(e) => handleInputChange('callid', e.target.value)}
-              placeholder=""
+              maxLength={50}
             />
           </div>
         </Card>
 
-        {/* Call Drop Group - English Only */}
-        <Card className="p-6 mb-6">
-          <div className="mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white mb-4">
-              Call Drop Group
+        {/* Section 2: Consent */}
+        {showSection2 && (
+          <Card className="p-6 mb-6">
+            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+              Section 2: Interviewer Introduction and Statement of Informed Consent
             </Heading>
-          </div>
 
+            <div className="mb-4">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-4">
+                Namaste, my name is <span className="font-bold">{formData.telecaller_name || '[enumerator name]'}</span>. 
+                We are from Convergent, an independent research organization. We are conducting a survey on social and 
+                political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about 
+                government performance and your preferences. Your responses will remain strictly confidential and will only 
+                be analysed in combination with others. No personal details will ever be shared. The survey will take about 
+                5–10 minutes, and your honest opinions will greatly help us.
+                <br /><br />
+                Should I continue?
+              </Text>
+            </div>
+
+            <div className="space-y-3">
+              <Radio
+                id="consent_1"
+                name="consent"
+                value="1"
+                label="Yes"
+                checked={formData.consent === '1'}
+                onChange={() => handleInputChange('consent', '1')}
+              />
+              <Radio
+                id="consent_2"
+                name="consent"
+                value="2"
+                label="No"
+                checked={formData.consent === '2'}
+                onChange={() => handleInputChange('consent', '2')}
+              />
+            </div>
+          </Card>
+        )}
+
+        {/* Section 3: Basic Demographic */}
+        {showSection3 && (
+          <Card className="p-6 mb-6">
+            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+              Section 3: Basic Demographic
+            </Heading>
+
+            {/* Age */}
+            <div className="mb-6">
+              <Input
+                type="number"
+                label="Could you please tell me your age in complete years?"
+                value={formData.resp_age}
+                onChange={(e) => handleInputChange('resp_age', e.target.value)}
+                min={10}
+                max={99}
+              />
+              <Text className="text-sm italic text-gray-500 dark:text-gray-400 mt-1">Years</Text>
+            </div>
+
+            {/* Registered Voter */}
+            {showRegisteredVoter && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                  Are you a registered voter in this assembly Constituency?
+                </Text>
+                <div className="space-y-3">
+                  <Radio
+                    id="resp_registered_voter_1"
+                    name="resp_registered_voter"
+                    value="1"
+                    label="Yes"
+                    checked={formData.resp_registered_voter === '1'}
+                    onChange={() => handleInputChange('resp_registered_voter', '1')}
+                  />
+                  <Radio
+                    id="resp_registered_voter_2"
+                    name="resp_registered_voter"
+                    value="2"
+                    label="No"
+                    checked={formData.resp_registered_voter === '2'}
+                    onChange={() => handleInputChange('resp_registered_voter', '2')}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Gender */}
+            {showGender && (
+              <div>
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                  Please note the respondent&apos;s gender
+                </Text>
+                <div className="space-y-3">
+                  <Radio
+                    id="resp_gender_1"
+                    name="resp_gender"
+                    value="1"
+                    label="Male"
+                    checked={formData.resp_gender === '1'}
+                    onChange={() => handleInputChange('resp_gender', '1')}
+                  />
+                  <Radio
+                    id="resp_gender_2"
+                    name="resp_gender"
+                    value="2"
+                    label="Female"
+                    checked={formData.resp_gender === '2'}
+                    onChange={() => handleInputChange('resp_gender', '2')}
+                  />
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Section 4: Party Preferences */}
+        {showSection4 && (
+          <Card className="p-6 mb-6">
+            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+              Section 4: Party Preferences
+            </Heading>
+
+            {/* Q5 */}
+            {showQ5 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  5. Which party did you vote for in the last assembly elections (MLA) in 2021?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                </Text>
+                <div className="space-y-3">
+                  {partyOptions2019.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q5_${option.value}`}
+                      name="q5"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q5 === option.value}
+                      onChange={() => handleInputChange('q5', option.value)}
+                    />
+                  ))}
+                </div>
+                {formData.q5 === '44' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q5_oth}
+                      onChange={(e) => handleInputChange('q5_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+                {formData.q5 === '12' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Independent (Please specify)"
+                      value={formData.q5_ind}
+                      onChange={(e) => handleInputChange('q5_ind', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q6 */}
+            {showQ6 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  6. Which party did you vote for in the last Lok Sabha elections (MP) in 2024?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                </Text>
+                <div className="space-y-3">
+                  {partyOptions2019.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q6_${option.value}`}
+                      name="q6"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q6 === option.value}
+                      onChange={() => handleInputChange('q6', option.value)}
+                    />
+                  ))}
+                </div>
+                {formData.q6 === '44' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q6_oth}
+                      onChange={(e) => handleInputChange('q6_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+                {formData.q6 === '12' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Independent (Please specify)"
+                      value={formData.q6_ind}
+                      onChange={(e) => handleInputChange('q6_ind', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q7 */}
+            {showQ7 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  7. Which party did you vote for in the by elections held in your assembly constituency (MLA) after 2021?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                </Text>
+                <div className="space-y-3">
+                  {partyOptions2019.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q7_${option.value}`}
+                      name="q7"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q7 === option.value}
+                      onChange={() => handleInputChange('q7', option.value)}
+                    />
+                  ))}
+                </div>
+                {formData.q7 === '44' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q7_oth}
+                      onChange={(e) => handleInputChange('q7_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+                {formData.q7 === '12' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Independent (Please specify)"
+                      value={formData.q7_ind}
+                      onChange={(e) => handleInputChange('q7_ind', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q8 */}
+            {showQ8 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  8. If assembly elections (MLA) were to be held tomorrow, then which party would you vote for?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                </Text>
+                <div className="space-y-3">
+                  {partyOptions2019.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q8_${option.value}`}
+                      name="q8"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q8 === option.value}
+                      onChange={() => handleInputChange('q8', option.value)}
+                    />
+                  ))}
+                </div>
+                {formData.q8 === '44' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q8_oth}
+                      onChange={(e) => handleInputChange('q8_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+                {formData.q8 === '12' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Independent (Please specify)"
+                      value={formData.q8_ind}
+                      onChange={(e) => handleInputChange('q8_ind', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q9 */}
+            {showQ9 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  9. Let us assume that the above party of your choice doesn&apos;t contest elections in your assembly constituency, which party would you choose?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                </Text>
+                <div className="space-y-3">
+                  {partyOptions2019.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q9_${option.value}`}
+                      name="q9"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q9 === option.value}
+                      onChange={() => handleInputChange('q9', option.value)}
+                    />
+                  ))}
+                </div>
+                {formData.q9 === '44' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q9_oth}
+                      onChange={(e) => handleInputChange('q9_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+                {formData.q9 === '12' && (
+                  <div className="mt-4">
+                    <Input
+                      label="Independent (Please specify)"
+                      value={formData.q9_ind}
+                      onChange={(e) => handleInputChange('q9_ind', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q10 - Checkbox */}
+            {showQ10 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  10. Could you tell us the reason for choosing the above party as your second choice?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                </Text>
+                <div className="space-y-3">
+                  {q10Options.map(option => (
+                    <Checkbox
+                      key={option.value}
+                      id={`q10_${option.value}`}
+                      label={option.label}
+                      checked={formData.q10.includes(option.value)}
+                      onCheckedChange={(checked) => handleCheckboxChange('q10', option.value, checked)}
+                    />
+                  ))}
+                </div>
+                {formData.q10.includes('44') && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q10_oth}
+                      onChange={(e) => handleInputChange('q10_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q11 - Checkbox */}
+            {showQ11 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  11. In your opinion what are the top 3 reasons for voting for AITC?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTION: DO NOT READ OPTIONS, SELECT THE MOST APPROPRIATE OPTION BASIS WHAT THE RESPONDENT SAYS SPONTANEOUSLY
+                </Text>
+                <div className="space-y-3">
+                  {q11Options.map(option => (
+                    <Checkbox
+                      key={option.value}
+                      id={`q11_${option.value}`}
+                      label={option.label}
+                      checked={formData.q11.includes(option.value)}
+                      onCheckedChange={(checked) => handleCheckboxChange('q11', option.value, checked)}
+                    />
+                  ))}
+                </div>
+                {formData.q11.includes('44') && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q11_oth}
+                      onChange={(e) => handleInputChange('q11_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q12 - Checkbox */}
+            {showQ12 && (
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  12. In your opinion what are the top 3 reasons for voting for BJP?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTION: DO NOT READ OPTIONS, SELECT THE MOST APPROPRIATE OPTION BASIS WHAT THE RESPONDENT SAYS SPONTANEOUSLY
+                </Text>
+                <div className="space-y-3">
+                  {q12Options.map(option => (
+                    <Checkbox
+                      key={option.value}
+                      id={`q12_${option.value}`}
+                      label={option.label}
+                      checked={formData.q12.includes(option.value)}
+                      onCheckedChange={(checked) => handleCheckboxChange('q12', option.value, checked)}
+                    />
+                  ))}
+                </div>
+                {formData.q12.includes('44') && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q12_oth}
+                      onChange={(e) => handleInputChange('q12_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Q13 - Checkbox */}
+            {showQ13 && (
+              <div>
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                  13. According to you what are the three most pressing issues of your assembly constituency?
+                </Text>
+                <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                  INTERVIEWER INSTRUCTION: DO NOT READ OPTIONS, SELECT THE MOST APPROPRIATE OPTION BASIS WHAT THE RESPONDENT SAYS SPONTANEOUSLY
+                </Text>
+                <div className="space-y-3">
+                  {q13Options.map(option => (
+                    <Checkbox
+                      key={option.value}
+                      id={`q13_${option.value}`}
+                      label={option.label}
+                      checked={formData.q13.includes(option.value)}
+                      onCheckedChange={(checked) => handleCheckboxChange('q13', option.value, checked)}
+                    />
+                  ))}
+                </div>
+                {formData.q13.includes('44') && (
+                  <div className="mt-4">
+                    <Input
+                      label="Other (Please specify)"
+                      value={formData.q13_oth}
+                      onChange={(e) => handleInputChange('q13_oth', e.target.value)}
+                      required
+                      maxLength={150}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Section 5: Satisfaction and Approval Ratings */}
+        {showSection5 && (
+          <Card className="p-6 mb-6">
+            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+              Section 5: Satisfaction and Approval Ratings
+            </Heading>
+
+            {/* Q14 */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?
+              </Text>
+              <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                INTERVIEWER INSTRUCTIONS – READ THE OPTIONS
+              </Text>
+              <div className="space-y-3">
+                {satisfactionOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`q14_${option.value}`}
+                    name="q14"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.q14 === option.value}
+                    onChange={() => handleInputChange('q14', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Q15 */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
+                15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?
+              </Text>
+              <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
+                INTERVIEWER INSTRUCTIONS – READ THE OPTIONS
+              </Text>
+              <div className="space-y-3">
+                {satisfactionOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`q15_${option.value}`}
+                    name="q15"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.q15 === option.value}
+                    onChange={() => handleInputChange('q15', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Q16 - Info Header */}
+            <div className="mb-6">
+              <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                16. How satisfied or dissatisfied are you with the work done by the following.
+              </Heading>
+              <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-4">
+                INTERVIEWER INSTRUCTIONS – READ THE OPTIONS
+              </Text>
+
+              {/* Q16_A */}
+              <div className="mb-6">
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                  A. Lok Sabha MP/ <span className="font-bold">{formData.mp_name || '[MP Name]'}</span> from your parliament constituency
+                </Text>
+                <div className="space-y-3">
+                  {satisfactionOptions.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q16_a_${option.value}`}
+                      name="q16_a"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q16_a === option.value}
+                      onChange={() => handleInputChange('q16_a', option.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Q16_B */}
+              <div>
+                <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                  B. Your current MLA/ <span className="font-bold">{formData.mla_name || '[MLA Name]'}</span>?
+                </Text>
+                <div className="space-y-3">
+                  {satisfactionOptions.map(option => (
+                    <Radio
+                      key={option.value}
+                      id={`q16_b_${option.value}`}
+                      name="q16_b"
+                      value={option.value}
+                      label={option.label}
+                      checked={formData.q16_b === option.value}
+                      onChange={() => handleInputChange('q16_b', option.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Q17 */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                17. Who do you think is the best leader to be the Chief Minister of West Bengal?
+              </Text>
+              <div className="space-y-3">
+                {q17Options.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`q17_${option.value}`}
+                    name="q17"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.q17 === option.value}
+                    onChange={() => handleInputChange('q17', option.value)}
+                  />
+                ))}
+              </div>
+              {formData.q17 === '44' && (
+                <div className="mt-4">
+                  <Input
+                    label="Others (specify)"
+                    value={formData.q17_oth}
+                    onChange={(e) => handleInputChange('q17_oth', e.target.value)}
+                    required
+                    maxLength={150}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Q19 */}
+            <div>
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                19. In your opinion, which party would win the next elections in your constituency, when you would elect your MLA?
+              </Text>
+              <div className="space-y-3">
+                {partyOptions2020.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`q19_${option.value}`}
+                    name="q19"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.q19 === option.value}
+                    onChange={() => handleInputChange('q19', option.value)}
+                  />
+                ))}
+              </div>
+              {formData.q19 === '44' && (
+                <div className="mt-4">
+                  <Input
+                    label="Other (Please Specify)"
+                    value={formData.q19_oth}
+                    onChange={(e) => handleInputChange('q19_oth', e.target.value)}
+                    required
+                    maxLength={150}
+                  />
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+
+        {/* Section 6: Basic Demographic */}
+        {showSection6 && (
+          <Card className="p-6 mb-6">
+            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+              Section 6: Basic Demographic
+            </Heading>
+
+            {/* Q20: Religion */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                20. Could you please tell me the religion that you belong to?
+              </Text>
+              <div className="space-y-3">
+                {religionOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`resp_religion_${option.value}`}
+                    name="resp_religion"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.resp_religion === option.value}
+                    onChange={() => handleInputChange('resp_religion', option.value)}
+                  />
+                ))}
+              </div>
+              {formData.resp_religion === '44' && (
+                <div className="mt-4">
+                  <Input
+                    label="Others (Please specify)"
+                    value={formData.resp_religion_oth}
+                    onChange={(e) => handleInputChange('resp_religion_oth', e.target.value)}
+                    required
+                    maxLength={150}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Q21: Social Category */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                21. Which social category do you belong to?
+              </Text>
+              <div className="space-y-3">
+                {socialCategoryOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`resp_social_cat_${option.value}`}
+                    name="resp_social_cat"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.resp_social_cat === option.value}
+                    onChange={() => handleInputChange('resp_social_cat', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Q22: Caste */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                22. Could you please tell me your caste?
+              </Text>
+              <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                {casteOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`resp_caste_jati_${option.value}`}
+                    name="resp_caste_jati"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.resp_caste_jati === option.value}
+                    onChange={() => handleInputChange('resp_caste_jati', option.value)}
+                  />
+                ))}
+              </div>
+              {formData.resp_caste_jati === '44' && (
+                <div className="mt-4">
+                  <Input
+                    label="Other (Please specify)"
+                    value={formData.resp_caste_jati_oth}
+                    onChange={(e) => handleInputChange('resp_caste_jati_oth', e.target.value)}
+                    required
+                    maxLength={150}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Q23: Female Education */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                23. Could you please tell me the highest educational level of the most educated female of the household?
+              </Text>
+              <div className="space-y-3">
+                {femaleEducationOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`resp_female_edu_${option.value}`}
+                    name="resp_female_edu"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.resp_female_edu === option.value}
+                    onChange={() => handleInputChange('resp_female_edu', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Q24: Male Education */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                24. Could you please tell me the highest educational level of the most educated male of the household?
+              </Text>
+              <div className="space-y-3">
+                {maleEducationOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`resp_male_edu_${option.value}`}
+                    name="resp_male_edu"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.resp_male_edu === option.value}
+                    onChange={() => handleInputChange('resp_male_edu', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Q25: Occupation */}
+            <div className="mb-6">
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                25. What is the occupation of the chief wage earner?
+              </Text>
+              <div className="space-y-3">
+                {occupationOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`resp_occupation_${option.value}`}
+                    name="resp_occupation"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.resp_occupation === option.value}
+                    onChange={() => handleInputChange('resp_occupation', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Q28: Future Contact */}
+            <div>
+              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+                28. Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?
+              </Text>
+              <div className="space-y-3">
+                {futureContactOptions.map(option => (
+                  <Radio
+                    key={option.value}
+                    id={`thanks_future_${option.value}`}
+                    name="thanks_future"
+                    value={option.value}
+                    label={option.label}
+                    checked={formData.thanks_future === option.value}
+                    onChange={() => handleInputChange('thanks_future', option.value)}
+                  />
+                ))}
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Call Drop Group */}
+        <Card className="p-6 mb-6">
+          <Heading level={4} className="text-gray-900 dark:text-white mb-4">
+            Call Drop Group
+          </Heading>
           <div>
             <Button 
               size="lg"
@@ -448,13 +1489,13 @@ export default function TeleFormPage() {
           </div>
         </Card>
 
-        {/* Submit Button - English Only */}
+        {/* Submit Button */}
         <Card className="p-6">
           <div className="flex gap-4">
             <Button 
               type="submit" 
               size="lg"
-              className="min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white"
+              className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white"
             >
               <i className="fa fa-save mr-2"></i>
               Submit
@@ -465,4 +1506,3 @@ export default function TeleFormPage() {
     </Container>
   );
 }
-

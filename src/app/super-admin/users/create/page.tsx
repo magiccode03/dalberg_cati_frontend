@@ -13,6 +13,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import { ArrowLeft, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { apiService } from '@/lib/api-service';
+import { config } from '@/lib/config';
 
 // Form validation schema
 const userSchema = z.object({
@@ -69,7 +70,7 @@ export default function CreateUserPage() {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await fetch('http://localhost:4001/api/roles?isActive=true', {
+        const response = await fetch(`${config.api.baseUrl}${config.api.version}/roles?isActive=true`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -9,7 +9,7 @@ import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
-import { Phone } from 'lucide-react';
+import { Phone, ArrowLeft } from 'lucide-react';
 
 interface CallData {
   id: number;
@@ -120,6 +120,20 @@ export default function StartFormFillingPage() {
     router.push('/cati/ss/tele-form');
   };
 
+  const handleBackToLogin = () => {
+    setShowNewCallSection(false);
+    setIsLoggedIn(false);
+    setShowTable(false);
+    setFormData({
+      teleform_user_id: '',
+      user_phone: ''
+    });
+    setErrors({
+      teleform_user_id: '',
+      user_phone: ''
+    });
+  };
+
   const tabs = [
     { id: 'new-calls', label: 'New Calls', href: '/omnivore2025/teleform/default' },
     { id: 'callback', label: 'Call Back', href: '/omnivore2025/teleform/default/callback' },
@@ -129,91 +143,104 @@ export default function StartFormFillingPage() {
   return (
     <Container maxWidth="full">
       <div className="space-y-6">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="left-content">
-            <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
-                Enter Teleuser ID
-            </Heading>
-          </div>
-          <div className="right-content">
-            <span className="text-sm text-gray-500 dark:text-gray-400"></span>
-          </div>
-        </div>
-
-        {/* Form Card - Always visible */}
-        <Card>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col space-y-4">
-              {/* Report Days Label */}
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Report Days
-                </Text>
+        {/* Enter Teleuser ID Section - Show only when New Call section is hidden */}
+        {!showNewCallSection && (
+          <>
+            {/* Breadcrumb Header */}
+            <div className="flex justify-between items-center mb-6">
+              <div className="left-content">
+                <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Enter Teleuser ID
+                </Heading>
               </div>
-              
-              {/* Form Elements Row */}
-              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-                {/* Teleuser ID Input */}
-                <div className="w-full sm:w-1/3">
-                  <Input
-                    type="text"
-                    id="selectteleform-teleform_user_id"
-                    name="teleform_user_id"
-                    value={formData.teleform_user_id}
-                    onChange={handleInputChange}
-                    placeholder="Enter Teleuser ID"
-                    className={`w-full ${errors.teleform_user_id ? 'border-red-500' : ''}`}
-                    autoComplete="off"
-                    required
-                  />
-                  {errors.teleform_user_id && (
-                    <Text className="text-red-500 text-sm mt-1">
-                      {errors.teleform_user_id}
-                    </Text>
-                  )}
-                </div>
-
-                {/* User Phone Input */}
-                <div className="w-full sm:w-1/3">
-                  <Input
-                    type="text"
-                    id="selectteleform-user_phone"
-                    name="user_phone"
-                    value={formData.user_phone}
-                    onChange={handleInputChange}
-                    placeholder="Enter User Phone No"
-                    className={`w-full ${errors.user_phone ? 'border-red-500' : ''}`}
-                    autoComplete="off"
-                    required
-                  />
-                  {errors.user_phone && (
-                    <Text className="text-red-500 text-sm mt-1">
-                      {errors.user_phone}
-                    </Text>
-                  )}
-                </div>
-
-                {/* Submit Button */}
-                <div className="w-full sm:w-1/3">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                  >
-                    Submit
-                  </Button>
-                </div>
+              <div className="right-content">
+                <span className="text-sm text-gray-500 dark:text-gray-400"></span>
               </div>
             </div>
-          </form>
-        </Card>
+
+            {/* Form Card */}
+            <Card>
+              <form onSubmit={handleSubmit}>
+                <div className="flex flex-col space-y-4">
+                  {/* Report Days Label */}
+                  {/* <div>
+                    <Text className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Report Days
+                    </Text>
+                  </div> */}
+                  
+                  {/* Form Elements Row */}
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                    {/* Teleuser ID Input */}
+                    <div className="w-full sm:w-1/3">
+                      <Input
+                        type="text"
+                        id="selectteleform-teleform_user_id"
+                        name="teleform_user_id"
+                        value={formData.teleform_user_id}
+                        onChange={handleInputChange}
+                        placeholder="Enter Teleuser ID"
+                        className={`w-full ${errors.teleform_user_id ? 'border-red-500' : ''}`}
+                        autoComplete="off"
+                        required
+                      />
+                      {errors.teleform_user_id && (
+                        <Text className="text-red-500 text-sm mt-1">
+                          {errors.teleform_user_id}
+                        </Text>
+                      )}
+                    </div>
+
+                    {/* User Phone Input */}
+                    <div className="w-full sm:w-1/3">
+                      <Input
+                        type="text"
+                        id="selectteleform-user_phone"
+                        name="user_phone"
+                        value={formData.user_phone}
+                        onChange={handleInputChange}
+                        placeholder="Enter User Phone No"
+                        className={`w-full ${errors.user_phone ? 'border-red-500' : ''}`}
+                        autoComplete="off"
+                        required
+                      />
+                      {errors.user_phone && (
+                        <Text className="text-red-500 text-sm mt-1">
+                          {errors.user_phone}
+                        </Text>
+                      )}
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="w-full sm:w-1/3">
+                      <Button
+                        type="submit"
+                        className="w-full"
+                      >
+                        Submit
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </Card>
+          </>
+        )}
 
 
         {/* New Call Section - Show only after form submission */}
         {showNewCallSection && (
           <>
-            <div className="mt-10">
-              <div className="left-content">
+            <div className="mt-10 flex justify-between items-center mb-6">
+              <div className="left-content flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={handleBackToLogin}
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back
+                </Button>
                 <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
                   {activeTab === 'new-calls' ? 'New Call' : 
                    activeTab === 'callback' ? 'Call Back Interview' : 
