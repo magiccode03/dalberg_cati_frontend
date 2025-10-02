@@ -1,0 +1,4 @@
+Section,Type,Label/Column Name,API Field Name
+Pending QC Data,Table Column,QC ID,qc_id
+Pending QC Data,Table Column,Name,name
+Pending QC Data,Table Column,Pending Interview,pending_interview
