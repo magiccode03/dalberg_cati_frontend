@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface AssignedACData {
   id: number;
@@ -16,119 +20,174 @@ interface AssignedACData {
   interviewerId: number;
 }
 
+interface APIResponse {
+  success: boolean;
+  data?: {
+    data: Array<{
+      qc_id: number;
+      qc_user_name: string;
+      mobile_number: string;
+      audio: number;
+      tele: number;
+      gps: number;
+      clientaudiocheck: number;
+      status: number;
+      agency_id: number;
+      assignments: Array<{
+        ac_code: number;
+        ac_name: string;
+        interviewer_id: number;
+      }>;
+    }>;
+  };
+  error?: string;
+  message?: string;
+  timestamp: string;
+}
+
 export default function AssignedACPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [assignedACData, setAssignedACData] = useState<AssignedACData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Sample data based on the provided HTML
-  const assignedACData: AssignedACData[] = [
-    // QC ID 109 - Kundan
-    { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 101 },
-    { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 102 },
-    { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 104 },
-    
-    // QC ID 120 - Supriya
-    { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1182 },
-    { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4002 },
-    { id: 6, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4003 },
-    { id: 7, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4010 },
-    { id: 8, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4013 },
-    { id: 9, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 503 },
-    { id: 10, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6006 },
-    { id: 11, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6007 },
-    { id: 12, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6016 },
-    { id: 13, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6017 },
-    { id: 14, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6020 },
-    { id: 15, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6021 },
-    { id: 16, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6022 },
-    { id: 17, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1180 },
-    { id: 18, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1181 },
-    { id: 19, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 205 },
-    { id: 20, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 206 },
-    { id: 21, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 266 },
-    { id: 22, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 279 },
-    { id: 23, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 280 },
-    { id: 24, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4004 },
-    { id: 25, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4005 },
-    { id: 26, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4008 },
-    { id: 27, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4014 },
-    { id: 28, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4015 },
-    { id: 29, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 6018 },
-    
-    // QC ID 127 - Faizal Saifi
-    { id: 30, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 244 },
-    { id: 31, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 245 },
-    { id: 32, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 236 },
-    { id: 33, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 238 },
-    { id: 34, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 237 },
-    { id: 35, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 239 },
-    { id: 36, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 240 },
-    { id: 37, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 243 },
-    { id: 38, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 212 },
-    { id: 39, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 605 },
-    { id: 40, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 246 },
-    { id: 41, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1175 },
-    { id: 42, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1180 },
-    { id: 43, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1182 },
-    { id: 44, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1183 },
-    { id: 45, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1191 },
-    { id: 46, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1902 },
-    { id: 47, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1905 },
-    { id: 48, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1921 },
-    { id: 49, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 193 },
-    { id: 50, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1930 },
-    { id: 51, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1931 },
-    { id: 52, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1934 },
-    { id: 53, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 2006 },
-    { id: 54, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 211 },
-    { id: 55, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 214 },
-    { id: 56, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 503 },
-    { id: 57, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 6008 },
-    { id: 58, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 6017 },
-    { id: 59, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 6018 },
-    { id: 60, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 6021 },
-    { id: 61, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 6023 },
-    { id: 62, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1924 },
-    { id: 63, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 1932 },
-    { id: 64, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 266 },
-    { id: 65, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 280 },
-    { id: 66, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 7002 },
-    { id: 67, qcId: 127, qcUserName: 'Faizal Saifi', acCode: 23, acName: 'Riga', interviewerId: 7005 },
-    
-    // QC ID 137 - Muskan Siddiqui
-    { id: 68, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 454 },
-    { id: 69, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 467 },
-    { id: 70, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 875 },
-    { id: 71, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 881 },
-    { id: 72, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 882 },
-    { id: 73, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 883 },
-    { id: 74, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 890 },
-    { id: 75, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 891 },
-    { id: 76, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 898 },
-    { id: 77, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 167, acName: 'Suryagarha', interviewerId: 1084 },
-    { id: 78, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 167, acName: 'Suryagarha', interviewerId: 1082 },
-    { id: 79, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 167, acName: 'Suryagarha', interviewerId: 108 },
-    { id: 80, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1052 },
-    { id: 81, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1058 },
-    { id: 82, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1059 },
-    { id: 83, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1061 },
-    { id: 84, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1062 },
-    { id: 85, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1069 },
-    { id: 86, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 167, acName: 'Suryagarha', interviewerId: 1085 },
-    { id: 87, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 167, acName: 'Suryagarha', interviewerId: 1081 },
-    { id: 88, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 167, acName: 'Suryagarha', interviewerId: 1083 },
-    { id: 89, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1053 },
-    { id: 90, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1060 },
-    { id: 91, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1063 },
-    { id: 92, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1064 },
-    { id: 93, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 1559 },
-    { id: 94, qcId: 137, qcUserName: 'Muskan Siddiqui', acCode: 190, acName: 'Paliganj', interviewerId: 810 },
-  ];
+  // Helper function to transform API data to UI format
+  const transformAPIData = (apiData: any[]): AssignedACData[] => {
+    const transformedData: AssignedACData[] = [];
+    let id = 1;
 
-  const totalPages = Math.ceil(assignedACData.length / pageSize);
+    apiData.forEach((qcUser) => {
+      if (qcUser.assignments && Array.isArray(qcUser.assignments)) {
+        qcUser.assignments.forEach((assignment: any) => {
+          transformedData.push({
+            id: id++,
+            qcId: qcUser.qc_id,
+            qcUserName: qcUser.qc_user_name,
+            acCode: assignment.ac_code,
+            acName: assignment.ac_name,
+            interviewerId: assignment.interviewer_id
+          });
+        });
+      }
+    });
+
+    return transformedData;
+  };
+
+  // Fetch data from API
+  const fetchAssignedACData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Debug: Check if token exists
+      const token = localStorage.getItem('accessToken');
+      console.log('Access token exists:', !!token);
+      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+      
+      console.log('Making API request to: /report/assigned-ac');
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('pageSize', pageSize.toString());
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/report/assigned-ac${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('API endpoint:', endpoint);
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+      });
+      
+      // Race between API call and timeout
+      const response = await Promise.race([
+        apiClient.get(endpoint),
+        timeoutPromise
+      ]) as any;
+      
+      const data: APIResponse = response.data;
+      
+      console.log('API Response:', data);
+      console.log('Response success:', data.success);
+      
+      if (data.success && data.data && Array.isArray(data.data.data)) {
+        const transformedData = transformAPIData(data.data.data);
+        setAssignedACData(transformedData);
+        setTotalCount(transformedData.length);
+        console.log('Transformed data:', transformedData);
+      } else {
+        console.error('Invalid API response structure or API error:', data.error);
+        setError(data.error || 'Invalid response format from server');
+        // Use fallback data
+        const fallbackData: AssignedACData[] = [
+          { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 101 },
+          { id: 2, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1182 },
+        ];
+        setAssignedACData(fallbackData);
+        setTotalCount(fallbackData.length);
+      }
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      
+      // Better error handling for different error types
+      if (err.message === 'Request timeout after 10 seconds') {
+        console.error('Request timed out');
+        setError('Request timed out. The server may be slow or unavailable.');
+      } else if (err.code === 'ECONNABORTED') {
+        console.error('Connection aborted');
+        setError('Connection was aborted. Please check your network connection.');
+      } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+        console.error('Network error or no response');
+        setError('Network error. Please check your internet connection and try again.');
+      } else if (err.response?.status === 401) {
+        console.error('Authentication error');
+        setError('Authentication required. Please log in again.');
+      } else if (err.response?.status === 403) {
+        console.error('Forbidden error');
+        setError('Access forbidden. You do not have permission to view this data.');
+      } else if (err.response?.data?.error) {
+        console.error('API error:', err.response.data.error);
+        setError(err.response.data.error);
+      } else if (err.response?.data?.message) {
+        console.error('API message:', err.response.data.message);
+        setError(err.response.data.message);
+      } else {
+        console.error('Unknown error:', err.message);
+        setError(err.message || 'An error occurred while fetching data');
+      }
+      
+      // Use fallback data on error
+      console.log('API request failed, using fallback sample data...');
+      const fallbackData: AssignedACData[] = [
+        { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 101 },
+        { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 102 },
+        { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 104 },
+        { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1182 },
+        { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4002 },
+      ];
+      setAssignedACData(fallbackData);
+      setTotalCount(fallbackData.length);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when page changes
+  useEffect(() => {
+    fetchAssignedACData();
+  }, [currentPage]);
+
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentData = assignedACData.slice(startIndex, endIndex);
+  const currentData = assignedACData;
 
   return (
     <div className="main-content horizontal-content">
@@ -146,11 +205,43 @@ export default function AssignedACPage() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <Text className="ml-2 text-gray-600">Loading assigned AC data...</Text>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Card className="mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
+                    Error Loading Data
+                  </Heading>
+                  <Text className="text-gray-600">{error}</Text>
+                </div>
+                <Button
+                  onClick={fetchAssignedACData}
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Assigned AC Table */}
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
                 <Heading level={4} className="text-lg font-semibold text-gray-900">
                   Assigned AC
                 </Heading>
@@ -191,13 +282,13 @@ export default function AssignedACPage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, assignedACData.length)}</span> of <span className="font-semibold">{assignedACData.length}</span> items
+                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
                 </div>
                 <div>
                   <PaginationStandard
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    totalItems={assignedACData.length}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={setCurrentPage}
                   />

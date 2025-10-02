@@ -1,5 +1,5 @@
 Section,Type,Label/Column Name,API Field Name
-Interview List,Table Column,#,id
+Interview List,Table Column,#,
 Interview List,Table Column,Server ID,server_id
 Interview List,Table Column,Interview Date,interview_date
 Interview List,Table Column,AC Name,ac_name
@@ -9,7 +9,7 @@ Interview List,Table Column,Gender,gender
 Interview List,Table Column,Audio QC Date,audio_qc_complete_date
 Interview List,Table Column,Audio QC,audio_qc
 Interview List,Table Column,Audio QC ID,audio_qc_id
-Interview List,Table Column,Audio Fail Reason,audio_fail_reason
+Interview List,Table Column,Audio Fail Reason,
 Interview List,Table Column,Audio,
-Interview List,Table Column,QC Outcome,qc_outcome
+Interview List,Table Column,QC Outcome,
 Interview List,Table Column,Edit,

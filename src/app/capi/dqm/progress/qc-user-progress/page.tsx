@@ -433,7 +433,8 @@ export default function QCUserProgressPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
                 <Heading level={2} className="text-xl font-semibold text-gray-900">
                   Telecaller Progress Summary
                 </Heading>

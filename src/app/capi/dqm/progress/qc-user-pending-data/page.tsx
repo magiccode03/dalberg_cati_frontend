@@ -58,7 +58,16 @@ export default function QCUserPendingDataPage() {
         
         console.log('Making API request to: /progress/qc-user-pending-data');
         
-        const response = await apiClient.get('/progress/qc-user-pending-data');
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+        });
+        
+        // Race between API call and timeout
+        const response = await Promise.race([
+          apiClient.get('/progress/qc-user-pending-data'),
+          timeoutPromise
+        ]) as any;
         
         const data: APIResponse = response.data;
         
@@ -106,15 +115,30 @@ export default function QCUserPendingDataPage() {
       } catch (err: any) {
         console.error('Error fetching data:', err);
         
-        if (err.response?.status === 401) {
+        // Better error handling for different error types
+        if (err.message === 'Request timeout after 10 seconds') {
+          console.error('Request timed out');
+          setError('Request timed out. The server may be slow or unavailable.');
+        } else if (err.code === 'ECONNABORTED') {
+          console.error('Connection aborted');
+          setError('Connection was aborted. Please check your network connection.');
+        } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+          console.error('Network error or no response');
+          setError('Network error. Please check your internet connection and try again.');
+        } else if (err.response?.status === 401) {
+          console.error('Authentication error');
           setError('Authentication required. Please log in again.');
         } else if (err.response?.status === 403) {
+          console.error('Forbidden error');
           setError('Access forbidden. You do not have permission to view this data.');
         } else if (err.response?.data?.error) {
+          console.error('API error:', err.response.data.error);
           setError(err.response.data.error);
         } else if (err.response?.data?.message) {
+          console.error('API message:', err.response.data.message);
           setError(err.response.data.message);
         } else {
+          console.error('Unknown error:', err.message);
           setError(err.message || 'An error occurred while fetching data');
         }
         
@@ -238,7 +262,8 @@ export default function QCUserPendingDataPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
                 <Heading level={4} className="text-lg font-semibold text-gray-900">
                   Pending QC Data
                 </Heading>
