@@ -1,0 +1,109 @@
+Section,Type,Label/Column Name,
+,,,
+Tab Navigation,Tab,Gender Wise,genderwise
+Tab Navigation,Tab,Age Wise,agewise
+Tab Navigation,Tab,Caste Wise,castewise
+Tab Navigation,Tab,Religion Wise,religionwise
+Tab Navigation,Tab,Social Category Wise,socialcategorywise
+,,,
+Gender Wise Data,Table Column,AC Name,ac_name
+Gender Wise Data,Table Column,AC Code,ac_code
+Gender Wise Data,Table Column,Sample Achieved,sample_achieved
+Gender Wise Data,Table Column,Male Quota,male_quota
+Gender Wise Data,Table Column,Male Covered,male_covered
+Gender Wise Data,Table Column,Male Balance,male_balance
+Gender Wise Data,Table Column,Female Quota,female_quota
+Gender Wise Data,Table Column,Female Covered,female_covered
+Gender Wise Data,Table Column,Female Balance,female_balance
+,,,
+Age Wise Data,Table Column,AC Name,ac_name
+Age Wise Data,Table Column,AC Code,ac_code
+Age Wise Data,Table Column,Sample Achieved,sample_achieved
+Age Wise Data,Table Column,18-24 Years Quota,age_18_24_quota
+Age Wise Data,Table Column,18-24 Years Covered,age_18_24_covered
+Age Wise Data,Table Column,18-24 Years Balance,age_18_24_balance
+Age Wise Data,Table Column,25-34 Years Quota,age_25_34_quota
+Age Wise Data,Table Column,25-34 Years Covered,age_25_34_covered
+Age Wise Data,Table Column,25-34 Years Balance,age_25_34_balance
+Age Wise Data,Table Column,35-49 Years Quota,age_35_49_quota
+Age Wise Data,Table Column,35-49 Years Covered,age_35_49_covered
+Age Wise Data,Table Column,35-49 Years Balance,age_35_49_balance
+Age Wise Data,Table Column,50+ Years Quota,age_50_plus_quota
+Age Wise Data,Table Column,50+ Years Covered,age_50_plus_covered
+Age Wise Data,Table Column,50+ Years Balance,age_50_plus_balance
+,,,
+Caste Wise Data,Table Column,AC Name,ac_name
+Caste Wise Data,Table Column,AC Code,ac_code
+Caste Wise Data,Table Column,Sample Achieved,sample_achieved
+Caste Wise Data,Table Column,Caste 1 Name,caste_1_name
+Caste Wise Data,Table Column,Caste 1 Quota,caste_1_quota
+Caste Wise Data,Table Column,Caste 1 Covered,caste_1_covered
+Caste Wise Data,Table Column,Caste 1 Balance,caste_1_balance
+Caste Wise Data,Table Column,Caste 2 Name,caste_2_name
+Caste Wise Data,Table Column,Caste 2 Quota,caste_2_quota
+Caste Wise Data,Table Column,Caste 2 Covered,caste_2_covered
+Caste Wise Data,Table Column,Caste 2 Balance,caste_2_balance
+Caste Wise Data,Table Column,Caste 3 Name,caste_3_name
+Caste Wise Data,Table Column,Caste 3 Quota,caste_3_quota
+Caste Wise Data,Table Column,Caste 3 Covered,caste_3_covered
+Caste Wise Data,Table Column,Caste 3 Balance,caste_3_balance
+Caste Wise Data,Table Column,Caste 4 Name,caste_4_name
+Caste Wise Data,Table Column,Caste 4 Quota,caste_4_quota
+Caste Wise Data,Table Column,Caste 4 Covered,caste_4_covered
+Caste Wise Data,Table Column,Caste 4 Balance,caste_4_balance
+Caste Wise Data,Table Column,Caste 5 Name,caste_5_name
+Caste Wise Data,Table Column,Caste 5 Quota,caste_5_quota
+Caste Wise Data,Table Column,Caste 5 Covered,caste_5_covered
+Caste Wise Data,Table Column,Caste 5 Balance,caste_5_balance
+Caste Wise Data,Table Column,Caste 6 Name,caste_6_name
+Caste Wise Data,Table Column,Caste 6 Quota,caste_6_quota
+Caste Wise Data,Table Column,Caste 6 Covered,caste_6_covered
+Caste Wise Data,Table Column,Caste 6 Balance,caste_6_balance
+Caste Wise Data,Table Column,Caste 7 Name,caste_7_name
+Caste Wise Data,Table Column,Caste 7 Quota,caste_7_quota
+Caste Wise Data,Table Column,Caste 7 Covered,caste_7_covered
+Caste Wise Data,Table Column,Caste 7 Balance,caste_7_balance
+Caste Wise Data,Table Column,Caste 8 Name,caste_8_name
+Caste Wise Data,Table Column,Caste 8 Quota,caste_8_quota
+Caste Wise Data,Table Column,Caste 8 Covered,caste_8_covered
+Caste Wise Data,Table Column,Caste 8 Balance,caste_8_balance
+Caste Wise Data,Table Column,Caste 9 Name,caste_9_name
+Caste Wise Data,Table Column,Caste 9 Quota,caste_9_quota
+Caste Wise Data,Table Column,Caste 9 Covered,caste_9_covered
+Caste Wise Data,Table Column,Caste 9 Balance,caste_9_balance
+Caste Wise Data,Table Column,Caste 10 Name,caste_10_name
+Caste Wise Data,Table Column,Caste 10 Quota,caste_10_quota
+Caste Wise Data,Table Column,Caste 10 Covered,caste_10_covered
+Caste Wise Data,Table Column,Caste 10 Balance,caste_10_balance
+,,,
+Religion Wise Data,Table Column,AC Name,ac_name
+Religion Wise Data,Table Column,AC Code,ac_code
+Religion Wise Data,Table Column,Sample Achieved,sample_achieved
+Religion Wise Data,Table Column,Hindu Population,hindu_population
+Religion Wise Data,Table Column,Hindu Sample,hindu_sample
+Religion Wise Data,Table Column,Hindu Difference,hindu_difference
+Religion Wise Data,Table Column,Muslim Population,muslim_population
+Religion Wise Data,Table Column,Muslim Sample,muslim_sample
+Religion Wise Data,Table Column,Muslim Difference,muslim_difference
+Religion Wise Data,Table Column,Christian Population,christian_population
+Religion Wise Data,Table Column,Christian Sample,christian_sample
+Religion Wise Data,Table Column,Christian Difference,christian_difference
+Religion Wise Data,Table Column,Others Population,others_population
+Religion Wise Data,Table Column,Others Sample,others_sample
+Religion Wise Data,Table Column,Others Difference,others_difference
+,,,
+Social Category Wise Data,Table Column,AC Name,ac_name
+Social Category Wise Data,Table Column,AC Code,ac_code
+Social Category Wise Data,Table Column,Sample Achieved,sample_achieved
+Social Category Wise Data,Table Column,SC Population,sc_population
+Social Category Wise Data,Table Column,SC Sample,sc_sample
+Social Category Wise Data,Table Column,SC Difference,sc_difference
+Social Category Wise Data,Table Column,ST Population,st_population
+Social Category Wise Data,Table Column,ST Sample,st_sample
+Social Category Wise Data,Table Column,ST Difference,st_difference
+Social Category Wise Data,Table Column,General+OBC Population,general_obc_population
+Social Category Wise Data,Table Column,General+OBC Sample,general_obc_sample
+Social Category Wise Data,Table Column,General+OBC Difference,general_obc_difference
+,,,
+Actions,Action Button,Download,download
+Actions,Action Button,Tab Switch,tabSwitch

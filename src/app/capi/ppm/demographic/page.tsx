@@ -728,6 +728,7 @@ export default function DemographicPage() {
     { id: 'socialcategorywise', label: 'Social Category Wise', href: '/ppm/demographic/socialcategorywise', icon: UserCheck }
   ];
 
+  
   const handleDownload = () => {
     // Handle download logic here
     console.log('Downloading demographic data...');
