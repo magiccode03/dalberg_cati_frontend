@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,17 +10,32 @@ import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Upload, Edit } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface MasterACCaste {
   id: number;
-  acCode: number;
-  casteName: string;
-  absoluteCaste: number;
-  caste: number;
+  ac_code: number;
+  caste_name: string;
+  absoulte_caste: number;
+  caste: string;
   rank: number;
-  casteCode: number;
-  castecode: number;
+  caste_code: string;
+  castecode: string;
   minsample: number;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    castes: MasterACCaste[];
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+  message: string;
+  timestamp: string;
 }
 
 export default function MasterACCastePage() {
@@ -29,30 +44,35 @@ export default function MasterACCastePage() {
   const [casteCode, setCasteCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [data, setData] = useState<APIResponse['data'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample data for Master AC Caste (20 items as shown in HTML)
-  const masterACCasteData: MasterACCaste[] = [
-    { id: 1, acCode: 1, casteName: 'Tharu', absoluteCaste: 0, caste: 15.4, rank: 1, casteCode: 98, castecode: 98, minsample: 28 },
-    { id: 2, acCode: 1, casteName: 'Muslim', absoluteCaste: 0, caste: 11.5, rank: 2, casteCode: 70, castecode: 70, minsample: 21 },
-    { id: 3, acCode: 1, casteName: 'Yadav / Raut', absoluteCaste: 0, caste: 11.5, rank: 3, casteCode: 106, castecode: 106, minsample: 21 },
-    { id: 4, acCode: 1, casteName: 'Kewat / Mallah / Bhoi / Bind / Nishad', absoluteCaste: 0, caste: 10.5, rank: 4, casteCode: 49, castecode: 49, minsample: 19 },
-    { id: 5, acCode: 1, casteName: 'Halwai / Kandu / Kanu', absoluteCaste: 0, caste: 8.6, rank: 5, casteCode: 36, castecode: 36, minsample: 16 },
-    { id: 6, acCode: 1, casteName: 'Chamar / Ravidas / Mochi', absoluteCaste: 0, caste: 7.5, rank: 6, casteCode: 16, castecode: 16, minsample: 14 },
-    { id: 7, acCode: 1, casteName: 'Koeri/Kushwaha', absoluteCaste: 0, caste: 6.6, rank: 7, casteCode: 57, castecode: 57, minsample: 12 },
-    { id: 8, acCode: 1, casteName: 'Kurmi', absoluteCaste: 0, caste: 5.2, rank: 8, casteCode: 61, castecode: 61, minsample: 9 },
-    { id: 9, acCode: 2, casteName: 'Muslim', absoluteCaste: 0, caste: 22.6, rank: 1, casteCode: 70, castecode: 70, minsample: 41 },
-    { id: 10, acCode: 2, casteName: 'Tharu', absoluteCaste: 0, caste: 19.5, rank: 2, casteCode: 98, castecode: 98, minsample: 35 },
-    { id: 11, acCode: 2, casteName: 'Chamar / Ravidas / Mochi', absoluteCaste: 0, caste: 9.1, rank: 3, casteCode: 16, castecode: 16, minsample: 16 },
-    { id: 12, acCode: 2, casteName: 'Yadav / Raut', absoluteCaste: 0, caste: 7.8, rank: 4, casteCode: 106, castecode: 106, minsample: 14 },
-    { id: 13, acCode: 2, casteName: 'Kewat / Mallah / Bhoi / Bind / Nishad', absoluteCaste: 0, caste: 7.1, rank: 5, casteCode: 49, castecode: 49, minsample: 13 },
-    { id: 14, acCode: 2, casteName: 'Kayastha', absoluteCaste: 0, caste: 6.9, rank: 6, casteCode: 48, castecode: 48, minsample: 12 },
-    { id: 15, acCode: 3, casteName: 'Muslim', absoluteCaste: 0, caste: 32.4, rank: 1, casteCode: 70, castecode: 70, minsample: 58 },
-    { id: 16, acCode: 3, casteName: 'Dhobi', absoluteCaste: 0, caste: 6.7, rank: 2, casteCode: 26, castecode: 26, minsample: 12 },
-    { id: 17, acCode: 3, casteName: 'Brahmin', absoluteCaste: 0, caste: 6.0, rank: 3, casteCode: 15, castecode: 15, minsample: 11 },
-    { id: 18, acCode: 4, casteName: 'Muslim', absoluteCaste: 0, caste: 17.6, rank: 1, casteCode: 70, castecode: 70, minsample: 32 },
-    { id: 19, acCode: 4, casteName: 'Baniya / Barnwal / Mahuri / Kesari', absoluteCaste: 0, caste: 15.8, rank: 2, casteCode: 6, castecode: 6, minsample: 29 },
-    { id: 20, acCode: 4, casteName: 'Yadav / Raut', absoluteCaste: 0, caste: 12.9, rank: 3, casteCode: 106, castecode: 106, minsample: 23 }
-  ];
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getMasterACCasteList({
+        page: currentPage,
+        limit: pageSize
+      });
+      
+      if (response.success) {
+        setData(response.data);
+        setError(null);
+      } else {
+        setError('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Error loading data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +80,9 @@ export default function MasterACCastePage() {
     console.log('Search AC Code:', acCode);
     console.log('Search Caste Name:', casteName);
     console.log('Search Caste Code:', casteCode);
+    // Reset to first page when searching
+    setCurrentPage(1);
+    fetchData();
   };
 
   const handleDownloadCaste = () => {
@@ -77,8 +100,38 @@ export default function MasterACCastePage() {
     console.log('Edit Caste ID:', id);
   };
 
-  const totalItems = 1453; // Total items as shown in HTML (1-20 of 1,453)
-  const totalPages = Math.ceil(totalItems / pageSize);
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <Text className="text-lg">Loading...</Text>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <Text className="text-lg text-red-600">Error: {error}</Text>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <Text className="text-lg">No data available</Text>
+        </div>
+      </Container>
+    );
+  }
+
+  const totalItems = data.total_count;
+  const totalPages = data.total_pages;
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
 
@@ -190,15 +243,15 @@ export default function MasterACCastePage() {
                 </tr>
               </thead>
               <tbody>
-                {masterACCasteData.map((caste, index) => (
+                {data.castes.map((caste, index) => (
                   <tr key={caste.id}>
-                    <td>{index + 1}</td>
-                    <td>{caste.acCode}</td>
-                    <td>{caste.casteName}</td>
-                    <td>{caste.absoluteCaste}</td>
+                    <td>{startIndex + index + 1}</td>
+                    <td>{caste.ac_code}</td>
+                    <td>{caste.caste_name}</td>
+                    <td>{caste.absoulte_caste}</td>
                     <td>{caste.caste}</td>
                     <td>{caste.rank}</td>
-                    <td>{caste.casteCode}</td>
+                    <td>{caste.caste_code}</td>
                     <td>{caste.castecode}</td>
                     <td>{caste.minsample}</td>
                     <td className="text-center">

@@ -214,7 +214,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.reportDays}
-              onChange={(value) => handleFilterChange('reportDays', value)}
+              onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
               options={reportDaysOptions}
               placeholder="Select Report Days"
             />
@@ -228,7 +228,7 @@ const TelecallerDailyCallDetailPage = () => {
               </label>
               <SelectDropdown
                 value={filters.customDate}
-                onChange={(value) => handleFilterChange('customDate', value)}
+                onChange={(value) => handleFilterChange('customDate', Array.isArray(value) ? value[0] : value)}
                 options={dateOptions}
                 placeholder="Select Date"
               />
@@ -243,7 +243,7 @@ const TelecallerDailyCallDetailPage = () => {
               </label>
               <SelectDropdown
                 value={filters.customDateEnd}
-                onChange={(value) => handleFilterChange('customDateEnd', value)}
+                onChange={(value) => handleFilterChange('customDateEnd', Array.isArray(value) ? value[0] : value)}
                 options={dateOptions}
                 placeholder="Select Date"
               />
@@ -257,7 +257,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.telecaller}
-              onChange={(value) => handleFilterChange('telecaller', value)}
+              onChange={(value) => handleFilterChange('telecaller', Array.isArray(value) ? value[0] : value)}
               options={telecallerOptions}
               placeholder="Select Telecaller"
             />
@@ -270,7 +270,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.callerResponse}
-              onChange={(value) => handleFilterChange('callerResponse', value)}
+              onChange={(value) => handleFilterChange('callerResponse', Array.isArray(value) ? value[0] : value)}
               options={callerResponseOptions}
               placeholder="Select Caller Response"
             />
@@ -283,7 +283,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.apiResponse}
-              onChange={(value) => handleFilterChange('apiResponse', value)}
+              onChange={(value) => handleFilterChange('apiResponse', Array.isArray(value) ? value[0] : value)}
               options={apiResponseOptions}
               placeholder="Select API Response"
             />
@@ -296,7 +296,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.callReceived}
-              onChange={(value) => handleFilterChange('callReceived', value)}
+              onChange={(value) => handleFilterChange('callReceived', Array.isArray(value) ? value[0] : value)}
               options={callReceivedOptions}
               placeholder="Select Call Received"
             />
@@ -334,9 +334,12 @@ const TelecallerDailyCallDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
         {/* Caller Performance */}
         <Card>
-          <Heading level={3} className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-            Caller Performance
-          </Heading>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Caller Performance
+            </Heading>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MetricCard
               icon={Users}
@@ -379,9 +382,12 @@ const TelecallerDailyCallDetailPage = () => {
 
         {/* Call Outcome */}
         <Card>
-          <Heading level={3} className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-            Call Outcome
-          </Heading>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-green-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Call Outcome
+            </Heading>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MetricCard
               icon={PhoneOff}
@@ -424,7 +430,7 @@ const TelecallerDailyCallDetailPage = () => {
       </div>
 
       {/* Data Table */}
-      <Card className="p-6">
+      <Card className="">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>

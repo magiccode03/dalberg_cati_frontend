@@ -203,7 +203,7 @@ export default function QCUserProgressPage() {
 
         {/* Search Form */}
         <div className="mb-6">
-          <Card className="p-6">
+          <Card className="">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="space-y-2">
                 <SelectDropdown
@@ -275,22 +275,25 @@ export default function QCUserProgressPage() {
         {/* QC User Progress Table */}
         <div className="w-full">
           <Card className="p-0">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-0 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <Heading level={2} className="text-xl font-semibold text-gray-900">
-                  Telecaller Progress Summary
-                </Heading>
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+                  <Heading level={2} className="text-xl font-semibold text-gray-900">
+                    Telecaller Progress Summary
+                  </Heading>
+                </div>
                 <Button
-                  variant="outline"
+                  variant="primary"
                   onClick={handleDownload}
-                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download
                 </Button>
               </div>
             </div>
-            <div className="p-6">
+            <div className="py-6">
               <div className="overflow-x-auto">
                 <Table
                   striped

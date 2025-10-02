@@ -1,0 +1,27 @@
+Section,Type,Label/Column Name,
+,,,
+Search Filters,Filter Field,Polling Station Name,pollingStationName
+Search Filters,Filter Field,Polling Station No,pollingStationNo
+Search Filters,Filter Field,AC Code,acCode
+,,,
+Master PS Data,Table Column,#,index
+Master PS Data,Table Column,Ac Code,ac_code
+Master PS Data,Table Column,Polling Station No,polling_station_no
+Master PS Data,Table Column,Polling Station Name,polling_station_name
+Master PS Data,Table Column,Polling Station Name L2,polling_station_name_l2
+Master PS Data,Table Column,Gps,gps
+Master PS Data,Table Column,Gps Lat,gps_lat
+Master PS Data,Table Column,Gps Lng,gps_lng
+Master PS Data,Table Column,Valid Interview,no attribute
+,,,
+Actions,Action Button,Calculate Valid Interview,no attribute
+Actions,Action Button,Download PS List,no attribute
+Actions,Action Button,Upload PS List,no attribute
+Actions,Action Button,Edit PS,no attribute
+Actions,Action Button,View GPS Map,no attribute
+Actions,Action Button,Search,search
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages

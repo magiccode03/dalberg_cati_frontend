@@ -1,0 +1,104 @@
+Section,Type,Label/Column Name,
+,,,
+,,,
+Gender Wise Data,Table Column,AC Name,ac_name
+Gender Wise Data,Table Column,AC Code,ac_code
+Gender Wise Data,Table Column,Sample Achieved,sample_achieved
+Gender Wise Data,Table Column,Male Quota,male_min_sample
+Gender Wise Data,Table Column,Male Covered,male_covered
+Gender Wise Data,Table Column,Male Balance,male_balance
+Gender Wise Data,Table Column,Female Quota,female_min_sample
+Gender Wise Data,Table Column,Female Covered,female_covered
+Gender Wise Data,Table Column,Female Balance,female_balance
+,,,
+Age Wise Data,Table Column,AC Name,ac_name
+Age Wise Data,Table Column,AC Code,ac_code
+Age Wise Data,Table Column,Sample Achieved,sample_achieved
+Age Wise Data,Table Column,18-24 Years Quota,age_groups.18_24.quota
+Age Wise Data,Table Column,18-24 Years Covered,age_groups.18_24.covered
+Age Wise Data,Table Column,18-24 Years Balance,age_groups.18_24.balance
+Age Wise Data,Table Column,25-34 Years Quota,age_groups.25_34.quota
+Age Wise Data,Table Column,25-34 Years Covered,age_groups.25_34.covered
+Age Wise Data,Table Column,25-34 Years Balance,age_groups.25_34.balance
+Age Wise Data,Table Column,35-49 Years Quota,age_groups.35_50.quota
+Age Wise Data,Table Column,35-49 Years Covered,age_groups.35_50.covered
+Age Wise Data,Table Column,35-49 Years Balance,age_groups.35_50.balance
+Age Wise Data,Table Column,50+ Years Quota,age_groups.50_above.quota
+Age Wise Data,Table Column,50+ Years Covered,age_groups.50_above.covered
+Age Wise Data,Table Column,50+ Years Balance,age_groups.50_above.balance
+,,,
+Caste Wise Data,Table Column,AC Name,ac_name
+Caste Wise Data,Table Column,AC Code,ac_code
+Caste Wise Data,Table Column,Sample Achieved,sample_achieved
+Caste Wise Data,Table Column,Caste 1 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 1 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 1 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 1 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 2 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 2 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 2 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 2 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 3 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 3 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 3 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 3 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 4 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 4 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 4 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 4 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 5 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 5 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 5 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 5 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 6 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 6 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 6 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 6 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 7 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 7 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 7 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 7 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 8 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 8 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 8 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 8 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 9 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 9 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 9 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 9 Balance,castes.balance
+Caste Wise Data,Table Column,Caste 10 Name,castes.caste_name
+Caste Wise Data,Table Column,Caste 10 Quota,Castes.quota
+Caste Wise Data,Table Column,Caste 10 Covered,castes.covered
+Caste Wise Data,Table Column,Caste 10 Balance,castes.balance
+,,,
+Religion Wise Data,Table Column,AC Name,ac_name
+Religion Wise Data,Table Column,AC Code,ac_code
+Religion Wise Data,Table Column,Sample Achieved,sample_achieved
+Religion Wise Data,Table Column,Hindu Population,hind.population
+Religion Wise Data,Table Column,Hindu Sample,hind.sample
+Religion Wise Data,Table Column,Hindu Difference,hind.difference
+Religion Wise Data,Table Column,Muslim Population,muslim.population
+Religion Wise Data,Table Column,Muslim Sample,muslim.sample
+Religion Wise Data,Table Column,Muslim Difference,muslim.difference
+Religion Wise Data,Table Column,Christian Population,christian_population
+Religion Wise Data,Table Column,Christian Sample,christian.sample
+Religion Wise Data,Table Column,Christian Difference,christian.difference
+Religion Wise Data,Table Column,Others Population,others.population
+Religion Wise Data,Table Column,Others Sample,others.sample
+Religion Wise Data,Table Column,Others Difference,others.difference
+,,,
+Social Category Wise Data,Table Column,AC Name,ac_name
+Social Category Wise Data,Table Column,AC Code,ac_code
+Social Category Wise Data,Table Column,Sample Achieved,sample_achieved
+Social Category Wise Data,Table Column,SC Population,sc.population
+Social Category Wise Data,Table Column,SC Sample,sc.sample
+Social Category Wise Data,Table Column,SC Difference,sc.difference
+Social Category Wise Data,Table Column,ST Population,st.population
+Social Category Wise Data,Table Column,ST Sample,st.sample
+Social Category Wise Data,Table Column,ST Difference,st.difference
+Social Category Wise Data,Table Column,General+OBC Population,general_obc.population
+Social Category Wise Data,Table Column,General+OBC Sample,general_obc.sample
+Social Category Wise Data,Table Column,General+OBC Difference,general_obc.difference
+,,,
+Actions,Action Button,Download,download
+Actions,Action Button,Tab Switch,tabSwitch

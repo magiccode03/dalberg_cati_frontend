@@ -360,12 +360,15 @@ export default function InterviewListPage() {
             <Card>
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex justify-between items-center">
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Interview Details
-                  </Heading>
+                  <div className="flex items-center">
+                    <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+                    <Heading level={4} className="text-lg font-semibold text-gray-900">
+                      Interview Details
+                    </Heading>
+                  </div>
                 </div>
               </div>
-              <div className="p-6">
+              <div className="">
                 <div className="overflow-x-auto">
                   <Table
                     striped
@@ -446,15 +449,13 @@ export default function InterviewListPage() {
                             {getQcOutcomeBadge(interview.qcOutcome)}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <Button
-                              variant="primary"
-                              size="sm"
+                            <button
                               onClick={() => handleEdit(interview.serverId)}
                               title="Edit Response"
+                              className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center transition-colors duration-200"
                             >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </Button>
+                              <Edit className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}

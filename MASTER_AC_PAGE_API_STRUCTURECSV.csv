@@ -1,0 +1,24 @@
+Section,Type,Label/Column Name,
+,,,
+Search Filters,Filter Field,AC Name,acName
+Search Filters,Filter Field,AC Code,acCode
+,,,
+Master AC Data,Table Column,#,index
+Master AC Data,Table Column,Ac Code,ac_code
+Master AC Data,Table Column,Ac Name,ac_name
+Master AC Data,Table Column,District Code,district_code
+Master AC Data,Table Column,District Name,district_name
+Master AC Data,Table Column,Pc Name,pc_name
+Master AC Data,Table Column,Pc Code,pc_code
+Master AC Data,Table Column,Zone Code,zone_code
+Master AC Data,Table Column,Zone Name,zone_name
+Master AC Data,Table Column,Current Mla,current_mla
+Master AC Data,Table Column,Agency,agency_name
+,,,
+Actions,Action Button,Edit AC,editAC
+Actions,Action Button,Search,search
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages

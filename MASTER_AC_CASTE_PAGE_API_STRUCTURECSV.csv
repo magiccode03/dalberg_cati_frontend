@@ -1,0 +1,26 @@
+Section,Type,Label/Column Name,
+,,,
+Search Filters,Filter Field,AC Code,acCode
+Search Filters,Filter Field,Caste Name,casteName
+Search Filters,Filter Field,Caste Code,casteCode
+,,,
+Master AC Caste Data,Table Column,#,index
+Master AC Caste Data,Table Column,Ac Code,ac_code
+Master AC Caste Data,Table Column,Caste Name,caste_name
+Master AC Caste Data,Table Column,Absoulte Caste,absoulte_caste
+Master AC Caste Data,Table Column,Caste,caste
+Master AC Caste Data,Table Column,Rank,rank
+Master AC Caste Data,Table Column,Caste Code,caste_code
+Master AC Caste Data,Table Column,Castecode,castecode
+Master AC Caste Data,Table Column,Minsample,minsample
+Master AC Caste Data,Table Column,Actions,edit
+,,,
+Actions,Action Button,Download Caste List,downloadCaste
+Actions,Action Button,Upload Caste List,uploadCaste
+Actions,Action Button,Edit Caste,editCaste
+Actions,Action Button,Search,search
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages

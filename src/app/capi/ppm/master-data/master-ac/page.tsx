@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,19 +10,34 @@ import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Upload, Edit } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface MasterAC {
-  id: number;
-  acCode: number;
-  acName: string;
-  districtCode: number;
-  districtName: string;
-  pcName: string;
-  pcCode: number;
-  zoneCode: number;
-  zoneName: string;
-  currentMla: string;
-  agency: string;
+  ac_code: number;
+  ac_name: string;
+  district_code: number;
+  district_name: string;
+  pc_code: number;
+  pc_name: string;
+  zone_code: number;
+  zone_name: string;
+  current_mla: string;
+  agency_name: string | null;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    acs: MasterAC[];
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+  message: string;
+  timestamp: string;
+  requestId: string;
 }
 
 export default function MasterACPage() {
@@ -30,36 +45,41 @@ export default function MasterACPage() {
   const [acCode, setAcCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [data, setData] = useState<APIResponse['data'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample data for Master AC (20 items as shown in HTML)
-  const masterACData: MasterAC[] = [
-    { id: 1, acCode: 0, acName: 'Bihar', districtCode: 0, districtName: 'Bihar', pcName: 'Bihar', pcCode: 0, zoneCode: 0, zoneName: 'Bihar', currentMla: 'Bihar', agency: '' },
-    { id: 2, acCode: 1, acName: 'Valmiki Nagar', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Valmiki Nagar', pcCode: 1, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Dhirendra Pratap Singh Alias Rinku Singh', agency: 'Parbhat' },
-    { id: 3, acCode: 2, acName: 'Ramnagar (SC)', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Valmiki Nagar', pcCode: 1, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Bhagirathi Devi', agency: 'Parbhat' },
-    { id: 4, acCode: 3, acName: 'Narkatiaganj', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Valmiki Nagar', pcCode: 1, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Rashmi Varma', agency: 'Parbhat' },
-    { id: 5, acCode: 4, acName: 'Bagaha', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Valmiki Nagar', pcCode: 1, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Ram Singh', agency: 'Parbhat' },
-    { id: 6, acCode: 5, acName: 'Lauriya', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Valmiki Nagar', pcCode: 1, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Vinay Bihari', agency: 'Parbhat' },
-    { id: 7, acCode: 6, acName: 'Nautan', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Paschim Champaran', pcCode: 2, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Narayan Prasad', agency: 'Parbhat' },
-    { id: 8, acCode: 7, acName: 'Chanpatia', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Paschim Champaran', pcCode: 2, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Umakant Singh', agency: 'Parbhat' },
-    { id: 9, acCode: 8, acName: 'Bettiah', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Paschim Champaran', pcCode: 2, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Renu Devi', agency: 'Parbhat' },
-    { id: 10, acCode: 9, acName: 'Sikta', districtCode: 1, districtName: 'Pashchim Champaran', pcName: 'Valmiki Nagar', pcCode: 1, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Birendra Prasad Gupta', agency: 'Parbhat' },
-    { id: 11, acCode: 10, acName: 'Raxaul', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Paschim Champaran', pcCode: 2, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Pramod Kumar Sinha', agency: 'Parbhat' },
-    { id: 12, acCode: 11, acName: 'Sugauli', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Paschim Champaran', pcCode: 2, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Er. Shashi Bhushan Singh', agency: 'Parbhat' },
-    { id: 13, acCode: 12, acName: 'Narkatia', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Paschim Champaran', pcCode: 2, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Shamim Ahmad', agency: 'Parbhat' },
-    { id: 14, acCode: 13, acName: 'Harsidhi (SC)', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Purvi Champaran', pcCode: 3, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Krishnanandan Paswan', agency: 'Inhouse' },
-    { id: 15, acCode: 14, acName: 'Govindganj', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Purvi Champaran', pcCode: 3, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Sunil Mani Tiwari', agency: 'Inhouse' },
-    { id: 16, acCode: 15, acName: 'Kesaria', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Purvi Champaran', pcCode: 3, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Shalini Mishra', agency: 'Kadence' },
-    { id: 17, acCode: 16, acName: 'Kalyanpur', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Purvi Champaran', pcCode: 3, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Manoj Kumar Yadav', agency: 'Inhouse' },
-    { id: 18, acCode: 17, acName: 'Pipra', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Purvi Champaran', pcCode: 3, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Shyambabu Prasad Yadav', agency: 'Inhouse' },
-    { id: 19, acCode: 18, acName: 'Madhuban', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Sheohar', pcCode: 4, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Rana Randhir', agency: 'Navin' },
-    { id: 20, acCode: 19, acName: 'Motihari', districtCode: 2, districtName: 'Purba Champaran', pcName: 'Purvi Champaran', pcCode: 3, zoneCode: 53, zoneName: 'Tirhut', currentMla: 'Pramod Kumar', agency: 'Inhouse' }
-  ];
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getMasterACList({
+        page: currentPage,
+        limit: pageSize
+      });
+      
+      if (response.success) {
+        setData(response.data);
+        setError(null);
+      } else {
+        setError('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Error loading data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search logic here
-    console.log('Search AC Name:', acName);
-    console.log('Search AC Code:', acCode);
+    // Reset to first page when searching
+    setCurrentPage(1);
+    fetchData();
   };
 
   const handleDownloadAC = () => {
@@ -77,10 +97,38 @@ export default function MasterACPage() {
     console.log('Edit AC Code:', acCode);
   };
 
-  const totalItems = 244; // Total items as shown in HTML (1-20 of 244)
-  const totalPages = Math.ceil(totalItems / pageSize);
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="text-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="text-center">
+          <div className="text-lg text-red-600">{error}</div>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="text-center">
+          <div className="text-lg text-red-600">No data available</div>
+        </div>
+      </Container>
+    );
+  }
+
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const endIndex = Math.min(startIndex + pageSize, data.total_count);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -160,7 +208,7 @@ export default function MasterACPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{totalItems}</b> items.
+                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{data.total_count}</b> items.
               </Text>
             </div>
             
@@ -182,24 +230,24 @@ export default function MasterACPage() {
                 </tr>
               </thead>
               <tbody>
-                {masterACData.map((ac, index) => (
-                  <tr key={ac.id}>
-                    <td>{index + 1}</td>
-                    <td>{ac.acCode}</td>
-                    <td>{ac.acName}</td>
-                    <td>{ac.districtCode}</td>
-                    <td>{ac.districtName}</td>
-                    <td>{ac.pcName}</td>
-                    <td>{ac.pcCode}</td>
-                    <td>{ac.zoneCode}</td>
-                    <td>{ac.zoneName}</td>
-                    <td>{ac.currentMla}</td>
-                    <td>{ac.agency}</td>
+                {data.acs.map((ac, index) => (
+                  <tr key={ac.ac_code}>
+                    <td>{startIndex + index + 1}</td>
+                    <td>{ac.ac_code}</td>
+                    <td>{ac.ac_name}</td>
+                    <td>{ac.district_code}</td>
+                    <td>{ac.district_name}</td>
+                    <td>{ac.pc_name}</td>
+                    <td>{ac.pc_code}</td>
+                    <td>{ac.zone_code}</td>
+                    <td>{ac.zone_name}</td>
+                    <td>{ac.current_mla}</td>
+                    <td>{ac.agency_name || ''}</td>
                     <td className="text-center">
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => handleEditAC(ac.acCode)}
+                        onClick={() => handleEditAC(ac.ac_code)}
                         className="text-white"
                       >
                         <Edit className="w-4 h-4" />
@@ -212,9 +260,9 @@ export default function MasterACPage() {
             
             <div className="mt-6">
               <PaginationStandard
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
+                currentPage={data.current_page}
+                totalPages={data.total_pages}
+                totalItems={data.total_count}
                 itemsPerPage={pageSize}
                 onPageChange={setCurrentPage}
               />

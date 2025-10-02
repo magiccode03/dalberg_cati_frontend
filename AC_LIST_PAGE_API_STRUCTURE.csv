@@ -1,0 +1,21 @@
+Section,Type,Label/Column Name,
+,,,
+Search Filters,Filter Field,State Teams,agencyId
+Search Filters,Filter Field,AC,acCode
+,,,
+AC List Data,Table Column,AC Code,ac_code
+AC List Data,Table Column,AC Name,ac_name
+AC List Data,Table Column,Agency ID,agency_id
+AC List Data,Table Column,Agency Name,agency_name
+AC List Data,Table Column,Total Interview,total_interview
+AC List Data,Table Column,Valid Interview,valid_interview
+AC List Data,Table Column,Action,updateAgency
+,,,
+Actions,Action Button,Update Data Agency Wise,updateDataAgencyWise
+Actions,Action Button,Update Agency,updateAgency
+Actions,Action Button,Search,search
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages

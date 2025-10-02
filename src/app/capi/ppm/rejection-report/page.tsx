@@ -176,7 +176,7 @@ export default function RejectionReportPage() {
               <Text className="block text-sm font-medium mb-2">Report Days</Text>
               <SelectDropdown
                 value={filters.reportDays}
-                onValueChange={(value) => handleFilterChange('reportDays', value)}
+                onChange={(value) => handleFilterChange('reportDays', value)}
                 options={[
                   { value: 'all', label: 'All' },
                   { value: 'today', label: 'Today' },
@@ -195,7 +195,7 @@ export default function RejectionReportPage() {
               <Text className="block text-sm font-medium mb-2">Level</Text>
               <SelectDropdown
                 value={filters.reportLevel}
-                onValueChange={(value) => handleFilterChange('reportLevel', value)}
+                onChange={(value) => handleFilterChange('reportLevel', value)}
                 options={[
                   { value: '0', label: 'All' },
                   { value: 'ac', label: 'Ac Level' },
@@ -209,7 +209,7 @@ export default function RejectionReportPage() {
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
                 value={filters.failReason}
-                onValueChange={(value) => handleFilterChange('failReason', value)}
+                onChange={(value) => handleFilterChange('failReason', value)}
                 options={[
                   { value: '', label: 'Select Fail Reason' },
                   { value: 'autorejectstatus', label: 'System Fail' },

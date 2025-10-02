@@ -10,7 +10,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Download, Search } from 'lucide-react';
+import { Download, Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
 
 // Interface for telecaller progress data
 interface TelecallerProgressData {
@@ -146,6 +146,36 @@ const TelecallerDailyProgressPage: React.FC = () => {
     // Implement search logic here
   };
 
+  const MetricCard = ({ 
+    icon: Icon, 
+    title, 
+    value, 
+    bgColor = 'bg-blue-500',
+    iconColor = 'text-white'
+  }: {
+    icon: any;
+    title: string;
+    value: string | number;
+    bgColor?: string;
+    iconColor?: string;
+  }) => (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center">
+        <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div className="flex-1">
+          <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            {title}
+          </Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+            {value}
+          </Text>
+        </div>
+      </div>
+    </div>
+  );
+
   // Calculate pagination
   const totalItems = telecallerProgressData.length;
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -206,7 +236,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
               </label>
               <SelectDropdown
                 value={filters.reportDays}
-                onChange={(value) => handleFilterChange('reportDays', value)}
+                onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
                 options={reportDaysOptions}
                 placeholder="Select Report Days"
               />
@@ -220,7 +250,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
                 </label>
                 <SelectDropdown
                   value={filters.customDate}
-                  onChange={(value) => handleFilterChange('customDate', value)}
+                  onChange={(value) => handleFilterChange('customDate', Array.isArray(value) ? value[0] : value)}
                   options={[
                     { value: '', label: 'Select Date' },
                     { value: '2024-05-31', label: '2024-05-31' },
@@ -268,7 +298,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
                 </label>
                 <SelectDropdown
                   value={filters.customDateEnd}
-                  onChange={(value) => handleFilterChange('customDateEnd', value)}
+                  onChange={(value) => handleFilterChange('customDateEnd', Array.isArray(value) ? value[0] : value)}
                   options={[
                     { value: '', label: 'Select Date' },
                     { value: '2024-05-31', label: '2024-05-31' },
@@ -315,7 +345,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
               </label>
               <SelectDropdown
                 value={filters.telecaller}
-                onChange={(value) => handleFilterChange('telecaller', value)}
+                onChange={(value) => handleFilterChange('telecaller', Array.isArray(value) ? value[0] : value)}
                 options={telecallerOptions}
                 placeholder="Select Telecaller"
               />
@@ -349,216 +379,157 @@ const TelecallerDailyProgressPage: React.FC = () => {
         </Card>
 
         {/* Performance Cards */}
-        <Card className="">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Caller Performance */}
-            <div className="lg:col-span-1">
-              <div className="mb-4">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-                  <Heading level={3} className="text-lg font-semibold text-gray-900">
-                    Caller Performance
-                  </Heading>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    1
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Total Callers</Text>
-                    <Text className="text-lg font-semibold">{performanceMetrics.totalCallers}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    2
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Days till now</Text>
-                    <Text className="text-lg font-semibold">{performanceMetrics.daysTillNow}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    3
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Number of dials</Text>
-                    <Text className="text-lg font-semibold">{performanceMetrics.numberOfDials}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    4
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Total IVR Duration</Text>
-                    <Text className="text-lg font-semibold">{performanceMetrics.totalIvrDuration}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    5
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Caller did not pick</Text>
-                    <Text className="text-lg font-semibold">{performanceMetrics.callerDidNotPick}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3">
-                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    6
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Total Talk Duration</Text>
-                    <Text className="text-lg font-semibold">{performanceMetrics.totalTalkDuration}</Text>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Call Outcome */}
-            <div className="lg:col-span-1">
-              <div className="mb-4">
-                <Heading level={3} className="text-lg font-semibold text-gray-900">
-                  Call Outcome
-                </Heading>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
-                  <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    7
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Number does not exist</Text>
-                    <Text className="text-lg font-semibold">{callOutcomeMetrics.numberDoesNotExist}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3">
-                  <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    8
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Respondent did not pick</Text>
-                    <Text className="text-lg font-semibold">{callOutcomeMetrics.respondentDidNotPick}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
-                  <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    9
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Picked and Refused</Text>
-                    <Text className="text-lg font-semibold">{callOutcomeMetrics.pickedAndRefused}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3">
-                  <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    10
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Picked and Call Continue</Text>
-                    <Text className="text-lg font-semibold">{callOutcomeMetrics.pickedAndCallContinue}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 border-r border-gray-200">
-                  <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                    11
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Total Form Not Fill</Text>
-                    <Text className="text-lg font-semibold">{callOutcomeMetrics.totalFormNotFill}</Text>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Number Summary */}
-            <div className="lg:col-span-1">
-              <div className="mb-4">
-                <Heading level={3} className="text-lg font-semibold text-gray-900">
-                  Number Summary
-                </Heading>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    16
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Total Number Exhausted</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.totalNumberExhausted}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    12
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Number does not exist</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.numberDoesNotExist}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    13
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Respondent did not pick</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.respondentDidNotPick}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    14
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Picked and Refused</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.pickedAndRefused}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    15
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Picked and Call Continue</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.pickedAndCallContinue}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    17
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Valid Interviews</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.validInterviews}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    19
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Rejected</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.rejected}</Text>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2 p-2">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                    20
-                  </div>
-                  <div>
-                    <Text className="text-xs text-gray-600">Incomplete</Text>
-                    <Text className="text-sm font-semibold">{numberSummaryMetrics.incomplete}</Text>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 mb-4">
+          {/* Caller Performance */}
+          <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Caller Performance
+            </Heading>
           </div>
-        </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MetricCard
+                icon={Users}
+                title="Total Callers"
+                value={performanceMetrics.totalCallers}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={Clock}
+                title="Days till now"
+                value={performanceMetrics.daysTillNow}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Number of dials"
+                value={performanceMetrics.numberOfDials}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={Clock}
+                title="Total IVR Duration"
+                value={performanceMetrics.totalIvrDuration}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Caller did not pick"
+                value={performanceMetrics.callerDidNotPick}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Total Talk Duration"
+                value={performanceMetrics.totalTalkDuration}
+                bgColor="bg-blue-500"
+              />
+            </div>
+          </Card>
+
+          {/* Call Outcome */}
+          <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-green-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Call Outcome
+            </Heading>
+          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MetricCard
+                icon={PhoneOff}
+                title="Number does not exist"
+                value={callOutcomeMetrics.numberDoesNotExist}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Respondent did not pick"
+                value={callOutcomeMetrics.respondentDidNotPick}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Picked and Refused"
+                value={callOutcomeMetrics.pickedAndRefused}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Picked and Call Continue"
+                value={callOutcomeMetrics.pickedAndCallContinue}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Total Form Not Fill"
+                value={callOutcomeMetrics.totalFormNotFill}
+                bgColor="bg-green-500"
+              />
+            </div>
+          </Card>
+
+          {/* Number Summary */}
+          <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Number Summary
+            </Heading>
+          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MetricCard
+                icon={PhoneOff}
+                title="Total Number Exhausted"
+                value={numberSummaryMetrics.totalNumberExhausted}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Number does not exist"
+                value={numberSummaryMetrics.numberDoesNotExist}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Respondent did not pick"
+                value={numberSummaryMetrics.respondentDidNotPick}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Picked and Refused"
+                value={numberSummaryMetrics.pickedAndRefused}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Picked and Call Continue"
+                value={numberSummaryMetrics.pickedAndCallContinue}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={CheckCircle}
+                title="Valid Interviews"
+                value={numberSummaryMetrics.validInterviews}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Rejected"
+                value={numberSummaryMetrics.rejected}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Incomplete"
+                value={numberSummaryMetrics.incomplete}
+                bgColor="bg-green-500"
+              />
+            </div>
+          </Card>
+        </div>
 
         {/* Data Table */}
         <Card className="">

@@ -39,7 +39,7 @@ export default function ACWiseProgressPage() {
     bgColor?: string;
     iconColor?: string;
   }) => (
-    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
       <div className="flex items-center">
         <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
           <Icon className={`w-5 h-5 ${iconColor}`} />

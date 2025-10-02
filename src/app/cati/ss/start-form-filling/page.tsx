@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -20,6 +21,7 @@ interface CallData {
 }
 
 export default function StartFormFillingPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     teleform_user_id: '',
     user_phone: ''
@@ -33,6 +35,7 @@ export default function StartFormFillingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const [activeTab, setActiveTab] = useState('new-calls');
+  const [showNewCallSection, setShowNewCallSection] = useState(false);
 
   // Sample data for the table
   const [callData, setCallData] = useState<CallData[]>([
@@ -105,6 +108,7 @@ export default function StartFormFillingPage() {
       console.log('Form submitted:', formData);
       setIsLoggedIn(true);
       setShowTable(true);
+      setShowNewCallSection(true);
       // Implement form submission logic here
       // You can redirect to the next page or make an API call
     }
@@ -112,7 +116,8 @@ export default function StartFormFillingPage() {
 
   const handleConnectToCall = (callId: number) => {
     console.log('Connecting to call:', callId);
-    // Implement call connection logic here
+    // Navigate to tele-form page
+    router.push('/cati/ss/tele-form');
   };
 
   const tabs = [
@@ -204,19 +209,21 @@ export default function StartFormFillingPage() {
         </Card>
 
 
-        {/* Table - Always visible, data only after login */}
-        <div className="mt-10">
-        <div className="left-content">
-            <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
-              {activeTab === 'new-calls' ? 'New Call' : 
-               activeTab === 'callback' ? 'Call Back Interview' : 
-               'Reschedule Interview'}
-            </Heading>
-          </div>
-          <div className="right-content">
-            <span className="text-sm text-gray-500 dark:text-gray-400"></span>
-          </div>
-        </div>
+        {/* New Call Section - Show only after form submission */}
+        {showNewCallSection && (
+          <>
+            <div className="mt-10">
+              <div className="left-content">
+                <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {activeTab === 'new-calls' ? 'New Call' : 
+                   activeTab === 'callback' ? 'Call Back Interview' : 
+                   'Reschedule Interview'}
+                </Heading>
+              </div>
+              <div className="right-content">
+                <span className="text-sm text-gray-500 dark:text-gray-400"></span>
+              </div>
+            </div>
         <Card>
         <div className="border-b border-gray-200 dark:border-gray-700">
             <div className="px-6 py-4">
@@ -307,6 +314,8 @@ export default function StartFormFillingPage() {
             </div>
           </div>
         </Card>
+          </>
+        )}
       </div>
     </Container>
   );
