@@ -422,9 +422,9 @@ export default function ProgressReportPage() {
             />
           </div>
           <div className="flex items-end">
-            <Button onClick={handleSearch} className="px-6">
+            <Button onClick={handleSearch} className="px-6 mb-0.5">
               <Search className="w-4 h-4 mr-2" />
-              View
+              Search
             </Button>
           </div>
         </div>
