@@ -197,9 +197,10 @@ export default function PSForFormPage() {
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <div className="md:col-span-3">
+      <Card className="mb-6">
+        <form onSubmit={handleSearch}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
             <Input
               type="text"
               value={pollingStationName}
@@ -209,7 +210,7 @@ export default function PSForFormPage() {
             />
           </div>
           
-          <div className="md:col-span-3">
+            <div>
             <Input
               type="text"
               value={pollingStationNo}
@@ -219,7 +220,7 @@ export default function PSForFormPage() {
             />
           </div>
           
-          <div className="md:col-span-3">
+            <div>
             <Input
               type="text"
               value={acCode}
@@ -229,22 +230,26 @@ export default function PSForFormPage() {
             />
           </div>
           
-          <div className="md:col-span-3">
-            <Button type="submit" variant="primary">
+            <div>
+              <Button type="submit" variant="primary" className="w-full">
               <Search className="w-4 h-4 mr-2" />
               Search
             </Button>
           </div>
         </div>
       </form>
+      </Card>
 
       {/* PS for Form Table Card */}
-      <Card className="p-6">
+      <Card className="">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={4} className="card-title mg-b-0">
               List of Master Poling Station For Field Form
             </Heading>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="primary"
@@ -336,33 +341,33 @@ export default function PSForFormPage() {
                       <td>{ps.polling_station_location || '-'}</td>
                       <td>{ps.valid_interview}</td>
                       <td>{ps.valid_interview_limit}</td>
-                      <td className="text-center">
-                        <Button
-                          variant="primary"
-                          size="sm"
+                    <td className="text-center">
+                      <Button
+                        variant="primary"
+                        size="sm"
                           onClick={() => handleEditPS(ps.ac_code)}
-                          className="text-white bg-blue-500 hover:bg-blue-600 border-0"
+                        className="text-white bg-blue-500 hover:bg-blue-600 border-0"
                           title="Edit PS"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </td>
+                  </tr>
                   ))
                 )}
               </tbody>
             </Table>
             
             {!loading && !error && psFormData.length > 0 && (
-              <div className="mt-6">
-                <PaginationStandard
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalItems}
-                  itemsPerPage={pageSize}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
             )}
           </div>
         </div>

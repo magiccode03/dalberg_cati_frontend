@@ -165,54 +165,59 @@ export default function MasterPSPage() {
       </div>
 
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <div className="md:col-span-3">
-            <Input
-              type="text"
-              value={pollingStationName}
-              onChange={(e) => setPollingStationName(e.target.value)}
-              placeholder="Search By Poling Station Name"
-              className="w-full"
-            />
+      <Card className="mb-6">
+        <form onSubmit={handleSearch}>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <Input
+                type="text"
+                value={pollingStationName}
+                onChange={(e) => setPollingStationName(e.target.value)}
+                placeholder="Search By Poling Station Name"
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <Input
+                type="text"
+                value={pollingStationNo}
+                onChange={(e) => setPollingStationNo(e.target.value)}
+                placeholder="Search By Poling Station Code"
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <Input
+                type="text"
+                value={acCode}
+                onChange={(e) => setAcCode(e.target.value)}
+                placeholder="Search By AC Code"
+                className="w-full"
+              />
+            </div>
+            
+            <div>
+              <Button type="submit" variant="primary" className="w-full">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
           </div>
-          
-          <div className="md:col-span-3">
-            <Input
-              type="text"
-              value={pollingStationNo}
-              onChange={(e) => setPollingStationNo(e.target.value)}
-              placeholder="Search By Poling Station Code"
-              className="w-full"
-            />
-          </div>
-          
-          <div className="md:col-span-3">
-            <Input
-              type="text"
-              value={acCode}
-              onChange={(e) => setAcCode(e.target.value)}
-              placeholder="Search By AC Code"
-              className="w-full"
-            />
-          </div>
-          
-          <div className="md:col-span-3">
-            <Button type="submit" variant="primary">
-              <Search className="w-4 h-4 mr-2" />
-              Search
-            </Button>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Card>
 
       {/* Master PS Table Card */}
-      <Card className="p-6">
+      <Card className="">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
-            <Heading level={4} className="card-title mg-b-0">
-              List of Master Poling Station
-            </Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="card-title mg-b-0">
+                List of Master Poling Station
+              </Heading>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="primary"
