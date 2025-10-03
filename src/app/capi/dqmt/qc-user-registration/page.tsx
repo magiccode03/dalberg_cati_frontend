@@ -122,7 +122,7 @@ export default function QCUserRegistrationPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
@@ -138,8 +138,8 @@ export default function QCUserRegistrationPage() {
 
         {/* Search Form */}
         <div className="mb-6">
-          <Card className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <Card className="p-0">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-8 gap-4">
               <div className="space-y-2">
                 <Input
                   type="text"
@@ -194,9 +194,7 @@ export default function QCUserRegistrationPage() {
                 />
                 <Text className="text-sm text-gray-700">Audio</Text>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mt-4">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   checked={filters.reChecking}
@@ -222,7 +220,7 @@ export default function QCUserRegistrationPage() {
         {/* QC User Table */}
         <div className="w-full">
           <Card className="p-0">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -240,7 +238,7 @@ export default function QCUserRegistrationPage() {
                 </Button>
               </div>
             </div>
-            <div className="p-6">
+            <div className="py-6">
               <div className="overflow-x-auto">
                 <Table
                   striped

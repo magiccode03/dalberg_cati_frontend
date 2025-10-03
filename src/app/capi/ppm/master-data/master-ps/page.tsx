@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,17 +10,37 @@ import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Upload, Edit, Map, RotateCcw } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface MasterPS {
   id: number;
-  acCode: number;
-  pollingStationNo: string;
-  pollingStationName: string;
-  pollingStationNameL2: string;
+  pc_code: number;
+  ac_code: number;
+  polling_station_no: string;
+  polling_station_name: string;
+  polling_station_name_l2: string;
+  gps_lng: string;
+  gps_lat: string;
   gps: string;
-  gpsLat: number;
-  gpsLng: number;
-  validInterview: number;
+  ac_name: string;
+  district_name: string;
+  zone_name: string;
+  pc_name: string;
+  agency_name: string;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    polling_stations: MasterPS[];
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+  message: string;
+  timestamp: string;
 }
 
 export default function MasterPSPage() {
@@ -29,30 +49,35 @@ export default function MasterPSPage() {
   const [acCode, setAcCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [data, setData] = useState<APIResponse['data'] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sample data for Master PS (20 items as shown in HTML)
-  const masterPSData: MasterPS[] = [
-    { id: 1, acCode: 999, pollingStationNo: '999_1', pollingStationName: '1. dummy ps name1', pollingStationNameL2: '', gps: '28.61240558612887 77.36629948466033', gpsLat: 28.61240559, gpsLng: 77.36629948, validInterview: 0 },
-    { id: 2, acCode: 999, pollingStationNo: '999_2', pollingStationName: '2. dummy ps name2', pollingStationNameL2: '', gps: '28.61062621772287 77.35971766279062', gpsLat: 28.61062622, gpsLng: 77.35971766, validInterview: 0 },
-    { id: 3, acCode: 999, pollingStationNo: '999_3', pollingStationName: '3. dummy ps name3', pollingStationNameL2: '', gps: '28.60801125250253 77.36850603940867', gpsLat: 28.60801125, gpsLng: 77.36850604, validInterview: 0 },
-    { id: 4, acCode: 1, pollingStationNo: '1_27', pollingStationName: '27. Prathamik Vidyalay Godar', pollingStationNameL2: '', gps: '27.320274682671506 84.00389284647972', gpsLat: 27.32027468, gpsLng: 84.00389285, validInterview: 0 },
-    { id: 5, acCode: 1, pollingStationNo: '1_28', pollingStationName: '28. Prathamik Vidyalay Malakauli', pollingStationNameL2: '', gps: '27.32721332355722 83.98567721381595', gpsLat: 27.32721332, gpsLng: 83.98567721, validInterview: 0 },
-    { id: 6, acCode: 1, pollingStationNo: '1_38', pollingStationName: '38. Prathamik Vidyalay, Matiariya', pollingStationNameL2: '', gps: '27.436429620218643 83.90824976439188', gpsLat: 27.43642962, gpsLng: 83.90824976, validInterview: 0 },
-    { id: 7, acCode: 1, pollingStationNo: '1_39', pollingStationName: '39. Prathamik Vidyalay, Amahat', pollingStationNameL2: '', gps: '27.418015776611828 83.89908268806177', gpsLat: 27.41801578, gpsLng: 83.89908269, validInterview: 0 },
-    { id: 8, acCode: 1, pollingStationNo: '1_49', pollingStationName: '49. Prathamik Vidyalay, Bairiyakala', pollingStationNameL2: '', gps: '27.318192903255323 84.04621762581222', gpsLat: 27.3181929, gpsLng: 84.04621763, validInterview: 0 },
-    { id: 9, acCode: 1, pollingStationNo: '1_50', pollingStationName: '50. Prathamik Vidyalay, Khajuriya', pollingStationNameL2: '', gps: '27.29389179230332 84.04719892398111', gpsLat: 27.29389179, gpsLng: 84.04719892, validInterview: 0 },
-    { id: 10, acCode: 1, pollingStationNo: '1_60', pollingStationName: '60. Krishchan Mishan Skul Pacharukha, Uttari Bhag', pollingStationNameL2: '', gps: '27.429226027860146 83.91806402611316', gpsLat: 27.42922603, gpsLng: 83.91806403, validInterview: 0 },
-    { id: 11, acCode: 1, pollingStationNo: '1_61', pollingStationName: '61. Krishchan Mishan Skul Pacharukha Dakshini Bhag', pollingStationNameL2: '', gps: '27.429228029762434 83.91815875543011', gpsLat: 27.42922803, gpsLng: 83.91815876, validInterview: 0 },
-    { id: 12, acCode: 1, pollingStationNo: '1_71', pollingStationName: '71. Utkramit Madhya Vidyalay, Jarar Dakshini Bhag', pollingStationNameL2: '', gps: '27.2625963904814 84.04601860304301', gpsLat: 27.26259639, gpsLng: 84.0460186, validInterview: 0 },
-    { id: 13, acCode: 1, pollingStationNo: '1_72', pollingStationName: '72. Prathamik Vidyalay Bhadachhi', pollingStationNameL2: '', gps: '27.436010647713267 83.90850725645522', gpsLat: 27.43601065, gpsLng: 83.90850726, validInterview: 0 },
-    { id: 14, acCode: 1, pollingStationNo: '1_82', pollingStationName: '82. Prathamik Vidyalay, Jimari', pollingStationNameL2: '', gps: '27.263317024331112 84.10882036211505', gpsLat: 27.26331702, gpsLng: 84.10882036, validInterview: 0 },
-    { id: 15, acCode: 1, pollingStationNo: '1_83', pollingStationName: '83. Utkramit Madhya Vidyalay, Nautanava', pollingStationNameL2: '', gps: '27.254952824752966 84.09997798126193', gpsLat: 27.25495282, gpsLng: 84.09997798, validInterview: 0 },
-    { id: 16, acCode: 1, pollingStationNo: '1_93', pollingStationName: '93. Utkramit Madhya Vidyalay, Semara, Vijay Nagar', pollingStationNameL2: '', gps: '27.216741123810802 84.12779767431864', gpsLat: 27.21674112, gpsLng: 84.12779767, validInterview: 0 },
-    { id: 17, acCode: 1, pollingStationNo: '1_94', pollingStationName: '94. Utkramit Madhya Vidyalay, Semara Sharanarthi', pollingStationNameL2: '', gps: '27.217479396654753 84.13770756636907', gpsLat: 27.2174794, gpsLng: 84.13770757, validInterview: 0 },
-    { id: 18, acCode: 1, pollingStationNo: '1_104', pollingStationName: '104. Utkrmit Madhy, Panchangva, Purbi Bhag', pollingStationNameL2: '', gps: '27.429252611985635 83.91566530814734', gpsLat: 27.42925261, gpsLng: 83.91566531, validInterview: 0 },
-    { id: 19, acCode: 1, pollingStationNo: '1_105', pollingStationName: '105. Utkramit Madhya Vidyalay, Pachaganva, Paschimi Bhag', pollingStationNameL2: '', gps: '27.429460809576966 83.915520958712', gpsLat: 27.42946081, gpsLng: 83.91552096, validInterview: 0 },
-    { id: 20, acCode: 1, pollingStationNo: '1_115', pollingStationName: '115. Prathamik Vidyalay, Nayagonv, Utri Bhag', pollingStationNameL2: '', gps: '27.169644365613625 84.05219319985092', gpsLat: 27.16964437, gpsLng: 84.0521932, validInterview: 0 }
-  ];
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await apiService.getMasterPollingStationList({
+        page: currentPage,
+        limit: pageSize
+      });
+      
+      if (response.success) {
+        setData(response.data);
+        setError(null);
+      } else {
+        setError('Failed to fetch data');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError('Error loading data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +85,9 @@ export default function MasterPSPage() {
     console.log('Search Polling Station Name:', pollingStationName);
     console.log('Search Polling Station No:', pollingStationNo);
     console.log('Search AC Code:', acCode);
+    // Reset to first page when searching
+    setCurrentPage(1);
+    fetchData();
   };
 
   const handleCalculateValidInterview = () => {
@@ -87,13 +115,43 @@ export default function MasterPSPage() {
     console.log('View GPS Map - AC Code:', acCode, 'PS Code:', psCode);
   };
 
-  const totalItems = 5835; // Total items as shown in HTML (1-20 of 5,835)
-  const totalPages = Math.ceil(totalItems / pageSize);
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <Text className="text-lg">Loading...</Text>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <Text className="text-lg text-red-600">Error: {error}</Text>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!data) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <Text className="text-lg">No data available</Text>
+        </div>
+      </Container>
+    );
+  }
+
+  const totalItems = data.total_count;
+  const totalPages = data.total_pages;
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
@@ -208,17 +266,17 @@ export default function MasterPSPage() {
                 </tr>
               </thead>
               <tbody>
-                {masterPSData.map((ps, index) => (
+                {data.polling_stations.map((ps, index) => (
                   <tr key={ps.id}>
-                    <td>{index + 1}</td>
-                    <td>{ps.acCode}</td>
-                    <td>{ps.pollingStationNo}</td>
-                    <td>{ps.pollingStationName}</td>
-                    <td>{ps.pollingStationNameL2}</td>
+                    <td>{startIndex + index + 1}</td>
+                    <td>{ps.ac_code}</td>
+                    <td>{ps.polling_station_no}</td>
+                    <td>{ps.polling_station_name}</td>
+                    <td>{ps.polling_station_name_l2}</td>
                     <td>{ps.gps}</td>
-                    <td>{ps.gpsLat}</td>
-                    <td>{ps.gpsLng}</td>
-                    <td>{ps.validInterview}</td>
+                    <td>{ps.gps_lat}</td>
+                    <td>{ps.gps_lng}</td>
+                    <td>-</td>
                     <td className="text-center">
                       <div className="flex gap-1">
                         <Button
@@ -232,7 +290,7 @@ export default function MasterPSPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleViewGPSMap(ps.acCode, ps.pollingStationNo)}
+                          onClick={() => handleViewGPSMap(ps.ac_code, ps.polling_station_no)}
                           className="bg-teal-500 hover:bg-teal-600 text-white border-0"
                           title="GPS Map"
                         >

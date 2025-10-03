@@ -71,7 +71,7 @@ export default function ACWisePendingDataPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
@@ -90,9 +90,12 @@ export default function ACWisePendingDataPage() {
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex justify-between items-center">
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Pending QC Data AC Wise
-                </Heading>
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+                  <Heading level={4} className="text-lg font-semibold text-gray-900">
+                    Pending QC Data AC Wise
+                  </Heading>
+                </div>
                 <div className="text-end">
                   <span></span>
                 </div>

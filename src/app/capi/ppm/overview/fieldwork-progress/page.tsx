@@ -1,78 +1,149 @@
 'use client';
 
-import React from 'react';
-// import { Card } from '@/components/ui/Card';
+import React, { useState, useEffect } from 'react';
 import { Table } from '@/components/ui/Table';
-// import { Heading } from '@/components/ui/Heading';
-// import { Text } from '@/components/ui/Text';
-// import { Container } from '@/components/ui/Container';
-// import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import Heading from '@/components/ui/Heading';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { config } from '@/lib/config';
+
+interface ProgressSummary {
+  total_sample: number;
+  sample_achieved_numbers: number;
+  sample_achieved_percentage: number;
+  acs_completed: number;
+  acs_in_progress: number;
+  acs_yet_to_initiate: number;
+}
+
+interface ACWiseProgress {
+  ac_code: number;
+  ac_name: string;
+  district_name: string;
+  target_sample: number;
+  valid_interviews: number;
+  under_qc_interviews: number;
+  total_achieved: number;
+  rejected_interviews: number;
+  completion_percentage: string;
+  status: string;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    summary: ProgressSummary;
+    ac_wise_progress: ACWiseProgress[];
+  };
+  message: string;
+  timestamp: string;
+}
 
 const FieldworkProgressPage = () => {
-  // Progress Summary data
-  const progressSummaryData = [
-    { details: 'Total Sample', measure: '72900' },
-    { details: 'Sample Achieved (Numbers)', measure: '50025' },
-    { details: 'Sample Achieved (%)', measure: '68.62' },
-    { details: 'ACs completed', measure: '56' },
-    { details: 'ACs not completed', measure: '178' },
-    { details: 'ACs yet to be initiated', measure: '9' },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<ProgressSummary | null>(null);
+  const [acWiseProgressData, setAcWiseProgressData] = useState<ACWiseProgress[]>([]);
 
-  // AC Wise Progress data
-  const acWiseProgressData = [
-    { acCode: 1, acName: 'Valmiki Nagar', districtName: 'Pashchim Champaran', validUnderQC: 310, reject: 15, completionPercent: 103.3, status: 'completed' },
-    { acCode: 2, acName: 'Ramnagar (SC)', districtName: 'Pashchim Champaran', validUnderQC: 346, reject: 44, completionPercent: 115.3, status: 'completed' },
-    { acCode: 3, acName: 'Narkatiaganj', districtName: 'Pashchim Champaran', validUnderQC: 315, reject: 73, completionPercent: 105, status: 'completed' },
-    { acCode: 4, acName: 'Bagaha', districtName: 'Pashchim Champaran', validUnderQC: 306, reject: 27, completionPercent: 102, status: 'completed' },
-    { acCode: 5, acName: 'Lauriya', districtName: 'Pashchim Champaran', validUnderQC: 337, reject: 96, completionPercent: 112.3, status: 'completed' },
-    { acCode: 6, acName: 'Nautan', districtName: 'Pashchim Champaran', validUnderQC: 326, reject: 73, completionPercent: 108.7, status: 'completed' },
-    { acCode: 7, acName: 'Chanpatia', districtName: 'Pashchim Champaran', validUnderQC: 314, reject: 52, completionPercent: 104.7, status: 'completed' },
-    { acCode: 8, acName: 'Bettiah', districtName: 'Pashchim Champaran', validUnderQC: 318, reject: 95, completionPercent: 106, status: 'completed' },
-    { acCode: 9, acName: 'Sikta', districtName: 'Pashchim Champaran', validUnderQC: 351, reject: 11, completionPercent: 117, status: 'completed' },
-    { acCode: 10, acName: 'Raxaul', districtName: 'Purba Champaran', validUnderQC: 325, reject: 104, completionPercent: 108.3, status: 'completed' },
-    { acCode: 11, acName: 'Sugauli', districtName: 'Purba Champaran', validUnderQC: 238, reject: 182, completionPercent: 79.3, status: 'in-progress' },
-    { acCode: 12, acName: 'Narkatia', districtName: 'Purba Champaran', validUnderQC: 303, reject: 8, completionPercent: 101, status: 'completed' },
-    { acCode: 13, acName: 'Harsidhi (SC)', districtName: 'Purba Champaran', validUnderQC: 171, reject: 190, completionPercent: 57, status: 'in-progress' },
-    { acCode: 14, acName: 'Govindganj', districtName: 'Purba Champaran', validUnderQC: 148, reject: 200, completionPercent: 49.3, status: 'in-progress' },
-    { acCode: 15, acName: 'Kesaria', districtName: 'Purba Champaran', validUnderQC: 291, reject: 218, completionPercent: 97, status: 'in-progress' },
-    { acCode: 16, acName: 'Kalyanpur', districtName: 'Purba Champaran', validUnderQC: 192, reject: 283, completionPercent: 64, status: 'in-progress' },
-    { acCode: 17, acName: 'Pipra', districtName: 'Purba Champaran', validUnderQC: 189, reject: 345, completionPercent: 63, status: 'in-progress' },
-    { acCode: 18, acName: 'Madhuban', districtName: 'Purba Champaran', validUnderQC: 209, reject: 102, completionPercent: 69.7, status: 'in-progress' },
-    { acCode: 19, acName: 'Motihari', districtName: 'Purba Champaran', validUnderQC: 118, reject: 234, completionPercent: 39.3, status: 'in-progress' },
-    { acCode: 20, acName: 'Chiraia', districtName: 'Purba Champaran', validUnderQC: 89, reject: 437, completionPercent: 29.7, status: 'in-progress' },
-    { acCode: 21, acName: 'Dhaka', districtName: 'Purba Champaran', validUnderQC: 163, reject: 140, completionPercent: 54.3, status: 'in-progress' },
-    { acCode: 22, acName: 'Sheohar', districtName: 'Sheohar', validUnderQC: 211, reject: 204, completionPercent: 70.3, status: 'in-progress' },
-    { acCode: 23, acName: 'Riga', districtName: 'Sitamarhi', validUnderQC: 193, reject: 608, completionPercent: 64.3, status: 'in-progress' },
-    { acCode: 24, acName: 'Bathnaha (SC)', districtName: 'Sitamarhi', validUnderQC: 210, reject: 394, completionPercent: 70, status: 'in-progress' },
-    { acCode: 25, acName: 'Parihar', districtName: 'Sitamarhi', validUnderQC: 301, reject: 155, completionPercent: 100.3, status: 'completed' },
-    { acCode: 26, acName: 'Sursand', districtName: 'Sitamarhi', validUnderQC: 292, reject: 308, completionPercent: 97.3, status: 'in-progress' },
-    { acCode: 27, acName: 'Bajpatti', districtName: 'Sitamarhi', validUnderQC: 305, reject: 78, completionPercent: 101.7, status: 'completed' },
-    { acCode: 28, acName: 'Sitamarhi', districtName: 'Sitamarhi', validUnderQC: 293, reject: 68, completionPercent: 97.7, status: 'in-progress' },
-    { acCode: 29, acName: 'Runnisaidpur', districtName: 'Sitamarhi', validUnderQC: 166, reject: 599, completionPercent: 55.3, status: 'in-progress' },
-    { acCode: 30, acName: 'Belsand', districtName: 'Sitamarhi', validUnderQC: 188, reject: 204, completionPercent: 62.7, status: 'in-progress' },
-  ];
+  useEffect(() => {
+    fetchFieldworkProgress();
+  }, []);
+
+  const fetchFieldworkProgress = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('accessToken') || '';
+      
+      if (!token) {
+        throw new Error('No authentication token found. Please login again.');
+      }
+
+      const response = await fetch(`${config.api.baseUrl}${config.api.version}/dataquality`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized. Please login again.');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result: APIResponse = await response.json();
+
+      if (result.success && result.data) {
+        setSummary(result.data.summary);
+        setAcWiseProgressData(result.data.ac_wise_progress);
+      } else {
+        throw new Error(result.message || 'Failed to fetch data');
+      }
+    } catch (err) {
+      console.error('Error fetching fieldwork progress:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transform summary data for display
+  const progressSummaryData = summary ? [
+    { details: 'Total Sample', measure: summary.total_sample.toString() },
+    { details: 'Sample Achieved (Numbers)', measure: summary.sample_achieved_numbers.toString() },
+    { details: 'Sample Achieved (%)', measure: summary.sample_achieved_percentage.toString() },
+    { details: 'ACs completed', measure: summary.acs_completed.toString() },
+    { details: 'ACs not completed', measure: summary.acs_in_progress.toString() },
+    { details: 'ACs yet to be initiated', measure: summary.acs_yet_to_initiate.toString() },
+  ] : [];
 
   const getRowStyle = (status: string) => {
     switch (status) {
       case 'completed':
         return 'bg-green-600 text-white';
-      case 'in-progress':
+      case 'in_progress':
         return 'bg-orange-500 text-white';
-      case 'not-started':
+      case 'yet_to_initiate':
         return 'bg-gray-200 text-gray-800';
       default:
         return 'bg-white text-gray-800';
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="main-container container mx-auto px-4 py-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <p className="font-bold">Error loading data</p>
+          <p>{error}</p>
+          <button 
+            onClick={fetchFieldworkProgress}
+            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="main-container container mx-auto px-4 py-6">
       {/* Page Title */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Fieldwork Progress
-        </h1>
+        <Heading level={4}>Fieldwork Progress</Heading>
       </div>
 
       {/* Progress Summary Card */}
@@ -146,22 +217,22 @@ const FieldworkProgressPage = () => {
                     {acWiseProgressData.map((item, index) => (
                       <tr key={index} className={`${getRowStyle(item.status)} hover:opacity-90`}>
                         <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.acCode}
+                          {item.ac_code}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                          {item.acName}
+                          {item.ac_name}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200">
-                          {item.districtName}
+                          {item.district_name}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.validUnderQC}
+                          {item.total_achieved}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.reject}
+                          {item.rejected_interviews}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.completionPercent}
+                          {item.completion_percentage}
                         </td>
                       </tr>
                     ))}

@@ -9,7 +9,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
-import { Search } from 'lucide-react';
+import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -162,6 +162,36 @@ const TelecallerDailyCallDetailPage = () => {
     // Implement search logic here
   };
 
+  const MetricCard = ({ 
+    icon: Icon, 
+    title, 
+    value, 
+    bgColor = 'bg-blue-500',
+    iconColor = 'text-white'
+  }: {
+    icon: any;
+    title: string;
+    value: string | number;
+    bgColor?: string;
+    iconColor?: string;
+  }) => (
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
+      <div className="flex items-center">
+        <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+        <div className="flex-1">
+          <Text className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+            {title}
+          </Text>
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+            {value}
+          </Text>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <FluidContainer>
       {/* Page Header */}
@@ -175,7 +205,7 @@ const TelecallerDailyCallDetailPage = () => {
       </div>
 
       {/* Search Filters */}
-      <Card className="p-6">
+      <Card className="p-6 mb-5">
         <div className="flex flex-wrap items-end gap-4">
           {/* Report Days */}
           <div className="flex-1 min-w-[200px]">
@@ -184,7 +214,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.reportDays}
-              onChange={(value) => handleFilterChange('reportDays', value)}
+              onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
               options={reportDaysOptions}
               placeholder="Select Report Days"
             />
@@ -198,7 +228,7 @@ const TelecallerDailyCallDetailPage = () => {
               </label>
               <SelectDropdown
                 value={filters.customDate}
-                onChange={(value) => handleFilterChange('customDate', value)}
+                onChange={(value) => handleFilterChange('customDate', Array.isArray(value) ? value[0] : value)}
                 options={dateOptions}
                 placeholder="Select Date"
               />
@@ -213,7 +243,7 @@ const TelecallerDailyCallDetailPage = () => {
               </label>
               <SelectDropdown
                 value={filters.customDateEnd}
-                onChange={(value) => handleFilterChange('customDateEnd', value)}
+                onChange={(value) => handleFilterChange('customDateEnd', Array.isArray(value) ? value[0] : value)}
                 options={dateOptions}
                 placeholder="Select Date"
               />
@@ -227,7 +257,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.telecaller}
-              onChange={(value) => handleFilterChange('telecaller', value)}
+              onChange={(value) => handleFilterChange('telecaller', Array.isArray(value) ? value[0] : value)}
               options={telecallerOptions}
               placeholder="Select Telecaller"
             />
@@ -240,7 +270,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.callerResponse}
-              onChange={(value) => handleFilterChange('callerResponse', value)}
+              onChange={(value) => handleFilterChange('callerResponse', Array.isArray(value) ? value[0] : value)}
               options={callerResponseOptions}
               placeholder="Select Caller Response"
             />
@@ -253,7 +283,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.apiResponse}
-              onChange={(value) => handleFilterChange('apiResponse', value)}
+              onChange={(value) => handleFilterChange('apiResponse', Array.isArray(value) ? value[0] : value)}
               options={apiResponseOptions}
               placeholder="Select API Response"
             />
@@ -266,7 +296,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={filters.callReceived}
-              onChange={(value) => handleFilterChange('callReceived', value)}
+              onChange={(value) => handleFilterChange('callReceived', Array.isArray(value) ? value[0] : value)}
               options={callReceivedOptions}
               placeholder="Select Call Received"
             />
@@ -301,261 +331,162 @@ const TelecallerDailyCallDetailPage = () => {
       </Card>
 
       {/* Performance Cards */}
-      <Card className="p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Caller Performance */}
-          <div>
-            <div className="flex items-center mb-4">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={3} className="text-lg font-bold text-gray-900 uppercase">
-                CALLER PERFORMANCE
-              </Heading>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Total Callers */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  1
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Total Callers</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{performanceMetrics.totalCallers}</Text>
-                </div>
-              </div>
-
-              {/* Days till now */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  2
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Days till now</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{performanceMetrics.daysTillNow}</Text>
-                </div>
-              </div>
-
-              {/* Number of dials */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  3
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Number of dials</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{performanceMetrics.numberOfDials}</Text>
-                </div>
-              </div>
-
-              {/* Total IVR Duration */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  4
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Total IVR Duration</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{performanceMetrics.totalIvrDuration}</Text>
-                </div>
-              </div>
-
-              {/* Caller did not pick */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  5
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Caller did not pick</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{performanceMetrics.callerDidNotPick}</Text>
-                </div>
-              </div>
-
-              {/* Total Talk Duration */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  6
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Total Talk Duration</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{performanceMetrics.totalTalkDuration}</Text>
-                </div>
-              </div>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
+        {/* Caller Performance */}
+        <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Caller Performance
+            </Heading>
           </div>
-
-          {/* Call Outcome */}
-          <div>
-            <div className="flex items-center mb-4">
-              <div className="w-1 h-6 bg-green-500 mr-3"></div>
-              <Heading level={3} className="text-lg font-bold text-gray-900 uppercase">
-                CALL OUTCOME
-              </Heading>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Number does not exist */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  7
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Number does not exist</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{callOutcomeMetrics.numberDoesNotExist}</Text>
-                </div>
-              </div>
-
-              {/* Respondent did not pick */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  8
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Respondent did not pick</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{callOutcomeMetrics.respondentDidNotPick}</Text>
-                </div>
-              </div>
-
-              {/* Respondent Picked the call */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  9
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Respondent Picked the call</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{callOutcomeMetrics.respondentPickedCall}</Text>
-                </div>
-              </div>
-
-              {/* Picked and Refused */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  10
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Picked and Refused</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{callOutcomeMetrics.pickedAndRefused}</Text>
-                </div>
-              </div>
-
-              {/* Total Number Exhausted */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  11
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Total Number Exhausted</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{callOutcomeMetrics.totalNumberExhausted}</Text>
-                </div>
-              </div>
-
-              {/* Picked and Call Continue */}
-              <div className="flex items-center p-4 border border-gray-200 rounded-lg">
-                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  12
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 mb-1">Picked and Call Continue</Text>
-                  <Text className="text-xl font-semibold text-gray-900">{callOutcomeMetrics.pickedAndCallContinue}</Text>
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MetricCard
+              icon={Users}
+              title="Total Callers"
+              value={performanceMetrics.totalCallers}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={Clock}
+              title="Days till now"
+              value={performanceMetrics.daysTillNow}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Number of dials"
+              value={performanceMetrics.numberOfDials}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={Clock}
+              title="Total IVR Duration"
+              value={performanceMetrics.totalIvrDuration}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Caller did not pick"
+              value={performanceMetrics.callerDidNotPick}
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Total Talk Duration"
+              value={performanceMetrics.totalTalkDuration}
+              bgColor="bg-blue-500"
+            />
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Call Outcome */}
+        <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-green-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Call Outcome
+            </Heading>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <MetricCard
+              icon={PhoneOff}
+              title="Number does not exist"
+              value={callOutcomeMetrics.numberDoesNotExist}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Respondent did not pick"
+              value={callOutcomeMetrics.respondentDidNotPick}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Respondent Picked the call"
+              value={callOutcomeMetrics.respondentPickedCall}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Picked and Refused"
+              value={callOutcomeMetrics.pickedAndRefused}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneOff}
+              title="Total Number Exhausted"
+              value={callOutcomeMetrics.totalNumberExhausted}
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              icon={PhoneCall}
+              title="Picked and Call Continue"
+              value={callOutcomeMetrics.pickedAndCallContinue}
+              bgColor="bg-green-500"
+            />
+          </div>
+        </Card>
+      </div>
 
       {/* Data Table */}
-      <Card className="p-6">
+      <Card className="">
         <div className="flex justify-between items-center mb-6">
-          <Heading level={2} className="text-xl font-semibold text-gray-900">
-            Call Detail
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900">
+              Call Detail
+            </Heading>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Call Time
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Call Received
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Response
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  API Response
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  IVR Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Talk Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Audio file
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Update
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+          <Table striped bordered hover>
+            <TableHeader>
+              <TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Caller Name</TableHead>
+                <TableHead>Caller ID</TableHead>
+                <TableHead>Call Time</TableHead>
+                <TableHead>Call Received</TableHead>
+                <TableHead>Caller Response</TableHead>
+                <TableHead>API Response</TableHead>
+                <TableHead>IVR Duration</TableHead>
+                <TableHead>Talk Duration</TableHead>
+                <TableHead>Audio file</TableHead>
+                <TableHead>Update</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {callDetailData.length === 0 ? (
-                <tr>
-                  <td colSpan={11} className="px-6 py-4 text-center text-gray-500">
+                <TableRow>
+                  <TableCell colSpan={11} className="text-center text-gray-500">
                     No results found.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 callDetailData.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callerName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callerId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callTime}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callReceived}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callerResponse}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.apiResponse}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.ivrDuration}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.talkDuration}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.audioFile}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.callerName}</TableCell>
+                    <TableCell>{item.callerId}</TableCell>
+                    <TableCell>{item.callTime}</TableCell>
+                    <TableCell>{item.callReceived}</TableCell>
+                    <TableCell>{item.callerResponse}</TableCell>
+                    <TableCell>{item.apiResponse}</TableCell>
+                    <TableCell>{item.ivrDuration}</TableCell>
+                    <TableCell>{item.talkDuration}</TableCell>
+                    <TableCell>{item.audioFile}</TableCell>
+                    <TableCell>
                       <Button variant="outline" size="sm">
                         Update
                       </Button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </Card>
     </FluidContainer>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -12,108 +13,118 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Checkbox from '@/components/ui/Checkbox';
 import { Edit, Plus, Search } from 'lucide-react';
+import { apiService } from '@/lib/api-service';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import Alert from '@/components/ui/Alert';
+import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
 
 interface TeleUserData {
   id: number;
-  callerAgency: string;
-  teleformUserId: string;
-  name: string;
-  mobileNumber: string;
-  underTraining: boolean;
-  userFillForm: boolean;
-  qcUser: boolean;
-  qcRecheck: boolean;
-  teleCallingGroup: string;
-  status: string;
-  pendingData: number;
+  uniqueId: string;
+  firstName: string;
+  lastName: string;
+  mobile: string;
+  email: string;
+  isActive: boolean;
+  agency: number;
+  roleId: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface SearchFilters {
-  teleformUserId: string;
+  uniqueId: string;
   name: string;
-  mobileNumber: string;
-  status: string;
-  telecallingGroupId: string;
-  underTraining: boolean;
-  fillForm: boolean;
-  qc: boolean;
-  qcRecheck: boolean;
+  mobile: string;
+  isActive: string;
 }
 
 const TeleUserInfoPage: React.FC = () => {
+  const router = useRouter();
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-    teleformUserId: '',
+    uniqueId: '',
     name: '',
-    mobileNumber: '',
-    status: '1',
-    telecallingGroupId: '',
-    underTraining: false,
-    fillForm: false,
-    qc: false,
-    qcRecheck: false,
+    mobile: '',
+    isActive: '',
   });
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(30);
-
-  // Sample data
-  const teleUserData: TeleUserData[] = [
-    {
-      id: 43,
-      callerAgency: 'labani',
-      teleformUserId: '801',
-      name: 'Debojit Halder',
-      mobileNumber: '9330119691',
-      underTraining: false,
-      userFillForm: true,
-      qcUser: false,
-      qcRecheck: false,
-      teleCallingGroup: 'Group 2',
-      status: 'Active',
-      pendingData: 0,
-    },
-    {
-      id: 46,
-      callerAgency: 'labani',
-      teleformUserId: '804',
-      name: 'Riya Tulsyan',
-      mobileNumber: '9330300187',
-      underTraining: false,
-      userFillForm: true,
-      qcUser: false,
-      qcRecheck: false,
-      teleCallingGroup: 'Group 2',
-      status: 'Active',
-      pendingData: 0,
-    },
-    {
-      id: 53,
-      callerAgency: 'labani',
-      teleformUserId: '810',
-      name: 'Chandana Haldar',
-      mobileNumber: '6289348512',
-      underTraining: false,
-      userFillForm: true,
-      qcUser: false,
-      qcRecheck: false,
-      teleCallingGroup: 'Group 2',
-      status: 'Active',
-      pendingData: 0,
-    },
-  ];
+  const [teleUserData, setTeleUserData] = useState<TeleUserData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTelecaller, setSelectedTelecaller] = useState<{id: number, name: string} | null>(null);
 
   const statusOptions = [
-    { value: '', label: 'Select Status' },
-    { value: '1', label: 'Active' },
-    { value: '2', label: 'Inactive' },
+    { value: '', label: 'All Status' },
+    { value: 'true', label: 'Active' },
+    { value: 'false', label: 'Inactive' },
   ];
 
-  const callingGroupOptions = [
-    { value: '', label: 'Select Calling Group' },
-    { value: '2', label: 'Group 2' },
-  ];
+  // Fetch telecallers from API
+  const fetchTelecallers = async (page: number = currentPage) => {
+    setLoading(true);
+    setError(null);
 
-  const handleInputChange = (field: keyof SearchFilters, value: string | boolean) => {
+    try {
+      const params: any = {
+        role_id: 12,
+        agency: 1,
+        page,
+        limit: itemsPerPage,
+      };
+
+      // Add filters if they have values
+      if (searchFilters.uniqueId) params.uniqueId = searchFilters.uniqueId;
+      if (searchFilters.name) params.name = searchFilters.name;
+      if (searchFilters.mobile) params.mobile = searchFilters.mobile;
+      if (searchFilters.isActive) params.isActive = searchFilters.isActive === 'true';
+
+      console.log('API Call Params:', params); // Debug log to see what's being sent
+
+      const response = await apiService.getUsers(params);
+
+      if (response.success && response.data) {
+        // Map User[] to TeleUserData[]
+        const mappedData: TeleUserData[] = response.data.users.map(user => ({
+          id: user.id,
+          uniqueId: user.uniqueId,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          mobile: user.mobile || '',
+          email: user.email,
+          isActive: typeof user.isActive === 'boolean' ? user.isActive : user.isActive === 1,
+          agency: user.agency || 1,
+          roleId: user.roleId,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        }));
+        setTeleUserData(mappedData);
+        setTotalItems(response.data.pagination.total);
+        setTotalPages(response.data.pagination.totalPages);
+      } else {
+        setError(response.message || 'Failed to fetch telecallers');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error fetching telecallers');
+      console.error('Error fetching telecallers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when page changes
+  useEffect(() => {
+    fetchTelecallers(currentPage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  const handleInputChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
       ...prev,
       [field]: value,
@@ -122,16 +133,31 @@ const TeleUserInfoPage: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search logic here
-    console.log('Search filters:', searchFilters);
+    setCurrentPage(1); // Reset to first page
+    fetchTelecallers(1);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
-  const totalItems = 273; // Total items from the original data
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const handleAddData = (user: TeleUserData) => {
+    setSelectedTelecaller({
+      id: user.id,
+      name: `${user.firstName} ${user.lastName}`
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedTelecaller(null);
+  };
+
+  const handleAssignmentSuccess = () => {
+    // Refresh the data or show success message
+    fetchTelecallers(currentPage);
+  };
 
   return (
     <FluidContainer>
@@ -148,16 +174,23 @@ const TeleUserInfoPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <Alert type="error" className="mb-6">
+            {error}
+          </Alert>
+        )}
+
         {/* Search Form */}
         <Card className="">
           <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Input
                   type="text"
                   placeholder="Teleform User ID"
-                  value={searchFilters.teleformUserId}
-                  onChange={(e) => handleInputChange('teleformUserId', e.target.value)}
+                  value={searchFilters.uniqueId}
+                  onChange={(e) => handleInputChange('uniqueId', e.target.value)}
                   className="w-full"
                 />
               </div>
@@ -174,69 +207,25 @@ const TeleUserInfoPage: React.FC = () => {
                 <Input
                   type="text"
                   placeholder="Mobile Number"
-                  value={searchFilters.mobileNumber}
-                  onChange={(e) => handleInputChange('mobileNumber', e.target.value)}
+                  value={searchFilters.mobile}
+                  onChange={(e) => handleInputChange('mobile', e.target.value)}
                   className="w-full"
                 />
               </div>
               <div>
                 <SelectDropdown
                   options={statusOptions}
-                  value={searchFilters.status}
-                  onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value)}
+                  value={searchFilters.isActive}
+                  onChange={(value) => handleInputChange('isActive', Array.isArray(value) ? value[0] : value as string)}
                   className="w-full"
                 />
-              </div>
-              <div>
-                <SelectDropdown
-                  options={callingGroupOptions}
-                  value={searchFilters.telecallingGroupId}
-                  onChange={(value) => handleInputChange('telecallingGroupId', Array.isArray(value) ? value[0] : value)}
-                  className="w-full"
-                />
-              </div>
-              <div>
-                <Button type="submit" className="w-full">
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
               </div>
             </div>
-
-            {/* Checkbox Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={searchFilters.underTraining}
-                  onCheckedChange={(checked: boolean) => handleInputChange('underTraining', checked)}
-                  id="under-training"
-                  label="Under Training"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={searchFilters.fillForm}
-                  onCheckedChange={(checked: boolean) => handleInputChange('fillForm', checked)}
-                  id="fill-form"
-                  label="User Fill Form"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={searchFilters.qc}
-                  onCheckedChange={(checked: boolean) => handleInputChange('qc', checked)}
-                  id="qc"
-                  label="QC User"
-                />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={searchFilters.qcRecheck}
-                  onCheckedChange={(checked: boolean) => handleInputChange('qcRecheck', checked)}
-                  id="qc-recheck"
-                  label="QC Recheck"
-                />
-              </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={loading}>
+                <Search className="w-4 h-4 mr-2" />
+                {loading ? 'Searching...' : 'Search'}
+              </Button>
             </div>
           </form>
         </Card>
@@ -244,11 +233,18 @@ const TeleUserInfoPage: React.FC = () => {
         {/* Data Table */}
         <Card className="">
           <div className="flex justify-between items-center mb-6">
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
-              Tele Caller
-            </Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={2} className="text-xl font-semibold text-gray-900">
+                Tele Caller
+              </Heading>
+            </div>
             <div className="flex space-x-2">
-              <Button variant="primary" size="sm">
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => router.push('/cati/ppm/manage-calling/create-tele-caller')}
+              >
                 <Plus className="w-4 h-4 mr-1" />
                 Add New User
               </Button>
@@ -268,92 +264,111 @@ const TeleUserInfoPage: React.FC = () => {
           </div>
 
           <div className="table-responsive">
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Caller Agency</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Teleform User ID</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Name</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Mobile Number</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Under Training</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">User Fill Form</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">QC User</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">QC Recheck</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Tele Calling Group</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    Actions <Edit className="inline w-4 h-4 ml-1" />
-                  </th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Pending Data</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    Add Data <Plus className="inline w-4 h-4 ml-1" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {teleUserData.map((user, index) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{user.callerAgency}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 font-mono">{user.teleformUserId}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{user.name}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 font-mono">{user.mobileNumber}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <i className={`fe ${user.underTraining ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <i className={`fe ${user.userFillForm ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <i className={`fe ${user.qcUser ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <i className={`fe ${user.qcRecheck ? 'fe-check text-green-500' : 'fe-x text-red-500'}`}></i>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">{user.teleCallingGroup}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        user.status === 'Active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <Button variant="primary" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">{user.pendingData}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white" title="Add 50 New Records">
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                    </td>
+            {loading ? (
+              <div className="flex justify-center items-center py-12">
+                <LoadingSpinner size="lg" />
+              </div>
+            ) : (
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Teleform User ID</th>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Name</th>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Mobile Number</th>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      Actions <Edit className="inline w-4 h-4 ml-1" />
+                    </th>
+                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                      Add Data <Plus className="inline w-4 h-4 ml-1" />
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {teleUserData.length > 0 ? (
+                    teleUserData.map((user, index) => (
+                      <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
+                          {user.uniqueId}
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                          {`${user.firstName} ${user.lastName}`}
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
+                          {user.mobile}
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                            user.isActive 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {user.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                          <Button variant="primary" size="sm" title="Edit Telecaller">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </td>
+                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                          <Button 
+                            variant="secondary" 
+                            size="sm" 
+                            className="bg-blue-500 hover:bg-blue-600 text-white" 
+                            title="Add Data"
+                            onClick={() => handleAddData(user)}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                        No telecallers found. Try adjusting your search filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            )}
           </div>
 
           {/* Table Footer */}
-          <div className="flex justify-between items-center mt-6">
-            <div className="text-sm text-gray-700">
-              Showing <span className="font-semibold">1-30</span> of <span className="font-semibold">273</span> items.
+          {!loading && teleUserData.length > 0 && (
+            <div className="flex justify-between items-center mt-6">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
+                Showing <span className="font-semibold">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> items.
+              </div>
+              <div>
+                <PaginationStandard
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={itemsPerPage}
+                  onPageChange={handlePageChange}
+                />
+              </div>
             </div>
-            <div>
-              <PaginationStandard
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
-            </div>
-          </div>
+          )}
         </Card>
+
+        {/* AC Assignment Modal */}
+        {selectedTelecaller && (
+          <ACAssignmentModal
+            isOpen={isModalOpen}
+            onClose={handleModalClose}
+            teleformUserId={selectedTelecaller.id}
+            telecallerName={selectedTelecaller.name}
+            onSuccess={handleAssignmentSuccess}
+          />
+        )}
       </div>
     </FluidContainer>
   );

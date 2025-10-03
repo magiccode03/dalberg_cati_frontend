@@ -87,8 +87,11 @@ export const API_ENDPOINTS = {
     POLLING_STATIONS: '/dashboard/polling-stations',
     SURVEY_DATES: '/dashboard/survey-dates',
     SAMPLE_STATISTICS: '/dashboard/sample-statistics',
+    MASTER_AC_LIST: '/dashboard/master-ac/list',
+    MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
+    MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
   },
-  
+
   // Analysis
   ANALYSIS: {
     VOTE_SHARE: '/analysis/vote-share',
@@ -120,12 +123,12 @@ export const API_ENDPOINTS = {
   
   // Demographic Data
   DEMOGRAPHIC: {
-    GENDER_WISE: '/progress/demographic/genderwise',
-    AGE_WISE: '/progress/demographic/agewise',
-    LOCALITY_WISE: '/progress/demographic/localitywise',
-    RELIGION_WISE: '/progress/demographic/religionwise',
-    SOCIAL_CATEGORY_WISE: '/progress/demographic/socialcategorywise',
-    CASTE_WISE: '/progress/demographic/castewise',
+    GENDER_WISE: '/demographic/genderwise',
+    AGE_WISE: '/demographic/agewise',
+    LOCALITY_WISE: '/demographic/localitywise',
+    RELIGION_WISE: '/demographic/religionwise',
+    SOCIAL_CATEGORY_WISE: '/demographic/socialcategorywise',
+    CASTE_WISE: '/demographic/castewise',
   },
 } as const;
 
@@ -613,6 +616,42 @@ class ApiService {
 
   async getSampleStatistics(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.SAMPLE_STATISTICS);
+  }
+
+  async getMasterACList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_LIST}${queryString}`);
+  }
+
+  async getMasterACCasteList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_CASTE_LIST}${queryString}`);
+  }
+
+  async getMasterPollingStationList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
+  }
+
+  // Demographic Methods
+  async getDemographicGenderWise(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DEMOGRAPHIC.GENDER_WISE);
+  }
+
+  async getDemographicAgeWise(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DEMOGRAPHIC.AGE_WISE);
+  }
+
+  async getDemographicCasteWise(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DEMOGRAPHIC.CASTE_WISE);
+  }
+
+  async getDemographicReligionWise(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DEMOGRAPHIC.RELIGION_WISE);
+  }
+
+  async getDemographicSocialCategoryWise(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DEMOGRAPHIC.SOCIAL_CATEGORY_WISE);
   }
 
   // Analysis Methods

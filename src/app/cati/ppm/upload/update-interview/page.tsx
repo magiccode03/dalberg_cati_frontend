@@ -209,9 +209,12 @@ const UpdateInterviewPage = () => {
       {/* Upload Form */}
       <Card className="mb-6">
         <div className="mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            Upload File for Reject/Valid
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              Upload File for Reject/Valid
+            </Heading>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -277,7 +280,7 @@ const UpdateInterviewPage = () => {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <Button type="submit" variant="primary" className="bg-green-600 hover:bg-green-700">
+            <Button type="submit" variant="primary" className="bg-blue-600 hover:bg-blue-700">
               Submit
             </Button>
           </div>
@@ -287,9 +290,12 @@ const UpdateInterviewPage = () => {
       {/* List of Updating Requests */}
       <Card>
         <div className="mb-4">
-          <Heading level={4} className="text-xl font-semibold text-gray-900">
-            List of Updating Requests
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-xl font-semibold text-gray-900">
+              List of Updating Requests
+            </Heading>
+          </div>
         </div>
 
         {/* Summary */}
@@ -329,13 +335,13 @@ const UpdateInterviewPage = () => {
                       {item.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
+                  <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
                     <button
                       onClick={() => handleViewRequest(item.cronId)}
-                      className="text-blue-600 hover:text-blue-800 flex items-center"
+                      className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
+                      title="View Request"
                     >
-                      <Eye className="w-4 h-4 mr-1" />
-                      View
+                      <Eye className="w-4 h-4 text-white" />
                     </button>
                   </td>
                 </tr>

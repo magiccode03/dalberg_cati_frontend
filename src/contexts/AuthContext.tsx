@@ -9,6 +9,7 @@ export interface User {
   uniqueId: string; // Alphanumeric/numeric unique ID
   name: string;
   email?: string; // Optional email for notifications
+  mobile?: string; // Mobile phone number
   role: string;
   roleDisplayName?: string; // Display name for the role
   avatar?: string;
@@ -125,7 +126,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await apiService.login({ uniqueId, password });
       
       if (response.success && response.data) {
-        const { user: apiUser } = response.data;
+        const { user: apiUser, token, refreshToken } = response.data;
+        
+        // Store authentication tokens
+        if (token && refreshToken) {
+          localStorage.setItem('accessToken', token);
+          localStorage.setItem('refreshToken', refreshToken);
+        }
         
         // Transform API user to our User interface
         const roleName = apiUser.roleName || apiUser.role?.name || 'super_admin';
@@ -139,6 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
+          mobile: apiUser.mobile,
           role: roleName,
           roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
@@ -199,6 +207,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('user');
       localStorage.removeItem('rememberMe');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('tokenExpiresAt');
       router.push('/login');
     }
   };
@@ -228,6 +239,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
+          mobile: apiUser.mobile,
           role: apiUser.roleName || apiUser.role?.name || 'super_admin',
           roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
@@ -436,21 +448,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (role === 'super_admin') return '/super-admin/dashboard';
     if (role === 'portal_admin') return '/portal-admin/users';
     
-    // All other roles go to home page to select CAPI/CATI
-    const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'cd', 'ss', 'atrd', 'wba', 'nd'];
-    if (systemRoles.includes(role)) {
-      return '/home';
-    }
-    
-    // Fallback for legacy roles
-    const roleRedirects: { [key: string]: string } = {
-      'admin': '/dashboard',
-      'pmt': '/pmt/dashboard',
-      'qc': '/dashboard/qc',
-      'quality_analyst': '/dashboard/quality-analyst',
-    };
-
-    return roleRedirects[role] || '/dashboard';
+    // All other roles (including research, ppm, dqm, fd, etc.) go to /home
+    return '/home';
   };
 
   const value: AuthContextType = {

@@ -110,7 +110,8 @@ export default function SuperAdminRolesPage() {
       }
 
       // Make direct API call with proper headers
-      const response = await fetch('http://localhost:4001/api/roles?isActive=true', {
+      const { config } = await import('@/lib/config');
+      const response = await fetch(`${config.api.baseUrl}${config.api.version}/roles?isActive=true`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

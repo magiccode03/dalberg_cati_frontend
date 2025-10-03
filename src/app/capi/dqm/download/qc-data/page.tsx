@@ -48,7 +48,7 @@ export default function QCDataPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
@@ -64,7 +64,7 @@ export default function QCDataPage() {
 
         {/* Main Card */}
         <div className="w-full">
-          <Card className="p-6">
+          <Card>
             {/* Card Header */}
             <div className="pb-0 mb-6">
               <div className="flex justify-between items-center">

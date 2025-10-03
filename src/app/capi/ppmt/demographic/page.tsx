@@ -1174,7 +1174,7 @@ export default function PPMTDemographicPage() {
   };
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">

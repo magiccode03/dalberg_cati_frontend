@@ -1,13 +1,62 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Card from '@/components/ui/Card';
+import Input from '@/components/ui/Input';
+import SelectDropdown from '@/components/ui/SelectDropdown';
+import Heading from '@/components/ui/Heading';
 
 // Dynamically import ECharts to avoid SSR issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
 
 export default function BasicDemographicsPage() {
+  // Filter state
+  const [filters, setFilters] = useState({
+    acNameCode: '',
+    gender: '',
+    locality: '',
+    religion: '',
+    socialCategory: '',
+    age: ''
+  });
+
+  const handleFilterChange = (field: string, value: string | string[]) => {
+    const finalValue = Array.isArray(value) ? value[0] : value;
+    setFilters(prev => ({ ...prev, [field]: finalValue }));
+  };
+
+  // Filter options
+  const genderOptions = [
+    { value: '', label: 'All ACs' },
+    { value: '1', label: 'ACs with Low Female Coverage' }
+  ];
+
+  const localityOptions = [
+    { value: '', label: 'All ACs' },
+    { value: '1', label: 'ACs with Low Urban Coverage' }
+  ];
+
+  const religionOptions = [
+    { value: '', label: 'All ACs' },
+    { value: '1', label: 'ACs with Low Muslim Coverage' }
+  ];
+
+  const socialCategoryOptions = [
+    { value: '', label: 'All ACs' },
+    { value: '1', label: 'ACs with Low G+O+E Coverage' },
+    { value: '2', label: 'ACs with Low SC Coverage' },
+    { value: '3', label: 'ACs with Low ST Coverage' }
+  ];
+
+  const ageOptions = [
+    { value: '', label: 'All ACs' },
+    { value: '1', label: 'ACs with Low 18-24 years Coverage' },
+    { value: '2', label: 'ACs with Low 25-34 years Coverage' },
+    { value: '3', label: 'ACs with Low 35-50 years Coverage' },
+    { value: '4', label: 'ACs with Low 50+ years Coverage' }
+  ];
+
   // Gender Coverage Chart
   const genderChartOptions = {
     tooltip: {
@@ -270,52 +319,175 @@ export default function BasicDemographicsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Page Title */}
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-        Demographic
-      </h1>
+      <div className="mb-8">
+        <Heading level={4}>Demographic</Heading>
+      </div>
 
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* First Row - 3 Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {/* Gender Coverage */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+            <Heading level={4} align="center" className="mb-4">
               Gender Coverage
-            </h3>
+            </Heading>
             <ReactECharts option={genderChartOptions} style={{ height: '400px' }} />
           </Card>
 
           {/* Locality Coverage */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+            <Heading level={4} align="center" className="mb-4">
               Locality Coverage
-            </h3>
+            </Heading>
             <ReactECharts option={localityChartOptions} style={{ height: '400px' }} />
           </Card>
 
           {/* Social Category Coverage */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+            <Heading level={4} align="center" className="mb-4">
               Social Category Coverage
-            </h3>
+            </Heading>
             <ReactECharts option={socialCategoryChartOptions} style={{ height: '400px' }} />
           </Card>
+        </div>
 
-          {/* Age Coverage - Spans 2 columns */}
-          <Card className="p-6 lg:col-span-2">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+        {/* Second Row - 2 Charts (50%-50%) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Age Coverage */}
+          <Card className="p-6">
+            <Heading level={4} align="center" className="mb-4">
               Age Coverage
-            </h3>
+            </Heading>
             <ReactECharts option={ageChartOptions} style={{ height: '400px' }} />
           </Card>
 
-          {/* Religion Coverage - Spans 1 column */}
+          {/* Religion Coverage */}
           <Card className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+            <Heading level={4} align="center" className="mb-4">
               Religion Coverage
-            </h3>
+            </Heading>
             <ReactECharts option={religionChartOptions} style={{ height: '400px' }} />
           </Card>
-      </div>
+        </div>
+
+        {/* Third Row - Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* PCs Card */}
+          <div className="bg-green-500 bg-opacity-50 hover:bg-opacity-100 transition-all duration-200 rounded-lg shadow-md cursor-pointer">
+            <div className="p-4 text-center">
+              <h2 className="text-white text-3xl font-bold mb-2">PCs</h2>
+              <h4 className="text-white text-2xl font-semibold">40</h4>
+            </div>
+          </div>
+
+          {/* Districts Card */}
+          <div className="bg-green-500 bg-opacity-50 hover:bg-opacity-100 transition-all duration-200 rounded-lg shadow-md cursor-pointer">
+            <div className="p-4 text-center">
+              <h2 className="text-white text-3xl font-bold mb-2">Districts</h2>
+              <h4 className="text-white text-2xl font-semibold">38</h4>
+            </div>
+          </div>
+
+          {/* Zones Card */}
+          <div className="bg-green-500 bg-opacity-50 hover:bg-opacity-100 transition-all duration-200 rounded-lg shadow-md cursor-pointer">
+            <div className="p-4 text-center">
+              <h2 className="text-white text-3xl font-bold mb-2">Zones</h2>
+              <h4 className="text-white text-2xl font-semibold">9</h4>
+            </div>
+          </div>
+
+          {/* ACs Card */}
+          <div className="bg-green-500 bg-opacity-50 hover:bg-opacity-100 transition-all duration-200 rounded-lg shadow-md cursor-pointer">
+            <div className="p-4 text-center">
+              <h2 className="text-white text-3xl font-bold mb-2">ACs</h2>
+              <h4 className="text-white text-2xl font-semibold">311</h4>
+            </div>
+          </div>
+        </div>
+
+        {/* Fourth Row - Filter Card */}
+        <Card className="mt-6">
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+              {/* AC Name/Code */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  AC Name/Code
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Search by AC Name/Code"
+                  value={filters.acNameCode}
+                  onChange={(e) => handleFilterChange('acNameCode', e.target.value)}
+                />
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Gender
+                </label>
+                <SelectDropdown
+                  options={genderOptions}
+                  value={filters.gender}
+                  onChange={(value) => handleFilterChange('gender', value)}
+                  placeholder="All ACs"
+                />
+              </div>
+
+              {/* Locality */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Locality
+                </label>
+                <SelectDropdown
+                  options={localityOptions}
+                  value={filters.locality}
+                  onChange={(value) => handleFilterChange('locality', value)}
+                  placeholder="All ACs"
+                />
+              </div>
+
+              {/* Religion */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Religion
+                </label>
+                <SelectDropdown
+                  options={religionOptions}
+                  value={filters.religion}
+                  onChange={(value) => handleFilterChange('religion', value)}
+                  placeholder="All ACs"
+                />
+              </div>
+
+              {/* Social Category */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Social Category
+                </label>
+                <SelectDropdown
+                  options={socialCategoryOptions}
+                  value={filters.socialCategory}
+                  onChange={(value) => handleFilterChange('socialCategory', value)}
+                  placeholder="All ACs"
+                />
+              </div>
+
+              {/* Age */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Age
+                </label>
+                <SelectDropdown
+                  options={ageOptions}
+                  value={filters.age}
+                  onChange={(value) => handleFilterChange('age', value)}
+                  placeholder="All ACs"
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
     </div>
   );
 }

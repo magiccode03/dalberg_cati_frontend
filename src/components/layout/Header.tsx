@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Bell, User, LogOut, Settings, Sun, Moon, ChevronDown } from 'lucide-react';
+import { User, LogOut, Settings, Sun, Moon, ChevronDown } from 'lucide-react';
+import SelectDropdown from '@/components/ui/SelectDropdown';
 
 export default function Header() {
   const { user: authUser, logout } = useAuth();
@@ -25,9 +26,22 @@ export default function Header() {
     return roleDisplayNames[role || ''] || role || 'admin';
   };
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [selectedAgency, setSelectedAgency] = useState<string>('all');
+
+  // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
+  const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
+
+  // Sample agency list - replace with actual data from API
+  const agencyOptions = [
+    { value: 'all', label: 'All Agencies' },
+    { value: 'agency_001', label: 'Agency 001' },
+    { value: 'agency_002', label: 'Agency 002' },
+    { value: 'agency_003', label: 'Agency 003' },
+    { value: 'agency_004', label: 'Agency 004' },
+    { value: 'agency_005', label: 'Agency 005' },
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -130,6 +144,18 @@ export default function Header() {
 
         {/* Right side - Actions */}
         <div className="flex items-center space-x-4">
+          {/* Agency Selector - Show for PPM and DQM roles */}
+          {showAgencySelector && (
+            <div className="w-40">
+              <SelectDropdown
+                options={agencyOptions}
+                value={selectedAgency}
+                onChange={(value) => setSelectedAgency(value as string)}
+                placeholder="Select Agency"
+              />
+            </div>
+          )}
+
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -146,82 +172,6 @@ export default function Header() {
               <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             )}
           </button>
-
-          {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative"
-              title="Notifications"
-            >
-              <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-              {notifications.filter(n => !n.read).length > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                  {notifications.filter(n => !n.read).length}
-                </span>
-              )}
-            </button>
-
-            {/* Notifications dropdown */}
-            {notificationsOpen && (
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      Notifications
-                    </h3>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {notifications.filter(n => !n.read).length} new
-                    </span>
-                  </div>
-                </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-gray-500 dark:text-gray-400">
-                      <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>No notifications</p>
-                    </div>
-                  ) : (
-                    notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer ${
-                          !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
-                        }`}
-                      >
-                        <div className="flex items-start space-x-3">
-                          <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                            notification.type === 'error' ? 'bg-red-500' :
-                            notification.type === 'warning' ? 'bg-yellow-500' :
-                            notification.type === 'success' ? 'bg-green-500' :
-                            'bg-blue-500'
-                          }`} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {notification.title}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                              {notification.message}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              {new Date(notification.timestamp).toLocaleString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                {notifications.length > 0 && (
-                  <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-                    <button className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
-                      View All Notifications
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
 
           {/* User Profile */}
           <div className="relative">

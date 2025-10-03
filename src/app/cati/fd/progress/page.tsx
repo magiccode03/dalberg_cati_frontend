@@ -207,12 +207,11 @@ export default function CATIProgressPage() {
         {/* Caller Performance */}
         <Card>
           <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-            <Heading level={3} className="text-base font-semibold text-gray-900 dark:text-white">
-              CALLER PERFORMANCE
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Caller Performance
             </Heading>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MetricCard
               icon={Users}
@@ -256,12 +255,11 @@ export default function CATIProgressPage() {
         {/* Call Outcome */}
         <Card>
           <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-green-500 mr-3"></div>
-            <Heading level={3} className="text-base font-semibold text-gray-900 dark:text-white">
-              CALL OUTCOME
+            <div className="w-1 h-6 bg-green-600 mr-3"></div>
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Call Outcome
             </Heading>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <MetricCard
               icon={PhoneOff}

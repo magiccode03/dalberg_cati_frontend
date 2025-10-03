@@ -8,6 +8,7 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
+import { Edit, RefreshCw, XCircle } from 'lucide-react';
 
 const TeamRegistrationPage = () => {
   // Sample agency data
@@ -157,52 +158,52 @@ const TeamRegistrationPage = () => {
   };
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-      <Heading level={1} className="mb-6">
-        Agency List
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={4} className="mb-6">
+        Team Registration
       </Heading>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <Card className="bg-purple-600 text-white">
-          <div className="p-6 text-center">
-            <Heading level={3} className="text-white mb-2">
+          <div className="py-2 px-3 text-center">
+            <Heading level={4} className="text-white mb-1">
               Total Interview
             </Heading>
-            <Text className="text-white text-2xl font-semibold">
+            <Text className="text-white text-xl font-semibold">
               1,08,333
             </Text>
           </div>
         </Card>
         
         <Card className="bg-green-600 text-white">
-          <div className="p-6 text-center">
-            <Heading level={3} className="text-white mb-2">
+          <div className="py-2 px-3 text-center">
+            <Heading level={4} className="text-white mb-1">
               Valid Interview
             </Heading>
-            <Text className="text-white text-2xl font-semibold">
+            <Text className="text-white text-xl font-semibold">
               50,025
             </Text>
           </div>
         </Card>
         
         <Card className="bg-red-600 text-white">
-          <div className="p-6 text-center">
-            <Heading level={3} className="text-white mb-2">
+          <div className="py-2 px-3 text-center">
+            <Heading level={4} className="text-white mb-1">
               Reject Interview
             </Heading>
-            <Text className="text-white text-2xl font-semibold">
+            <Text className="text-white text-xl font-semibold">
               58,308
             </Text>
           </div>
         </Card>
         
         <Card className="bg-blue-600 text-white">
-          <div className="p-6 text-center">
-            <Heading level={3} className="text-white mb-2">
+          <div className="py-2 px-3 text-center">
+            <Heading level={4} className="text-white mb-1">
               Interview Under QC
             </Heading>
-            <Text className="text-white text-2xl font-semibold">
+            <Text className="text-white text-xl font-semibold">
               0
             </Text>
           </div>
@@ -284,24 +285,27 @@ const TeamRegistrationPage = () => {
                           <td className="px-4 py-3 border-b border-gray-200">
                             {getStatusBadge(item.status)}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
-                            <Button
-                              variant="outline"
-                              size="sm"
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <button
                               onClick={() => console.log(`Update Agency ${item.agencyId}`)}
+                              className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+                              title="Update Agency"
                             >
-                              Update
-                            </Button>
+                              <Edit size={16} />
+                            </button>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
-                            <Button
-                              variant={item.reQcStatus === 'Enable' ? 'primary' : 'destructive'}
-                              size="sm"
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <button
                               onClick={() => console.log(`${item.reQcStatus} Re-QC for Agency ${item.agencyId}`)}
+                              className={`inline-flex items-center justify-center w-8 h-8 text-white rounded transition-colors ${
+                                item.reQcStatus === 'Enable' 
+                                  ? 'bg-green-600 hover:bg-green-700' 
+                                  : 'bg-red-600 hover:bg-red-700'
+                              }`}
                               title={`${item.reQcStatus} Re-QC for this agency`}
                             >
-                              {item.reQcStatus}
-                            </Button>
+                              {item.reQcStatus === 'Enable' ? <RefreshCw size={16} /> : <XCircle size={16} />}
+                            </button>
                           </td>
                         </tr>
                       ))}
