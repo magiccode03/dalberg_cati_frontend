@@ -142,11 +142,11 @@ export default function FieldworkProgressPage() {
 
   const getRowStyle = (completionPercent: number) => {
     if (completionPercent >= 100) {
-      return 'bg-green-500 text-white';
+      return 'bg-green-600 text-white';
     } else if (completionPercent >= 50) {
       return 'bg-orange-500 text-white';
     } else {
-      return 'bg-gray-100 text-gray-900';
+      return 'bg-gray-200 text-gray-900';
     }
   };
 

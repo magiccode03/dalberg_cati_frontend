@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -12,7 +12,75 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Image, User } from 'lucide-react';
+import { Volume2, MapPin, Image, User, Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
+
+// TypeScript interfaces for API response
+interface InterviewData {
+  server_id: number;
+  interview_date: string;
+  sample_type: string;
+  ac_code: number;
+  ac_name: string;
+  ps_name: string;
+  device_id: string;
+  interviewer_id: string;
+  audio_qc_label: string;
+  audio_qc_id: string;
+  audio1_status_label: string;
+  qc_outcome: string;
+  status_label: string;
+  gender_label: string;
+  gps_available: boolean;
+  ps_image_available: boolean;
+  selfie_image_available: boolean;
+  audio_playback_available: boolean;
+}
+
+// Display data interface for transformed data
+interface DisplayInterviewData {
+  server_id: string;
+  interview_date: string;
+  sample_type: string;
+  ac_code: number;
+  ac_name: string;
+  ps_name: string;
+  device_id: string;
+  interviewer_id: string;
+  audio_qc_label: string;
+  audio_qc_id: string;
+  audio1_status_label: string;
+  qc_outcome: string;
+  status_label: string;
+  gender_label: string;
+  gps_available: boolean;
+  ps_image_available: boolean;
+  selfie_image_available: boolean;
+  audio_playback_available: boolean;
+}
+
+interface PaginationData {
+  current_page: number;
+  per_page: number;
+  total_count: number;
+  total_pages: number;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    interviews: InterviewData[];
+    pagination: PaginationData;
+    filters_applied: Record<string, any>;
+    sorting: {
+      field: string;
+      direction: string;
+    };
+    message: string;
+  };
+  message: string;
+  timestamp: string;
+}
 
 const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
@@ -34,6 +102,13 @@ const InterviewLogPage = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
+
+  // API state management
+  const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
+  const [totalCount, setTotalCount] = useState(108333);
+  const [totalPages, setTotalPages] = useState(25);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Sample data for dropdowns
   const agencyOptions = [
@@ -62,100 +137,208 @@ const InterviewLogPage = () => {
     { value: '10', label: 'Raxaul (10)' },
   ];
 
-  // Sample interview data
-  const interviewData = [
+  // Sample data fallback for when API fails
+  const sampleInterviewData = [
     {
-      id: 1,
-      serverId: '302275',
-      interviewDate: '2025-06-17',
-      sampleType: 'Sample',
-      acName: 'Cheria Bariarpur (141)',
-      psName: '111. Utkramit Madhya Vidyalaya,Shekha Tola',
-      deviceId: '9b565985d11c4d77',
-      interviewerId: '',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Terminated',
-      psImage: '',
-      selfieImage: '',
-      gender: '',
+      server_id: 302275,
+      interview_date: '2025-06-17',
+      sample_type: 'Sample',
+      ac_code: 141,
+      ac_name: 'Cheria Bariarpur (141)',
+      ps_name: '111. Utkramit Madhya Vidyalaya,Shekha Tola',
+      device_id: '9b565985d11c4d77',
+      interviewer_id: '',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Terminated',
+      gender_label: '',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 2,
-      serverId: '301767',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '935',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (N+W+RTA)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Male',
+      server_id: 301767,
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '935',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (N+W+RTA)',
+      gender_label: 'Male',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 3,
-      serverId: '301745',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '935',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (Short Interview - 0 sec)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Male',
+      server_id: 301745,
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '935',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (Short Interview - 0 sec)',
+      gender_label: 'Male',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 4,
-      serverId: '301739',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '721',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (Short Interview - 0 sec)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Male',
+      server_id: 301739,
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '721',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (Short Interview - 0 sec)',
+      gender_label: 'Male',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 5,
-      serverId: '301705',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '935',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (N+W+RTA)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Female',
+      server_id: 301705,
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '935',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (N+W+RTA)',
+      gender_label: 'Female',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
   ];
 
+  // Format date to YYYY-MM-DD format
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    } catch {
+      return dateString; // Return as-is if parsing fails
+    }
+  };
+
+  // Transform API data to match UI expectations
+  const transformAPIData = (apiData: InterviewData[]): DisplayInterviewData[] => {
+    return apiData.map(item => ({
+      ...item,
+      // Convert numbers to strings for display
+      server_id: item.server_id.toString(),
+      interviewer_id: item.interviewer_id?.toString() || '',
+      audio_qc_id: item.audio_qc_id || '',
+      // Ensure date is in YYYY-MM-DD format
+      interview_date: formatDate(item.interview_date),
+    }));
+  };
+
+  // Fetch interview logs from API
+  const fetchInterviewLogs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build query parameters based on filters
+      const queryParams = new URLSearchParams();
+      
+      if (filters.agencyId) queryParams.append('agency_id', filters.agencyId);
+      if (filters.serverId) queryParams.append('server_id', filters.serverId);
+      if (filters.interviewDate) queryParams.append('interview_date', filters.interviewDate);
+      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
+      if (filters.psCode) queryParams.append('ps_code', filters.psCode);
+      if (filters.userId) queryParams.append('user_id', filters.userId);
+      if (filters.interviewerId) queryParams.append('interviewer_id', filters.interviewerId);
+      if (filters.deviceId) queryParams.append('device_id', filters.deviceId);
+      if (filters.mobileNo) queryParams.append('mobile_no', filters.mobileNo);
+      if (filters.audioQc.length > 0) queryParams.append('audio_qc', filters.audioQc.join(','));
+      if (filters.audioQcStatus.length > 0) queryParams.append('audio_qc_status', filters.audioQcStatus.join(','));
+      if (filters.audio1Status.length > 0) queryParams.append('audio_qc_status_detailed', filters.audio1Status.join(','));
+      if (filters.qcRecheckStatusAudio.length > 0) queryParams.append('audio_re_qc_status', filters.qcRecheckStatusAudio.join(','));
+      if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('per_page', pageSize.toString());
+
+      const response = await apiClient.get(`/overview/interview-log?${queryParams.toString()}`, {
+        timeout: 10000
+      });
+
+      const data: APIResponse = response.data;
+      
+      if (data.success && data.data.interviews) {
+        setInterviewData(transformAPIData(data.data.interviews));
+        setTotalCount(data.data.pagination.total_count);
+        setTotalPages(data.data.pagination.total_pages);
+      } else {
+        console.error('API did not return interview data:', data);
+        setInterviewData(transformAPIData(sampleInterviewData));
+        setError('No data received from API, using sample data');
+      }
+    } catch (err: any) {
+      console.error('Error fetching interview logs:', err);
+      
+      if (err.message?.includes('timeout') || err.code === 'ECONNABORTED') {
+        console.log('API request timed out after 10 seconds');
+      } else {
+        console.error('API Error:', err.response?.data || err.message);
+      }
+      
+      setError('Failed to load interview data');
+      // Use sample data as fallback
+      setInterviewData(transformAPIData(sampleInterviewData));
+      setTotalCount(108333);
+      setTotalPages(25);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load data on component mount and when filters change
+  useEffect(() => {
+    fetchInterviewLogs();
+  }, [currentPage, pageSize]);
+
+  // Debounced filter update
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchInterviewLogs();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [filters]);
 
   const getQcOutcomeBadge = (outcome: string) => {
     switch (outcome) {
@@ -229,11 +412,11 @@ const InterviewLogPage = () => {
                 <SelectDropdown
                   options={[
                     { value: '', label: 'Select Interview Date' },
-                    { value: '2025-09-26', label: '2025-09-26' },
-                    { value: '2025-09-25', label: '2025-09-25' },
-                    { value: '2025-09-24', label: '2025-09-24' },
-                    { value: '2025-09-23', label: '2025-09-23' },
-                    { value: '2025-09-22', label: '2025-09-22' },
+                    { value: '2025-06-17', label: '2025-06-17' },
+                    { value: '2025-06-15', label: '2025-06-15' },
+                    { value: '2025-06-14', label: '2025-06-14' },
+                    { value: '2025-06-13', label: '2025-06-13' },
+                    { value: '2025-06-12', label: '2025-06-12' },
                   ]}
                   value={filters.interviewDate}
                   onChange={(value) => handleFilterChange('interviewDate', value)}
@@ -442,20 +625,52 @@ const InterviewLogPage = () => {
         <div className="lg:col-span-10">
           <Card>
             <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
               <Heading level={4}>
                 Interview Details
               </Heading>
-              <Button variant="outline" className="flex items-center gap-2">
+                </div>
+                <Button variant="outline" className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 border-blue-600">
                 <i className="fa fa-download"></i>
                 Download
               </Button>
             </div>
             
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Text className="ml-2 text-gray-600">Loading interview data...</Text>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
+                <svg className="w-12 h-12 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.822-.833-2.592 0L4.27 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <Text className="text-red-700 font-medium mb-2">Error Loading Data</Text>
+                <Text className="text-red-600 text-sm mb-4 text-center">
+                  {error}
+                </Text>
+                <Button 
+                  variant="outline" 
+                  onClick={fetchInterviewLogs}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+            
+            {!loading && (
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
-                    Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, 108333)}</strong> of <strong>108,333</strong> items.
+                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount.toLocaleString()}</strong> items.
                   </Text>
                 </div>
                 
@@ -485,32 +700,34 @@ const InterviewLogPage = () => {
                     </TableHeader>
                     <TableBody>
                       {interviewData.map((interview, index) => (
-                        <TableRow key={interview.id} className="hover:bg-gray-50">
+                          <TableRow key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
                           <TableCell className="text-center text-gray-500 font-medium w-16">
-                            {index + 1}
+                              {((currentPage - 1) * pageSize) + index + 1}
                           </TableCell>
                           <TableCell className="w-32">
                             <span className="font-mono text-sm font-medium text-blue-600">
-                              {interview.serverId}
+                                {interview.server_id}
                             </span>
                           </TableCell>
-                          <TableCell className="w-32">{interview.interviewDate}</TableCell>
-                          <TableCell className="w-24">{interview.sampleType}</TableCell>
-                          <TableCell className="w-48">{interview.acName}</TableCell>
-                          <TableCell className="w-64">{interview.psName}</TableCell>
-                          <TableCell className="w-40">{interview.deviceId}</TableCell>
-                          <TableCell className="w-32">{interview.interviewerId}</TableCell>
-                          <TableCell className="w-24">{interview.audioQc}</TableCell>
-                          <TableCell className="w-32">{interview.audioQcId}</TableCell>
-                          <TableCell className="w-40">{interview.audioFailReason}</TableCell>
+                            <TableCell className="w-32 font-mono text-sm">{interview.interview_date}</TableCell>
+                            <TableCell className="w-24">{interview.sample_type}</TableCell>
+                            <TableCell className="w-48">{interview.ac_name}</TableCell>
+                            <TableCell className="w-64">{interview.ps_name}</TableCell>
+                            <TableCell className="w-40">{interview.device_id}</TableCell>
+                            <TableCell className="w-32">{interview.interviewer_id || '-'}</TableCell>
+                            <TableCell className="w-24">{interview.audio_qc_label}</TableCell>
+                            <TableCell className="w-32">{interview.audio_qc_id || '-'}</TableCell>
+                            <TableCell className="w-40">{interview.audio1_status_label || '-'}</TableCell>
                           <TableCell className="text-center w-32">
-                            {getQcOutcomeBadge(interview.qcOutcome)}
+                              {getQcOutcomeBadge(interview.qc_outcome)}
                           </TableCell>
-                          <TableCell className="w-48">{interview.status}</TableCell>
+                            <TableCell className="w-48">{interview.status_label}</TableCell>
                           <TableCell className="text-center w-24">
                             <div className="flex justify-center items-center">
-                              {interview.psImage ? (
-                                <img src={interview.psImage} alt="PS Image" className="w-8 h-8 rounded object-cover" />
+                                {interview.ps_image_available ? (
+                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <Image className="w-4 h-4 text-green-600" />
+                                  </div>
                               ) : (
                                 <Image className="w-5 h-5 text-gray-400" />
                               )}
@@ -518,23 +735,30 @@ const InterviewLogPage = () => {
                           </TableCell>
                           <TableCell className="text-center w-24">
                             <div className="flex justify-center items-center">
-                              {interview.selfieImage ? (
-                                <img src={interview.selfieImage} alt="Selfie Image" className="w-8 h-8 rounded object-cover" />
+                                {interview.selfie_image_available ? (
+                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <User className="w-4 h-4 text-green-600" />
+                                  </div>
                               ) : (
                                 <User className="w-5 h-5 text-gray-400" />
                               )}
                             </div>
                           </TableCell>
                           <TableCell className="text-center w-20">
-                            <span className={`font-medium ${interview.gender === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-                              {interview.gender}
+                              <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                                {interview.gender_label || '-'}
                             </span>
                           </TableCell>
                           <TableCell className="text-center w-24">
                             <div className="flex justify-center items-center">
                               <button 
-                                className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center transition-colors duration-200" 
-                                title="Play Audio"
+                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                    interview.audio_playback_available 
+                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                  title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                                  disabled={!interview.audio_playback_available}
                               >
                                 <Volume2 className="w-4 h-4" />
                               </button>
@@ -543,8 +767,13 @@ const InterviewLogPage = () => {
                           <TableCell className="text-center w-24">
                             <div className="flex justify-center items-center">
                               <button 
-                                className="w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded flex items-center justify-center transition-colors duration-200" 
-                                title="GPS Map"
+                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                    interview.gps_available 
+                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                  title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                                  disabled={!interview.gps_available}
                               >
                                 <MapPin className="w-4 h-4" />
                               </button>
@@ -559,8 +788,8 @@ const InterviewLogPage = () => {
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard
                     currentPage={currentPage}
-                    totalPages={Math.ceil(108333 / pageSize)}
-                    totalItems={108333}
+                      totalPages={totalPages}
+                      totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={(page) => setCurrentPage(page)}
                     className="justify-center"
@@ -568,6 +797,7 @@ const InterviewLogPage = () => {
                 </div>
               </div>
             </div>
+            )}
           </Card>
         </div>
         </div>

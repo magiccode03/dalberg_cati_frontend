@@ -454,15 +454,16 @@ export default function DemographicPage() {
     console.log('Transforming gender data:', apiData.slice(0, 2));
     return apiData.map((item, index) => ({
       id: index + 1,
-      pcName: item.pc_name || '',
-      pcCode: item.pc_code || 0,
+      pcName: item.pc_name || item.ac_name || '',
+      pcCode: item.pc_code || item.ac_code || 0,
       sampleAchieved: item.sample_achieved || 0,
-      maleQuota: item.male?.quota || 0,
-      maleCovered: item.male?.covered || 0,
-      maleBalance: item.male?.balance || 0,
-      femaleQuota: item.female?.quota || 0,
-      femaleCovered: item.female?.covered || 0,
-      femaleBalance: item.female?.balance || 0
+      // Handle different male/female field structures
+      maleQuota: item.male?.quota || item.male_min_sample || item.male?.min_sample || 0,
+      maleCovered: item.male?.covered || item.male_covered || 0,
+      maleBalance: item.male?.balance || item.male_balance || 0,
+      femaleQuota: item.female?.quota || item.female_min_sample || item.female?.min_sample || 0,
+      femaleCovered: item.female?.covered || item.female_covered || 0,
+      femaleBalance: item.female?.balance || item.female_balance || 0
     }));
   };
 
@@ -470,21 +471,22 @@ export default function DemographicPage() {
     console.log('Transforming age data:', apiData.slice(0, 2));
     return apiData.map((item, index) => ({
       id: index + 1,
-      pcName: item.pc_name || '',
-      pcCode: item.pc_code || 0,
+      pcName: item.pc_name || item.ac_name || '',
+      pcCode: item.pc_code || item.ac_code || 0,
       sampleAchieved: item.sample_achieved || 0,
-      age18to24MinSample: item.Age_18_24?.min_sample || 0,
-      age18to24AchievedSample: item.Age_18_24?.achieved_sample || 0,
-      age18to24Balance: item.Age_18_24?.balance || 0,
-      age25to34MinSample: item.Age_25_34?.min_sample || 0,
-      age25to34AchievedSample: item.Age_25_34?.achieved_sample || 0,
-      age25to34Balance: item.Age_25_34?.balance || 0,
-      age35to50MinSample: item.Age_35_50?.min_sample || 0,
-      age35to50AchievedSample: item.Age_35_50?.achieved_sample || 0,
-      age35to50Balance: item.Age_35_50?.balance || 0,
-      age50PlusMinSample: item.age_50_plus?.min_sample || 0,
-      age50PlusAchievedSample: item.age_50_plus?.achieved_sample || 0,
-      age50PlusBalance: item.age_50_plus?.balance || 0
+      // Handle different age group field structures
+      age18to24MinSample: item.Age_18_24?.min_sample || item.age_groups?.['18_24']?.quota || 0,
+      age18to24AchievedSample: item.Age_18_24?.achieved_sample || item.age_groups?.['18_24']?.covered || 0,
+      age18to24Balance: item.Age_18_24?.balance || item.age_groups?.['18_24']?.balance || 0,
+      age25to34MinSample: item.Age_25_34?.min_sample || item.age_groups?.['25_34']?.quota || 0,
+      age25to34AchievedSample: item.Age_25_34?.achieved_sample || item.age_groups?.['25_34']?.covered || 0,
+      age25to34Balance: item.Age_25_34?.balance || item.age_groups?.['25_34']?.balance || 0,
+      age35to50MinSample: item.Age_35_50?.min_sample || item.age_groups?.['35_50']?.quota || 0,
+      age35to50AchievedSample: item.Age_35_50?.achieved_sample || item.age_groups?.['35_50']?.covered || 0,
+      age35to50Balance: item.Age_35_50?.balance || item.age_groups?.['35_50']?.balance || 0,
+      age50PlusMinSample: item.age_50_plus?.min_sample || item.age_groups?.['50_above']?.quota || 0,
+      age50PlusAchievedSample: item.age_50_plus?.achieved_sample || item.age_groups?.['50_above']?.covered || 0,
+      age50PlusBalance: item.age_50_plus?.balance || item.age_groups?.['50_above']?.balance || 0
     }));
   };
 
@@ -508,32 +510,47 @@ export default function DemographicPage() {
   const transformReligionWiseData = (apiData: any[]): PCReligionWiseData[] => {
     console.log('Transforming religion data:', apiData.slice(0, 2));
     return apiData.map((item, index) => {
-      const religions = item.religions || [];
+      // Handle different religion data structures
+      let religions = [];
+      
+      if (item.religions && Array.isArray(item.religions)) {
+        // Array format with religions property
+        religions = item.religions;
+      } else if (item.hindu || item.muslim || item.christian || item.others) {
+        // Direct object format (like PPM version)
+        religions = [
+          { religion_name: 'Hindu', quota: item.hindu?.population || 0, covered: item.hindu?.sample || 0, balance: item.hindu?.difference || 0 },
+          { religion_name: 'Muslim', quota: item.muslim?.population || 0, covered: item.muslim?.sample || 0, balance: item.muslim?.difference || 0 },
+          { religion_name: 'Christian', quota: item.christian?.population || 0, covered: item.christian?.sample || 0, balance: item.christian?.difference || 0 },
+          { religion_name: 'Others', quota: item.others?.population || 0, covered: item.others?.sample || 0, balance: item.others?.difference || 0 }
+        ];
+      }
+      
       return {
         id: index + 1,
-        pcName: item.pc_name || '',
-        pcCode: item.pc_code || 0,
+        pcName: item.pc_name || item.ac_name || '',
+        pcCode: item.pc_code || item.ac_code || 0,
         sampleAchieved: item.sample_achieved || 0,
         religion1Name: religions[0]?.religion_name || '',
-        religion1Quota: religions[0]?.quota || 0,
-        religion1Covered: religions[0]?.covered || 0,
-        religion1Balance: religions[0]?.balance || 0,
+        religion1Quota: religions[0]?.quota || religions[0]?.population || 0,
+        religion1Covered: religions[0]?.covered || religions[0]?.sample || 0,
+        religion1Balance: religions[0]?.balance || religions[0]?.difference || 0,
         religion2Name: religions[1]?.religion_name || '',
-        religion2Quota: religions[1]?.quota || 0,
-        religion2Covered: religions[1]?.covered || 0,
-        religion2Balance: religions[1]?.balance || 0,
+        religion2Quota: religions[1]?.quota || religions[1]?.population || 0,
+        religion2Covered: religions[1]?.covered || religions[1]?.sample || 0,
+        religion2Balance: religions[1]?.balance || religions[1]?.difference || 0,
         religion3Name: religions[2]?.religion_name || '',
-        religion3Quota: religions[2]?.quota || 0,
-        religion3Covered: religions[2]?.covered || 0,
-        religion3Balance: religions[2]?.balance || 0,
+        religion3Quota: religions[2]?.quota || religions[2]?.population || 0,
+        religion3Covered: religions[2]?.covered || religions[2]?.sample || 0,
+        religion3Balance: religions[2]?.balance || religions[2]?.difference || 0,
         religion4Name: religions[3]?.religion_name || '',
-        religion4Quota: religions[3]?.quota || 0,
-        religion4Covered: religions[3]?.covered || 0,
-        religion4Balance: religions[3]?.balance || 0,
+        religion4Quota: religions[3]?.quota || religions[3]?.population || 0,
+        religion4Covered: religions[3]?.covered || religions[3]?.sample || 0,
+        religion4Balance: religions[3]?.balance || religions[3]?.difference || 0,
         religion5Name: religions[4]?.religion_name || '',
-        religion5Quota: religions[4]?.quota || 0,
-        religion5Covered: religions[4]?.covered || 0,
-        religion5Balance: religions[4]?.balance || 0
+        religion5Quota: religions[4]?.quota || religions[4]?.population || 0,
+        religion5Covered: religions[4]?.covered || religions[4]?.sample || 0,
+        religion5Balance: religions[4]?.balance || religions[4]?.difference || 0
       };
     });
   };
@@ -541,32 +558,46 @@ export default function DemographicPage() {
   const transformSocialCategoryWiseData = (apiData: any[]): PCSocialCategoryWiseData[] => {
     console.log('Transforming social category data:', apiData.slice(0, 2));
     return apiData.map((item, index) => {
-      const socialCategories = item.social_categories || [];
+      // Handle different social category data structures
+      let socialCategories = [];
+      
+      if (item.social_categories && Array.isArray(item.social_categories)) {
+        // Array format with social_categories property
+        socialCategories = item.social_categories;
+      } else if (item.sc || item.st || item.general_obc) {
+        // Direct object format (like PPM version)
+        socialCategories = [
+          { category_name: 'SC', quota: item.sc?.population || 0, covered: item.sc?.sample || 0, balance: item.sc?.difference || 0 },
+          { category_name: 'ST', quota: item.st?.population || 0, covered: item.st?.sample || 0, balance: item.st?.difference || 0 },
+          { category_name: 'General+OBC', quota: item.general_obc?.population || 0, covered: item.general_obc?.sample || 0, balance: item.general_obc?.difference || 0 }
+        ];
+      }
+      
       return {
         id: index + 1,
-        pcName: item.pc_name || '',
-        pcCode: item.pc_code || 0,
+        pcName: item.pc_name || item.ac_name || '',
+        pcCode: item.pc_code || item.ac_code || 0,
         sampleAchieved: item.sample_achieved || 0,
         socialCategory1Name: socialCategories[0]?.category_name || '',
-        socialCategory1Quota: socialCategories[0]?.quota || 0,
-        socialCategory1Covered: socialCategories[0]?.covered || 0,
-        socialCategory1Balance: socialCategories[0]?.balance || 0,
+        socialCategory1Quota: socialCategories[0]?.quota || socialCategories[0]?.population || 0,
+        socialCategory1Covered: socialCategories[0]?.covered || socialCategories[0]?.sample || 0,
+        socialCategory1Balance: socialCategories[0]?.balance || socialCategories[0]?.difference || 0,
         socialCategory2Name: socialCategories[1]?.category_name || '',
-        socialCategory2Quota: socialCategories[1]?.quota || 0,
-        socialCategory2Covered: socialCategories[1]?.covered || 0,
-        socialCategory2Balance: socialCategories[1]?.balance || 0,
+        socialCategory2Quota: socialCategories[1]?.quota || socialCategories[1]?.population || 0,
+        socialCategory2Covered: socialCategories[1]?.covered || socialCategories[1]?.sample || 0,
+        socialCategory2Balance: socialCategories[1]?.balance || socialCategories[1]?.difference || 0,
         socialCategory3Name: socialCategories[2]?.category_name || '',
-        socialCategory3Quota: socialCategories[2]?.quota || 0,
-        socialCategory3Covered: socialCategories[2]?.covered || 0,
-        socialCategory3Balance: socialCategories[2]?.balance || 0,
+        socialCategory3Quota: socialCategories[2]?.quota || socialCategories[2]?.population || 0,
+        socialCategory3Covered: socialCategories[2]?.covered || socialCategories[2]?.sample || 0,
+        socialCategory3Balance: socialCategories[2]?.balance || socialCategories[2]?.difference || 0,
         socialCategory4Name: socialCategories[3]?.category_name || '',
-        socialCategory4Quota: socialCategories[3]?.quota || 0,
-        socialCategory4Covered: socialCategories[3]?.covered || 0,
-        socialCategory4Balance: socialCategories[3]?.balance || 0,
+        socialCategory4Quota: socialCategories[3]?.quota || socialCategories[3]?.population || 0,
+        socialCategory4Covered: socialCategories[3]?.covered || socialCategories[3]?.sample || 0,
+        socialCategory4Balance: socialCategories[3]?.balance || socialCategories[3]?.difference || 0,
         socialCategory5Name: socialCategories[4]?.category_name || '',
-        socialCategory5Quota: socialCategories[4]?.quota || 0,
-        socialCategory5Covered: socialCategories[4]?.covered || 0,
-        socialCategory5Balance: socialCategories[4]?.balance || 0
+        socialCategory5Quota: socialCategories[4]?.quota || socialCategories[4]?.population || 0,
+        socialCategory5Covered: socialCategories[4]?.covered || socialCategories[4]?.sample || 0,
+        socialCategory5Balance: socialCategories[4]?.balance || socialCategories[4]?.difference || 0
       };
     });
   };
@@ -576,8 +607,8 @@ export default function DemographicPage() {
       const castes = item.castes || [];
       return {
         id: index + 1,
-        pcName: item.pc_name || '',
-        pcCode: item.pc_code || 0,
+        pcName: item.pc_name || item.ac_name || '',
+        pcCode: item.pc_code || item.ac_code || 0,
         sampleAchieved: item.sample_achieved || 0,
         caste1Name: castes[0]?.caste_name || '',
         caste1Quota: castes[0]?.quota || 0,
@@ -689,41 +720,57 @@ export default function DemographicPage() {
         });
       }
 
-      if (data && data.success && data.data) {
-        // Handle the actual API structure: data.data.pc_data (not direct array)
-        const pcData = data.data.pc_data || data.data;
+      if (data && data.success) {
+        // Handle flexible API response structures - check multiple possible locations for data
+        let constituencyData = null;
+        
+        // Try different possible data locations
+        if (Array.isArray(data.data)) {
+          // Direct array format
+          constituencyData = data.data;
+        } else if (data.data.pc_data && Array.isArray(data.data.pc_data)) {
+          // PC data format
+          constituencyData = data.data.pc_data;
+        } else if (data.data.constituencies && Array.isArray(data.data.constituencies)) {
+          // Constituencies format (like PPM)
+          constituencyData = data.data.constituencies;
+        } else if (data.data.ac_data && Array.isArray(data.data.ac_data)) {
+          // AC data format
+          constituencyData = data.data.ac_data;
+        }
         
         console.log(`Processing ${tabType} data:`, {
-          hasSummary: !!data.data.summary,
-          pcDataIsArray: Array.isArray(pcData),
-          pcDataLength: Array.isArray(pcData) ? pcData.length : 'not array',
-          samplePcData: pcData && Array.isArray(pcData) ? pcData.slice(0, 2) : pcData
+          responseSuccess: data.success,
+          dataKeys: data.data ? Object.keys(data.data) : 'no data',
+          constituencyDataIsArray: Array.isArray(constituencyData),
+          constituencyDataLength: Array.isArray(constituencyData) ? constituencyData.length : 'not array',
+          sampleData: constituencyData && Array.isArray(constituencyData) ? constituencyData.slice(0, 2) : constituencyData
         });
 
-        if (Array.isArray(pcData) && pcData.length > 0) {
+        if (Array.isArray(constituencyData) && constituencyData.length > 0) {
           // Transform data based on tab type
           switch (tabType) {
             case 'genderwise':
-              setPcGenderWiseData(transformGenderWiseData(pcData));
+              setPcGenderWiseData(transformGenderWiseData(constituencyData));
               break;
             case 'agewise':
-              setPcAgeWiseData(transformAgeWiseData(pcData));
+              setPcAgeWiseData(transformAgeWiseData(constituencyData));
               break;
             case 'localitywise':
-              setPcLocalityWiseData(transformLocalityWiseData(pcData));
+              setPcLocalityWiseData(transformLocalityWiseData(constituencyData));
               break;
             case 'religionwise':
-              setPcReligionWiseData(transformReligionWiseData(pcData));
+              setPcReligionWiseData(transformReligionWiseData(constituencyData));
               break;
             case 'socialcategorywise':
-              setPcSocialCategoryWiseData(transformSocialCategoryWiseData(pcData));
+              setPcSocialCategoryWiseData(transformSocialCategoryWiseData(constituencyData));
               break;
             case 'castewise':
-              setPcCasteWiseData(transformCasteWiseData(pcData));
+              setPcCasteWiseData(transformCasteWiseData(constituencyData));
               break;
           }
-        } else if (data.data.summary) {
-          console.log(`API returned summary but no pc_data array for ${tabType}, using sample data`);
+        } else {
+          console.log(`API returned success but no usable data array for ${tabType}, using sample data`);
           setFallbackData(tabType);
         }
       } else if (data && data.error) {

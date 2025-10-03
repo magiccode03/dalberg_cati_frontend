@@ -54,11 +54,35 @@ export default function InterviewDateWisePage() {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Helper function to format date to YYYY-MM-DD format
+  const formatDateToSimple = (dateString: string): string => {
+    try {
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // If it contains time information, extract just the date part
+      const datePart = dateString.split('T')[0];
+      if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+        return datePart;
+      }
+      
+      // Try parsing as Date and extract date part
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      // If all parsing fails, try to extract the date pattern
+      const match = dateString.match(/(\d{4}-\d{2}-\d{2})/);
+      return match ? match[1] : dateString;
+    }
+  };
+
   // Helper function to transform API data to UI format
   const transformAPIData = (apiData: any[]): InterviewDateWiseData[] => {
     return apiData.map((item, index) => ({
       id: index + 1,
-      interviewDate: item.interview_date,
+      interviewDate: formatDateToSimple(item.interview_date),
       totalInterview: item.total_interview,
       validInterview: item.valid_interview,
       rejectInterview: item.reject_interview,
@@ -157,6 +181,7 @@ export default function InterviewDateWisePage() {
         { id: 8, interviewDate: '2025-06-09', totalInterview: 963, validInterview: 447, rejectInterview: 515, qcAssigned: 749, qcPending: 0, qcCompleted: 749 },
         { id: 9, interviewDate: '2025-06-08', totalInterview: 1096, validInterview: 323, rejectInterview: 766, qcAssigned: 829, qcPending: 0, qcCompleted: 829 },
         { id: 10, interviewDate: '2025-06-07', totalInterview: 1217, validInterview: 357, rejectInterview: 854, qcAssigned: 955, qcPending: 0, qcCompleted: 955 },
+        { id: 11, interviewDate: '2025-06-06', totalInterview: 756, validInterview: 245, rejectInterview: 511, qcAssigned: 623, qcPending: 0, qcCompleted: 623 },
       ];
       setInterviewDateWiseData(fallbackData);
       setTotalCount(fallbackData.length);
@@ -279,7 +304,7 @@ export default function InterviewDateWisePage() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           <button
                             onClick={() => handleDateClick(data.interviewDate)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium font-mono"
                           >
                             {data.interviewDate}
                           </button>

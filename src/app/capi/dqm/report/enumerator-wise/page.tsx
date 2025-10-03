@@ -86,12 +86,44 @@ export default function EnumeratorWisePage() {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Helper function to format date to simple YYYY-MM-DD format
+  const formatDateToSimple = (dateString: string): string => {
+    try {
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // If it contains time information, extract just the date part
+      if (dateString.includes('T')) {
+        const datePart = dateString.split('T')[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+          return datePart;
+        }
+      }
+      
+      // Try parsing as Date and extract date part
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+      
+      // If all parsing fails, try to extract the date pattern
+      const match = dateString.match(/(\d{4}-\d{2}-\d{2})/);
+      return match ? match[1] : dateString;
+    } catch {
+      // If all parsing fails, try to extract the date pattern
+      const match = dateString.match(/(\d{4}-\d{2}-\d{2})/);
+      return match ? match[1] : dateString;
+    }
+  };
+
   // Helper function to transform API data to UI format
   const transformAPIData = (apiData: any[]): EnumeratorWiseData[] => {
     return apiData.map((item) => ({
       id: item.id,
       enumeratorId: item.user_id,
-      interviewDate: item.interview_date,
+      interviewDate: formatDateToSimple(item.interview_date),
       deviceId: item.device_id,
       interviewerIds: item.interviewerids,
       totalInterview: item.total_interview,
@@ -425,7 +457,7 @@ export default function EnumeratorWisePage() {
                       <tr key={data.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.enumeratorId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.interviewDate}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.interviewDate}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.deviceId}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.interviewerIds}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterview.toLocaleString()}</td>
