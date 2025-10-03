@@ -357,7 +357,7 @@ export default function CastePage() {
                     <th style={{ width: '10%' }} className="text-center">
                       <Button 
                         onClick={handleDownload}
-                        className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-2"
+                        className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-2 float-end"
                       >
                         <Download className="h-4 w-4" />
                         <span>Download</span>
