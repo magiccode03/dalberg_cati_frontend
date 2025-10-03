@@ -10,9 +10,11 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Radio from '@/components/ui/Radio';
 import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
+import { useToast, ToastContainer } from '@/components/ui/Toast';
 import { FormData, initialFormData } from './types/form.types';
 import {
   getPartyOptions2019,
+  getPartyOptions2019ForQ9,
   getPartyOptions2020,
   getQ10Options,
   getQ11Options,
@@ -34,6 +36,23 @@ export default function TeleFormPage() {
   const [language, setLanguage] = useState<string>('english');
   const [timer, setTimer] = useState<number>(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [toasts, setToasts] = useState<any[]>([]);
+  
+  const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
+    const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newToast = {
+      id,
+      message,
+      type,
+      position: 'bottom-left' as const,
+      duration: 3000,
+    };
+    setToasts(prev => [...prev, newToast]);
+  };
+  
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   // Timer effect
   useEffect(() => {
@@ -174,21 +193,44 @@ export default function TeleFormPage() {
     });
   };
 
-  // Checkbox change handler with exclusive "Don't know" logic
+  // Checkbox change handler with exclusive logic for specific options
   const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
     setFormData(prev => {
       const currentValues = prev[field] as string[];
-      const dontKnowValues = ['99'];
-      const isDontKnow = dontKnowValues.includes(value);
+      
+      // Define exclusive values based on field
+      // Q10: 5 = "Do not wish to vote for any other party", 99 = "Don't know"
+      // Q11, Q12, Q13: 99 = "Don't know"
+      let exclusiveValues: string[] = [];
+      
+      if (field === 'q10') {
+        exclusiveValues = ['5', '99']; // Q10 has both "Do not wish to vote" (5) and "Don't know" (99)
+      } else {
+        exclusiveValues = ['99']; // Other questions only have "Don't know" (99)
+      }
+      
+      const isExclusive = exclusiveValues.includes(value);
+      
+      // Max selection limit for Q11, Q12, Q13 (excluding exclusive options)
+      const maxSelectionFields = ['q11', 'q12', 'q13'];
+      const maxSelections = 3;
       
       let newValues: string[];
       
-      if (isDontKnow && checked) {
-        // Selecting "Don't know" - clear all others
+      if (isExclusive && checked) {
+        // Selecting an exclusive option - clear all others and only keep this one
         newValues = [value];
       } else if (checked) {
-        // Selecting option - remove "Don't know" if present
-        const filteredValues = currentValues.filter(v => !dontKnowValues.includes(v));
+        // Selecting a regular option - remove any exclusive values if present
+        const filteredValues = currentValues.filter(v => !exclusiveValues.includes(v));
+        
+        // Check max selection limit for Q11, Q12, Q13
+        if (maxSelectionFields.includes(field) && filteredValues.length >= maxSelections) {
+          // Maximum selections reached, don't add more
+          showToast(`You can select a maximum of ${maxSelections} options.`, 'warning');
+          return prev;
+        }
+        
         newValues = [...filteredValues, value];
       } else {
         // Unchecking
@@ -301,6 +343,7 @@ export default function TeleFormPage() {
   
   // Get options based on language
   const partyOptions2019 = getPartyOptions2019(language as 'english' | 'bengali');
+  const partyOptions2019ForQ9 = getPartyOptions2019ForQ9(language as 'english' | 'bengali');
   const partyOptions2020 = getPartyOptions2020(language as 'english' | 'bengali');
   const q10Options = getQ10Options(language as 'english' | 'bengali');
   const q11Options = getQ11Options(language as 'english' | 'bengali');
@@ -375,7 +418,7 @@ export default function TeleFormPage() {
 
       <form onSubmit={handleSubmit}>
         {/* Section 1: Identification */}
-        <Card className="p-6 mb-6">
+        {/* <Card className="p-6 mb-6">
           <div className="mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-4">
               {t.section1}
@@ -451,7 +494,7 @@ export default function TeleFormPage() {
               maxLength={150}
             />
           </div>
-        </Card>
+        </Card> */}
 
         {/* Call Status Section */}
         <Card className="p-6 mb-6">
@@ -602,24 +645,24 @@ export default function TeleFormPage() {
           )}
 
           {/* Telecaller Name */}
-          <div className="mb-6">
+          {/* <div className="mb-6">
             <Input
               label={t.telecallerName}
               value={formData.telecaller_name}
               onChange={(e) => handleInputChange('telecaller_name', e.target.value)}
               maxLength={255}
             />
-          </div>
+          </div> */}
 
           {/* Call ID */}
-          <div>
+          {/* <div>
             <Input
               label={t.callId}
               value={formData.callid}
               onChange={(e) => handleInputChange('callid', e.target.value)}
               maxLength={50}
             />
-          </div>
+          </div> */}
         </Card>
 
         {/* Section 2: Consent */}
@@ -939,7 +982,7 @@ export default function TeleFormPage() {
                   {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
-                  {partyOptions2019.map(option => (
+                  {partyOptions2019ForQ9.map(option => (
                     <Radio
                       key={option.value}
                       id={`q9_${option.value}`}
@@ -1453,7 +1496,7 @@ export default function TeleFormPage() {
         )}
 
         {/* Call Drop Group */}
-        <Card className="p-6 mb-6">
+        {/* <Card className="p-6 mb-6">
           <Heading level={4} className="text-gray-900 dark:text-white mb-4">
             {t.callDropGroup}
           </Heading>
@@ -1467,7 +1510,7 @@ export default function TeleFormPage() {
               {t.respondentCutCall}
             </Button>
           </div>
-        </Card>
+        </Card> */}
 
         {/* Submit Button */}
         <Card className="p-6">
@@ -1483,6 +1526,13 @@ export default function TeleFormPage() {
           </div>
         </Card>
       </form>
+      
+      {/* Toast Container */}
+      <ToastContainer
+        toasts={toasts}
+        onRemove={removeToast}
+        position="bottom-left"
+      />
     </Container>
   );
 }

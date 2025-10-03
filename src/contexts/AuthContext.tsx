@@ -448,6 +448,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (role === 'super_admin') return '/super-admin/dashboard';
     if (role === 'portal_admin') return '/portal-admin/users';
     
+    // SS role (CATI System Supervisor/Telecaller) goes to start-form-filling page
+    if (role === 'ss') return '/cati/ss/start-form-filling';
+    
     // All other roles (including research, ppm, dqm, fd, etc.) go to /home
     return '/home';
   };

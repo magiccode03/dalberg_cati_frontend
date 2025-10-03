@@ -1,4 +1,4 @@
-// Party options for Q5, Q6, Q7, Q8, Q9 (from party_2019.csv)
+// Party options for Q5, Q6, Q7, Q8 (from party_2019.csv)
 export const getPartyOptions2019 = (lang: 'english' | 'bengali') => [
   { value: '1', label: lang === 'english' ? 'AITC (Trinamool Congress)' : 'তৃণমূল কংগ্রেস (AITC)' },
   { value: '2', label: 'BJP' },
@@ -10,6 +10,19 @@ export const getPartyOptions2019 = (lang: 'english' | 'bengali') => [
   { value: '66', label: lang === 'english' ? 'Did not vote' : 'ভোট দেননি' },
   { value: '77', label: lang === 'english' ? 'Not eligible for voting' : 'ভোট দেওয়ার যোগ্য ছিলেন না' },
   { value: '88', label: lang === 'english' ? 'No response/Refused to answer' : 'কোনও উত্তর নেই/উত্তর দিতে অস্বীকার করেছেন' },
+];
+
+// Party options for Q9 (without "No response/Refused to answer" option)
+export const getPartyOptions2019ForQ9 = (lang: 'english' | 'bengali') => [
+  { value: '1', label: lang === 'english' ? 'AITC (Trinamool Congress)' : 'তৃণমূল কংগ্রেস (AITC)' },
+  { value: '2', label: 'BJP' },
+  { value: '3', label: lang === 'english' ? 'INC (Congress)' : 'কংগ্রেস (INC)' },
+  { value: '4', label: lang === 'english' ? 'Left Front' : 'বাম ফ্রন্ট' },
+  { value: '12', label: lang === 'english' ? 'Independent' : 'স্বতন্ত্র' },
+  { value: '44', label: lang === 'english' ? 'Others (specify)' : 'অন্যান্য (উল্লেখ করুন)' },
+  { value: '55', label: lang === 'english' ? 'NOTA' : 'নোটা (NOTA)' },
+  { value: '66', label: lang === 'english' ? 'Did not vote' : 'ভোট দেননি' },
+  { value: '77', label: lang === 'english' ? 'Not eligible for voting' : 'ভোট দেওয়ার যোগ্য ছিলেন না' },
 ];
 
 // Party options for Q19 (from party_2020.csv)
@@ -56,7 +69,7 @@ export const getQ11Options = (lang: 'english' | 'bengali') => [
 export const getQ12Options = (lang: 'english' | 'bengali') => [
   { value: '1', label: lang === 'english' ? 'BJP has proven to be a stable govt. at the centre' : 'বিজেপি কেন্দ্রে একটি স্থিতিশীল সরকার হিসাবে প্রমাণিত হয়েছে' },
   { value: '2', label: lang === 'english' ? 'For good governance / delivering government services' : 'সুশাসনের জন্য / সরকারি সেবা প্রদানের জন্য' },
-  { value: '3', label: lang === 'english' ? 'Because of Narendra Modi' : 'নরেন্দ্র মোদীর কারণে' },
+  { value: '3', label: lang === 'english' ? 'Because of Narendra Modi: good / strong / decisive leader' : 'নজ্রন্দ্র দমাদী ভাজ্লা / শরিশালী / রসদ্ধান্ত রনজ্ে পাজ্র এমন দনো' },
   { value: '5', label: lang === 'english' ? 'For the better development of WB' : 'পশ্চিমবঙ্গের আরও ভালো উন্নয়নের জন্য' },
   { value: '6', label: lang === 'english' ? 'Better for farmers / agriculture / irrigation' : 'কৃষকদের / কৃষি / সেচের জন্য আরও ভালো' },
   { value: '7', label: lang === 'english' ? 'Better for small businesses' : 'ছোট ব্যবসার জন্য আরও ভালো' },
