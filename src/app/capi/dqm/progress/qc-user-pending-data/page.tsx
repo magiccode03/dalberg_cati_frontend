@@ -267,7 +267,7 @@ export default function QCUserPendingDataPage() {
                 <Heading level={4} className="text-lg font-semibold text-gray-900">
                   Pending QC Data
                 </Heading>
-                <div className="flex gap-2">
+                <div className="flex !hidden gap-2">
                   <Button
                     variant="outline"
                     size="sm"
