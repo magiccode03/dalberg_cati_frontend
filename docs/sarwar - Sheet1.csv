@@ -1,0 +1,83 @@
+Role,Role short name,Main manu,Sub-manu,page url,Sum-page url
+Project Progress Monitoring,ppm,Overview,Fieldwork Progress,,/ppm/overview/fieldword-progress
+,,,Interview Log,,/ppm/overview/interview-log
+,,Master,AC List,,/ppm/master/aclist
+,,,Team Registration,,/ppm/master/team-registration
+,,,Project Setting,,/ppm/master/project-setting
+,,Progress Report,,/ppm/progress-report,
+,,Rejection Report,,/ppm/rejection-report,
+,,GPS Map,,/ppm/gps-map,
+,,Demographic %,,/ppm/demographic,
+,,Uploads,Change Status,,/ppm/uploads/change-status
+,,,Send to QC,,/ppm/uploads/send-to-qc
+,,,Weights,,/ppm/uploads/weights
+,,,Cron request,,/ppm/uploads/cron-request
+,,Master Data,Master AC,,/ppm/master-data/master-ac
+,,,Master AC Caste,,/ppm/master-data/master-ac-caste
+,,,Master PS,,/ppm/master-data/master-ps
+,,PS for Form,,/ppm/ps-form,
+,,,,,
+,,,,,
+Project Progress Monitoring (Team),ppmt,Overview,Fieldwork Progress,,/ppmt/overview/fieldwork-progress
+,,,Interview Log,,/ppmt/overview/interview-log
+,,Progress Report,,/ppmt/progress-report,
+,,Rejection Report,,/ppmt/rejection-report,
+,,GPS Map,,/ppmt/gps-map,
+,,Demographic %,,/ppmt/demographic,
+,,,,,
+,,,,,
+Data Quality Management,dqm,Fieldwork Progress,,/dqm/fieldwork-progress,
+,,QC Team Registration,,/dqm/qc-team-registration,
+,,QC User Registration,,/dqm/qc-user-registration,
+,,Progress,QC User Progress,,/dqm/progress/qc-user-progress
+,,,Interview List,,/dqm/progress/interview-list
+,,,QC User - Pending Data,,/dqm/progress/qc-user-pending-data
+,,,AC Wise - Pending Data,,/dqm/ac-wise-pending-data
+,,Report,Interview Date Wise,,/dqm/report/interview-date-wise
+,,,Enumerator Wise,,/dqm/report/enumerator-wise
+,,,AC Wise Report,,/dqm/report/acwisereport
+,,,Assigned AC,,/dqm/report/assigned-ac
+,,Demographic %,,/dqm/demographic,
+,,GPS Map,,/dqm/gps-map,
+,,Download,QC Data,,/dqm/download/qc-data
+,,,Update Request,,/dqm/download/update-request
+,,,,,
+,,,,,
+Data Quality Management (Team),dqmt,Fieldwork Progress,,/dqmt/fieldwork-progress,
+,,QC User Registration,,/dqmt/qc-user-registration,
+,,Progress,QC User Progress,,/dqmt/Progress/qc-user-progress
+,,,Interview List,,/dqmt/Progress/interview-list
+,,,QC User - Pending Data,,/dqmt/Progress/qc-user-pending-data
+,,,AC Wise - Pending Data,,/dqmt/progress/ac-wise-pending-data
+,,Report,Interview Date Wise,,/dqmt/report/interview-date-wise
+,,,Enumerator Wise,,/dqmt/report/enumerator-wise
+,,,AC Wise Report,,/dqmt/report/ac-wise-report
+,,,Assigned AC,,/dqmt/report/assigned-ac
+,,Demographic %,,/dqmt/demographic,
+,,GPS Map,,/dqmt/gps-map,
+,,,,,
+,,,,,
+Start QC,start_qc,Start GPS QC,,/start_qc/start-gps-qc,
+,,Start Audio QC,,/start_qc/start-audio-qc,
+,,Start Re-QC,,/start_qc/start re-qc,
+,,,,,
+,,,,,
+Findings Dashboard,fd,Fieldwork Progress,,/fd/fieldwork-progress,
+,,Demographics,Basic Demographics,,/fd/demographics/basic-demographics
+,,,Caste,,/fd/demographics/caste
+,,Interview Audio,,/fd/interview-audio,
+,,Findings,Vote Share Estimate,,/fd/findings/vote-share-estimate
+,,,Gain & Losses,,/fd/findings/gain-and-losses
+,,,Second Choice,,/fd/findings/second-choice
+,,,Approval Ratings,,/fd/findings/approval-ratings
+,,,Wisdom of Crowds,,/fd/findings/wisdom-of-crowds
+,,Client Comparison,,/fd/client-comparison,
+,,,,,
+,,,,,
+Access to Raw Data,atrd,CAPI,,/atrd/capi,
+,,CATI,,/atrd/cati,
+,,CAPI + CATI,,/atrd/capi-cati,
+WB Admin,wba,,,/wba,
+,,,,,
+,,,,,
+Normalization Dashboard,nd,,,/nd,

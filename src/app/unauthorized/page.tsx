@@ -49,20 +49,8 @@ export default function UnauthorizedPage() {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div 
-                className="hidden w-20 h-20 bg-blue-600 text-white rounded-lg shadow-lg items-center justify-center text-2xl font-bold"
-                style={{ display: 'none' }}
-              >
-                BE
-              </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Bihar Election 2025
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Analysis Dashboard System
-          </p>
         </div>
 
         {/* Unauthorized Card */}

@@ -30,8 +30,8 @@ export default function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAgency, setSelectedAgency] = useState<string>('all');
 
-  // Check if user is PPM or DQM role
-  const showAgencySelector = user?.role === 'ppm' || user?.role === 'dqm';
+  // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
+  const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
 
   // Sample agency list - replace with actual data from API
   const agencyOptions = [

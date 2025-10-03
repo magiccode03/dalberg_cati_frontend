@@ -12,22 +12,23 @@ import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
 import { FormData, initialFormData } from './types/form.types';
 import {
-  partyOptions2019,
-  partyOptions2020,
-  q10Options,
-  q11Options,
-  q12Options,
-  q13Options,
-  satisfactionOptions,
-  q17Options,
-  religionOptions,
-  socialCategoryOptions,
-  casteOptions,
-  femaleEducationOptions,
-  maleEducationOptions,
-  occupationOptions,
-  futureContactOptions,
+  getPartyOptions2019,
+  getPartyOptions2020,
+  getQ10Options,
+  getQ11Options,
+  getQ12Options,
+  getQ13Options,
+  getSatisfactionOptions,
+  getQ17Options,
+  getReligionOptions,
+  getSocialCategoryOptions,
+  getCasteOptions,
+  getFemaleEducationOptions,
+  getMaleEducationOptions,
+  getOccupationOptions,
+  getFutureContactOptions,
 } from './utils/partyOptions';
+import { translations } from './utils/translations';
 
 export default function TeleFormPage() {
   const [language, setLanguage] = useState<string>('english');
@@ -295,41 +296,25 @@ export default function TeleFormPage() {
     }
   };
 
-  // Translations (Section 1 only)
-  const translations = {
-    english: {
-      title: 'WB Opinion Poll CATI 2025',
-      section1: 'Section 1: Identification',
-      identification: 'Identification',
-      ac_code: 'Assembly Constituency code',
-      ac_name: 'Assembly Constituency name',
-      pc_name: 'Parliamentary Constituency Name',
-      pc_code: 'Parliamentary Constituency Code',
-      district_name: 'District Name',
-      district_code: 'District Code',
-      region_name: 'Region Name',
-      region_code: 'Region Code',
-      mla_name: 'MLA Name',
-      mp_name: 'MP Name',
-    },
-    bengali: {
-      title: 'WB Opinion Poll CATI 2025',
-      section1: 'ধারা ১: পরিচিতি',
-      identification: 'পরিচিতি',
-      ac_code: 'বিধানসভা কেন্দ্রের কোড',
-      ac_name: 'বিধানসভা কেন্দ্রের নাম',
-      pc_name: 'সংসদীয় নির্বাচনী এলাকার নাম',
-      pc_code: 'সংসদীয় নির্বাচনী এলাকার কোড',
-      district_name: 'জেলার নাম',
-      district_code: 'জেলার কোড',
-      region_name: 'অঞ্চলের নাম',
-      region_code: 'অঞ্চলের কোড',
-      mla_name: 'MLA Name',
-      mp_name: 'MP Name',
-    }
-  };
-
+  // Get translations
   const t = translations[language as keyof typeof translations];
+  
+  // Get options based on language
+  const partyOptions2019 = getPartyOptions2019(language as 'english' | 'bengali');
+  const partyOptions2020 = getPartyOptions2020(language as 'english' | 'bengali');
+  const q10Options = getQ10Options(language as 'english' | 'bengali');
+  const q11Options = getQ11Options(language as 'english' | 'bengali');
+  const q12Options = getQ12Options(language as 'english' | 'bengali');
+  const q13Options = getQ13Options(language as 'english' | 'bengali');
+  const satisfactionOptions = getSatisfactionOptions(language as 'english' | 'bengali');
+  const q17Options = getQ17Options(language as 'english' | 'bengali');
+  const religionOptions = getReligionOptions(language as 'english' | 'bengali');
+  const socialCategoryOptions = getSocialCategoryOptions(language as 'english' | 'bengali');
+  const casteOptions = getCasteOptions(language as 'english' | 'bengali');
+  const femaleEducationOptions = getFemaleEducationOptions(language as 'english' | 'bengali');
+  const maleEducationOptions = getMaleEducationOptions(language as 'english' | 'bengali');
+  const occupationOptions = getOccupationOptions(language as 'english' | 'bengali');
+  const futureContactOptions = getFutureContactOptions(language as 'english' | 'bengali');
 
   // Conditional visibility logic
   const showCallNotRing = formData.number_status === '2';
@@ -364,13 +349,13 @@ export default function TeleFormPage() {
               {/* Timer */}
               <div>
                 <Text className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                  Time: <span className="text-blue-600 dark:text-blue-400 float-right">{timer}s</span>
+                  {t.time}: <span className="text-blue-600 dark:text-blue-400 float-right">{timer}s</span>
                 </Text>
               </div>
               
               {/* Language Selector */}
               <div className="flex items-center gap-3">
-                <Text className="font-medium text-gray-700 dark:text-gray-300">Language:</Text>
+                <Text className="font-medium text-gray-700 dark:text-gray-300">{t.language}:</Text>
                 <div className="w-48">
                   <SelectDropdown
                     options={[
@@ -471,20 +456,20 @@ export default function TeleFormPage() {
         {/* Call Status Section */}
         <Card className="p-6 mb-6">
           <Heading level={4} className="text-gray-900 dark:text-white mb-6">
-            Call Status
+            {t.callStatus}
           </Heading>
 
           {/* Number Status */}
           <div className="mb-6">
             <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-              Number Status
+              {t.numberStatus}
             </Text>
             <div className="space-y-3">
               <Radio
                 id="number_status_3"
                 name="number_status"
                 value="3"
-                label="Call Not Received to Telecaller"
+                label={t.numberStatus_3}
                 checked={formData.number_status === '3'}
                 onChange={() => handleInputChange('number_status', '3')}
               />
@@ -492,7 +477,7 @@ export default function TeleFormPage() {
                 id="number_status_1"
                 name="number_status"
                 value="1"
-                label="Ringing (Respondent Call)"
+                label={t.numberStatus_1}
                 checked={formData.number_status === '1'}
                 onChange={() => handleInputChange('number_status', '1')}
               />
@@ -500,7 +485,7 @@ export default function TeleFormPage() {
                 id="number_status_2"
                 name="number_status"
                 value="2"
-                label="Not Ringing (Respondent Call)"
+                label={t.numberStatus_2}
                 checked={formData.number_status === '2'}
                 onChange={() => handleInputChange('number_status', '2')}
               />
@@ -511,14 +496,14 @@ export default function TeleFormPage() {
           {showCallNotRing && (
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                Call Not Ring Status
+                {t.callNotRingStatus}
               </Text>
               <div className="space-y-3">
                 <Radio
                   id="call_not_ring_1"
                   name="call_not_ring"
                   value="1"
-                  label="Switch Off"
+                  label={t.callNotRing_1}
                   checked={formData.call_not_ring === '1'}
                   onChange={() => handleInputChange('call_not_ring', '1')}
                 />
@@ -526,7 +511,7 @@ export default function TeleFormPage() {
                   id="call_not_ring_2"
                   name="call_not_ring"
                   value="2"
-                  label="Number Not Reachable"
+                  label={t.callNotRing_2}
                   checked={formData.call_not_ring === '2'}
                   onChange={() => handleInputChange('call_not_ring', '2')}
                 />
@@ -534,7 +519,7 @@ export default function TeleFormPage() {
                   id="call_not_ring_3"
                   name="call_not_ring"
                   value="3"
-                  label="Number Does not exist"
+                  label={t.callNotRing_3}
                   checked={formData.call_not_ring === '3'}
                   onChange={() => handleInputChange('call_not_ring', '3')}
                 />
@@ -546,14 +531,14 @@ export default function TeleFormPage() {
           {showCallRingStatus && (
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                Call Ring Status
+                {t.callRingStatus}
               </Text>
               <div className="space-y-3">
                 <Radio
                   id="call_ring_status_1"
                   name="call_ring_status"
                   value="1"
-                  label="Picked"
+                  label={t.callRing_1}
                   checked={formData.call_ring_status === '1'}
                   onChange={() => handleInputChange('call_ring_status', '1')}
                 />
@@ -561,7 +546,7 @@ export default function TeleFormPage() {
                   id="call_ring_status_2"
                   name="call_ring_status"
                   value="2"
-                  label="Did not picked"
+                  label={t.callRing_2}
                   checked={formData.call_ring_status === '2'}
                   onChange={() => handleInputChange('call_ring_status', '2')}
                 />
@@ -573,14 +558,14 @@ export default function TeleFormPage() {
           {showCallStatus && (
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                Call Status
+                {t.qCallStatus}
               </Text>
               <div className="space-y-3">
                 <Radio
                   id="q_call_status_1"
                   name="q_call_status"
                   value="1"
-                  label="Continue"
+                  label={t.qCallStatus_1}
                   checked={formData.q_call_status === '1'}
                   onChange={() => handleInputChange('q_call_status', '1')}
                 />
@@ -588,7 +573,7 @@ export default function TeleFormPage() {
                   id="q_call_status_2"
                   name="q_call_status"
                   value="2"
-                  label="Wrong Number"
+                  label={t.qCallStatus_2}
                   checked={formData.q_call_status === '2'}
                   onChange={() => handleInputChange('q_call_status', '2')}
                 />
@@ -596,7 +581,7 @@ export default function TeleFormPage() {
                   id="q_call_status_5"
                   name="q_call_status"
                   value="5"
-                  label="Respondent Not available/Reschedule Interview"
+                  label={t.qCallStatus_5}
                   checked={formData.q_call_status === '5'}
                   onChange={() => handleInputChange('q_call_status', '5')}
                 />
@@ -609,7 +594,7 @@ export default function TeleFormPage() {
             <div className="mb-6">
               <Input
                 type="datetime-local"
-                label="Reschedule Interview"
+                label={t.rescheduleInterview}
                 value={formData.call_reschedule}
                 onChange={(e) => handleInputChange('call_reschedule', e.target.value)}
               />
@@ -619,7 +604,7 @@ export default function TeleFormPage() {
           {/* Telecaller Name */}
           <div className="mb-6">
             <Input
-              label="Telecaller Name"
+              label={t.telecallerName}
               value={formData.telecaller_name}
               onChange={(e) => handleInputChange('telecaller_name', e.target.value)}
               maxLength={255}
@@ -629,7 +614,7 @@ export default function TeleFormPage() {
           {/* Call ID */}
           <div>
             <Input
-              label="Call ID"
+              label={t.callId}
               value={formData.callid}
               onChange={(e) => handleInputChange('callid', e.target.value)}
               maxLength={50}
@@ -641,19 +626,14 @@ export default function TeleFormPage() {
         {showSection2 && (
           <Card className="p-6 mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-6">
-              Section 2: Interviewer Introduction and Statement of Informed Consent
+              {t.section2}
             </Heading>
 
             <div className="mb-4">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-4">
-                Namaste, my name is <span className="font-bold">{formData.telecaller_name || '[enumerator name]'}</span>. 
-                We are from Convergent, an independent research organization. We are conducting a survey on social and 
-                political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about 
-                government performance and your preferences. Your responses will remain strictly confidential and will only 
-                be analysed in combination with others. No personal details will ever be shared. The survey will take about 
-                5–10 minutes, and your honest opinions will greatly help us.
+                {t.consentText.replace('{telecaller_name}', formData.telecaller_name || '[enumerator name]')}
                 <br /><br />
-                Should I continue?
+                {t.shouldContinue}
               </Text>
             </div>
 
@@ -662,7 +642,7 @@ export default function TeleFormPage() {
                 id="consent_1"
                 name="consent"
                 value="1"
-                label="Yes"
+                label={t.consent_yes}
                 checked={formData.consent === '1'}
                 onChange={() => handleInputChange('consent', '1')}
               />
@@ -670,7 +650,7 @@ export default function TeleFormPage() {
                 id="consent_2"
                 name="consent"
                 value="2"
-                label="No"
+                label={t.consent_no}
                 checked={formData.consent === '2'}
                 onChange={() => handleInputChange('consent', '2')}
               />
@@ -682,34 +662,34 @@ export default function TeleFormPage() {
         {showSection3 && (
           <Card className="p-6 mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-6">
-              Section 3: Basic Demographic
+              {t.section3}
             </Heading>
 
             {/* Age */}
             <div className="mb-6">
               <Input
                 type="number"
-                label="Could you please tell me your age in complete years?"
+                label={t.respAge}
                 value={formData.resp_age}
                 onChange={(e) => handleInputChange('resp_age', e.target.value)}
                 min={10}
                 max={99}
               />
-              <Text className="text-sm italic text-gray-500 dark:text-gray-400 mt-1">Years</Text>
+              <Text className="text-sm italic text-gray-500 dark:text-gray-400 mt-1">{t.years}</Text>
             </div>
 
             {/* Registered Voter */}
             {showRegisteredVoter && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                  Are you a registered voter in this assembly Constituency?
+                  {t.registeredVoter}
                 </Text>
                 <div className="space-y-3">
                   <Radio
                     id="resp_registered_voter_1"
                     name="resp_registered_voter"
                     value="1"
-                    label="Yes"
+                    label={t.registeredVoter_yes}
                     checked={formData.resp_registered_voter === '1'}
                     onChange={() => handleInputChange('resp_registered_voter', '1')}
                   />
@@ -717,7 +697,7 @@ export default function TeleFormPage() {
                     id="resp_registered_voter_2"
                     name="resp_registered_voter"
                     value="2"
-                    label="No"
+                    label={t.registeredVoter_no}
                     checked={formData.resp_registered_voter === '2'}
                     onChange={() => handleInputChange('resp_registered_voter', '2')}
                   />
@@ -729,14 +709,14 @@ export default function TeleFormPage() {
             {showGender && (
               <div>
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                  Please note the respondent&apos;s gender
+                  {t.respGender}
                 </Text>
                 <div className="space-y-3">
                   <Radio
                     id="resp_gender_1"
                     name="resp_gender"
                     value="1"
-                    label="Male"
+                    label={t.gender_male}
                     checked={formData.resp_gender === '1'}
                     onChange={() => handleInputChange('resp_gender', '1')}
                   />
@@ -744,7 +724,7 @@ export default function TeleFormPage() {
                     id="resp_gender_2"
                     name="resp_gender"
                     value="2"
-                    label="Female"
+                    label={t.gender_female}
                     checked={formData.resp_gender === '2'}
                     onChange={() => handleInputChange('resp_gender', '2')}
                   />
@@ -758,17 +738,17 @@ export default function TeleFormPage() {
         {showSection4 && (
           <Card className="p-6 mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-6">
-              Section 4: Party Preferences
+              {t.section4}
             </Heading>
 
             {/* Q5 */}
             {showQ5 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  5. Which party did you vote for in the last assembly elections (MLA) in 2021?
+                  {t.q5}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                  {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
                   {partyOptions2019.map(option => (
@@ -786,7 +766,7 @@ export default function TeleFormPage() {
                 {formData.q5 === '44' && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q5_oth}
                       onChange={(e) => handleInputChange('q5_oth', e.target.value)}
                       required
@@ -797,7 +777,7 @@ export default function TeleFormPage() {
                 {formData.q5 === '12' && (
                   <div className="mt-4">
                     <Input
-                      label="Independent (Please specify)"
+                      label={t.independentSpecify}
                       value={formData.q5_ind}
                       onChange={(e) => handleInputChange('q5_ind', e.target.value)}
                       required
@@ -812,10 +792,10 @@ export default function TeleFormPage() {
             {showQ6 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  6. Which party did you vote for in the last Lok Sabha elections (MP) in 2024?
+                  {t.q6}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                  {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
                   {partyOptions2019.map(option => (
@@ -833,7 +813,7 @@ export default function TeleFormPage() {
                 {formData.q6 === '44' && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q6_oth}
                       onChange={(e) => handleInputChange('q6_oth', e.target.value)}
                       required
@@ -844,7 +824,7 @@ export default function TeleFormPage() {
                 {formData.q6 === '12' && (
                   <div className="mt-4">
                     <Input
-                      label="Independent (Please specify)"
+                      label={t.independentSpecify}
                       value={formData.q6_ind}
                       onChange={(e) => handleInputChange('q6_ind', e.target.value)}
                       required
@@ -859,10 +839,10 @@ export default function TeleFormPage() {
             {showQ7 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  7. Which party did you vote for in the by elections held in your assembly constituency (MLA) after 2021?
+                  {t.q7}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                  {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
                   {partyOptions2019.map(option => (
@@ -880,7 +860,7 @@ export default function TeleFormPage() {
                 {formData.q7 === '44' && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q7_oth}
                       onChange={(e) => handleInputChange('q7_oth', e.target.value)}
                       required
@@ -891,7 +871,7 @@ export default function TeleFormPage() {
                 {formData.q7 === '12' && (
                   <div className="mt-4">
                     <Input
-                      label="Independent (Please specify)"
+                      label={t.independentSpecify}
                       value={formData.q7_ind}
                       onChange={(e) => handleInputChange('q7_ind', e.target.value)}
                       required
@@ -906,10 +886,10 @@ export default function TeleFormPage() {
             {showQ8 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  8. If assembly elections (MLA) were to be held tomorrow, then which party would you vote for?
+                  {t.q8}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                  {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
                   {partyOptions2019.map(option => (
@@ -927,7 +907,7 @@ export default function TeleFormPage() {
                 {formData.q8 === '44' && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q8_oth}
                       onChange={(e) => handleInputChange('q8_oth', e.target.value)}
                       required
@@ -938,7 +918,7 @@ export default function TeleFormPage() {
                 {formData.q8 === '12' && (
                   <div className="mt-4">
                     <Input
-                      label="Independent (Please specify)"
+                      label={t.independentSpecify}
                       value={formData.q8_ind}
                       onChange={(e) => handleInputChange('q8_ind', e.target.value)}
                       required
@@ -953,10 +933,10 @@ export default function TeleFormPage() {
             {showQ9 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  9. Let us assume that the above party of your choice doesn&apos;t contest elections in your assembly constituency, which party would you choose?
+                  {t.q9}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                  {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
                   {partyOptions2019.map(option => (
@@ -974,7 +954,7 @@ export default function TeleFormPage() {
                 {formData.q9 === '44' && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q9_oth}
                       onChange={(e) => handleInputChange('q9_oth', e.target.value)}
                       required
@@ -985,7 +965,7 @@ export default function TeleFormPage() {
                 {formData.q9 === '12' && (
                   <div className="mt-4">
                     <Input
-                      label="Independent (Please specify)"
+                      label={t.independentSpecify}
                       value={formData.q9_ind}
                       onChange={(e) => handleInputChange('q9_ind', e.target.value)}
                       required
@@ -1000,10 +980,10 @@ export default function TeleFormPage() {
             {showQ10 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  10. Could you tell us the reason for choosing the above party as your second choice?
+                  {t.q10}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTIONS: PROBE BUT DO NOT PROMPT
+                  {t.interviewerHint}
                 </Text>
                 <div className="space-y-3">
                   {q10Options.map(option => (
@@ -1019,7 +999,7 @@ export default function TeleFormPage() {
                 {formData.q10.includes('44') && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q10_oth}
                       onChange={(e) => handleInputChange('q10_oth', e.target.value)}
                       required
@@ -1034,10 +1014,10 @@ export default function TeleFormPage() {
             {showQ11 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  11. In your opinion what are the top 3 reasons for voting for AITC?
+                  {t.q11}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTION: DO NOT READ OPTIONS, SELECT THE MOST APPROPRIATE OPTION BASIS WHAT THE RESPONDENT SAYS SPONTANEOUSLY
+                  {t.interviewerHintSpont}
                 </Text>
                 <div className="space-y-3">
                   {q11Options.map(option => (
@@ -1053,7 +1033,7 @@ export default function TeleFormPage() {
                 {formData.q11.includes('44') && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q11_oth}
                       onChange={(e) => handleInputChange('q11_oth', e.target.value)}
                       required
@@ -1068,10 +1048,10 @@ export default function TeleFormPage() {
             {showQ12 && (
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  12. In your opinion what are the top 3 reasons for voting for BJP?
+                  {t.q12}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTION: DO NOT READ OPTIONS, SELECT THE MOST APPROPRIATE OPTION BASIS WHAT THE RESPONDENT SAYS SPONTANEOUSLY
+                  {t.interviewerHintSpont}
                 </Text>
                 <div className="space-y-3">
                   {q12Options.map(option => (
@@ -1087,7 +1067,7 @@ export default function TeleFormPage() {
                 {formData.q12.includes('44') && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q12_oth}
                       onChange={(e) => handleInputChange('q12_oth', e.target.value)}
                       required
@@ -1102,10 +1082,10 @@ export default function TeleFormPage() {
             {showQ13 && (
               <div>
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                  13. According to you what are the three most pressing issues of your assembly constituency?
+                  {t.q13}
                 </Text>
                 <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                  INTERVIEWER INSTRUCTION: DO NOT READ OPTIONS, SELECT THE MOST APPROPRIATE OPTION BASIS WHAT THE RESPONDENT SAYS SPONTANEOUSLY
+                  {t.interviewerHintSpont}
                 </Text>
                 <div className="space-y-3">
                   {q13Options.map(option => (
@@ -1121,7 +1101,7 @@ export default function TeleFormPage() {
                 {formData.q13.includes('44') && (
                   <div className="mt-4">
                     <Input
-                      label="Other (Please specify)"
+                      label={t.otherSpecify}
                       value={formData.q13_oth}
                       onChange={(e) => handleInputChange('q13_oth', e.target.value)}
                       required
@@ -1138,16 +1118,16 @@ export default function TeleFormPage() {
         {showSection5 && (
           <Card className="p-6 mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-6">
-              Section 5: Satisfaction and Approval Ratings
+              {t.section5}
             </Heading>
 
             {/* Q14 */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?
+                {t.q14}
               </Text>
               <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                INTERVIEWER INSTRUCTIONS – READ THE OPTIONS
+                {t.interviewerReadOptions}
               </Text>
               <div className="space-y-3">
                 {satisfactionOptions.map(option => (
@@ -1167,10 +1147,10 @@ export default function TeleFormPage() {
             {/* Q15 */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-2">
-                15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?
+                {t.q15}
               </Text>
               <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-3">
-                INTERVIEWER INSTRUCTIONS – READ THE OPTIONS
+                {t.interviewerReadOptions}
               </Text>
               <div className="space-y-3">
                 {satisfactionOptions.map(option => (
@@ -1190,16 +1170,16 @@ export default function TeleFormPage() {
             {/* Q16 - Info Header */}
             <div className="mb-6">
               <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
-                16. How satisfied or dissatisfied are you with the work done by the following.
+                {t.q16}
               </Heading>
               <Text className="text-sm italic text-gray-500 dark:text-gray-400 mb-4">
-                INTERVIEWER INSTRUCTIONS – READ THE OPTIONS
+                {t.interviewerReadOptions}
               </Text>
 
               {/* Q16_A */}
               <div className="mb-6">
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                  A. Lok Sabha MP/ <span className="font-bold">{formData.mp_name || '[MP Name]'}</span> from your parliament constituency
+                  {t.q16_a.replace('{mp_name}', formData.mp_name || '[MP Name]')}
                 </Text>
                 <div className="space-y-3">
                   {satisfactionOptions.map(option => (
@@ -1219,7 +1199,7 @@ export default function TeleFormPage() {
               {/* Q16_B */}
               <div>
                 <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                  B. Your current MLA/ <span className="font-bold">{formData.mla_name || '[MLA Name]'}</span>?
+                  {t.q16_b.replace('{mla_name}', formData.mla_name || '[MLA Name]')}
                 </Text>
                 <div className="space-y-3">
                   {satisfactionOptions.map(option => (
@@ -1240,7 +1220,7 @@ export default function TeleFormPage() {
             {/* Q17 */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                17. Who do you think is the best leader to be the Chief Minister of West Bengal?
+                {t.q17}
               </Text>
               <div className="space-y-3">
                 {q17Options.map(option => (
@@ -1258,7 +1238,7 @@ export default function TeleFormPage() {
               {formData.q17 === '44' && (
                 <div className="mt-4">
                   <Input
-                    label="Others (specify)"
+                    label={t.othersSpecify}
                     value={formData.q17_oth}
                     onChange={(e) => handleInputChange('q17_oth', e.target.value)}
                     required
@@ -1271,7 +1251,7 @@ export default function TeleFormPage() {
             {/* Q19 */}
             <div>
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                19. In your opinion, which party would win the next elections in your constituency, when you would elect your MLA?
+                {t.q19}
               </Text>
               <div className="space-y-3">
                 {partyOptions2020.map(option => (
@@ -1289,7 +1269,7 @@ export default function TeleFormPage() {
               {formData.q19 === '44' && (
                 <div className="mt-4">
                   <Input
-                    label="Other (Please Specify)"
+                    label={t.otherPleaseSpecify}
                     value={formData.q19_oth}
                     onChange={(e) => handleInputChange('q19_oth', e.target.value)}
                     required
@@ -1305,13 +1285,13 @@ export default function TeleFormPage() {
         {showSection6 && (
           <Card className="p-6 mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-6">
-              Section 6: Basic Demographic
+              {t.section6}
             </Heading>
 
             {/* Q20: Religion */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                20. Could you please tell me the religion that you belong to?
+                {t.q20}
               </Text>
               <div className="space-y-3">
                 {religionOptions.map(option => (
@@ -1329,7 +1309,7 @@ export default function TeleFormPage() {
               {formData.resp_religion === '44' && (
                 <div className="mt-4">
                   <Input
-                    label="Others (Please specify)"
+                    label={t.otherSpecify}
                     value={formData.resp_religion_oth}
                     onChange={(e) => handleInputChange('resp_religion_oth', e.target.value)}
                     required
@@ -1342,7 +1322,7 @@ export default function TeleFormPage() {
             {/* Q21: Social Category */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                21. Which social category do you belong to?
+                {t.q21}
               </Text>
               <div className="space-y-3">
                 {socialCategoryOptions.map(option => (
@@ -1362,7 +1342,7 @@ export default function TeleFormPage() {
             {/* Q22: Caste */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                22. Could you please tell me your caste?
+                {t.q22}
               </Text>
               <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
                 {casteOptions.map(option => (
@@ -1380,7 +1360,7 @@ export default function TeleFormPage() {
               {formData.resp_caste_jati === '44' && (
                 <div className="mt-4">
                   <Input
-                    label="Other (Please specify)"
+                    label={t.otherSpecify}
                     value={formData.resp_caste_jati_oth}
                     onChange={(e) => handleInputChange('resp_caste_jati_oth', e.target.value)}
                     required
@@ -1393,7 +1373,7 @@ export default function TeleFormPage() {
             {/* Q23: Female Education */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                23. Could you please tell me the highest educational level of the most educated female of the household?
+                {t.q23}
               </Text>
               <div className="space-y-3">
                 {femaleEducationOptions.map(option => (
@@ -1413,7 +1393,7 @@ export default function TeleFormPage() {
             {/* Q24: Male Education */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                24. Could you please tell me the highest educational level of the most educated male of the household?
+                {t.q24}
               </Text>
               <div className="space-y-3">
                 {maleEducationOptions.map(option => (
@@ -1433,7 +1413,7 @@ export default function TeleFormPage() {
             {/* Q25: Occupation */}
             <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                25. What is the occupation of the chief wage earner?
+                {t.q25}
               </Text>
               <div className="space-y-3">
                 {occupationOptions.map(option => (
@@ -1453,7 +1433,7 @@ export default function TeleFormPage() {
             {/* Q28: Future Contact */}
             <div>
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
-                28. Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?
+                {t.q28}
               </Text>
               <div className="space-y-3">
                 {futureContactOptions.map(option => (
@@ -1475,7 +1455,7 @@ export default function TeleFormPage() {
         {/* Call Drop Group */}
         <Card className="p-6 mb-6">
           <Heading level={4} className="text-gray-900 dark:text-white mb-4">
-            Call Drop Group
+            {t.callDropGroup}
           </Heading>
           <div>
             <Button 
@@ -1484,7 +1464,7 @@ export default function TeleFormPage() {
               type="button"
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              Respondent Cut the Call
+              {t.respondentCutCall}
             </Button>
           </div>
         </Card>
@@ -1498,7 +1478,7 @@ export default function TeleFormPage() {
               className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white"
             >
               <i className="fa fa-save mr-2"></i>
-              Submit
+              {t.submit}
             </Button>
           </div>
         </Card>

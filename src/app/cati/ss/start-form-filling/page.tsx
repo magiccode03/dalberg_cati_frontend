@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -9,7 +9,8 @@ import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
-import { Phone, ArrowLeft } from 'lucide-react';
+import { Phone } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CallData {
   id: number;
@@ -20,8 +21,23 @@ interface CallData {
   rescheduleDateTime?: string;
 }
 
+interface InterviewData {
+  id: number;
+  phone: string;
+  ac_code: number;
+  ac_name: string;
+  ac_district_name: string;
+  ac_zone_name: string;
+  ac_mla_name: string;
+  ac_electorate: number;
+  status: number;
+  call_attempt: number;
+  call_received: number;
+}
+
 export default function StartFormFillingPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     teleform_user_id: '',
     user_phone: ''
@@ -36,34 +52,25 @@ export default function StartFormFillingPage() {
   const [showTable, setShowTable] = useState(false);
   const [activeTab, setActiveTab] = useState('new-calls');
   const [showNewCallSection, setShowNewCallSection] = useState(false);
+  const [interviews, setInterviews] = useState<InterviewData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Sample data for the table
-  const [callData, setCallData] = useState<CallData[]>([
-    {
-      id: 1,
-      serverId: 'SRV001',
-      webForm: 'Survey Form A',
-      respondentName: 'John Doe',
-      callAttempt: 2,
-      rescheduleDateTime: '2024-01-15 14:30'
-    },
-    {
-      id: 2,
-      serverId: 'SRV002',
-      webForm: 'Survey Form B',
-      respondentName: 'Jane Smith',
-      callAttempt: 1,
-      rescheduleDateTime: '2024-01-16 10:15'
-    },
-    {
-      id: 3,
-      serverId: 'SRV003',
-      webForm: 'Survey Form C',
-      respondentName: 'Mike Johnson',
-      callAttempt: 3,
-      rescheduleDateTime: '2024-01-17 16:45'
+  // Auto-fill form fields if user role is "ss"
+  useEffect(() => {
+    if (user && user.role === 'ss') {
+      setFormData({
+        teleform_user_id: user.uniqueId || '',
+        user_phone: user.mobile || ''
+      });
     }
-  ]);
+  }, [user]);
+
+  // Get user ID from user object
+  const getUserId = () => {
+    return user?.id || '';
+  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -101,44 +108,90 @@ export default function StartFormFillingPage() {
     return !Object.values(newErrors).some(error => error !== '');
   };
 
+  const fetchInterviews = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+
+      // Get user ID from the user object
+      const userId = getUserId();
+      if (!userId) {
+        setError('User ID not found');
+        return;
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cati/interviews/teleform-user/${userId}?status=0&page=1&limit=10`,
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data?.data) {
+        // Transform API data to our interface
+        const interviewList = data.data.data.map((item: any) => ({
+          id: item.id,
+          phone: item.phone,
+          ac_code: item.ac_code,
+          ac_name: item.ac_name,
+          ac_district_name: item.ac_district_name,
+          ac_zone_name: item.ac_zone_name,
+          ac_mla_name: item.ac_mla_name,
+          ac_electorate: item.ac_electorate,
+          status: item.status,
+          call_attempt: item.call_attempt,
+          call_received: item.call_received
+        }));
+        
+        setInterviews(interviewList);
+        setIsLoggedIn(true);
+        setShowTable(true);
+        setShowNewCallSection(true);
+      } else {
+        setError(data.message || 'Failed to fetch interviews');
+      }
+    } catch (err) {
+      console.error('Error fetching interviews:', err);
+      setError('Failed to fetch interviews. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
       console.log('Form submitted:', formData);
-      setIsLoggedIn(true);
-      setShowTable(true);
-      setShowNewCallSection(true);
-      // Implement form submission logic here
-      // You can redirect to the next page or make an API call
+      console.log('Fetching interviews for user ID:', getUserId());
+      fetchInterviews();
     }
   };
 
-  const handleConnectToCall = (callId: number) => {
-    console.log('Connecting to call:', callId);
-    // Navigate to tele-form page
-    router.push('/cati/ss/tele-form');
+  const handleConnectToCall = (interviewId: number) => {
+    console.log('Connecting to call:', interviewId);
+    // Navigate to tele-form page with interview ID
+    // router.push(`/cati/ss/tele-form/${interviewId}`);
+    router.push(`/cati/ss/tele-form`);
   };
 
-  const handleBackToLogin = () => {
-    setShowNewCallSection(false);
-    setIsLoggedIn(false);
-    setShowTable(false);
-    setFormData({
-      teleform_user_id: '',
-      user_phone: ''
-    });
-    setErrors({
-      teleform_user_id: '',
-      user_phone: ''
-    });
-  };
-
-  const tabs = [
-    { id: 'new-calls', label: 'New Calls', href: '/omnivore2025/teleform/default' },
-    { id: 'callback', label: 'Call Back', href: '/omnivore2025/teleform/default/callback' },
-    { id: 'reschedule', label: 'Reschedule Interview', href: '/omnivore2025/teleform/default/reschedule' }
-  ];
+  // Removed handleBackToLogin function
 
   return (
     <Container maxWidth="full">
@@ -232,19 +285,9 @@ export default function StartFormFillingPage() {
         {showNewCallSection && (
           <>
             <div className="mt-10 flex justify-between items-center mb-6">
-              <div className="left-content flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  onClick={handleBackToLogin}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Back
-                </Button>
+              <div className="left-content">
                 <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {activeTab === 'new-calls' ? 'New Call' : 
-                   activeTab === 'callback' ? 'Call Back Interview' : 
-                   'Reschedule Interview'}
+                  New Call
                 </Heading>
               </div>
               <div className="right-content">
@@ -252,45 +295,6 @@ export default function StartFormFillingPage() {
               </div>
             </div>
         <Card>
-        <div className="border-b border-gray-200 dark:border-gray-700">
-            <div className="px-6 py-4">
-              <nav className="flex justify-between items-center">
-                {/* Left side tabs */}
-                <div className="flex space-x-8">
-                  {tabs.filter(tab => tab.id !== 'reschedule').map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                        activeTab === tab.id
-                          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-                
-                {/* Right side tab */}
-                <div className="flex">
-                  {tabs.filter(tab => tab.id === 'reschedule').map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                        activeTab === tab.id
-                          ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </nav>
-            </div>
-          </div>
           <div className="card-body">
             <div className="table-responsive">
               <Table className="table table-striped table-bordered">
@@ -298,28 +302,36 @@ export default function StartFormFillingPage() {
                   <tr>
                     <th>#</th>
                     <th>Server ID</th>
-                    <th>Web Form</th>
-                    <th>Respondent Name</th>
-                    {activeTab === 'callback' && <th>Call Attempt</th>}
-                    {activeTab === 'reschedule' && <th>Reschedule Date Time</th>}
                     <th className="action-column">Connect To Call</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {isLoggedIn && showTable && callData.length > 0 ? (
-                    callData.map((call) => (
-                      <tr key={call.id}>
-                        <td>{call.id}</td>
-                        <td>{call.serverId}</td>
-                        <td>{call.webForm}</td>
-                        <td>{call.respondentName}</td>
-                        {activeTab === 'callback' && <td>{call.callAttempt}</td>}
-                        {activeTab === 'reschedule' && <td>{call.rescheduleDateTime}</td>}
+                  {loading ? (
+                    <tr>
+                      <td colSpan={3} className="text-center py-8">
+                        <div className="text-gray-500 dark:text-gray-400">
+                          Loading interviews...
+                        </div>
+                      </td>
+                    </tr>
+                  ) : error ? (
+                    <tr>
+                      <td colSpan={3} className="text-center py-8">
+                        <div className="text-red-500 dark:text-red-400">
+                          {error}
+                        </div>
+                      </td>
+                    </tr>
+                  ) : isLoggedIn && showTable && interviews.length > 0 ? (
+                    interviews.map((interview) => (
+                      <tr key={interview.id}>
+                        <td>{interview.id}</td>
+                        <td>SRV00{interview.id}</td>
                         <td className="text-center">
                           <Button
                             variant="primary"
                             size="sm"
-                            onClick={() => handleConnectToCall(call.id)}
+                            onClick={() => handleConnectToCall(interview.id)}
                             className="text-white"
                           >
                             <Phone className="w-4 h-4" />
@@ -329,9 +341,9 @@ export default function StartFormFillingPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={activeTab === 'new-calls' ? 5 : activeTab === 'callback' ? 6 : 6} className="text-center py-8">
+                      <td colSpan={3} className="text-center py-8">
                         <div className="text-gray-500 dark:text-gray-400">
-                          {isLoggedIn && showTable ? 'No results found.' : 'Please login to view data.'}
+                          {isLoggedIn && showTable ? 'No interviews found.' : 'Please login to view data.'}
                         </div>
                       </td>
                     </tr>

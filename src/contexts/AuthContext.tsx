@@ -9,6 +9,7 @@ export interface User {
   uniqueId: string; // Alphanumeric/numeric unique ID
   name: string;
   email?: string; // Optional email for notifications
+  mobile?: string; // Mobile phone number
   role: string;
   roleDisplayName?: string; // Display name for the role
   avatar?: string;
@@ -145,6 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
+          mobile: apiUser.mobile,
           role: roleName,
           roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
@@ -237,6 +239,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
+          mobile: apiUser.mobile,
           role: apiUser.roleName || apiUser.role?.name || 'super_admin',
           roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',

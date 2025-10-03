@@ -25,7 +25,9 @@ export interface User {
   roleDisplayName: string;
   roleLevel: number;
   portalSlug: string;
-  isActive: number;
+  mobile?: string;
+  agency?: number;
+  isActive: number | boolean;
   lastLoginAt: string;
   createdAt: string;
   updatedAt: string;
@@ -137,8 +139,22 @@ class ApiService {
   }
 
   // User Management Methods
-  async getUsers(): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
-    return this.request<{ users: User[]; pagination: any }>('GET', '/users');
+  async getUsers(params?: {
+    role_id?: number;
+    agency?: number;
+    page?: number;
+    limit?: number;
+    uniqueId?: string;
+    name?: string;
+    mobile?: string;
+    isActive?: boolean;
+  }): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)])
+    ).toString() : '';
+    return this.request<{ users: User[]; pagination: any }>('GET', `/users${queryString}`);
   }
 
   async getUser(id: string): Promise<ApiResponse<User>> {
