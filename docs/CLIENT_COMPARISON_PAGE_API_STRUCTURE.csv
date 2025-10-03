@@ -1,0 +1,28 @@
+Section,Type,Label/Column Name,
+,,,
+Summary Cards,Data Field,Interviews Valid (Client),totalValidClient
+Summary Cards,Data Field,Interviews Valid (PMT),totalValidPMT
+,,,
+Comparison Data,Table Column,AC Code,ac_code
+Comparison Data,Table Column,AC Name,ac_name
+Comparison Data,Table Column,Target Sample,target_sample
+Comparison Data,Table Column,Valid (Client),valid_client
+Comparison Data,Table Column,Valid (PMT),valid_pmt
+Comparison Data,Table Column,Difference,difference
+,,,
+Status Indicators,Legend Item,High Alert,High Alert (>20 difference)
+Status Indicators,Legend Item,Low Alert,Low Alert (1-20 difference)
+Status Indicators,Legend Item,Good,Good (≤0 difference)
+,,,
+Calculations,Computed Field,Total Target Sample,totals.target_sample
+Calculations,Computed Field,Total Valid Client,totals.valid_client
+Calculations,Computed Field,Total Valid PMT,totals.valid_pmt
+Calculations,Computed Field,Total Difference,totals.difference
+,,,
+Color Coding,Status Color,Good Background,#b4eed4
+Color Coding,Status Color,Low Alert Background,#f5bcbc
+Color Coding,Status Color,High Alert Background,#ff5757
+,,,
+Page Structure,Component,Summary Cards,grid layout with purple and green cards
+Page Structure,Component,Comparison Table,responsive table with border styling
+Page Structure,Component,Legend,status indicators with colored dots

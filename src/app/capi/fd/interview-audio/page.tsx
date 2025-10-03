@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -9,302 +9,111 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Play, Download } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface InterviewData {
-  id: number;
-  serverToken: string;
-  acCode: number;
-  acName: string;
-  interviewDate: string;
+  server_token: string;
+  ac_code: number;
+  ac_name: string;
+  interview_date: string;
+  interview_audio: string | null;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    success: boolean;
+    data: InterviewData[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      total_pages: number;
+    };
+    filters: {
+      ac_codes: Array<{
+        ac_code: number;
+        ac_name: string;
+      }>;
+      interview_dates: string[];
+    };
+    message: string;
+    timestamp: string;
+  };
+  message: string;
+  timestamp: string;
 }
 
 export default function InterviewAudioPage() {
   const [acCode, setAcCode] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(50);
+  const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [acOptions, setAcOptions] = useState<Array<{ value: string; label: string }>>([]);
+  const [interviewDateOptions, setInterviewDateOptions] = useState<Array<{ value: string; label: string }>>([]);
 
-  // Sample interview data based on the HTML structure
-  const interviewData: InterviewData[] = [
-    { id: 1, serverToken: 'RPVb1749801098JhPk', acCode: 145, acName: 'Sahebpur Kamal', interviewDate: '2025-06-12' },
-    { id: 2, serverToken: 'UUWT1749800965C5Y9', acCode: 145, acName: 'Sahebpur Kamal', interviewDate: '2025-06-12' },
-    { id: 3, serverToken: 'QM_l1749800940a5Rf', acCode: 145, acName: 'Sahebpur Kamal', interviewDate: '2025-06-12' },
-    { id: 4, serverToken: 'UX8S1749800915rjgo', acCode: 145, acName: 'Sahebpur Kamal', interviewDate: '2025-06-12' },
-    { id: 5, serverToken: 'T8WO1749739512ZdWW', acCode: 145, acName: 'Sahebpur Kamal', interviewDate: '2025-06-12' },
-    { id: 6, serverToken: 'e9As1749739148uNw-', acCode: 76, acName: 'Simri Bakhtiarpur', interviewDate: '2025-06-12' },
-    { id: 7, serverToken: 'xUhy1749739127NI1a', acCode: 76, acName: 'Simri Bakhtiarpur', interviewDate: '2025-06-12' },
-    { id: 8, serverToken: '04s21749739105FGG-', acCode: 76, acName: 'Simri Bakhtiarpur', interviewDate: '2025-06-12' },
-    { id: 9, serverToken: '33gB1749739091uEtm', acCode: 76, acName: 'Simri Bakhtiarpur', interviewDate: '2025-06-12' },
-    { id: 10, serverToken: 'Kc2K1749739067qqj-', acCode: 76, acName: 'Simri Bakhtiarpur', interviewDate: '2025-06-12' }
-  ];
+  useEffect(() => {
+    fetchData();
+  }, [currentPage, acCode, interviewDate]);
 
-  // AC options (sample from the HTML)
-  const acOptions = [
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params: any = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+      
+      if (acCode) params.ac_code = acCode;
+      if (interviewDate) params.interview_date = interviewDate;
+      
+      const response = await apiService.getInterviewAudio(params) as APIResponse;
+
+      if (response.success && response.data.success) {
+        setInterviewData(response.data.data);
+        setTotalItems(response.data.pagination.total);
+        setTotalPages(response.data.pagination.total_pages);
+        
+        // Set filter options from API
+        const acOptionsData = [
     { value: '', label: 'Select AC' },
-    { value: '195', label: 'Agiaon (SC) (195)' },
-    { value: '70', label: 'Alamnagar (70)' },
-    { value: '148', label: 'Alauli (SC) (148)' },
-    { value: '81', label: 'Alinagar (81)' },
-    { value: '159', label: 'Amarpur (159)' },
-    { value: '120', label: 'Amnour (120)' },
-    { value: '56', label: 'Amour (56)' },
-    { value: '49', label: 'Araria (49)' },
-    { value: '194', label: 'Arrah (194)' },
-    { value: '214', label: 'Arwal (214)' },
-    { value: '171', label: 'Asthawan (171)' },
-    { value: '233', label: 'Atri (233)' },
-    { value: '89', label: 'Aurai (89)' },
-    { value: '223', label: 'Aurangabad (223)' },
-    { value: '34', label: 'Babubarhi (34)' },
-    { value: '142', label: 'Bachhwara (142)' },
-    { value: '4', label: 'Bagaha (4)' },
-    { value: '52', label: 'Bahadurganj (52)' },
-    { value: '85', label: 'Bahadurpur (85)' },
-    { value: '99', label: 'Baikunthpur (99)' },
-    { value: '57', label: 'Baisi (57)' },
-    { value: '27', label: 'Bajpatti (27)' },
-    { value: '147', label: 'Bakhri (SC) (147)' },
-    { value: '180', label: 'Bakhtiarpur (180)' },
-    { value: '65', label: 'Balrampur (65)' },
-    { value: '115', label: 'Baniapur (115)' },
-    { value: '161', label: 'Banka (161)' },
-    { value: '182', label: 'Bankipur (182)' },
-    { value: '59', label: 'Banmankhi (SC) (59)' },
-    { value: '228', label: 'Barachatti (SC) (228)' },
-    { value: '68', label: 'Barari (68)' },
-    { value: '100', label: 'Barauli (100)' },
-    { value: '170', label: 'Barbigha (170)' },
-    { value: '179', label: 'Barh (179)' },
-    { value: '193', label: 'Barhara (193)' },
-    { value: '110', label: 'Barharia (110)' },
-    { value: '96', label: 'Baruraj (96)' },
-    { value: '24', label: 'Bathnaha (SC) (24)' },
-    { value: '146', label: 'Begusarai (146)' },
-    { value: '232', label: 'Belaganj (232)' },
-    { value: '150', label: 'Beldaur (150)' },
-    { value: '163', label: 'Belhar (163)' },
-    { value: '30', label: 'Belsand (30)' },
-    { value: '32', label: 'Benipatti (32)' },
-    { value: '80', label: 'Benipur (80)' },
-    { value: '8', label: 'Bettiah (8)' },
-    { value: '205', label: 'Bhabua (205)' },
-    { value: '156', label: 'Bhagalpur (156)' },
-    { value: '103', label: 'Bhorey (SC) (103)' },
-    { value: '138', label: 'Bibhutipur (138)' },
-    { value: '71', label: 'Bihariganj (71)' },
-    { value: '172', label: 'Biharsharif (172)' },
-    { value: '152', label: 'Bihpur (152)' },
-    { value: '191', label: 'Bikram (191)' },
-    { value: '35', label: 'Bisfi (35)' },
-    { value: '91', label: 'Bochaha (SC) (91)' },
-    { value: '229', label: 'Bodh Gaya (SC) (229)' },
-    { value: '199', label: 'Brahampur (199)' },
-    { value: '200', label: 'Buxar (200)' },
-    { value: '206', label: 'Chainpur (206)' },
-    { value: '243', label: 'Chakai (243)' },
-    { value: '7', label: 'Chanpatia (7)' },
-    { value: '118', label: 'Chapra (118)' },
-    { value: '207', label: 'Chenari (SC) (207)' },
-    { value: '141', label: 'Cheria Bariarpur (141)' },
-    { value: '45', label: 'Chhatapur (45)' },
-    { value: '20', label: 'Chiraia (20)' },
-    { value: '186', label: 'Danapur (186)' },
-    { value: '107', label: 'Darauli (SC) (107)' },
-    { value: '109', label: 'Daraundha (109)' },
-    { value: '83', label: 'Darbhanga (83)' },
-    { value: '82', label: 'Darbhanga Rural (82)' },
-    { value: '212', label: 'Dehri (212)' },
-    { value: '21', label: 'Dhaka (21)' },
-    { value: '61', label: 'Dhamdaha (61)' },
-    { value: '160', label: 'Dhauraiya (SC) (160)' },
-    { value: '181', label: 'Digha (181)' },
-    { value: '210', label: 'Dinara (210)' },
-    { value: '201', label: 'Dumraon (201)' },
-    { value: '113', label: 'Ekma (113)' },
-    { value: '185', label: 'Fatuha (185)' },
-    { value: '48', label: 'Forbesganj (48)' },
-    { value: '88', label: 'Gaighat (88)' },
-    { value: '119', label: 'Garkha (SC) (119)' },
-    { value: '79', label: 'Gaura Bauram (79)' },
-    { value: '230', label: 'Gaya Town (230)' },
-    { value: '217', label: 'Ghosi (217)' },
-    { value: '238', label: 'Gobindpur (238)' },
-    { value: '219', label: 'Goh (219)' },
-    { value: '101', label: 'Gopalganj (101)' },
-    { value: '153', label: 'Gopalpur (153)' },
-    { value: '111', label: 'Goriakothi (111)' },
-    { value: '14', label: 'Govindganj (14)' },
-    { value: '225', label: 'Gurua (225)' },
-    { value: '123', label: 'Hajipur (123)' },
-    { value: '31', label: 'Harlakhi (31)' },
-    { value: '177', label: 'Harnaut (177)' },
-    { value: '13', label: 'Harsidhi (SC) (13)' },
-    { value: '140', label: 'Hasanpur (140)' },
-    { value: '104', label: 'Hathua (104)' },
-    { value: '84', label: 'Hayaghat (84)' },
-    { value: '175', label: 'Hilsa (175)' },
-    { value: '236', label: 'Hisua (236)' },
-    { value: '227', label: 'Imamganj (SC) (227)' },
-    { value: '174', label: 'Islampur (174)' },
-    { value: '197', label: 'Jagdishpur (197)' },
-    { value: '216', label: 'Jahanabad (216)' },
-    { value: '87', label: 'Jale (87)' },
-    { value: '166', label: 'Jamalpur (166)' },
-    { value: '241', label: 'Jamui (241)' },
-    { value: '242', label: 'Jhajha (242)' },
-    { value: '38', label: 'Jhanjharpur (38)' },
-    { value: '50', label: 'Jokihat (50)' },
-    { value: '64', label: 'Kadwa (64)' },
-    { value: '155', label: 'Kahalgaon (155)' },
-    { value: '16', label: 'Kalyanpur (16)' },
-    { value: '131', label: 'Kalyanpur (SC) (131)' },
-    { value: '95', label: 'Kanti (95)' },
-    { value: '213', label: 'Karakat (213)' },
-    { value: '209', label: 'Kargahar (209)' },
-    { value: '58', label: 'Kasba (58)' },
-    { value: '63', label: 'Katihar (63)' },
-    { value: '162', label: 'Katoria (ST) (162)' },
-    { value: '86', label: 'Keoti (86)' },
-    { value: '15', label: 'Kesaria (15)' },
-    { value: '149', label: 'Khagaria (149)' },
-    { value: '33', label: 'Khajauli (33)' },
-    { value: '54', label: 'Kishanganj (54)' },
-    { value: '55', label: 'Kochadhaman (55)' },
-    { value: '69', label: 'Korha (SC) (69)' },
-    { value: '102', label: 'Kuchaikote (102)' },
-    { value: '183', label: 'Kumhrar (183)' },
-    { value: '93', label: 'Kurhani (93)' },
-    { value: '215', label: 'Kurtha (215)' },
-    { value: '78', label: 'Kusheshwar Asthan (SC) (78)' },
-    { value: '222', label: 'Kutumba (SC) (222)' },
-    { value: '168', label: 'Lakhisarai (168)' },
-    { value: '124', label: 'Lalganj (124)' },
-    { value: '40', label: 'Laukaha (40)' },
-    { value: '5', label: 'Lauriya (5)' },
-    { value: '73', label: 'Madhepura (73)' },
-    { value: '18', label: 'Madhuban (18)' },
-    { value: '36', label: 'Madhubani (36)' },
-    { value: '112', label: 'Maharajganj (112)' },
-    { value: '77', label: 'Mahishi (77)' },
-    { value: '129', label: 'Mahnar (129)' },
-    { value: '126', label: 'Mahua (126)' },
-    { value: '218', label: 'Makhadumapur (SC) (218)' },
-    { value: '187', label: 'Maner (187)' },
-    { value: '67', label: 'Manihari (ST) (67)' },
-    { value: '114', label: 'Manjhi (114)' },
-    { value: '117', label: 'Marhaura (117)' },
-    { value: '189', label: 'Masaurhi (SC) (189)' },
-    { value: '144', label: 'Matihani (144)' },
-    { value: '90', label: 'Minapur (90)' },
-    { value: '204', label: 'Mohania (SC) (204)' },
-    { value: '137', label: 'Mohiuddinnagar (137)' },
-    { value: '178', label: 'Mokama (178)' },
-    { value: '135', label: 'Morwa (135)' },
-    { value: '19', label: 'Motihari (19)' },
-    { value: '165', label: 'Munger (165)' },
-    { value: '94', label: 'Muzaffarpur (94)' },
-    { value: '221', label: 'Nabinagar (221)' },
-    { value: '176', label: 'Nalanda (176)' },
-    { value: '12', label: 'Narkatia (12)' },
-    { value: '3', label: 'Narkatiaganj (3)' },
-    { value: '46', label: 'Narpatganj (46)' },
-    { value: '158', label: 'Nathnagar (158)' },
-    { value: '6', label: 'Nautan (6)' },
-    { value: '237', label: 'Nawada (237)' },
-    { value: '41', label: 'Nirmali (41)' },
-    { value: '211', label: 'Nokha (211)' },
-    { value: '220', label: 'Obra (220)' },
-    { value: '190', label: 'Paliganj (190)' },
-    { value: '151', label: 'Parbatta (151)' },
-    { value: '25', label: 'Parihar (25)' },
-    { value: '97', label: 'Paroo (97)' },
-    { value: '121', label: 'Parsa (121)' },
-    { value: '130', label: 'Patepur (SC) (130)' },
-    { value: '184', label: 'Patna Sahib (184)' },
-    { value: '39', label: 'Phulparas (39)' },
-    { value: '188', label: 'Phulwari (SC) (188)' },
-    { value: '17', label: 'Pipra (17)' },
-    { value: '42', label: 'Pipra (42)' },
-    { value: '154', label: 'Pirpainti (SC) (154)' },
-    { value: '66', label: 'Pranpur (66)' },
-    { value: '62', label: 'Purnia (62)' },
-    { value: '224', label: 'Rafiganj (224)' },
-    { value: '128', label: 'Raghopur (128)' },
-    { value: '108', label: 'Raghunathpur (108)' },
-    { value: '127', label: 'Raja Pakar (SC) (127)' },
-    { value: '235', label: 'Rajauli (SC) (235)' },
-    { value: '173', label: 'Rajgir (SC) (173)' },
-    { value: '37', label: 'Rajnagar (SC) (37)' },
-    { value: '202', label: 'Rajpur (SC) (202)' },
-    { value: '203', label: 'Ramgarh (203)' },
-    { value: '2', label: 'Ramnagar (SC) (2)' },
-    { value: '47', label: 'Raniganj (SC) (47)' },
-    { value: '10', label: 'Raxaul (10)' },
-    { value: '23', label: 'Riga (23)' },
-    { value: '139', label: 'Rosera (SC) (139)' },
-    { value: '29', label: 'Runnisaidpur (29)' },
-    { value: '60', label: 'Rupauli (60)' },
-    { value: '75', label: 'Saharsa (75)' },
-    { value: '98', label: 'Sahebganj (98)' },
-    { value: '145', label: 'Sahebpur Kamal (145)' },
-    { value: '92', label: 'Sakra (SC) (92)' },
-    { value: '133', label: 'Samastipur (133)' },
-    { value: '192', label: 'Sandesh (192)' },
-    { value: '136', label: 'Sarairanjan (136)' },
-    { value: '208', label: 'Sasaram (208)' },
-    { value: '198', label: 'Shahpur (198)' },
-    { value: '169', label: 'Sheikhpura (169)' },
-    { value: '22', label: 'Sheohar (22)' },
-    { value: '226', label: 'Sherghati (226)' },
-    { value: '240', label: 'Sikandra (SC) (240)' },
-    { value: '9', label: 'Sikta (9)' },
-    { value: '51', label: 'Sikti (51)' },
-    { value: '76', label: 'Simri Bakhtiarpur (76)' },
-    { value: '72', label: 'Singheshwar (SC) (72)' },
-    { value: '28', label: 'Sitamarhi (28)' },
-    { value: '105', label: 'Siwan (105)' },
-    { value: '74', label: 'Sonbarsha (SC) (74)' },
-    { value: '122', label: 'Sonepur (122)' },
-    { value: '11', label: 'Sugauli (11)' },
-    { value: '157', label: 'Sultanganj (157)' },
-    { value: '43', label: 'Supaul (43)' },
-    { value: '26', label: 'Sursand (26)' },
-    { value: '167', label: 'Suryagarha (167)' },
-    { value: '116', label: 'Taraiya (116)' },
-    { value: '164', label: 'Tarapur (164)' },
-    { value: '196', label: 'Tarari (196)' },
-    { value: '143', label: 'Teghra (143)' },
-    { value: '53', label: 'Thakurganj (53)' },
-    { value: '231', label: 'Tikari (231)' },
-    { value: '44', label: 'Triveniganj (SC) (44)' },
-    { value: '134', label: 'Ujiarpur (134)' },
-    { value: '125', label: 'Vaishali (125)' },
-    { value: '1', label: 'Valmiki Nagar (1)' },
-    { value: '132', label: 'Warisnagar (132)' },
-    { value: '239', label: 'Warsaliganj (239)' },
-    { value: '234', label: 'Wazirganj (234)' },
-    { value: '106', label: 'Ziradei (106)' }
-  ];
-
-  // Generate interview date options (from 2025-04-05 to 2025-09-28)
-  const interviewDateOptions = [
+          ...response.data.filters.ac_codes.map(ac => ({
+            value: ac.ac_code.toString(),
+            label: `${ac.ac_name} (${ac.ac_code})`
+          }))
+        ];
+        setAcOptions(acOptionsData);
+        
+        const dateOptionsData = [
     { value: '', label: 'Interview Date' },
-    ...Array.from({ length: 176 }, (_, i) => {
-      const date = new Date('2025-04-05');
-      date.setDate(date.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
-      return { value: dateString, label: dateString };
-    })
-  ];
+          ...response.data.filters.interview_dates.map(date => ({
+            value: date.split('T')[0],
+            label: date.split('T')[0]
+          }))
+        ];
+        setInterviewDateOptions(dateOptionsData);
+      } else {
+        setError('Failed to fetch interview audio data');
+      }
+    } catch (err) {
+      setError('Error fetching data: ' + (err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    setCurrentPage(1); // Reset to first page when searching
+    fetchData();
   };
 
   const handleCheckAudio = (serverToken: string) => {
@@ -316,9 +125,6 @@ export default function InterviewAudioPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  const totalItems = 49553; // From the HTML
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -398,6 +204,21 @@ export default function InterviewAudioPage() {
         </div>
         
         <div className="card-body">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="text-lg text-gray-600">Loading interview data...</div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <div className="text-lg text-red-600">Error: {error}</div>
+              <button 
+                onClick={fetchData}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
               <thead>
@@ -412,15 +233,15 @@ export default function InterviewAudioPage() {
               </thead>
               <tbody>
                 {interviewData.map((row, index) => (
-                  <tr key={row.id} data-key={row.id}>
+                    <tr key={row.server_token} data-key={row.server_token}>
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.serverToken}</td>
-                    <td className="text-center">{row.acCode}</td>
-                    <td>{row.acName}</td>
-                    <td>{row.interviewDate}</td>
+                      <td>{row.server_token}</td>
+                      <td className="text-center">{row.ac_code}</td>
+                      <td>{row.ac_name}</td>
+                      <td>{row.interview_date.split('T')[0]}</td>
                     <td className="text-center">
                       <Button
-                        onClick={() => handleCheckAudio(row.serverToken)}
+                          onClick={() => handleCheckAudio(row.server_token)}
                         className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1"
                       >
                         Check Audio
@@ -431,17 +252,20 @@ export default function InterviewAudioPage() {
               </tbody>
             </Table>
           </div>
+          )}
 
           {/* Pagination */}
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <PaginationStandard
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={handlePageChange}
-            />
-          </div>
+          {!loading && !error && interviewData.length > 0 && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
       </Card>
 

@@ -131,6 +131,12 @@ export const API_ENDPOINTS = {
     SOCIAL_CATEGORY_WISE: '/demographic/socialcategorywise',
     CASTE_WISE: '/demographic/castewise',
   },
+  
+  // Field Data (FD)
+  FD: {
+    INTERNAL_DASHBOARD: '/fd/internal-dashboard',
+    INTERVIEW_AUDIO: '/fd/interviewaudio',
+  },
 } as const;
 
 // API Response Types
@@ -871,6 +877,17 @@ class ApiService {
 
   async getSystemInfo(): Promise<ApiResponse<any>> {
     return this.request<any>(API_ENDPOINTS.SYSTEM.INFO);
+  }
+
+  // Field Data (FD) Methods
+  async getFDInternalDashboard(params?: { page?: number; limit?: number }): Promise<any> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.FD.INTERNAL_DASHBOARD}${queryString}`);
+  }
+
+  async getInterviewAudio(params?: { page?: number; limit?: number; ac_code?: string; interview_date?: string }): Promise<any> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO}${queryString}`);
   }
 
   // Utility Methods
