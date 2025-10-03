@@ -329,9 +329,12 @@ export default function ChangeStatusPage() {
       <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
-            <Heading level={4} className="card-title mg-b-0">
-              Change Status of Interviews
-            </Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="card-title mg-b-0">
+                Change Status of Interviews
+              </Heading>
+            </div>
             <span className="text-end">
               {/* Sample file download button can be added here */}
             </span>
@@ -379,9 +382,12 @@ export default function ChangeStatusPage() {
       {/* Previous Requests Card */}
       <Card className="">
         <div className="card-header mb-6">
-          <Heading level={4} className="card-title">
-            List of Previous Requests
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="card-title">
+              List of Previous Requests
+            </Heading>
+          </div>
         </div>
         
         <div className="card-body">

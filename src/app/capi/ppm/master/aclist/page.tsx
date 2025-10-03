@@ -294,7 +294,10 @@ const ACListPage = () => {
       {/* AC List Table */}
       <Card>
         <div className="flex justify-between items-center mb-6">
-          <Heading level={4}>AC List</Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4}>AC List</Heading>
+          </div>
           <Button variant="primary">
             Update Data Agency Wise
           </Button>

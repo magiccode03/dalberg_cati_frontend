@@ -213,7 +213,10 @@ const TeamRegistrationPage = () => {
       {/* Agency List Table */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <Heading level={4}>Agency List</Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4}>Agency List</Heading>
+          </div>
           <Button variant="primary">
             <i className="fa fa-plus mr-2"></i>
             New Agency

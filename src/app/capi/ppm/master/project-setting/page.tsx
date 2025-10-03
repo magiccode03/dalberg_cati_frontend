@@ -454,9 +454,12 @@ const ProjectSettingPage = () => {
         {/* Settings Sidebar */}
         <div className="lg:col-span-3">
           <Card>
-            <Heading level={4} className="mb-4">
-              Settings
-            </Heading>
+            <div className="flex items-center mb-4">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="mb-0">
+                Settings
+              </Heading>
+            </div>
             <nav className="space-y-2">
               {settingsMenu.map((item) => {
                 const IconComponent = item.icon;
@@ -486,7 +489,10 @@ const ProjectSettingPage = () => {
             {activeTab === 'project-info' && (
               <>
                 <div className="mb-6">
-                  <Heading level={4}>Project Info</Heading>
+                  <div className="flex items-center">
+                    <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+                    <Heading level={4}>Project Info</Heading>
+                  </div>
                   <Text className="text-sm text-gray-500 mt-1">
                     Last Update: 8 days ago
                   </Text>
