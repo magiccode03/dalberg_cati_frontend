@@ -1,0 +1,19 @@
+Section,Type,Label/Column Name,
+,,,
+PS Form Data,Table Column,#,index
+PS Form Data,Table Column,AC Code,ac_code
+PS Form Data,Table Column,Lot No,lot_no
+PS Form Data,Table Column,AC Lot,ac_lot
+PS Form Data,Table Column,Polling Station No,polling_station_no
+PS Form Data,Table Column,Polling Station Name,polling_station_name
+PS Form Data,Table Column,Polling Station Name L2,polling_station_name_l2
+PS Form Data,Table Column,Polling Station Location,polling_station_location
+PS Form Data,Table Column,Valid Interview,valid_interview_limit
+PS Form Data,Table Column,Valid Interview Limit,valid_interview_limit
+PS Form Data,Table Column,Actions,actions
+,,,
+,,,
+Pagination,Pagination,Current Page,current_page
+Pagination,Pagination,Page Size,page_size
+Pagination,Pagination,Total Items,total_items
+Pagination,Pagination,Total Pages,total_pages

@@ -200,6 +200,7 @@ const TeamRegistrationPage = () => {
         
         <Card className="bg-blue-600 text-white">
           <div className="py-2 px-3 text-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
             <Heading level={4} className="text-white mb-1">
               Interview Under QC
             </Heading>

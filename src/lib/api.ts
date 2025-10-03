@@ -90,6 +90,7 @@ export const API_ENDPOINTS = {
     MASTER_AC_LIST: '/dashboard/master-ac/list',
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
+    PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
   },
 
   // Analysis
@@ -631,6 +632,11 @@ class ApiService {
   async getMasterPollingStationList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
+  }
+
+  async getPSFormList(params?: { page?: number; limit?: number; polling_station_name?: string; polling_station_no?: string; ac_code?: string }): Promise<any> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.PS_FORM_LIST}${queryString}`);
   }
 
   // Demographic Methods

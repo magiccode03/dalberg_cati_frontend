@@ -284,7 +284,7 @@ export default function SendToQcPage() {
       </div>
 
       {/* Upload Form Card */}
-      <Card className="p-6 mb-6">
+      <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <Heading level={4} className="card-title mg-b-0">
