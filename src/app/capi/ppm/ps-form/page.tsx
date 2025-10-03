@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,18 +10,33 @@ import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Upload, Edit, RotateCcw } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface PSForForm {
-  id: number;
-  acCode: number;
-  lotNo: number;
-  acLot: string;
-  pollingStationNo: string;
-  pollingStationName: string;
-  pollingStationNameL2: string;
-  pollingStationLocation: string;
-  validInterview: number;
-  validInterviewLimit: number;
+  ac_code: number;
+  lot_no: number;
+  ac_lot: string;
+  polling_station_no: string;
+  polling_station_name: string;
+  polling_station_name_l2: string | null;
+  polling_station_location: string | null;
+  valid_interview: number;
+  valid_interview_limit: number;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: PSForForm[];
+  pagination: {
+    total: number;
+    page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+  message: string;
+  timestamp: string;
+  requestId: string;
 }
 
 export default function PSForFormPage() {
@@ -30,37 +45,80 @@ export default function PSForFormPage() {
   const [acCode, setAcCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [psFormData, setPsFormData] = useState<PSForForm[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Sample data for PS for Form (20 items as shown in HTML)
-  const psForFormData: PSForForm[] = [
-    { id: 1, acCode: 999, lotNo: 1, acLot: '999_1', pollingStationNo: '999_1', pollingStationName: '1. dummy ps name1', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 0, validInterviewLimit: 20 },
-    { id: 2, acCode: 999, lotNo: 2, acLot: '999_2', pollingStationNo: '999_2', pollingStationName: '2. dummy ps name2', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 0, validInterviewLimit: 20 },
-    { id: 3, acCode: 999, lotNo: 2, acLot: '999_2', pollingStationNo: '999_3', pollingStationName: '3. dummy ps name3', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 0, validInterviewLimit: 20 },
-    { id: 4, acCode: 1, lotNo: 1, acLot: '1_1', pollingStationNo: '1_27', pollingStationName: '27. Prathamik Vidyalay Godar', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 16, validInterviewLimit: 20 },
-    { id: 5, acCode: 1, lotNo: 1, acLot: '1_1', pollingStationNo: '1_28', pollingStationName: '28. Prathamik Vidyalay Malakauli', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 6, acCode: 1, lotNo: 1, acLot: '1_1', pollingStationNo: '1_38', pollingStationName: '38. Prathamik Vidyalay, Matiariya', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 7, acCode: 1, lotNo: 1, acLot: '1_1', pollingStationNo: '1_39', pollingStationName: '39. Prathamik Vidyalay, Amahat', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 8, acCode: 1, lotNo: 1, acLot: '1_1', pollingStationNo: '1_49', pollingStationName: '49. Prathamik Vidyalay, Bairiyakala', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 9, acCode: 1, lotNo: 1, acLot: '1_1', pollingStationNo: '1_50', pollingStationName: '50. Prathamik Vidyalay, Khajuriya', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 16, validInterviewLimit: 20 },
-    { id: 10, acCode: 1, lotNo: 2, acLot: '1_2', pollingStationNo: '1_60', pollingStationName: '60. Krishchan Mishan Skul Pacharukha, Uttari Bhag', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 11, acCode: 1, lotNo: 2, acLot: '1_2', pollingStationNo: '1_61', pollingStationName: '61. Krishchan Mishan Skul Pacharukha Dakshini Bhag', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 11, validInterviewLimit: 20 },
-    { id: 12, acCode: 1, lotNo: 2, acLot: '1_2', pollingStationNo: '1_71', pollingStationName: '71. Utkramit Madhya Vidyalay, Jarar Dakshini Bhag', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 14, validInterviewLimit: 20 },
-    { id: 13, acCode: 1, lotNo: 2, acLot: '1_2', pollingStationNo: '1_72', pollingStationName: '72. Prathamik Vidyalay Bhadachhi', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 14, acCode: 1, lotNo: 2, acLot: '1_2', pollingStationNo: '1_82', pollingStationName: '82. Prathamik Vidyalay, Jimari', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 12, validInterviewLimit: 20 },
-    { id: 15, acCode: 1, lotNo: 2, acLot: '1_2', pollingStationNo: '1_83', pollingStationName: '83. Utkramit Madhya Vidyalay, Nautanava', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 16, acCode: 1, lotNo: 3, acLot: '1_3', pollingStationNo: '1_93', pollingStationName: '93. Utkramit Madhya Vidyalay, Semara, Vijay Nagar', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 9, validInterviewLimit: 20 },
-    { id: 17, acCode: 1, lotNo: 3, acLot: '1_3', pollingStationNo: '1_94', pollingStationName: '94. Utkramit Madhya Vidyalay, Semara Sharanarthi', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 18, acCode: 1, lotNo: 3, acLot: '1_3', pollingStationNo: '1_104', pollingStationName: '104. Utkrmit Madhy, Panchangva, Purbi Bhag', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 },
-    { id: 19, acCode: 1, lotNo: 3, acLot: '1_3', pollingStationNo: '1_105', pollingStationName: '105. Utkramit Madhya Vidyalay, Pachaganva, Paschimi Bhag', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 12, validInterviewLimit: 20 },
-    { id: 20, acCode: 1, lotNo: 3, acLot: '1_3', pollingStationNo: '1_115', pollingStationName: '115. Prathamik Vidyalay, Nayagonv, Utri Bhag', pollingStationNameL2: '', pollingStationLocation: '', validInterview: 13, validInterviewLimit: 20 }
-  ];
+  // Fetch PS Form data from API
+  const fetchPSFormData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const params: any = {
+        page: currentPage,
+        limit: pageSize,
+      };
+
+      // Add search filters if they have values
+      if (pollingStationName.trim()) {
+        params.polling_station_name = pollingStationName.trim();
+      }
+      if (pollingStationNo.trim()) {
+        params.polling_station_no = pollingStationNo.trim();
+      }
+      if (acCode.trim()) {
+        params.ac_code = acCode.trim();
+      }
+
+      const response = await apiService.getPSFormList(params) as APIResponse;
+      
+      if (response.success) {
+        setPsFormData(response.data);
+        // Use pagination data from API response
+        if (response.pagination) {
+          setTotalItems(response.pagination.total);
+          setTotalPages(response.pagination.total_pages);
+        } else {
+          // Fallback if pagination data is not available
+          setTotalItems(response.data.length * 10);
+          setTotalPages(Math.ceil((response.data.length * 10) / pageSize));
+        }
+      } else {
+        setError('Failed to fetch PS Form data');
+      }
+    } catch (err) {
+      console.error('Error fetching PS Form data:', err);
+      setError('Error fetching PS Form data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchPSFormData();
+  }, [currentPage, pageSize]);
+
+  // Fetch data when search filters change (with debounce)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (currentPage === 1) {
+        fetchPSFormData();
+      } else {
+        setCurrentPage(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [pollingStationName, pollingStationNo, acCode]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search logic here
-    console.log('Search Polling Station Name:', pollingStationName);
-    console.log('Search Polling Station No:', pollingStationNo);
-    console.log('Search AC Code:', acCode);
+    setCurrentPage(1);
+    fetchPSFormData();
   };
 
   const handleCalculateValidInterview = () => {
@@ -68,9 +126,47 @@ export default function PSForFormPage() {
     console.log('Calculate Valid Interview');
   };
 
+  const generatePSFormCSV = () => {
+    const headers = [
+      'AC Code',
+      'Lot No',
+      'AC Lot',
+      'Polling Station No',
+      'Polling Station Name',
+      'Polling Station Name L2',
+      'Polling Station Location',
+      'Valid Interview',
+      'Valid Interview Limit'
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...psFormData.map(ps => [
+        ps.ac_code,
+        ps.lot_no,
+        ps.ac_lot,
+        ps.polling_station_no,
+        `"${ps.polling_station_name}"`,
+        ps.polling_station_name_l2 || '',
+        ps.polling_station_location || '',
+        ps.valid_interview,
+        ps.valid_interview_limit
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `ps-form-data-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleDownloadPS = () => {
-    // Handle download PS list logic here
-    console.log('Download PS List');
+    generatePSFormCSV();
   };
 
   const handleUploadPS = () => {
@@ -83,8 +179,6 @@ export default function PSForFormPage() {
     console.log('Edit PS ID:', id);
   };
 
-  const totalItems = 5835; // Total items as shown in HTML (1-20 of 5,835)
-  const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
 
@@ -184,7 +278,13 @@ export default function PSForFormPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{totalItems.toLocaleString()}</b> items.
+                {loading ? (
+                  'Loading...'
+                ) : error ? (
+                  <span className="text-red-600">Error: {error}</span>
+                ) : (
+                  `Showing ${psFormData.length} items${totalItems > 0 ? ` of ${totalItems.toLocaleString()}` : ''}${totalPages > 0 ? ` (Page ${currentPage} of ${totalPages})` : ''}.`
+                )}
               </Text>
             </div>
             
@@ -205,42 +305,65 @@ export default function PSForFormPage() {
                 </tr>
               </thead>
               <tbody>
-                {psForFormData.map((ps, index) => (
-                  <tr key={ps.id}>
-                    <td>{index + 1}</td>
-                    <td>{ps.acCode}</td>
-                    <td>{ps.lotNo}</td>
-                    <td>{ps.acLot}</td>
-                    <td>{ps.pollingStationNo}</td>
-                    <td>{ps.pollingStationName}</td>
-                    <td>{ps.pollingStationNameL2}</td>
-                    <td>{ps.pollingStationLocation}</td>
-                    <td>{ps.validInterview}</td>
-                    <td>{ps.validInterviewLimit}</td>
-                    <td className="text-center">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleEditPS(ps.id)}
-                        className="text-white bg-blue-500 hover:bg-blue-600 border-0"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
+                {loading ? (
+                  <tr>
+                    <td colSpan={11} className="text-center py-8">
+                      <Text className="text-gray-500">Loading PS Form data...</Text>
                     </td>
                   </tr>
-                ))}
+                ) : error ? (
+                  <tr>
+                    <td colSpan={11} className="text-center py-8">
+                      <Text className="text-red-500">Error loading data: {error}</Text>
+                    </td>
+                  </tr>
+                ) : psFormData.length === 0 ? (
+                  <tr>
+                    <td colSpan={11} className="text-center py-8">
+                      <Text className="text-gray-500">No PS Form data found</Text>
+                    </td>
+                  </tr>
+                ) : (
+                  psFormData.map((ps, index) => (
+                    <tr key={`${ps.ac_code}-${ps.polling_station_no}`}>
+                      <td>{startIndex + index + 1}</td>
+                      <td>{ps.ac_code}</td>
+                      <td>{ps.lot_no}</td>
+                      <td>{ps.ac_lot}</td>
+                      <td>{ps.polling_station_no}</td>
+                      <td>{ps.polling_station_name}</td>
+                      <td>{ps.polling_station_name_l2 || '-'}</td>
+                      <td>{ps.polling_station_location || '-'}</td>
+                      <td>{ps.valid_interview}</td>
+                      <td>{ps.valid_interview_limit}</td>
+                      <td className="text-center">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleEditPS(ps.ac_code)}
+                          className="text-white bg-blue-500 hover:bg-blue-600 border-0"
+                          title="Edit PS"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </Table>
             
-            <div className="mt-6">
-              <PaginationStandard
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                itemsPerPage={pageSize}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+            {!loading && !error && psFormData.length > 0 && (
+              <div className="mt-6">
+                <PaginationStandard
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
           </div>
         </div>
       </Card>

@@ -170,13 +170,13 @@ export default function RejectionReportPage() {
         </Heading>
 
         {/* Search Filters */}
-        <Card className="p-6 mb-6">
+        <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <Text className="block text-sm font-medium mb-2">Report Days</Text>
               <SelectDropdown
                 value={filters.reportDays}
-                onChange={(value) => handleFilterChange('reportDays', value)}
+                onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
                 options={[
                   { value: 'all', label: 'All' },
                   { value: 'today', label: 'Today' },
@@ -195,7 +195,7 @@ export default function RejectionReportPage() {
               <Text className="block text-sm font-medium mb-2">Level</Text>
               <SelectDropdown
                 value={filters.reportLevel}
-                onChange={(value) => handleFilterChange('reportLevel', value)}
+                onChange={(value) => handleFilterChange('reportLevel', Array.isArray(value) ? value[0] : value)}
                 options={[
                   { value: '0', label: 'All' },
                   { value: 'ac', label: 'Ac Level' },
@@ -209,7 +209,7 @@ export default function RejectionReportPage() {
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
                 value={filters.failReason}
-                onChange={(value) => handleFilterChange('failReason', value)}
+                onChange={(value) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
                 options={[
                   { value: '', label: 'Select Fail Reason' },
                   { value: 'autorejectstatus', label: 'System Fail' },
@@ -253,10 +253,10 @@ export default function RejectionReportPage() {
         </Card>
 
         {/* Rejection Report Table */}
-        <Card className="p-6">
+        <Card className="">
           <div className="flex justify-between items-center mb-6">
             <Heading level={4}>Rejection Report</Heading>
-            <Button variant="outline">
+            <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
               <Download className="w-4 h-4 mr-2" />
               Download Data
             </Button>
@@ -314,10 +314,10 @@ export default function RejectionReportPage() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="bg-teal-500 hover:bg-teal-600 text-white border-0"
+                          className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                          title="Play Audio"
                         >
-                          <Play className="w-3 h-3 mr-1" />
-                          Play Audio
+                          <Play className="w-3 h-3" />
                         </Button>
                       ) : (
                         '-'
@@ -327,7 +327,8 @@ export default function RejectionReportPage() {
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="bg-teal-500 hover:bg-teal-600 text-white border-0"
+                        className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                        title="GPS Map"
                       >
                         <Map className="w-3 h-3" />
                       </Button>

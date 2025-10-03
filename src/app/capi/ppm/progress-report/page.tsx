@@ -432,10 +432,10 @@ export default function ProgressReportPage() {
 
 
       {/* Progress Report Table */}
-      <Card className="p-6">
+      <Card className="">
         <div className="flex justify-between items-center mb-6">
           <Heading level={4}>PROGRESS REPORT-AC LEVEL</Heading>
-          <Button variant="outline">
+          <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
             <Download className="w-4 h-4 mr-2" />
             Download
           </Button>

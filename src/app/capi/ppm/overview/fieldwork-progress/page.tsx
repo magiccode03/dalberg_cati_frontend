@@ -140,7 +140,7 @@ const FieldworkProgressPage = () => {
   }
 
   return (
-    <div className="main-container container mx-auto px-4 py-6">
+    <div className="main-container mx-auto px-4 py-6">
       {/* Page Title */}
       <div className="mb-6">
         <Heading level={4}>Fieldwork Progress</Heading>

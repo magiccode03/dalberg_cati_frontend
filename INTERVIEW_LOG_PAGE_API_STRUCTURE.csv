@@ -1,0 +1,20 @@
+Section,Type,Label/Column Name,
+,,,
+Interview Data,Table Column,#,index
+Interview Data,Table Column,Server ID,server_id
+Interview Data,Table Column,Interview Date,interview_date
+Interview Data,Table Column,Sample Type,sample_type
+Interview Data,Table Column,AC Name,ac_name
+Interview Data,Table Column,PS Name,ps_name
+Interview Data,Table Column,Device ID,device_id
+Interview Data,Table Column,Interviewer ID,interviewer_id
+Interview Data,Table Column,Audio QC,audio_qc_label
+Interview Data,Table Column,Audio QC ID,audio_qc_id
+Interview Data,Table Column,Audio Fail Reason,audioFailReason
+Interview Data,Table Column,QC Outcome,qc_outcome
+Interview Data,Table Column,Status,status_label
+Interview Data,Table Column,PS Image,ps_image_available
+Interview Data,Table Column,Selfie Image,selfie_image_available
+Interview Data,Table Column,Gender,gender_label
+Interview Data,Table Column,Play Audio,audio_playback_available
+Interview Data,Table Column,GPS Map,gps_available

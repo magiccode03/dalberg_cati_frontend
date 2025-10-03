@@ -326,7 +326,7 @@ export default function ChangeStatusPage() {
       </div>
 
       {/* Upload Form Card */}
-      <Card className="p-6 mb-6">
+      <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <Heading level={4} className="card-title mg-b-0">
@@ -340,7 +340,7 @@ export default function ChangeStatusPage() {
         
         <div className="card-body">
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="form-group">
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
                   Select Action
@@ -365,11 +365,9 @@ export default function ChangeStatusPage() {
                   className="w-full"
                 />
               </div>
-            </div>
-            
-            <div className="form-group">
-              <div className="col-lg-offset-3 col-lg-11">
-                <Button type="submit" variant="primary">
+              
+              <div className="form-group flex items-end">
+                <Button type="submit" variant="primary" className="w-full">
                   Submit
                 </Button>
               </div>
@@ -379,7 +377,7 @@ export default function ChangeStatusPage() {
       </Card>
 
       {/* Previous Requests Card */}
-      <Card className="p-6">
+      <Card className="">
         <div className="card-header mb-6">
           <Heading level={4} className="card-title">
             List of Previous Requests
