@@ -75,7 +75,10 @@ export default function ClientComparisonPage() {
 
       if (response.success && response.data.success) {
         setConstituencyData(response.data.data);
-        setTotals(response.data.totals);
+        setTotals({
+          ...response.data.totals,
+          target_sample: parseInt(response.data.totals.target_sample) || 0
+        });
         setTotalPages(response.data.pagination.total_pages);
         setTotalItems(response.data.pagination.total);
       } else {
