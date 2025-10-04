@@ -713,7 +713,7 @@ export default function DataAnalysisPage() {
                 />
               </div>
             </div>
-          </div>
+            </div>
 
           {/* AC Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -749,7 +749,7 @@ export default function DataAnalysisPage() {
                 />
               </div>
             </div>
-          </div>
+            </div>
 
           {/* Bottom Row - Checkbox Groups */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
@@ -992,9 +992,9 @@ export default function DataAnalysisPage() {
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">50+ Years</span>
                   </label>
-                </div>
-              </div>
             </div>
+          </div>
+          </div>
           </div>
         </form>
         </Card>

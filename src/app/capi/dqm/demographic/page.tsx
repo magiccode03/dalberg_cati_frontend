@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
+import apiClient from '@/lib/api-client';
+import { Loader2 } from 'lucide-react';
 import { Download, Users, Calendar, MapPin, Heart, UserCheck, Shield } from 'lucide-react';
 
 interface PCGenderWiseData {
@@ -52,6 +54,70 @@ interface PCLocalityWiseData {
   ruralPopulation: number;
   ruralSample: number;
   ruralDifference: number;
+}
+
+interface PCReligionWiseData {
+  id: number;
+  pcName: string;
+  pcCode: number;
+  sampleAchieved: number;
+  // Religion 1
+  religion1Name: string;
+  religion1Quota: number;
+  religion1Covered: number;
+  religion1Balance: number;
+  // Religion 2
+  religion2Name: string;
+  religion2Quota: number;
+  religion2Covered: number;
+  religion2Balance: number;
+  // Religion 3
+  religion3Name: string;
+  religion3Quota: number;
+  religion3Covered: number;
+  religion3Balance: number;
+  // Religion 4
+  religion4Name: string;
+  religion4Quota: number;
+  religion4Covered: number;
+  religion4Balance: number;
+  // Religion 5
+  religion5Name: string;
+  religion5Quota: number;
+  religion5Covered: number;
+  religion5Balance: number;
+}
+
+interface PCSocialCategoryWiseData {
+  id: number;
+  pcName: string;
+  pcCode: number;
+  sampleAchieved: number;
+  // Social Category 1
+  socialCategory1Name: string;
+  socialCategory1Quota: number;
+  socialCategory1Covered: number;
+  socialCategory1Balance: number;
+  // Social Category 2
+  socialCategory2Name: string;
+  socialCategory2Quota: number;
+  socialCategory2Covered: number;
+  socialCategory2Balance: number;
+  // Social Category 3
+  socialCategory3Name: string;
+  socialCategory3Quota: number;
+  socialCategory3Covered: number;
+  socialCategory3Balance: number;
+  // Social Category 4
+  socialCategory4Name: string;
+  socialCategory4Quota: number;
+  socialCategory4Covered: number;
+  socialCategory4Balance: number;
+  // Social Category 5
+  socialCategory5Name: string;
+  socialCategory5Quota: number;
+  socialCategory5Covered: number;
+  socialCategory5Balance: number;
 }
 
 interface PCCasteWiseData {
@@ -106,11 +172,144 @@ interface PCCasteWiseData {
   caste9Balance: number;
 }
 
+// API Response Interfaces
+interface APIResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+  timestamp?: string;
+}
+
+interface GenderWiseAPIResponse extends APIResponse {
+  data?: {
+    pc_name: string;
+    pc_code: number;
+    sample_achieved: number;
+    male: {
+      quota: number;
+      covered: number;
+      balance: number;
+    };
+    female: {
+      quota: number;
+      covered: number;
+      balance: number;
+    };
+  }[];
+}
+
+interface AgeWiseAPIResponse extends APIResponse {
+  data?: {
+    pc_name: string;
+    pc_code: number;
+    sample_achieved: number;
+    Age_18_24: {
+      min_sample: number;
+      achieved_sample: number;
+      balance: number;
+    };
+    Age_25_34: {
+      min_sample: number;
+      achieved_sample: number;
+      balance: number;
+    };
+    Age_35_50: {
+      min_sample: number;
+      achieved_sample: number;
+      balance: number;
+    };
+    age_50_plus: {
+      min_sample: number;
+      achieved_sample: number;
+      balance: number;
+    };
+  }[];
+}
+
+interface LocalityWiseAPIResponse extends APIResponse {
+  data?: {
+    pc_name: string;
+    pc_code: number;
+    sample_achieved: number;
+    Urban: {
+      population: number;
+      sample_percentage: number;
+      difference: number;
+    };
+    Rural: {
+      population: number;
+      sample_percentage: number;
+      difference: number;
+    };
+  }[];
+}
+
+interface ReligionWiseAPIResponse extends APIResponse {
+  data?: {
+    pc_name: string;
+    pc_code: number;
+    sample_achieved: number;
+    religions: {
+      religion_name: string;
+      quota: number;
+      covered: number;
+      balance: number;
+    }[];
+  }[];
+}
+
+interface SocialCategoryWiseAPIResponse extends APIResponse {
+  data?: {
+    pc_name: string;
+    pc_code: number;
+    sample_achieved: number;
+    social_categories: {
+      category_name: string;
+      quota: number;
+      covered: number;
+      balance: number;
+    }[];
+  }[];
+}
+
+interface CasteWiseAPIResponse extends APIResponse {
+  data?: {
+    pc_name: string;
+    pc_code: number;
+    sample_achieved: number;
+    castes: {
+      caste_name: string;
+      quota: number;
+      covered: number;
+      balance: number;
+    }[];
+  }[];
+}
+
 export default function DemographicPage() {
   const [activeTab, setActiveTab] = useState('genderwise');
+  const [pcGenderWiseData, setPcGenderWiseData] = useState<PCGenderWiseData[]>([]);
+  const [pcAgeWiseData, setPcAgeWiseData] = useState<PCAgeWiseData[]>([]);
+  const [pcLocalityWiseData, setPcLocalityWiseData] = useState<PCLocalityWiseData[]>([]);
+  const [pcReligionWiseData, setPcReligionWiseData] = useState<PCReligionWiseData[]>([]);
+  const [pcSocialCategoryWiseData, setPcSocialCategoryWiseData] = useState<PCSocialCategoryWiseData[]>([]);
+  const [pcCasteWiseData, setPcCasteWiseData] = useState<PCCasteWiseData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<string | null>(null);
+
+  // API Endpoints mapping
+  const apiEndpoints: { [key: string]: string } = {
+    genderwise: '/demographicpc/genderwise',
+    agewise: '/demographicpc/agewise',
+    localitywise: '/demographicpc/localitywise',
+    religionwise: '/demographicpc/religionwise',
+    socialcategorywise: '/demographicpc/socialcategorywise',
+    castewise: '/demographicpc/castewise'
+  };
 
   // Sample PC-wise gender demographic data
-  const pcGenderWiseData: PCGenderWiseData[] = [
+  const sampleGenderWiseData: PCGenderWiseData[] = [
     { id: 1, pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, maleQuota: 0, maleCovered: 1292, maleBalance: -1292, femaleQuota: 0, femaleCovered: 673, femaleBalance: -673 },
     { id: 2, pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, maleQuota: 0, maleCovered: 1266, maleBalance: -1266, femaleQuota: 0, femaleCovered: 558, femaleBalance: -558 },
     { id: 3, pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, maleQuota: 0, maleCovered: 599, maleBalance: -599, femaleQuota: 0, femaleCovered: 510, femaleBalance: -510 },
@@ -154,7 +353,7 @@ export default function DemographicPage() {
   ];
 
   // Sample PC-wise locality demographic data
-  const pcLocalityWiseData: PCLocalityWiseData[] = [
+  const samplePcLocalityWiseData: PCLocalityWiseData[] = [
     { id: 0, pcName: 'All', pcCode: 0, sampleAchieved: 50025, urbanPopulation: 12.3, urbanSample: 3281, urbanDifference: 5.4, ruralPopulation: 87.7, ruralSample: 46744, ruralDifference: 6.4 },
     { id: 1, pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, urbanPopulation: 8.10, urbanSample: 6.8, urbanDifference: 1.2, ruralPopulation: 91.90, ruralSample: 93.2, ruralDifference: 2.2 },
     { id: 2, pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, urbanPopulation: 13.00, urbanSample: 16, urbanDifference: 3, ruralPopulation: 87.00, ruralSample: 84, ruralDifference: 3 },
@@ -199,7 +398,7 @@ export default function DemographicPage() {
   ];
 
   // Sample PC-wise age demographic data
-  const pcAgeWiseData: PCAgeWiseData[] = [
+  const samplePcAgeWiseData: PCAgeWiseData[] = [
     { id: 1, pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, age18to24MinSample: 0, age18to24AchievedSample: 265, age18to24Balance: -265, age25to34MinSample: 0, age25to34AchievedSample: 518, age25to34Balance: -518, age35to50MinSample: 0, age35to50AchievedSample: 810, age35to50Balance: -810, age50PlusMinSample: 0, age50PlusAchievedSample: 372, age50PlusBalance: -372 },
     { id: 2, pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, age18to24MinSample: 0, age18to24AchievedSample: 246, age18to24Balance: -246, age25to34MinSample: 0, age25to34AchievedSample: 581, age25to34Balance: -581, age35to50MinSample: 0, age35to50AchievedSample: 649, age35to50Balance: -649, age50PlusMinSample: 0, age50PlusAchievedSample: 348, age50PlusBalance: -348 },
     { id: 3, pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, age18to24MinSample: 0, age18to24AchievedSample: 167, age18to24Balance: -167, age25to34MinSample: 0, age25to34AchievedSample: 285, age25to34Balance: -285, age35to50MinSample: 0, age35to50AchievedSample: 388, age35to50Balance: -388, age50PlusMinSample: 0, age50PlusAchievedSample: 269, age50PlusBalance: -269 },
@@ -223,7 +422,7 @@ export default function DemographicPage() {
   ];
 
   // Sample PC-wise caste demographic data
-  const pcCasteWiseData: PCCasteWiseData[] = [
+  const samplePcCasteWiseData: PCCasteWiseData[] = [
     { id: 1, pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, caste1Name: 'Muslim', caste1Quota: 237, caste1Covered: 339, caste1Balance: -102, caste2Name: 'Yadav / Raut', caste2Quota: 110, caste2Covered: 169, caste2Balance: -59, caste3Name: 'Chamar / Ravidas / Mochi', caste3Quota: 88, caste3Covered: 201, caste3Balance: -113, caste4Name: 'Tharu', caste4Quota: 45, caste4Covered: 67, caste4Balance: -22, caste5Name: 'Koeri/Kushwaha', caste5Quota: 78, caste5Covered: 89, caste5Balance: -11, caste6Name: 'Brahmin', caste6Quota: 34, caste6Covered: 45, caste6Balance: -11, caste7Name: 'Rajput', caste7Quota: 56, caste7Covered: 67, caste7Balance: -11, caste8Name: 'Teli', caste8Quota: 23, caste8Covered: 34, caste8Balance: -11, caste9Name: 'Kurmi', caste9Quota: 45, caste9Covered: 56, caste9Balance: -11 },
     { id: 2, pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, caste1Name: 'Muslim', caste1Quota: 258, caste1Covered: 263, caste1Balance: -5, caste2Name: 'Yadav / Raut', caste2Quota: 137, caste2Covered: 229, caste2Balance: -92, caste3Name: 'Kewat / Mallah / Bhoi / Bind / Nishad', caste3Quota: 65, caste3Covered: 105, caste3Balance: -40, caste4Name: 'Koeri/Kushwaha', caste4Quota: 89, caste4Covered: 123, caste4Balance: -34, caste5Name: 'Brahmin', caste5Quota: 45, caste5Covered: 56, caste5Balance: -11, caste6Name: 'Rajput', caste6Quota: 67, caste6Covered: 78, caste6Balance: -11, caste7Name: 'Teli', caste7Quota: 34, caste7Covered: 45, caste7Balance: -11, caste8Name: 'Kurmi', caste8Quota: 56, caste8Covered: 67, caste8Balance: -11, caste9Name: 'Chamar / Ravidas / Mochi', caste9Quota: 78, caste9Covered: 89, caste9Balance: -11 },
     { id: 3, pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, caste1Name: 'Muslim', caste1Quota: 164, caste1Covered: 97, caste1Balance: 67, caste2Name: 'Yadav / Raut', caste2Quota: 125, caste2Covered: 134, caste2Balance: -9, caste3Name: 'Koeri/Kushwaha', caste3Quota: 105, caste3Covered: 110, caste3Balance: -5, caste4Name: 'Brahmin', caste4Quota: 45, caste4Covered: 56, caste4Balance: -11, caste5Name: 'Rajput', caste5Quota: 67, caste5Covered: 78, caste5Balance: -11, caste6Name: 'Teli', caste6Quota: 34, caste6Covered: 45, caste6Balance: -11, caste7Name: 'Kurmi', caste7Quota: 56, caste7Covered: 67, caste7Balance: -11, caste8Name: 'Chamar / Ravidas / Mochi', caste8Quota: 78, caste8Covered: 89, caste8Balance: -11, caste9Name: 'Tharu', caste9Quota: 45, caste9Covered: 56, caste9Balance: -11 },
@@ -236,6 +435,399 @@ export default function DemographicPage() {
     { id: 10, pcName: 'Kishanganj', pcCode: 10, sampleAchieved: 613, caste1Name: 'Muslim', caste1Quota: 98, caste1Covered: 123, caste1Balance: -25, caste2Name: 'Yadav / Raut', caste2Quota: 78, caste2Covered: 89, caste2Balance: -11, caste3Name: 'Koeri/Kushwaha', caste3Quota: 56, caste3Covered: 67, caste3Balance: -11, caste4Name: 'Brahmin', caste4Quota: 34, caste4Covered: 45, caste4Balance: -11, caste5Name: 'Rajput', caste5Quota: 45, caste5Covered: 56, caste5Balance: -11, caste6Name: 'Teli', caste6Quota: 23, caste6Covered: 34, caste6Balance: -11, caste7Name: 'Kurmi', caste7Quota: 34, caste7Covered: 45, caste7Balance: -11, caste8Name: 'Chamar / Ravidas / Mochi', caste8Quota: 45, caste8Covered: 56, caste8Balance: -11, caste9Name: 'Tharu', caste9Quota: 28, caste9Covered: 39, caste9Balance: -11 }
   ];
 
+  // Sample PC-wise religion demographic data
+  const samplePcReligionWiseData: PCReligionWiseData[] = [
+    { id: 1, pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, religion1Name: 'Islam', religion1Quota: 237, religion1Covered: 339, religion1Balance: -102, religion2Name: 'Sanatana Dharma', religion2Quota: 110, religion2Covered: 169, religion2Balance: -59, religion3Name: 'Christianity', religion3Quota: 88, religion3Covered: 201, religion3Balance: -113, religion4Name: 'Sikhism', religion4Quota: 45, religion4Covered: 67, religion4Balance: -22, religion5Name: 'Buddhism', religion5Quota: 78, religion5Covered: 89, religion5Balance: -11 },
+    { id: 2, pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, religion1Name: 'Islam', religion1Quota: 258, religion1Covered: 263, religion1Balance: -5, religion2Name: 'Sanatana Dharma', religion2Quota: 137, religion2Covered: 229, religion2Balance: -92, religion3Name: 'Christianity', religion3Quota: 65, religion3Covered: 105, religion3Balance: -40, religion4Name: 'Sikhism', religion4Quota: 89, religion4Covered: 123, religion4Balance: -34, religion5Name: 'Buddhism', religion5Quota: 45, religion5Covered: 56, religion5Balance: -11 },
+    { id: 3, pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, religion1Name: 'Islam', religion1Quota: 164, religion1Covered: 97, religion1Balance: 67, religion2Name: 'Sanatana Dharma', religion2Quota: 125, religion2Covered: 134, religion2Balance: -9, religion3Name: 'Christianity', religion3Quota: 105, religion3Covered: 110, religion3Balance: -5, religion4Name: 'Sikhism', religion4Quota: 45, religion4Covered: 56, religion4Balance: -11, religion5Name: 'Buddhism', religion5Quota: 67, religion5Covered: 78, religion5Balance: -11 },
+  ];
+
+  // Sample PC-wise social category demographic data
+  const samplePcSocialCategoryWiseData: PCSocialCategoryWiseData[] = [
+    { id: 1, pcName: 'Valmiki Nagar', pcCode: 1, sampleAchieved: 1965, socialCategory1Name: 'General', socialCategory1Quota: 237, socialCategory1Covered: 339, socialCategory1Balance: -102, socialCategory2Name: 'OBC', socialCategory2Quota: 110, socialCategory2Covered: 169, socialCategory2Balance: -59, socialCategory3Name: 'SC', socialCategory3Quota: 88, socialCategory3Covered: 201, socialCategory3Balance: -113, socialCategory4Name: 'ST', socialCategory4Quota: 45, socialCategory4Covered: 67, socialCategory4Balance: -22, socialCategory5Name: 'Others', socialCategory5Quota: 78, socialCategory5Covered: 89, socialCategory5Balance: -11 },
+    { id: 2, pcName: 'Paschim Champaran', pcCode: 2, sampleAchieved: 1824, socialCategory1Name: 'General', socialCategory1Quota: 258, socialCategory1Covered: 263, socialCategory1Balance: -5, socialCategory2Name: 'OBC', socialCategory2Quota: 137, socialCategory2Covered: 229, socialCategory2Balance: -92, socialCategory3Name: 'SC', socialCategory3Quota: 65, socialCategory3Covered: 105, socialCategory3Balance: -40, socialCategory4Name: 'ST', socialCategory4Quota: 89, socialCategory4Covered: 123, socialCategory4Balance: -34, socialCategory5Name: 'Others', socialCategory5Quota: 45, socialCategory5Covered: 56, socialCategory5Balance: -11 },
+    { id: 3, pcName: 'Purvi Champaran', pcCode: 3, sampleAchieved: 1109, socialCategory1Name: 'General', socialCategory1Quota: 164, socialCategory1Covered: 97, socialCategory1Balance: 67, socialCategory2Name: 'OBC', socialCategory2Quota: 125, socialCategory2Covered: 134, socialCategory2Balance: -9, socialCategory3Name: 'SC', socialCategory3Quota: 105, socialCategory3Covered: 110, socialCategory3Balance: -5, socialCategory4Name: 'ST', socialCategory4Quota: 45, socialCategory4Covered: 56, socialCategory4Balance: -11, socialCategory5Name: 'Others', socialCategory5Quota: 67, socialCategory5Covered: 78, socialCategory5Balance: -11 },
+  ];
+
+  // Data transformation functions
+  const transformGenderWiseData = (apiData: any[]): PCGenderWiseData[] => {
+    console.log('Transforming gender data:', apiData.slice(0, 2));
+    return apiData.map((item, index) => ({
+      id: index + 1,
+      pcName: item.pc_name || item.ac_name || '',
+      pcCode: item.pc_code || item.ac_code || 0,
+      sampleAchieved: item.sample_achieved || 0,
+      // Handle different male/female field structures
+      maleQuota: item.male?.quota || item.male_min_sample || item.male?.min_sample || 0,
+      maleCovered: item.male?.covered || item.male_covered || 0,
+      maleBalance: item.male?.balance || item.male_balance || 0,
+      femaleQuota: item.female?.quota || item.female_min_sample || item.female?.min_sample || 0,
+      femaleCovered: item.female?.covered || item.female_covered || 0,
+      femaleBalance: item.female?.balance || item.female_balance || 0
+    }));
+  };
+
+  const transformAgeWiseData = (apiData: any[]): PCAgeWiseData[] => {
+    console.log('Transforming age data:', apiData.slice(0, 2));
+    return apiData.map((item, index) => ({
+      id: index + 1,
+      pcName: item.pc_name || item.ac_name || '',
+      pcCode: item.pc_code || item.ac_code || 0,
+      sampleAchieved: item.sample_achieved || 0,
+      // Handle different age group field structures
+      age18to24MinSample: item.Age_18_24?.min_sample || item.age_groups?.['18_24']?.quota || 0,
+      age18to24AchievedSample: item.Age_18_24?.achieved_sample || item.age_groups?.['18_24']?.covered || 0,
+      age18to24Balance: item.Age_18_24?.balance || item.age_groups?.['18_24']?.balance || 0,
+      age25to34MinSample: item.Age_25_34?.min_sample || item.age_groups?.['25_34']?.quota || 0,
+      age25to34AchievedSample: item.Age_25_34?.achieved_sample || item.age_groups?.['25_34']?.covered || 0,
+      age25to34Balance: item.Age_25_34?.balance || item.age_groups?.['25_34']?.balance || 0,
+      age35to50MinSample: item.Age_35_50?.min_sample || item.age_groups?.['35_50']?.quota || 0,
+      age35to50AchievedSample: item.Age_35_50?.achieved_sample || item.age_groups?.['35_50']?.covered || 0,
+      age35to50Balance: item.Age_35_50?.balance || item.age_groups?.['35_50']?.balance || 0,
+      age50PlusMinSample: item.age_50_plus?.min_sample || item.age_groups?.['50_above']?.quota || 0,
+      age50PlusAchievedSample: item.age_50_plus?.achieved_sample || item.age_groups?.['50_above']?.covered || 0,
+      age50PlusBalance: item.age_50_plus?.balance || item.age_groups?.['50_above']?.balance || 0
+    }));
+  };
+
+  const transformLocalityWiseData = (apiData: any[]): PCLocalityWiseData[] => {
+    console.log('Transforming locality data:', apiData.slice(0, 2));
+    console.log('First item structure:', apiData[0] ? Object.keys(apiData[0]) : 'No items');
+    return apiData.map((item, index) => ({
+      id: index + 1,
+      pcName: item.pc_name || '',
+      pcCode: item.pc_code || 0,
+      sampleAchieved: item.sample_achieved || 0,
+      urbanPopulation: item.urban_population || item.Urban?.population || 0,
+      urbanSample: item.urban_sample || item.Urban?.sample_percentage || 0,
+      urbanDifference: item.urban_difference || item.Urban?.difference || 0,
+      ruralPopulation: item.rural_population || item.Rural?.population || 0,
+      ruralSample: item.rural_sample || item.Rural?.sample_percentage || 0,
+      ruralDifference: item.rural_difference || item.Rural?.difference || 0
+    }));
+  };
+
+  const transformReligionWiseData = (apiData: any[]): PCReligionWiseData[] => {
+    console.log('Transforming religion data:', apiData.slice(0, 2));
+    return apiData.map((item, index) => {
+      // Handle different religion data structures
+      let religions = [];
+      
+      if (item.religions && Array.isArray(item.religions)) {
+        // Array format with religions property
+        religions = item.religions;
+      } else if (item.hindu || item.muslim || item.christian || item.others) {
+        // Direct object format (like PPM version)
+        religions = [
+          { religion_name: 'Hindu', quota: item.hindu?.population || 0, covered: item.hindu?.sample || 0, balance: item.hindu?.difference || 0 },
+          { religion_name: 'Muslim', quota: item.muslim?.population || 0, covered: item.muslim?.sample || 0, balance: item.muslim?.difference || 0 },
+          { religion_name: 'Christian', quota: item.christian?.population || 0, covered: item.christian?.sample || 0, balance: item.christian?.difference || 0 },
+          { religion_name: 'Others', quota: item.others?.population || 0, covered: item.others?.sample || 0, balance: item.others?.difference || 0 }
+        ];
+      }
+      
+      return {
+        id: index + 1,
+        pcName: item.pc_name || item.ac_name || '',
+        pcCode: item.pc_code || item.ac_code || 0,
+        sampleAchieved: item.sample_achieved || 0,
+        religion1Name: religions[0]?.religion_name || '',
+        religion1Quota: religions[0]?.quota || religions[0]?.population || 0,
+        religion1Covered: religions[0]?.covered || religions[0]?.sample || 0,
+        religion1Balance: religions[0]?.balance || religions[0]?.difference || 0,
+        religion2Name: religions[1]?.religion_name || '',
+        religion2Quota: religions[1]?.quota || religions[1]?.population || 0,
+        religion2Covered: religions[1]?.covered || religions[1]?.sample || 0,
+        religion2Balance: religions[1]?.balance || religions[1]?.difference || 0,
+        religion3Name: religions[2]?.religion_name || '',
+        religion3Quota: religions[2]?.quota || religions[2]?.population || 0,
+        religion3Covered: religions[2]?.covered || religions[2]?.sample || 0,
+        religion3Balance: religions[2]?.balance || religions[2]?.difference || 0,
+        religion4Name: religions[3]?.religion_name || '',
+        religion4Quota: religions[3]?.quota || religions[3]?.population || 0,
+        religion4Covered: religions[3]?.covered || religions[3]?.sample || 0,
+        religion4Balance: religions[3]?.balance || religions[3]?.difference || 0,
+        religion5Name: religions[4]?.religion_name || '',
+        religion5Quota: religions[4]?.quota || religions[4]?.population || 0,
+        religion5Covered: religions[4]?.covered || religions[4]?.sample || 0,
+        religion5Balance: religions[4]?.balance || religions[4]?.difference || 0
+      };
+    });
+  };
+
+  const transformSocialCategoryWiseData = (apiData: any[]): PCSocialCategoryWiseData[] => {
+    console.log('Transforming social category data:', apiData.slice(0, 2));
+    return apiData.map((item, index) => {
+      // Handle different social category data structures
+      let socialCategories = [];
+      
+      if (item.social_categories && Array.isArray(item.social_categories)) {
+        // Array format with social_categories property
+        socialCategories = item.social_categories;
+      } else if (item.sc || item.st || item.general_obc) {
+        // Direct object format (like PPM version)
+        socialCategories = [
+          { category_name: 'SC', quota: item.sc?.population || 0, covered: item.sc?.sample || 0, balance: item.sc?.difference || 0 },
+          { category_name: 'ST', quota: item.st?.population || 0, covered: item.st?.sample || 0, balance: item.st?.difference || 0 },
+          { category_name: 'General+OBC', quota: item.general_obc?.population || 0, covered: item.general_obc?.sample || 0, balance: item.general_obc?.difference || 0 }
+        ];
+      }
+      
+      return {
+        id: index + 1,
+        pcName: item.pc_name || item.ac_name || '',
+        pcCode: item.pc_code || item.ac_code || 0,
+        sampleAchieved: item.sample_achieved || 0,
+        socialCategory1Name: socialCategories[0]?.category_name || '',
+        socialCategory1Quota: socialCategories[0]?.quota || socialCategories[0]?.population || 0,
+        socialCategory1Covered: socialCategories[0]?.covered || socialCategories[0]?.sample || 0,
+        socialCategory1Balance: socialCategories[0]?.balance || socialCategories[0]?.difference || 0,
+        socialCategory2Name: socialCategories[1]?.category_name || '',
+        socialCategory2Quota: socialCategories[1]?.quota || socialCategories[1]?.population || 0,
+        socialCategory2Covered: socialCategories[1]?.covered || socialCategories[1]?.sample || 0,
+        socialCategory2Balance: socialCategories[1]?.balance || socialCategories[1]?.difference || 0,
+        socialCategory3Name: socialCategories[2]?.category_name || '',
+        socialCategory3Quota: socialCategories[2]?.quota || socialCategories[2]?.population || 0,
+        socialCategory3Covered: socialCategories[2]?.covered || socialCategories[2]?.sample || 0,
+        socialCategory3Balance: socialCategories[2]?.balance || socialCategories[2]?.difference || 0,
+        socialCategory4Name: socialCategories[3]?.category_name || '',
+        socialCategory4Quota: socialCategories[3]?.quota || socialCategories[3]?.population || 0,
+        socialCategory4Covered: socialCategories[3]?.covered || socialCategories[3]?.sample || 0,
+        socialCategory4Balance: socialCategories[3]?.balance || socialCategories[3]?.difference || 0,
+        socialCategory5Name: socialCategories[4]?.category_name || '',
+        socialCategory5Quota: socialCategories[4]?.quota || socialCategories[4]?.population || 0,
+        socialCategory5Covered: socialCategories[4]?.covered || socialCategories[4]?.sample || 0,
+        socialCategory5Balance: socialCategories[4]?.balance || socialCategories[4]?.difference || 0
+      };
+    });
+  };
+
+  const transformCasteWiseData = (apiData: any[]): PCCasteWiseData[] => {
+    return apiData.map((item, index) => {
+      const castes = item.castes || [];
+      return {
+        id: index + 1,
+        pcName: item.pc_name || item.ac_name || '',
+        pcCode: item.pc_code || item.ac_code || 0,
+        sampleAchieved: item.sample_achieved || 0,
+        caste1Name: castes[0]?.caste_name || '',
+        caste1Quota: castes[0]?.quota || 0,
+        caste1Covered: castes[0]?.covered || 0,
+        caste1Balance: castes[0]?.balance || 0,
+        caste2Name: castes[1]?.caste_name || '',
+        caste2Quota: castes[1]?.quota || 0,
+        caste2Covered: castes[1]?.covered || 0,
+        caste2Balance: castes[1]?.balance || 0,
+        caste3Name: castes[2]?.caste_name || '',
+        caste3Quota: castes[2]?.quota || 0,
+        caste3Covered: castes[2]?.covered || 0,
+        caste3Balance: castes[2]?.balance || 0,
+        caste4Name: castes[3]?.caste_name || '',
+        caste4Quota: castes[3]?.quota || 0,
+        caste4Covered: castes[3]?.covered || 0,
+        caste4Balance: castes[3]?.balance || 0,
+        caste5Name: castes[4]?.caste_name || '',
+        caste5Quota: castes[4]?.quota || 0,
+        caste5Covered: castes[4]?.covered || 0,
+        caste5Balance: castes[4]?.balance || 0,
+        caste6Name: castes[5]?.caste_name || '',
+        caste6Quota: castes[5]?.quota || 0,
+        caste6Covered: castes[5]?.covered || 0,
+        caste6Balance: castes[5]?.balance || 0,
+        caste7Name: castes[6]?.caste_name || '',
+        caste7Quota: castes[6]?.quota || 0,
+        caste7Covered: castes[6]?.covered || 0,
+        caste7Balance: castes[6]?.balance || 0,
+        caste8Name: castes[7]?.caste_name || '',
+        caste8Quota: castes[7]?.quota || 0,
+        caste8Covered: castes[7]?.covered || 0,
+        caste8Balance: castes[7]?.balance || 0,
+        caste9Name: castes[8]?.caste_name || '',
+        caste9Quota: castes[8]?.quota || 0,
+        caste9Covered: castes[8]?.covered || 0,
+        caste9Balance: castes[8]?.balance || 0
+      };
+    });
+  };
+
+  // Helper function to set fallback sample data
+  const setFallbackData = (tabType: string) => {
+    switch (tabType) {
+      case 'genderwise':
+        setPcGenderWiseData(sampleGenderWiseData);
+        break;
+      case 'agewise':
+        setPcAgeWiseData(samplePcAgeWiseData);
+        break;
+      case 'localitywise':
+        setPcLocalityWiseData(samplePcLocalityWiseData);
+        break;
+      case 'religionwise':
+        setPcReligionWiseData(samplePcReligionWiseData);
+        break;
+      case 'socialcategorywise':
+        setPcSocialCategoryWiseData(samplePcSocialCategoryWiseData);
+        break;
+      case 'castewise':
+        setPcCasteWiseData(samplePcCasteWiseData);
+        break;
+      default:
+        console.log(`No sample data available for ${tabType}`);
+    }
+  };
+
+  // Fetch data from API
+  const fetchDemographicData = async (tabType: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const endpoint = apiEndpoints[tabType];
+      if (!endpoint) {
+        console.log(`No API endpoint defined for tab: ${tabType}`);
+        // Use sample data for undefined tabs
+        setFallbackData(tabType);
+        return;
+      }
+
+      console.log(`Fetching data for ${tabType} from ${endpoint}`);
+      console.log(`Full API URL: http://localhost:4001${endpoint}`);
+      
+      // Debug: Check authentication token
+      const token = localStorage.getItem('accessToken');
+      console.log(`Auth token exists:`, !!token);
+      console.log(`Token preview:`, token ? `${token.substring(0, 30)}...` : 'N/A');
+      
+      // Make API call with 10 second timeout for faster failure
+      const response = await apiClient.get(endpoint, { timeout: 10000 });
+      const data: APIResponse = response.data;
+
+      console.log(`API Response for ${tabType}:`, data);
+      console.log(`Raw response:`, response);
+      console.log(`Data received:`, typeof data, data);
+      console.log(`Success flag:`, data?.success);
+      console.log(`Data array:`, data?.data, Array.isArray(data?.data));
+      
+      // Specific debugging for locality-wise
+      if (tabType === 'localitywise') {
+        console.log(`LOCALITY DEBUG:`, {
+          responseStatus: response?.status,
+          dataSuccess: data?.success,
+          dataError: data?.error,
+          dataStructure: data?.data ? Object.keys(data.data) : 'no data object',
+          dataType: typeof data?.data,
+          isArray: Array.isArray(data?.data)
+        });
+      }
+
+      if (data && data.success) {
+        // Handle flexible API response structures - check multiple possible locations for data
+        let constituencyData = null;
+        
+        // Try different possible data locations
+        if (Array.isArray(data.data)) {
+          // Direct array format
+          constituencyData = data.data;
+        } else if (data.data.pc_data && Array.isArray(data.data.pc_data)) {
+          // PC data format
+          constituencyData = data.data.pc_data;
+        } else if (data.data.constituencies && Array.isArray(data.data.constituencies)) {
+          // Constituencies format (like PPM)
+          constituencyData = data.data.constituencies;
+        } else if (data.data.ac_data && Array.isArray(data.data.ac_data)) {
+          // AC data format
+          constituencyData = data.data.ac_data;
+        }
+        
+        console.log(`Processing ${tabType} data:`, {
+          responseSuccess: data.success,
+          dataKeys: data.data ? Object.keys(data.data) : 'no data',
+          constituencyDataIsArray: Array.isArray(constituencyData),
+          constituencyDataLength: Array.isArray(constituencyData) ? constituencyData.length : 'not array',
+          sampleData: constituencyData && Array.isArray(constituencyData) ? constituencyData.slice(0, 2) : constituencyData
+        });
+
+        if (Array.isArray(constituencyData) && constituencyData.length > 0) {
+          // Transform data based on tab type
+          switch (tabType) {
+            case 'genderwise':
+              setPcGenderWiseData(transformGenderWiseData(constituencyData));
+              break;
+            case 'agewise':
+              setPcAgeWiseData(transformAgeWiseData(constituencyData));
+              break;
+            case 'localitywise':
+              setPcLocalityWiseData(transformLocalityWiseData(constituencyData));
+              break;
+            case 'religionwise':
+              setPcReligionWiseData(transformReligionWiseData(constituencyData));
+              break;
+            case 'socialcategorywise':
+              setPcSocialCategoryWiseData(transformSocialCategoryWiseData(constituencyData));
+              break;
+            case 'castewise':
+              setPcCasteWiseData(transformCasteWiseData(constituencyData));
+              break;
+          }
+        } else {
+          console.log(`API returned success but no usable data array for ${tabType}, using sample data`);
+          setFallbackData(tabType);
+        }
+      } else if (data && data.error) {
+        console.log(`API Error for ${tabType}:`, data.error);
+        setError(data.error);
+        // Use sample data on API error
+        setFallbackData(tabType);
+      } else if (!data || !data.data || (Array.isArray(data.data) && data.data.length === 0)) {
+        console.log(`Empty or no data for ${tabType}, using sample data`);
+        console.log(`This might indicate that the API endpoint '/demographicpc/${tabType}' is not implemented yet`);
+        console.log(`Full response object:`, JSON.stringify(data, null, 2));
+        // Use sample data silently for empty responses
+        setFallbackData(tabType);
+      } else {
+        const errorMsg = `No data available or unexpected response format for ${tabType}`;
+        console.log(`Error: ${errorMsg}`);
+        console.log(`Received data type: ${typeof data}, Success: ${data?.success}, Data: ${JSON.stringify(data?.data).substring(0, 100)}...`);
+        setError(errorMsg);
+        // Use sample data on format error
+        setFallbackData(tabType);
+      }
+    } catch (err: any) {
+      // Better error handling for different error types
+      if (err.message?.includes('timeout') || err.code === 'ECONNABORTED') {
+        console.log(`Request timed out for ${tabType}, using sample data`);
+        setFallbackData(tabType);
+      } else {
+        console.error(`Error fetching ${tabType} data:`, err);
+        
+        if (err.response?.status === 401) {
+          setError('Authentication required. Please log in again.');
+          setFallbackData(tabType);
+        } else if (err.response?.status === 403) {
+          setError('Access forbidden. You do not have permission to view this data.');
+          setFallbackData(tabType);
+        } else if (err.response?.data?.error) {
+          setError(err.response.data.error);
+          setFallbackData(tabType);
+        } else if (err.response?.data?.message) {
+          setError(err.response.data.message);
+          setFallbackData(tabType);
+        } else {
+          // For network errors, don't show error, just use sample data
+          console.log(`Network/Connection error for ${tabType}, using sample data`);
+          setFallbackData(tabType);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data when tab changes
+  useEffect(() => {
+    fetchDemographicData(activeTab);
+  }, [activeTab]);
+
   const tabs = [
     { id: 'genderwise', label: 'Gender Wise', href: '/dqm/demographic', icon: Users },
     { id: 'agewise', label: 'Age Wise', href: '/dqm/demographic/agewise', icon: Calendar },
@@ -247,6 +839,70 @@ export default function DemographicPage() {
 
   const handleDownload = () => {
     console.log('Downloading demographic data...');
+  };
+
+  // Debug function specifically for locality-wise API
+  const debugLocalityAPI = async () => {
+    console.log('=== LOCALITY-WISE API DEBUGGING ===');
+    
+    try {
+      const endpoint = '/demographicpc/localitywise';
+      console.log(`Testing endpoint: http://localhost:4001${endpoint}`);
+      
+      const response = await apiClient.get(endpoint, { timeout: 10000 });
+      console.log('✅ API Response received:', response.data);
+      setApiStatus('✅ API is working');
+      
+      // Check if it matches expected structure
+      const data = response.data;
+      if (data.success && data.data && Array.isArray(data.data)) {
+        console.log('✅ Valid array structure - 1st item:', data.data[0]);
+        console.log('✅ Available fields:', data.data[0] ? Object.keys(data.data[0]) : 'No fields');
+      } else if (data.success && data.data && data.data.pc_data) {
+        console.log('✅ Nested pc_data structure - 1st item:', data.data.pc_data[0]);
+        console.log('✅ Available fields:', data.data.pc_data[0] ? Object.keys(data.data.pc_data[0]) : 'No fields');
+      } else {
+        console.log('❌ Unexpected structure:', data);
+      }
+      
+    } catch (error: any) {
+      console.log('❌ API Error:', error.response?.status, error.response?.data || error.message);
+      if (error.response?.status === 401) {
+        console.log('❌ Authentication issue - check login token');
+        setApiStatus('❌ Authentication required');
+      } else if (error.response?.status === 404) {
+        console.log('❌ Endpoint not found - API may not be implemented');
+        setApiStatus('❌ API endpoint not implemented');
+      } else if (error.response?.status === 500) {
+        console.log('❌ Server error - backend issue');
+        setApiStatus('❌ Server error');
+      } else {
+        setApiStatus(`❌ Error: ${error.response?.status || 'Network error'}`);
+      }
+      
+      // Test with mock data to verify transformation logic
+      console.log('🧪 Testing transformation with mock data...');
+      const mockAPIResponse = {
+        success: true,
+        data: [
+          {
+            pc_name: 'Valmiki Nagar',
+            pc_code: 1,
+            sample_achieved: 1965,
+            urban_population: 8.10,
+            urban_sample: 6.8,
+            urban_difference: 1.2,
+            rural_population: 91.90,
+            rural_sample: 93.2,
+            rural_difference: 2.2
+          }
+        ]
+      };
+      
+      console.log('Mock transformation result:');
+      const transformedData = transformLocalityWiseData(mockAPIResponse.data);
+      console.log(transformedData);
+    }
   };
 
   const getPageTitle = () => {
@@ -443,6 +1099,168 @@ export default function DemographicPage() {
     </Table>
   );
 
+  const renderReligionWiseTable = () => (
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+      <thead className="sticky-header">
+        <tr>
+          <th>PC Name</th>
+          <th className="text-center">PC Code</th>
+          <th className="text-center">Sample Achieved</th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Religion 1
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Religion 2
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Religion 3
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Religion 4
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Religion 5
+          </th>
+        </tr>
+        <tr>
+          <th></th>
+          <th className="text-center"></th>
+          <th className="text-center"></th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pcReligionWiseData.map((row) => (
+          <tr key={row.id}>
+            <td>{row.pcName}</td>
+            <td className="text-center">{row.pcCode}</td>
+            <td className="text-center">{row.sampleAchieved.toLocaleString()}</td>
+            <td className="text-center">{row.religion1Name}</td>
+            <td className="text-center">{row.religion1Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.religion1Quota, row.religion1Covered)}`}>{row.religion1Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.religion1Balance)}`}>{row.religion1Balance.toLocaleString()}</td>
+            <td className="text-center">{row.religion2Name}</td>
+            <td className="text-center">{row.religion2Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.religion2Quota, row.religion2Covered)}`}>{row.religion2Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.religion2Balance)}`}>{row.religion2Balance.toLocaleString()}</td>
+            <td className="text-center">{row.religion3Name}</td>
+            <td className="text-center">{row.religion3Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.religion3Quota, row.religion3Covered)}`}>{row.religion3Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.religion3Balance)}`}>{row.religion3Balance.toLocaleString()}</td>
+            <td className="text-center">{row.religion4Name}</td>
+            <td className="text-center">{row.religion4Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.religion4Quota, row.religion4Covered)}`}>{row.religion4Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.religion4Balance)}`}>{row.religion4Balance.toLocaleString()}</td>
+            <td className="text-center">{row.religion5Name}</td>
+            <td className="text-center">{row.religion5Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.religion5Quota, row.religion5Covered)}`}>{row.religion5Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.religion5Balance)}`}>{row.religion5Balance.toLocaleString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
+
+  const renderSocialCategoryWiseTable = () => (
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+      <thead className="sticky-header">
+        <tr>
+          <th>PC Name</th>
+          <th className="text-center">PC Code</th>
+          <th className="text-center">Sample Achieved</th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Social Category 1
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Social Category 2
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Social Category 3
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Social Category 4
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={4}>
+            Social Category 5
+          </th>
+        </tr>
+        <tr>
+          <th></th>
+          <th className="text-center"></th>
+          <th className="text-center"></th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Name</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pcSocialCategoryWiseData.map((row) => (
+          <tr key={row.id}>
+            <td>{row.pcName}</td>
+            <td className="text-center">{row.pcCode}</td>
+            <td className="text-center">{row.sampleAchieved.toLocaleString()}</td>
+            <td className="text-center">{row.socialCategory1Name}</td>
+            <td className="text-center">{row.socialCategory1Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.socialCategory1Quota, row.socialCategory1Covered)}`}>{row.socialCategory1Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.socialCategory1Balance)}`}>{row.socialCategory1Balance.toLocaleString()}</td>
+            <td className="text-center">{row.socialCategory2Name}</td>
+            <td className="text-center">{row.socialCategory2Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.socialCategory2Quota, row.socialCategory2Covered)}`}>{row.socialCategory2Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.socialCategory2Balance)}`}>{row.socialCategory2Balance.toLocaleString()}</td>
+            <td className="text-center">{row.socialCategory3Name}</td>
+            <td className="text-center">{row.socialCategory3Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.socialCategory3Quota, row.socialCategory3Covered)}`}>{row.socialCategory3Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.socialCategory3Balance)}`}>{row.socialCategory3Balance.toLocaleString()}</td>
+            <td className="text-center">{row.socialCategory4Name}</td>
+            <td className="text-center">{row.socialCategory4Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.socialCategory4Quota, row.socialCategory4Covered)}`}>{row.socialCategory4Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.socialCategory4Balance)}`}>{row.socialCategory4Balance.toLocaleString()}</td>
+            <td className="text-center">{row.socialCategory5Name}</td>
+            <td className="text-center">{row.socialCategory5Quota}</td>
+            <td className={`text-center ${getCasteCoveredStyle(row.socialCategory5Quota, row.socialCategory5Covered)}`}>{row.socialCategory5Covered.toLocaleString()}</td>
+            <td className={`text-center ${getCasteBalanceStyle(row.socialCategory5Balance)}`}>{row.socialCategory5Balance.toLocaleString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
+
   const renderCasteWiseTable = () => (
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
       <thead className="sticky-header">
@@ -576,6 +1394,10 @@ export default function DemographicPage() {
         return renderAgeWiseTable();
       case 'localitywise':
         return renderLocalityWiseTable();
+      case 'religionwise':
+        return renderReligionWiseTable();
+      case 'socialcategorywise':
+        return renderSocialCategoryWiseTable();
       case 'castewise':
         return renderCasteWiseTable();
       default:
@@ -586,6 +1408,57 @@ export default function DemographicPage() {
         );
     }
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
+            <Text className="text-gray-600">Loading demographic data...</Text>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <Card className="mb-6">
+          <div className="card-body text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Text className="text-gray-500 text-sm mb-4">
+              The API endpoint for '{activeTab}' demographic data is being debugged. Check browser console for detailed API response data.
+              Possible issues: Field mapping mismatch, empty API response, or authentication token expiry.
+              You can use sample data below while backend is being fixed.
+            </Text>
+            <button 
+              onClick={() => fetchDemographicData(activeTab)} 
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors mr-4"
+            >
+              Retry
+            </button>
+            <button 
+              onClick={() => {
+                setError(null);
+                setFallbackData(activeTab);
+              }} 
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+            >
+              Use Sample Data
+            </button>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
 
   return (
     <div className="main-content horizontal-content">
@@ -605,7 +1478,7 @@ export default function DemographicPage() {
 
         {/* Main Card */}
         <div className="w-full">
-          <Card className="p-6">
+          <Card>
             {/* Card Header */}
             <div className="pb-0 mb-6">
               <div className="flex justify-between items-center">

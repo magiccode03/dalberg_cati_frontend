@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -9,15 +10,57 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
+
+interface ACData {
+  id: number;
+  acCode: number;
+  acName: string;
+  agencyId: number;
+  agencyName: string;
+  totalInterview: number;
+  validInterview: number;
+}
+
+interface APIResponse {
+  success: boolean;
+  data?: {
+    master_acs: Array<{
+      ac_code: number;
+      ac_name: string;
+      agency_id: number;
+      agency_name: string;
+      total_interview: number;
+      valid_interview: number;
+    }>;
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+  };
+  error?: string;
+  message?: string;
+  timestamp?: string;
+  requestId?: string;
+}
 
 const ACListPage = () => {
+  const router = useRouter();
+  
   const [filters, setFilters] = useState({
     agencyId: '',
     acCode: '',
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize] = useState(20);
+  const [acData, setAcData] = useState<ACData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Sample data for dropdowns
   const agencyOptions = [
@@ -56,189 +99,125 @@ const ACListPage = () => {
     { value: '20', label: 'Chiraia (20)' },
   ];
 
-  // Sample AC data
-  const acData = [
-    {
-      id: 1,
-      acCode: 1,
-      acName: 'Valmiki Nagar',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 330,
-      validInterview: 310,
-    },
-    {
-      id: 2,
-      acCode: 2,
-      acName: 'Ramnagar (SC)',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 395,
-      validInterview: 346,
-    },
-    {
-      id: 3,
-      acCode: 3,
-      acName: 'Narkatiaganj',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 400,
-      validInterview: 315,
-    },
-    {
-      id: 4,
-      acCode: 4,
-      acName: 'Bagaha',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 345,
-      validInterview: 306,
-    },
-    {
-      id: 5,
-      acCode: 5,
-      acName: 'Lauriya',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 462,
-      validInterview: 337,
-    },
-    {
-      id: 6,
-      acCode: 6,
-      acName: 'Nautan',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 408,
-      validInterview: 326,
-    },
-    {
-      id: 7,
-      acCode: 7,
-      acName: 'Chanpatia',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 388,
-      validInterview: 314,
-    },
-    {
-      id: 8,
-      acCode: 8,
-      acName: 'Bettiah',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 738,
-      validInterview: 318,
-    },
-    {
-      id: 9,
-      acCode: 9,
-      acName: 'Sikta',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 393,
-      validInterview: 351,
-    },
-    {
-      id: 10,
-      acCode: 10,
-      acName: 'Raxaul',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 447,
-      validInterview: 325,
-    },
-    {
-      id: 11,
-      acCode: 11,
-      acName: 'Sugauli',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 466,
-      validInterview: 238,
-    },
-    {
-      id: 12,
-      acCode: 12,
-      acName: 'Narkatia',
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      totalInterview: 325,
-      validInterview: 303,
-    },
-    {
-      id: 13,
-      acCode: 13,
-      acName: 'Harsidhi (SC)',
-      agencyId: 8,
-      agencyName: 'Inhouse',
-      totalInterview: 361,
-      validInterview: 171,
-    },
-    {
-      id: 14,
-      acCode: 14,
-      acName: 'Govindganj',
-      agencyId: 8,
-      agencyName: 'Inhouse',
-      totalInterview: 352,
-      validInterview: 148,
-    },
-    {
-      id: 15,
-      acCode: 15,
-      acName: 'Kesaria',
-      agencyId: 1,
-      agencyName: 'Kadence',
-      totalInterview: 575,
-      validInterview: 291,
-    },
-    {
-      id: 16,
-      acCode: 16,
-      acName: 'Kalyanpur',
-      agencyId: 8,
-      agencyName: 'Inhouse',
-      totalInterview: 518,
-      validInterview: 192,
-    },
-    {
-      id: 17,
-      acCode: 17,
-      acName: 'Pipra',
-      agencyId: 8,
-      agencyName: 'Inhouse',
-      totalInterview: 573,
-      validInterview: 189,
-    },
-    {
-      id: 18,
-      acCode: 18,
-      acName: 'Madhuban',
-      agencyId: 5,
-      agencyName: 'Navin',
-      totalInterview: 313,
-      validInterview: 209,
-    },
-    {
-      id: 19,
-      acCode: 19,
-      acName: 'Motihari',
-      agencyId: 8,
-      agencyName: 'Inhouse',
-      totalInterview: 356,
-      validInterview: 118,
-    },
-    {
-      id: 20,
-      acCode: 20,
-      acName: 'Chiraia',
-      agencyId: 2,
-      agencyName: 'Chandan',
-      totalInterview: 578,
-      validInterview: 89,
-    },
-  ];
+  // Helper function to transform API data to UI format
+  const transformAPIData = (apiData: any[]): ACData[] => {
+    return apiData.map((item, index) => ({
+      id: index + 1,
+      acCode: item.ac_code,
+      acName: item.ac_name,
+      agencyId: item.agency_id,
+      agencyName: item.agency_name,
+      totalInterview: item.total_interview,
+      validInterview: item.valid_interview
+    }));
+  };
+
+  // Fetch data from API
+  const fetchACData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Making API request to: /dashboard/master-ac-index/list');
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      if (filters.agencyId) queryParams.append('agency_id', filters.agencyId);
+      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('pageSize', pageSize.toString());
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/dashboard/master-ac-index/list${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('API endpoint:', endpoint);
+      
+      const response = await apiClient.get(endpoint, { timeout: 10000 });
+      const data: APIResponse = response.data;
+      
+      console.log('API Response:', data);
+      
+      if (data.success && data.data && Array.isArray(data.data.master_acs)) {
+        const transformedData = transformAPIData(data.data.master_acs);
+        setAcData(transformedData);
+        setTotalCount(data.data.total_count);
+        setTotalPages(data.data.total_pages);
+        console.log('Transformed data:', transformedData);
+      } else {
+        console.error('Invalid API response structure:', data.error);
+        setError(data.error || 'Invalid response format from server');
+        // Use fallback data
+        const fallbackData: ACData[] = [
+          ...acData
+        ];
+        setAcData(fallbackData);
+        setTotalCount(fallbackData.length);
+        setTotalPages(Math.ceil(fallbackData.length / pageSize));
+      }
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      
+      // Better error handling for different error types
+      if (err.message === 'Request timeout after 10 seconds') {
+        setError('Request timed out. The server may be slow or unavailable.');
+      } else if (err.code === 'ECONNABORTED') {
+        setError('Connection was aborted. Please check your network connection.');
+      } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+        setError('Network error. Please check your internet connection and try again.');
+      } else if (err.response?.status === 401) {
+        setError('Authentication required. Please log in again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to view this data.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError(err.message || 'An error occurred while fetching data');
+      }
+      
+      // Use sample data on error
+      const sampleData: ACData[] = [
+        {
+          id: 1,
+          acCode: 1,
+          acName: 'Valmiki Nagar',
+          agencyId: 4,
+          agencyName: 'Parbhat',
+          totalInterview: 330,
+          validInterview: 310,
+        },
+        {
+          id: 2,
+          acCode: 2,
+          acName: 'Ramnagar (SC)',
+          agencyId: 4,
+          agencyName: 'Parbhat',
+          totalInterview: 395,
+          validInterview: 346,
+        }
+      ];
+      setAcData(sampleData);
+      setTotalCount(sampleData.length);
+      setTotalPages(Math.ceil(sampleData.length / pageSize));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when filters/page change
+  useEffect(() => {
+    fetchACData();
+  }, [currentPage, filters]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page when searching
+    fetchACData();
+  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
@@ -247,10 +226,9 @@ const ACListPage = () => {
     }));
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle search logic here
-    console.log('Search filters:', filters);
+  // Navigation functions
+  const handleUpdateAgency = (acItem: ACData) => {
+    router.push(`/capi/ppm/master/aclist/acupdate?ac_code=${acItem.acCode}`);
   };
 
   return (
@@ -259,8 +237,42 @@ const ACListPage = () => {
         AC List
       </Heading>
 
-      {/* Search Form */}
-      <Card className="mb-3">
+      {/* Loading State */}
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+          <Text className="ml-2 text-gray-600">Loading AC data...</Text>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Card className="mb-6">
+          <div className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
+                  Error Loading Data
+                </Heading>
+                <Text className="text-gray-600">{error}</Text>
+              </div>
+              <Button
+                onClick={fetchACData}
+                variant="outline"
+                size="sm"
+              >
+                Retry
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Main Content - Only show when not loading */}
+      {!loading && (
+        <>
+          {/* Search Form */}
+          <Card className="mb-3">
         <form onSubmit={handleSearch} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -295,17 +307,17 @@ const ACListPage = () => {
       <Card>
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
             <Heading level={4}>AC List</Heading>
           </div>
-          <Button variant="primary">
+          <Button variant="primary" className="bg-blue-600 text-white hover:bg-blue-500">
             Update Data Agency Wise
           </Button>
         </div>
 
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
-            Showing <strong>1-20</strong> of <strong>243</strong> items.
+            Showing <strong>{(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount}</strong> items.
           </Text>
         </div>
                 
@@ -345,8 +357,8 @@ const ACListPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
                             <button
-                              className="btn btn-info"
-                              onClick={() => console.log(`Update Agency for AC ${item.acCode}`)}
+                              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                              onClick={() => handleUpdateAgency(item)}
                             >
                               Update Agency
                             </button>
@@ -360,14 +372,16 @@ const ACListPage = () => {
         <div className="mt-6 pt-4 border-t border-gray-200">
           <PaginationStandard
             currentPage={currentPage}
-            totalPages={Math.ceil(243 / pageSize)}
-            totalItems={243}
+            totalPages={totalPages}
+            totalItems={totalCount}
             itemsPerPage={pageSize}
             onPageChange={(page) => setCurrentPage(page)}
             className="justify-center"
           />
         </div>
       </Card>
+        </>
+      )}
     </Container>
   );
 };

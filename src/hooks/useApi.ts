@@ -296,6 +296,32 @@ export function useGPSData(params?: any) {
   return useApi(() => apiService.getGPSData(params), [params]);
 }
 
+// Team Registration Hooks
+export function useTeamRegistration(page: number = 1, limit: number = 20) {
+  return useApi(() => apiService.getTeamRegistration(page, limit), [page, limit]);
+}
+
+// Rejection Report Hooks
+export function useRejectionReport(params?: any) {
+  return useApi(() => apiService.getRejectionReport(params), [
+    params?.report_days,
+    params?.custom_date,
+    params?.custom_date_end,
+    params?.report_level,
+    params?.interviewer_id,
+    params?.enumerator_id,
+    params?.ac_code,
+    params?.district_code,
+    params?.pc_code,
+    params?.supervisor_id,
+    params?.server_id,
+    params?.mobile_no,
+    params?.fail_reason,
+    params?.page,
+    params?.per_page
+  ]);
+}
+
 // Data Quality Hooks
 export function useDataValidation() {
   return useApi(() => apiService.getDataValidation());

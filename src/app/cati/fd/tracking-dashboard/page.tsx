@@ -86,13 +86,13 @@ export default function TrackingDashboardPage() {
             {/* Top Row - Select Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               {/* Zone */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Zone</label>
-                  <SelectDropdown
-                    value={filters.zone}
-                    onChange={(value: string | string[]) => handleFilterChange('zone', Array.isArray(value) ? value[0] : value)}
-                    options={[
+              <SelectDropdown
+                value={filters.zone}
+                onChange={(value: string | string[]) => handleFilterChange('zone', Array.isArray(value) ? value[0] : value)}
+                options={[
                       { value: '', label: 'Select a Zone' },
                       { value: '1', label: 'Burdwan' },
                       { value: '2', label: 'Jalpaiguri' },
@@ -103,16 +103,16 @@ export default function TrackingDashboardPage() {
                     placeholder="Select a Zone"
                   />
                 </div>
-              </div>
+            </div>
 
               {/* PC */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">PC</label>
-                  <SelectDropdown
-                    value={filters.pc}
-                    onChange={(value: string | string[]) => handleFilterChange('pc', Array.isArray(value) ? value[0] : value)}
-                    options={[
+              <SelectDropdown
+                value={filters.pc}
+                onChange={(value: string | string[]) => handleFilterChange('pc', Array.isArray(value) ? value[0] : value)}
+                options={[
                       { value: '', label: 'Select a PC' },
                       { value: '2', label: 'Alipurduars' },
                       { value: '29', label: 'Arambagh (SC)' },
@@ -126,15 +126,15 @@ export default function TrackingDashboardPage() {
                       { value: '39', label: 'Bardhaman-Dur' }
                     ]}
                     placeholder="Select a PC"
-                  />
-                </div>
+              />
+            </div>
               </div>
             </div>
 
             {/* Bottom Row - Checkbox Groups */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
               {/* Gender */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Gender</label>
                   <div className="space-y-2">
@@ -162,10 +162,10 @@ export default function TrackingDashboardPage() {
                     </label>
                   </div>
                 </div>
-              </div>
+            </div>
 
               {/* Locality */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Locality</label>
                   <div className="space-y-2">
@@ -193,10 +193,10 @@ export default function TrackingDashboardPage() {
                     </label>
                   </div>
                 </div>
-              </div>
+            </div>
 
               {/* Religion */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Religion</label>
                   <div className="space-y-2">
@@ -257,10 +257,10 @@ export default function TrackingDashboardPage() {
                     </label>
                   </div>
                 </div>
-              </div>
+            </div>
 
               {/* Social Category */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Social Category</label>
                   <div className="space-y-2">
@@ -321,10 +321,10 @@ export default function TrackingDashboardPage() {
                     </label>
                   </div>
                 </div>
-              </div>
+            </div>
 
               {/* Age Group */}
-              <div>
+            <div>
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Age Group</label>
                   <div className="space-y-2">
@@ -373,9 +373,9 @@ export default function TrackingDashboardPage() {
                       <span className="text-sm text-gray-700 dark:text-gray-300">50+ Years</span>
                     </label>
                   </div>
-                </div>
-              </div>
             </div>
+          </div>
+          </div>
           </form>
         </Card>
 

@@ -1,0 +1,5 @@
+Section,Type,Label/Column Name,API Field Name
+AC Wise Pending Data,Table Column,Sr. No,sr_no
+AC Wise Pending Data,Table Column,AC Code,ac_code
+AC Wise Pending Data,Table Column,AC Name,ac_name
+AC Wise Pending Data,Table Column,Pending Interview,pending_interview

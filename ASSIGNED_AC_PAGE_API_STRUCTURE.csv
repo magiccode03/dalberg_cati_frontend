@@ -1,0 +1,6 @@
+Section,Type,Label/Column Name,API Field Name
+Assigned AC,Table Column,QC ID,qc_id
+Assigned AC,Table Column,QC User Name,qc_user_name
+Assigned AC,Table Column,AC Code,ac_code
+Assigned AC,Table Column,AC Name,ac_name
+Assigned AC,Table Column,Interviewer ID,interviewer_id
