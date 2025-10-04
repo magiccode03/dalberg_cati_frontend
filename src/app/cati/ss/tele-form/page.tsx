@@ -418,7 +418,7 @@ export default function TeleFormPage() {
 
       <form onSubmit={handleSubmit}>
         {/* Section 1: Identification */}
-        {/* <Card className="p-6 mb-6">
+        <Card className="p-6 mb-6">
           <div className="mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-4">
               {t.section1}
@@ -494,7 +494,7 @@ export default function TeleFormPage() {
               maxLength={150}
             />
           </div>
-        </Card> */}
+        </Card>
 
         {/* Call Status Section */}
         <Card className="p-6 mb-6">
