@@ -56,13 +56,23 @@ export default function StartFormFillingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-fill form fields if user role is "ss"
+  // Auto-fill form fields if user role is "ss" or from localStorage
   useEffect(() => {
     if (user && user.role === 'ss') {
-      setFormData({
-        teleform_user_id: user.uniqueId || '',
-        user_phone: user.mobile || ''
-      });
+      // Check localStorage first, then fallback to user data
+      const savedData = localStorage.getItem('teleform_user_data');
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setFormData({
+          teleform_user_id: parsedData.teleform_user_id || user.uniqueId || '',
+          user_phone: parsedData.user_phone || user.mobile || ''
+        });
+      } else {
+        setFormData({
+          teleform_user_id: user.uniqueId || '',
+          user_phone: user.mobile || ''
+        });
+      }
     }
   }, [user]);
 
@@ -178,17 +188,96 @@ export default function StartFormFillingPage() {
     e.preventDefault();
     
     if (validateForm()) {
-      console.log('Form submitted:', formData);
+      // Save form data to localStorage
+      localStorage.setItem('teleform_user_data', JSON.stringify(formData));
+      console.log('Form submitted and saved to localStorage:', formData);
       console.log('Fetching interviews for user ID:', getUserId());
       fetchInterviews();
     }
   };
 
-  const handleConnectToCall = (interviewId: number) => {
-    console.log('Connecting to call:', interviewId);
-    // Navigate to tele-form page with interview ID
-    // router.push(`/cati/ss/tele-form/${interviewId}`);
-    router.push(`/cati/ss/tele-form`);
+  const handleClear = () => {
+    // Clear localStorage
+    localStorage.removeItem('teleform_user_data');
+    
+    // Reset form data
+    setFormData({
+      teleform_user_id: '',
+      user_phone: ''
+    });
+    
+    // Clear errors
+    setErrors({
+      teleform_user_id: '',
+      user_phone: ''
+    });
+    
+    // Reset other states
+    setIsLoggedIn(false);
+    setShowTable(false);
+    setShowNewCallSection(false);
+    setInterviews([]);
+    setError('');
+    
+    console.log('Form cleared and localStorage removed');
+  };
+
+  const handleConnectToCall = async (interviewId: number, phoneNumber: string) => {
+    try {
+      console.log('Initiating call:', { interviewId, phoneNumber });
+      
+      // Get teleform_user_data from localStorage
+      const savedData = localStorage.getItem('teleform_user_data');
+      if (!savedData) {
+        alert('Please fill in your details first');
+        return;
+      }
+      
+      const userData = JSON.parse(savedData);
+      const fromPhone = userData.user_phone;
+      
+      if (!fromPhone) {
+        alert('User phone number not found');
+        return;
+      }
+      
+      // Get auth token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Authentication required');
+        return;
+      }
+      
+      // Call click-to-call API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/click-to-call/initiate`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: fromPhone,
+          to: phoneNumber
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('Call initiated successfully:', data);
+        alert(`Call initiated successfully! Call ID: ${data.data.callId}`);
+        
+        // Navigate to tele-form page with interview ID after successful call initiation
+        router.push(`/cati/ss/tele-form/${interviewId}`);
+      } else {
+        console.error('Call initiation failed:', data);
+        alert(`Call initiation failed: ${data.message || 'Unknown error'}`);
+      }
+      
+    } catch (error) {
+      console.error('Error initiating call:', error);
+      alert('Failed to initiate call. Please try again.');
+    }
   };
 
   // Removed handleBackToLogin function
@@ -264,13 +353,21 @@ export default function StartFormFillingPage() {
                       )}
                     </div>
 
-                    {/* Submit Button */}
-                    <div className="w-full sm:w-1/3">
+                    {/* Submit and Clear Buttons */}
+                    <div className="w-full sm:w-1/3 flex gap-2">
                       <Button
                         type="submit"
-                        className="w-full"
+                        className="flex-1"
                       >
                         Submit
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleClear}
+                        className="flex-1 bg-red-50 hover:bg-red-100 border-red-300 text-red-700 hover:text-red-800"
+                      >
+                        Clear
                       </Button>
                     </div>
                   </div>
@@ -331,7 +428,7 @@ export default function StartFormFillingPage() {
                           <Button
                             variant="primary"
                             size="sm"
-                            onClick={() => handleConnectToCall(interview.id)}
+                            onClick={() => handleConnectToCall(interview.id, interview.phone)}
                             className="text-white"
                           >
                             <Phone className="w-4 h-4" />

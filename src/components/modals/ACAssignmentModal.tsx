@@ -196,7 +196,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         throw new Error('API URL not configured');
       }
 
-      const response = await fetch(`${apiUrl}/api/cati/assign-data`, {
+      const response = await fetch(`${apiUrl}/api/cati/ac-details/assign-data`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,

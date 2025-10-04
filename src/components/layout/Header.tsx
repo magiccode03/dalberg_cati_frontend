@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Settings, Sun, Moon, ChevronDown } from 'lucide-react';
+import { User, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 
 export default function Header() {
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
 
@@ -95,8 +95,13 @@ export default function Header() {
   };
 
   const handleLogoClick = () => {
-    // Navigate to dashboard on logo click
-    window.location.href = '/dashboard';
+    // Navigate to role-specific landing page on logo click
+    if (authUser) {
+      const redirectUrl = getRedirectUrl(authUser.role);
+      window.location.href = redirectUrl;
+    } else {
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -212,10 +217,6 @@ export default function Header() {
                   </div>
                 </div>
                 <div className="p-2">
-                  <button className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center space-x-3">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </button>
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center space-x-3"

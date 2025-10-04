@@ -6,18 +6,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user, getRedirectUrl } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading) {
-      if (isAuthenticated) {
-        router.push('/dashboard');
+      if (isAuthenticated && user) {
+        // Use the role-specific redirect URL
+        const redirectUrl = getRedirectUrl(user.role);
+        router.push(redirectUrl);
       } else {
         router.push('/login');
       }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, user, router, getRedirectUrl]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
