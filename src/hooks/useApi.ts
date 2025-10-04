@@ -296,6 +296,11 @@ export function useGPSData(params?: any) {
   return useApi(() => apiService.getGPSData(params), [params]);
 }
 
+// Team Registration Hooks
+export function useTeamRegistration(page: number = 1, limit: number = 20) {
+  return useApi(() => apiService.getTeamRegistration(page, limit), [page, limit]);
+}
+
 // Data Quality Hooks
 export function useDataValidation() {
   return useApi(() => apiService.getDataValidation());

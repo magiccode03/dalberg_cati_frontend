@@ -251,6 +251,11 @@ export interface GenderWiseResponse {
   constituencies: DemographicConstituency[];
 }
 
+export interface DemographicMetadata {
+  total_constituencies: number;
+  last_updated: string;
+}
+
 // Age-wise data types
 export interface AgeGroupData {
   min_sample: number;
@@ -472,7 +477,8 @@ class ApiService {
       return {
         success: true,
         data: {} as T,
-        message: 'Request successful'
+        message: 'Request successful',
+        timestamp: new Date().toISOString()
       };
     }
   }
@@ -533,7 +539,7 @@ class ApiService {
 
     // Save tokens on successful registration
     if (response.success && response.data) {
-      this.saveTokens(response.data.token, response.data.refreshToken);
+      this.saveTokens(response.data.accessToken, response.data.refreshToken);
     }
 
     return response;
@@ -587,6 +593,40 @@ class ApiService {
   // Dashboard Methods
   async getDashboardStats(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.STATS);
+  }
+
+  // Team Registration Methods
+  async getTeamRegistration(page: number = 1, limit: number = 20): Promise<ApiResponse<{
+    team_registrations: Array<{
+      agency_id: number;
+      agency_name: string;
+      username: string;
+      qc_agency: string;
+      total_ac: number;
+      total_interviews_conducted: number;
+      valid: number;
+      rejected: number;
+      under_qc: number;
+      show_second_level_column: boolean;
+      status: string;
+    }>;
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+    totals: {
+      total_interview: number;
+      valid_interview: string;
+      reject_interview: string;
+      interview_under_qc: string;
+    };
+  }>> {
+    const queryString = `?${new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    }).toString()}`;
+    return this.request(`/dashboard/team-registration${queryString}`);
   }
 
   async getDashboardOverview(): Promise<ApiResponse<any>> {

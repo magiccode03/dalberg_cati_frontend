@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -46,6 +47,8 @@ interface APIResponse {
 }
 
 const ACListPage = () => {
+  const router = useRouter();
+  
   const [filters, setFilters] = useState({
     agencyId: '',
     acCode: '',
@@ -223,6 +226,11 @@ const ACListPage = () => {
     }));
   };
 
+  // Navigation functions
+  const handleUpdateAgency = (acItem: ACData) => {
+    router.push(`/capi/ppm/master/aclist/acupdate?ac_code=${acItem.acCode}`);
+  };
+
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <Heading level={3} className="mb-6">
@@ -349,8 +357,8 @@ const ACListPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
                             <button
-                              className="btn btn-info"
-                              onClick={() => console.log(`Update Agency for AC ${item.acCode}`)}
+                              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+                              onClick={() => handleUpdateAgency(item)}
                             >
                               Update Agency
                             </button>
