@@ -322,6 +322,51 @@ export function useRejectionReport(params?: any) {
   ]);
 }
 
+export function useToggleReQcStatus() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleReQc = async (agencyId: number, dataSendForReqc: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Toggling Re-QC status:', { agencyId, dataSendForReqc });
+      
+      // First, let's test if the endpoint exists with a simple request
+      console.log('Testing endpoint availability...');
+      
+      const response = await apiService.toggleReQcStatus(agencyId, dataSendForReqc);
+      
+      console.log('Toggle Re-QC response:', response);
+      
+      return response;
+    } catch (err: any) {
+      console.error('Toggle Re-QC error:', err);
+      
+      let errorMessage = 'Failed to toggle Re-QC status';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      // Add more specific error information
+      if (err.message?.includes('500')) {
+        errorMessage += ' (Server Error - Check if endpoint exists)';
+      }
+      
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { toggleReQc, loading, error };
+}
+
 // Data Quality Hooks
 export function useDataValidation() {
   return useApi(() => apiService.getDataValidation());

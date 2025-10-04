@@ -421,6 +421,18 @@ class ApiService {
       },
     };
 
+    // Debug logging for POST requests
+    if (config.method === 'POST') {
+      console.log('Making POST request:', {
+        url,
+        method: config.method,
+        headers: config.headers,
+        body: config.body,
+        baseURL: this.baseURL,
+        fullEndpoint: endpoint
+      });
+    }
+
     try {
       const response = await fetch(url, config);
       
@@ -448,6 +460,10 @@ class ApiService {
       return await this.handleResponse<T>(response);
     } catch (error) {
       console.error('API Request failed:', error);
+      // Don't call global error handler for toggle Re-QC requests
+      if (endpoint.includes('toggle-reqc')) {
+        throw error; // Re-throw to let our custom handler deal with it
+      }
       handleApiError(error);
     }
   }
@@ -458,16 +474,31 @@ class ApiService {
     const isJson = contentType && contentType.includes('application/json');
 
     if (!response.ok) {
+      console.error(`HTTP Error ${response.status}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        contentType: contentType
+      });
+
       if (isJson) {
         try {
           const data = await response.json();
+          console.error('Error response data:', data);
           throw new Error(data.message || `HTTP error! status: ${response.status}`);
         } catch (parseError) {
+          console.error('Failed to parse error response as JSON:', parseError);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
       } else {
         // Handle non-JSON error responses (like HTML 404 pages)
-        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        try {
+          const text = await response.text();
+          console.error('Non-JSON error response:', text);
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        } catch (textError) {
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
       }
     }
 
@@ -1003,6 +1034,52 @@ class ApiService {
   async getInterviewAudio(params?: { page?: number; limit?: number; ac_code?: string; interview_date?: string }): Promise<any> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO}${queryString}`);
+  }
+
+  async toggleReQcStatus(agencyId: number, dataSendForReqc: number): Promise<ApiResponse<{
+    agencyId: number;
+    data_send_for_reqc: number;
+    message: string;
+  }>> {
+    console.log('Attempting toggle Re-QC with:', { agencyId, dataSendForReqc });
+    
+    // Try the original endpoint first
+    try {
+      const primaryEndpoint = '/dashboard/team-registration/newregistration/toggle-reqc';
+      console.log('Trying primary endpoint:', primaryEndpoint);
+      
+      return await this.request(primaryEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          agency_id: agencyId,
+          data_send_for_reqc: dataSendForReqc
+        })
+      });
+    } catch (error) {
+      console.error('Primary endpoint failed:', error);
+      
+      // Try alternative endpoint format
+      try {
+        const secondaryEndpoint = '/dashboard/team-registration/toggle-reqc';
+        console.log('Trying alternative endpoint:', secondaryEndpoint);
+        
+        return await this.request(secondaryEndpoint, {
+          method: 'POST',
+          body: JSON.stringify({
+            agency_id: agencyId,
+            data_send_for_reqc: dataSendForReqc
+          })
+        });
+      } catch (secondError) {
+        console.error('Both endpoints failed:', { 
+          primary: error, 
+          secondary: secondError,
+          agencyId,
+          dataSendForReqc
+        });
+        throw secondError; // Throw the second error
+      }
+    }
   }
 
   // Utility Methods

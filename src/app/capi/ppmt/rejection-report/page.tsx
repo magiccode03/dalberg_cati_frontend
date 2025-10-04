@@ -49,7 +49,7 @@ export default function PPMTRejectionReportPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(100);
+  const [pageSize] = useState(25);
 
   // Sample rejection data - matching the HTML structure
   const rejectionData: RejectionData[] = [
@@ -215,191 +215,195 @@ export default function PPMTRejectionReportPage() {
 
   return (
     <Container maxWidth="full">
-      {/* Page Title */}
-      <Heading level={1} className="text-2xl font-bold mb-6">
-        Rejection Report
-      </Heading>
+        {/* Page Title */}
+        <Heading level={1} className="text-2xl font-bold mb-6">
+          Rejection Report
+        </Heading>
 
-      {/* Search Filters */}
-      <Card className="p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div>
-            <Text className="block text-sm font-medium mb-2">Report Days</Text>
-            <SelectDropdown
-              value={filters.reportDays}
-              onChange={(value: string | string[]) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
-              options={[
-                { value: 'all', label: 'All' },
-                { value: 'today', label: 'Today' },
-                { value: 'yesterday', label: 'Yesterday' },
-                { value: 'dby', label: 'Day Before Yesterday' },
-                { value: 'l3', label: 'Last 3 Days' },
-                { value: 'l7', label: 'Last 7 Days' },
-                { value: 'l15', label: 'Last 15 Days' },
-                { value: 'currentmonth', label: 'Current Month' },
-                { value: 'custom', label: 'Custom Date' }
-              ]}
-            />
+        {/* Search Filters */}
+        <Card className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div>
+              <Text className="block text-sm font-medium mb-2">Report Days</Text>
+              <SelectDropdown
+                value={filters.reportDays}
+                onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
+                options={[
+                  { value: 'all', label: 'All' },
+                  { value: 'today', label: 'Today' },
+                  { value: 'yesterday', label: 'Yesterday' },
+                  { value: 'dby', label: 'Day Before Yesterday' },
+                  { value: 'l3', label: 'Last 3 Days' },
+                  { value: 'l7', label: 'Last 7 Days' },
+                  { value: 'l15', label: 'Last 15 Days' },
+                  { value: 'currentmonth', label: 'Current Month' },
+                  { value: 'custom', label: 'Custom Date' }
+                ]}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Level</Text>
+              <SelectDropdown
+                value={filters.reportLevel}
+                onChange={(value) => handleFilterChange('reportLevel', Array.isArray(value) ? value[0] : value)}
+                options={[
+                  { value: '0', label: 'All' },
+                  { value: 'ac', label: 'Ac Level' },
+                  { value: 'interviewer', label: 'Interviewer Level' },
+                  { value: 'polingstation', label: 'Poling Station Level' }
+                ]}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.failReason}
+                onChange={(value) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
+                options={[
+                  { value: '', label: 'Select Fail Reason' },
+                  { value: 'autorejectstatus', label: 'System Fail' },
+                  { value: 'shortinterviewstatus', label: 'System Fail : Short Interview' },
+                  { value: 'duplicatemobilenumberstatus', label: 'System Fail: Duplicate Mobile Number' },
+                  { value: 'noaudionomobilestatus', label: 'System Fail: No Audio' },
+                  { value: 'gpsrejectedstatus', label: 'GPS Check Fail' },
+                  { value: 'autorejectedstatus', label: 'Audio QC Fail' },
+                  { value: 'rtastatus', label: 'N+W+RTA Rejected (Manually)' }
+                ]}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
+              <Input
+                type="text"
+                placeholder="Search by Mobile Number"
+                value={filters.mobileNo}
+                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-end">
+              <Button onClick={handleSearch} className="w-full">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Rejection Report Table */}
+        <Card className="">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+              <Heading level={4}>Rejection Report</Heading>
+            </div>
+            <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
+              <Download className="w-4 h-4 mr-2" />
+              Download Data
+            </Button>
           </div>
 
-          <div>
-            <Text className="block text-sm font-medium mb-2">Level</Text>
-            <SelectDropdown
-              value={filters.reportLevel}
-              onChange={(value: string | string[]) => handleFilterChange('reportLevel', Array.isArray(value) ? value[0] : value)}
-              options={[
-                { value: '0', label: 'All' },
-                { value: 'ac', label: 'Ac Level' },
-                { value: 'interviewer', label: 'Interviewer Level' },
-                { value: 'polingstation', label: 'Poling Station Level' }
-              ]}
-            />
-          </div>
-
-          <div>
-            <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-            <SelectDropdown
-              value={filters.failReason}
-              onChange={(value: string | string[]) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
-              options={[
-                { value: '', label: 'Select Fail Reason' },
-                { value: 'autorejectstatus', label: 'System Fail' },
-                { value: 'shortinterviewstatus', label: 'System Fail : Short Interview' },
-                { value: 'duplicatemobilenumberstatus', label: 'System Fail: Duplicate Mobile Number' },
-                { value: 'noaudionomobilestatus', label: 'System Fail: No Audio' },
-                { value: 'gpsrejectedstatus', label: 'GPS Check Fail' },
-                { value: 'autorejectedstatus', label: 'Audio QC Fail' },
-                { value: 'rtastatus', label: 'N+W+RTA Rejected (Manually)' }
-              ]}
-            />
-          </div>
-
-          <div>
-            <Text className="block text-sm font-medium mb-2">Server ID</Text>
-            <Input
-              type="text"
-              placeholder="Search by Server ID"
-              value={filters.serverId}
-              onChange={(e) => handleFilterChange('serverId', e.target.value)}
-            />
-          </div>
-
-          <div>
-            <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-            <Input
-              type="text"
-              placeholder="Search by Mobile Number"
-              value={filters.mobileNo}
-              onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-            />
-          </div>
-        </div>
-        
-        <div className="mt-4">
-          <Button onClick={handleSearch}>
-            <Search className="w-4 h-4 mr-2" />
-            Search
-          </Button>
-        </div>
-      </Card>
-
-      {/* Rejection Report Table */}
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <Heading level={4}>Rejection Report</Heading>
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Download Data
-          </Button>
-        </div>
-
-        <div className="table-responsive">
-          <Table className="table table-centered table-striped dt-responsive nowrap w-100">
-            <thead className="table-light">
-              <tr>
-                <th>Sr. No</th>
-                <th>Server ID</th>
-                <th>Ac Name</th>
-                <th>PS Code</th>
-                <th>Interview Date</th>
-                <th>Interviewer ID</th>
-                <th>Interview Duration</th>
-                <th>Respondent Name</th>
-                <th>Respondent Mobile</th>
-                <th>Fail Reason</th>
-                <th>Audio QC ID</th>
-                <th>Audio Fail Reason</th>
-                <th>Re-Audio Fail Reason</th>
-                <th>Audio</th>
-                <th>GPS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rejectionData.map((row) => (
-                <tr key={row.srNo}>
-                  <td>{row.srNo}</td>
-                  <td>
-                    <a 
-                      href={`/interview-detail?server_id=${row.serverId}`}
-                      target="_blank"
-                      className="text-blue-600 hover:text-blue-800 font-mono"
-                    >
-                      {row.serverId}
-                    </a>
-                  </td>
-                  <td>{row.acName}</td>
-                  <td className="font-mono">{row.psCode}</td>
-                  <td>{row.interviewDate}</td>
-                  <td>{row.interviewerId}</td>
-                  <td className="font-mono">{row.interviewDuration}</td>
-                  <td>{row.respondentName}</td>
-                  <td>{row.respondentMobile || '-'}</td>
-                  <td>
-                    {getFailReasonBadge(row.failReason)}
-                  </td>
-                  <td>{row.audioQcId || '-'}</td>
-                  <td>{row.audioFailReason || '-'}</td>
-                  <td>{row.reAudioFailReason || '-'}</td>
-                  <td>
-                    {row.hasAudio ? (
+          <div className="table-responsive">
+            <Table className="table table-centered table-striped dt-responsive nowrap w-100">
+              <thead className="table-light">
+                <tr>
+                  <th>Sr. No</th>
+                  <th>Server ID</th>
+                  <th>Ac Name</th>
+                  <th>PS Code</th>
+                  <th>Interview Date</th>
+                  <th>Interviewer ID</th>
+                  <th>Interview Duration</th>
+                  <th>Respondent Name</th>
+                  <th>Respondent Mobile</th>
+                  <th>Fail Reason</th>
+                  <th>Audio QC ID</th>
+                  <th>Audio Fail Reason</th>
+                  <th>Re-Audio Fail Reason</th>
+                  <th>Audio</th>
+                  <th>GPS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rejectionData.map((row) => (
+                  <tr key={row.srNo}>
+                    <td>{row.srNo}</td>
+                    <td>
+                      <a 
+                        href={`/interview-detail?server_id=${row.serverId}`}
+                        target="_blank"
+                        className="text-blue-600 hover:text-blue-800 font-mono"
+                      >
+                        {row.serverId}
+                      </a>
+                    </td>
+                    <td>{row.acName}</td>
+                    <td className="font-mono">{row.psCode}</td>
+                    <td>{row.interviewDate}</td>
+                    <td>{row.interviewerId}</td>
+                    <td className="font-mono">{row.interviewDuration}</td>
+                    <td>{row.respondentName}</td>
+                    <td>{row.respondentMobile || '-'}</td>
+                    <td>
+                      {getFailReasonBadge(row.failReason)}
+                    </td>
+                    <td>{row.audioQcId || '-'}</td>
+                    <td>{row.audioFailReason || '-'}</td>
+                    <td>{row.reAudioFailReason || '-'}</td>
+                    <td>
+                      {row.hasAudio ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                          title="Play Audio"
+                        >
+                          <Play className="w-3 h-3" />
+                        </Button>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                    <td>
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="bg-teal-500 hover:bg-teal-600 text-white border-0"
+                        className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                        title="GPS Map"
                       >
-                        <Play className="w-3 h-3 mr-1" />
-                        Play Audio
+                        <Map className="w-3 h-3" />
                       </Button>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="bg-teal-500 hover:bg-teal-600 text-white border-0"
-                    >
-                      <Map className="w-3 h-3" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Pagination */}
-        <div className="mt-6">
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={55747}
-            itemsPerPage={pageSize}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      </Card>
-    </Container>
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={55747}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </Card>
+      </Container>
   );
 }

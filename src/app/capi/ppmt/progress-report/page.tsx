@@ -374,14 +374,14 @@ export default function ProgressReportPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={1} className="mb-6">
+      <Heading level={4} className="mb-6">
         Progress Report
       </Heading>
 
       {/* Filter Section */}
-      <Card className="mb-6 p-6">
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
+      <Card className="mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
             <Text className="text-sm font-medium mb-2">Report Days</Text>
             <SelectDropdown
               options={[
@@ -393,9 +393,10 @@ export default function ProgressReportPage() {
               value={searchForm.reportDays}
               onChange={(value) => handleInputChange('reportDays', value as string)}
               placeholder="All"
+              className="w-full"
             />
           </div>
-          <div className="flex-1">
+          <div>
             <Text className="text-sm font-medium mb-2">Type of Report</Text>
             <SelectDropdown
               options={[
@@ -406,9 +407,10 @@ export default function ProgressReportPage() {
               value={searchForm.typeOfReport}
               onChange={(value) => handleInputChange('typeOfReport', value as string)}
               placeholder="Progress Report"
+              className="w-full"
             />
           </div>
-          <div className="flex-1">
+          <div>
             <Text className="text-sm font-medium mb-2">Level</Text>
             <SelectDropdown
               options={[
@@ -419,22 +421,27 @@ export default function ProgressReportPage() {
               value={searchForm.level}
               onChange={(value) => handleInputChange('level', value as string)}
               placeholder="AC Level"
+              className="w-full"
             />
           </div>
           <div className="flex items-end">
-            <Button onClick={handleSearch} className="px-6">
+            <Button onClick={handleSearch} className="w-full">
               <Search className="w-4 h-4 mr-2" />
-              View
+              Search
             </Button>
           </div>
         </div>
       </Card>
 
+
       {/* Progress Report Table */}
-      <Card className="p-6">
+      <Card className="">
         <div className="flex justify-between items-center mb-6">
-          <Heading level={4}>PROGRESS REPORT-AC LEVEL</Heading>
-          <Button variant="outline">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4}>PROGRESS REPORT-AC LEVEL</Heading>
+          </div>
+          <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
             <Download className="w-4 h-4 mr-2" />
             Download
           </Button>

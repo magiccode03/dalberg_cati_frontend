@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -9,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import { Edit, RefreshCw, XCircle, Loader2 } from 'lucide-react';
-import { useTeamRegistration } from '@/hooks/useApi';
+import { useTeamRegistration, useToggleReQcStatus } from '@/hooks/useApi';
 
 // TypeScript interfaces for API response
 interface TeamRegistrationData {
@@ -42,11 +43,15 @@ interface TeamRegistrationResponse {
 }
 
 const TeamRegistrationPage = () => {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
   
   // Fetch team registration data from API
   const { data, loading, error, refetch } = useTeamRegistration(currentPage, pageSize);
+  
+  // Toggle Re-QC status hook
+  const { toggleReQc, loading: toggleLoading, error: toggleError } = useToggleReQcStatus();
   
   // Type the data properly
   const typedData = data as TeamRegistrationResponse | null;
@@ -70,6 +75,32 @@ const TeamRegistrationPage = () => {
         return <Badge variant="error" size="sm">Inactive</Badge>;
       default:
         return <Badge variant="secondary" size="sm">{status}</Badge>;
+    }
+  };
+
+  const handleToggleReQc = async (agencyId: number, currentStatus: boolean) => {
+    try {
+      const newStatus = currentStatus ? 0 : 1; // Toggle between 0 and 1
+      
+      console.log('Handling toggle Re-QC:', {
+        agencyId,
+        currentStatus,
+        newStatus,
+        requestData: {
+          agency_id: agencyId,
+          data_send_for_reqc: newStatus
+        }
+      });
+      
+      const response = await toggleReQc(agencyId, newStatus);
+      
+      if (response.success) {
+        // Refresh the data to get updated status
+        refetch();
+        console.log('Re-QC status updated successfully:', response.data.message);
+      }
+    } catch (err) {
+      console.error('Failed to toggle Re-QC status:', err);
     }
   };
 
@@ -172,11 +203,23 @@ const TeamRegistrationPage = () => {
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={4}>Agency List</Heading>
           </div>
-          <Button variant="primary">
+          <Button 
+            variant="primary"
+            onClick={() => router.push('/capi/ppm/master/team-registration/newagency')}
+          >
             <i className="fa fa-plus mr-2"></i>
             New Agency
           </Button>
         </div>
+
+        {/* Error display for toggle operations */}
+        {toggleError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <Text className="text-red-700 text-sm">
+              Error updating Re-QC status: {toggleError}
+            </Text>
+          </div>
+        )}
 
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
@@ -254,11 +297,22 @@ const TeamRegistrationPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <button
-                              onClick={() => console.log(`Toggle Re-QC for Agency ${item.agency_id}`)}
-                              className="inline-flex items-center justify-center w-8 h-8 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
-                              title="Toggle Re-QC for this agency"
+                              onClick={() => handleToggleReQc(item.agency_id, item.show_second_level_column)}
+                              disabled={toggleLoading}
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded transition-colors ${
+                                toggleLoading 
+                                  ? 'bg-gray-400 cursor-not-allowed' 
+                                  : item.show_second_level_column 
+                                    ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                    : 'bg-gray-600 hover:bg-gray-700 text-white'
+                              }`}
+                              title={item.show_second_level_column ? "Disable Re-QC for this agency" : "Enable Re-QC for this agency"}
                             >
-                              <RefreshCw size={16} />
+                              {toggleLoading ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                <RefreshCw size={16} />
+                              )}
                             </button>
                           </td>
                         </tr>
