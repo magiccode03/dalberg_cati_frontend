@@ -740,7 +740,7 @@ export default function DemographicPage() {
     { id: 'socialcategorywise', label: 'Social Category Wise', href: '/ppm/demographic/socialcategorywise', icon: UserCheck }
   ];
 
-  
+
   const handleDownload = () => {
     if (activeTab === 'genderwise' && genderWiseData.length > 0) {
       generateGenderWiseCSV();
@@ -753,7 +753,7 @@ export default function DemographicPage() {
     } else if (activeTab === 'socialcategorywise' && socialCategoryWiseData.length > 0) {
       generateSocialCategoryWiseCSV();
     } else {
-      console.log('Downloading demographic data...');
+    console.log('Downloading demographic data...');
     }
   };
 
@@ -1038,32 +1038,32 @@ export default function DemographicPage() {
     }
 
     return (
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-        <thead className="sticky-header">
-          <tr>
-            <th>AC Name</th>
-            <th className="text-center">AC Code</th>
-            <th className="text-center">Sample Achieved</th>
-            <th className="text-center border-l-2 border-r-2" colSpan={3}>
-              Male
-            </th>
-            <th className="text-center border-l-2 border-r-2" colSpan={3}>
-              Female
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th className="text-center"></th>
-            <th className="text-center"></th>
-            <th className="text-center border-r-2">Male Quota</th>
-            <th className="text-center border-r-2">Male covered</th>
-            <th className="text-center border-r-2">Balance</th>
-            <th className="text-center border-r-2">Female Quota</th>
-            <th className="text-center border-r-2">Female covered</th>
-            <th className="text-center border-r-2">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+      <thead className="sticky-header">
+        <tr>
+          <th>AC Name</th>
+          <th className="text-center">AC Code</th>
+          <th className="text-center">Sample Achieved</th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
+            Male
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
+            Female
+          </th>
+        </tr>
+        <tr>
+          <th></th>
+          <th className="text-center"></th>
+          <th className="text-center"></th>
+          <th className="text-center border-r-2">Male Quota</th>
+          <th className="text-center border-r-2">Male covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Female Quota</th>
+          <th className="text-center border-r-2">Female covered</th>
+          <th className="text-center border-r-2">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
           {genderWiseData.map((row, index) => (
             <tr key={row.ac_code}>
               <td>{row.ac_name}</td>
@@ -1072,18 +1072,18 @@ export default function DemographicPage() {
               <td className="text-center">{row.male_min_sample}</td>
               <td className={`text-center ${getCellStyle(row.male_covered)}`}>
                 {row.male_covered}
-              </td>
+            </td>
               <td className="text-center">{row.male_balance}</td>
               <td className="text-center">{row.female_min_sample}</td>
               <td className={`text-center ${getCellStyle(row.female_covered, true)}`}>
                 {row.female_covered}
-              </td>
+            </td>
               <td className="text-center">{row.female_balance}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    );
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
   };
 
   const renderAgeWiseTable = () => {
@@ -1104,45 +1104,45 @@ export default function DemographicPage() {
     }
 
     return (
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-        <thead className="sticky-header">
-          <tr>
-            <th>AC Name</th>
-            <th className="text-center">AC Code</th>
-            <th className="text-center">Sample Achieved</th>
-            <th className="text-center border-l-2 border-r-2" colSpan={3}>
-              18-24 Years
-            </th>
-            <th className="text-center border-l-2 border-r-2" colSpan={3}>
-              25-34 Years
-            </th>
-            <th className="text-center border-l-2 border-r-2" colSpan={3}>
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+      <thead className="sticky-header">
+        <tr>
+          <th>AC Name</th>
+          <th className="text-center">AC Code</th>
+          <th className="text-center">Sample Achieved</th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
+            18-24 Years
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
+            25-34 Years
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
               35-50 Years
-            </th>
-            <th className="text-center border-l-2 border-r-2" colSpan={3}>
-              50+ Years
-            </th>
-          </tr>
-          <tr>
-            <th></th>
-            <th className="text-center"></th>
-            <th className="text-center"></th>
-            <th className="text-center border-r-2">Quota</th>
-            <th className="text-center border-r-2">Covered</th>
-            <th className="text-center border-r-2">Balance</th>
-            <th className="text-center border-r-2">Quota</th>
-            <th className="text-center border-r-2">Covered</th>
-            <th className="text-center border-r-2">Balance</th>
-            <th className="text-center border-r-2">Quota</th>
-            <th className="text-center border-r-2">Covered</th>
-            <th className="text-center border-r-2">Balance</th>
-            <th className="text-center border-r-2">Quota</th>
-            <th className="text-center border-r-2">Covered</th>
-            <th className="text-center border-r-2">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ageWiseData.map((row) => (
+          </th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
+            50+ Years
+          </th>
+        </tr>
+        <tr>
+          <th></th>
+          <th className="text-center"></th>
+          <th className="text-center"></th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {ageWiseData.map((row) => (
             <tr key={row.ac_code}>
               <td>{row.ac_name}</td>
               <td className="text-center">{row.ac_code}</td>
@@ -1167,11 +1167,11 @@ export default function DemographicPage() {
               <td className={`text-center ${getAgeWiseBalanceStyle(row.age_groups['50_above'].balance)}`}>
                 {row.age_groups['50_above'].balance}
               </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    );
+          </tr>
+        ))}
+      </tbody>
+    </Table>
+  );
   };
 
   const getCasteBalanceStyle = (balance: number) => {
@@ -1317,7 +1317,7 @@ export default function DemographicPage() {
         ))}
       </tbody>
     </Table>
-    );
+  );
   };
 
   const getReligionDifferenceStyle = (difference: number) => {
@@ -1413,7 +1413,7 @@ export default function DemographicPage() {
         ))}
       </tbody>
     </Table>
-    );
+  );
   };
 
   const getSocialCategoryDifferenceStyle = (difference: number) => {
@@ -1497,7 +1497,7 @@ export default function DemographicPage() {
         ))}
       </tbody>
     </Table>
-    );
+  );
   };
 
   const renderContent = () => {

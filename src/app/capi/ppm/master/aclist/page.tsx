@@ -12,6 +12,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Loader2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { apiService } from '@/lib/api';
 
 interface ACData {
   id: number;
@@ -61,19 +62,7 @@ const ACListPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-
-  // Sample data for dropdowns
-  const agencyOptions = [
-    { value: '', label: 'Select State Teams' },
-    { value: '1', label: 'Kadence' },
-    { value: '2', label: 'Chandan' },
-    { value: '3', label: 'Rohit' },
-    { value: '4', label: 'Parbhat' },
-    { value: '5', label: 'Navin' },
-    { value: '6', label: 'Aeon' },
-    { value: '7', label: 'Abhinav' },
-    { value: '8', label: 'Inhouse' },
-  ];
+  const [agencyOptions, setAgencyOptions] = useState([{ value: '', label: 'Select State Teams' }]);
 
   const acOptions = [
     { value: '', label: 'Select AC' },
@@ -98,6 +87,26 @@ const ACListPage = () => {
     { value: '19', label: 'Motihari (19)' },
     { value: '20', label: 'Chiraia (20)' },
   ];
+
+  // Fetch agencies for dropdown
+  const fetchAgencies = async () => {
+    try {
+      const response = await apiService.getAgencies();
+      
+      if (response.success && response.data && typeof response.data === 'object') {
+        const options = [
+          { value: '', label: 'Select State Teams' },
+          ...Object.entries(response.data).map(([id, name]) => ({
+            value: id,
+            label: name as string
+          }))
+        ];
+        setAgencyOptions(options);
+      }
+    } catch (err) {
+      console.error('Error fetching agencies:', err);
+    }
+  };
 
   // Helper function to transform API data to UI format
   const transformAPIData = (apiData: any[]): ACData[] => {
@@ -210,6 +219,7 @@ const ACListPage = () => {
 
   // Fetch data on component mount and when filters/page change
   useEffect(() => {
+    fetchAgencies(); // Load agencies first
     fetchACData();
   }, [currentPage, filters]);
 
