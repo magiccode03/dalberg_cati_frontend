@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -8,15 +8,19 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Loader2 } from 'lucide-react';
+import { apiService } from '@/lib/api';
+import Toast from '@/components/ui/Toast';
 
 interface ACData {
-  acCode: number;
-  acName: string;
-  agencyId: number;
-  agencyName: string;
+  ac_code: number;
+  ac_name: string;
+  agency_id: number;
+  agency_name: string;
+  total_interview: number;
+  valid_interview: number;
 }
 
-const ACUpdatePage = () => {
+const ACUpdatePageContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const acCode = searchParams.get('ac_code');
@@ -25,46 +29,114 @@ const ACUpdatePage = () => {
   const [selectedAgency, setSelectedAgency] = useState('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [agencyOptions, setAgencyOptions] = useState<Array<{id: number, name: string}>>([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
-  // Sample AC data - in real app, this would come from API
-  const sampleACData: ACData[] = [
-    { acCode: 1, acName: 'Valmiki Nagar', agencyId: 4, agencyName: 'Parbhat' },
-    { acCode: 2, acName: 'Ramnagar (SC)', agencyId: 4, agencyName: 'Parbhat' },
-    { acCode: 3, acName: 'Narkatiaganj', agencyId: 1, agencyName: 'Kadence' },
-    { acCode: 4, acName: 'Bagaha', agencyId: 2, agencyName: 'Chandan' },
-    { acCode: 5, acName: 'Lauriya', agencyId: 3, agencyName: 'Rohit' },
-  ];
+  const fetchAgencies = async () => {
+    try {
+      const response = await apiService.getAgencies();
+      
+      if (response.success && response.data && typeof response.data === 'object') {
+        // Convert API response format to our component format
+        const agencies = Object.entries(response.data).map(([id, name]) => ({
+          id: parseInt(id),
+          name: name as string
+        }));
+        
+        setAgencyOptions(agencies);
+      } else {
+        console.error('Invalid API response structure:', response);
+        setError('Failed to load agencies');
+      }
+    } catch (err) {
+      console.error('Error fetching agencies:', err);
+      setError('Failed to load agencies');
+    }
+  };
+
+  const fetchACData = async () => {
+    if (!acCode) {
+      router.push('/capi/ppm/master/aclist');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiService.getMasterACIndexForUpdate(parseInt(acCode));
+      
+      if (response.success && response.data) {
+        const apiData = response.data;
+        
+        setAcData(apiData);
+        setSelectedAgency(apiData.agency_name || '');
+      } else {
+        setError('Failed to fetch AC data');
+      }
+    } catch (err) {
+      console.error('Error fetching AC data:', err);
+      setError('Error loading AC data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (acCode) {
-      // Find AC data by code
-      const foundAC = sampleACData.find(ac => ac.acCode === parseInt(acCode));
-      if (foundAC) {
-        setAcData(foundAC);
-        setSelectedAgency(foundAC.agencyName);
+    const loadData = async () => {
+      try {
+        await fetchAgencies();
+        await fetchACData();
+      } catch (err) {
+        console.error('Error loading page data:', err);
+        setError('Failed to load page data');
       }
-      setLoading(false);
-    } else {
-      // Redirect back if no ac_code provided
-      router.push('/capi/ppm/master/aclist');
-    }
+    };
+    
+    loadData();
   }, [acCode, router]);
 
   const handleUpdateAgency = async () => {
     if (!acData || !selectedAgency) return;
     
     setUpdating(true);
+    setError(null); // Clear any previous errors
+    
     try {
-      // Here you would make the API call to update the agency
-      console.log(`Updating agency for AC ${acData.acCode} to ${selectedAgency}`);
+      // Find agency ID from selected agency name
+      const selectedAgencyData = agencyOptions.find(agency => agency.name === selectedAgency);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!selectedAgencyData) {
+        setError('Invalid agency selected');
+        setUpdating(false);
+        return;
+      }
       
-      // Redirect back to AC list
-      router.push('/capi/ppm/master/aclist');
-    } catch (error) {
+      console.log(`Updating agency for AC ${acData.ac_code} to ID ${selectedAgencyData.id} (${selectedAgency})`);
+      
+      // Make the API call to update the agency
+      const response = await apiService.updateMasterACIndex(acData.ac_code, selectedAgencyData.id);
+      
+      console.log('Update API response:', response);
+      
+      if (response.success && response.data && response.data.updated) {
+        console.log('Agency updated successfully');
+        // Show success toast and redirect after a delay
+        setToastMessage('Agency updated successfully!');
+        setShowToast(true);
+        // Redirect back to AC list after showing toast
+        setTimeout(() => {
+          router.push('/capi/ppm/master/aclist');
+        }, 2000);
+      } else {
+        setError(response.message || 'Failed to update agency');
+        console.error('Update failed:', response);
+      }
+    } catch (error: any) {
       console.error('Error updating agency:', error);
+      setError(error.message || 'Failed to update agency');
     } finally {
       setUpdating(false);
     }
@@ -87,7 +159,31 @@ const ACUpdatePage = () => {
     );
   }
 
-  if (!acData) {
+  // Show error message if API call failed
+  if (error && !loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Heading level={3} className="text-2xl font-bold text-red-600 mb-2">
+              Error Loading AC Data
+            </Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <div className="space-x-4">
+              <Button onClick={fetchACData} variant="primary">
+                Try Again
+              </Button>
+              <Button onClick={handleBack}>
+                Back to AC List
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!acData && !loading) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -106,7 +202,7 @@ const ACUpdatePage = () => {
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
-        Assign Agenct to : {acData.acName}
+        Assign Agency to : {acData?.ac_name || ''}
       </Heading>
 
       {/* Main Content Card */}
@@ -114,12 +210,13 @@ const ACUpdatePage = () => {
         {/* Section Header */}
         <div className="mb-6">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-500 mr-3 mb-5"></div>
-            <Heading level={4} className="text-gray-800 font-bold mb-5">
-              ASSIGN AGENCT TO: {acData.acName.toUpperCase()}
+            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+            <Heading level={4} className="text-gray-800 font-bold">
+              ASSIGN AGENCY TO: {acData?.ac_name?.toUpperCase() || ''}
             </Heading>
           </div>
         </div>
+
 
         {/* Form */}
         <div className="space-y-4">
@@ -135,14 +232,11 @@ const ACUpdatePage = () => {
                 disabled={updating}
               >
                 <option value="">Select Agency</option>
-                <option value="Parbhat">Parbhat</option>
-                <option value="Kadence">Kadence</option>
-                <option value="Chandan">Chandan</option>
-                <option value="Rohit">Rohit</option>
-                <option value="Navin">Navin</option>
-                <option value="Aeon">Aeon</option>
-                <option value="Abhinav">Abhinav</option>
-                <option value="Inhouse">Inhouse</option>
+                {agencyOptions.map((agency) => (
+                  <option key={agency.id} value={agency.name}>
+                    {agency.name}
+                  </option>
+                ))}
               </select>
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
                 <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,6 +244,9 @@ const ACUpdatePage = () => {
                 </svg>
               </div>
             </div>
+            {error && (
+              <div className="mt-2 text-red-500 text-sm">{error}</div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -178,7 +275,36 @@ const ACUpdatePage = () => {
           </div>
         </div>
       </Card>
+
+      {/* Success Toast */}
+      {showToast && (
+        <Toast
+          message={toastMessage}
+          type="success"
+          duration={2000}
+          position="top-center"
+          onClose={() => setShowToast(false)}
+          title="Success"
+        />
+      )}
     </Container>
+  );
+};
+
+const ACUpdatePage = () => {
+  return (
+    <Suspense fallback={
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <Text>Loading...</Text>
+          </div>
+        </div>
+      </Container>
+    }>
+      <ACUpdatePageContent />
+    </Suspense>
   );
 };
 

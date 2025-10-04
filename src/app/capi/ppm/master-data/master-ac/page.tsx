@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -41,6 +42,7 @@ interface APIResponse {
 }
 
 export default function MasterACPage() {
+  const router = useRouter();
   const [acName, setAcName] = useState('');
   const [acCode, setAcCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,8 +95,7 @@ export default function MasterACPage() {
   };
 
   const handleEditAC = (acCode: number) => {
-    // Handle edit AC logic here
-    console.log('Edit AC Code:', acCode);
+    router.push(`/capi/ppm/master-data/master-ac/update?ac_code=${acCode}`);
   };
 
   if (loading) {

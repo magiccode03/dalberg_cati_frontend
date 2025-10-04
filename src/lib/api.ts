@@ -77,6 +77,11 @@ export const API_ENDPOINTS = {
     INFO: '/system/info',
   },
   
+  // Dropdown APIs
+  DROPDOWN: {
+    AGENCIES: '/dropdown/agencies'
+  },
+
   // Dashboard Data
   DASHBOARD: {
     STATS: '/dashboard/stats',
@@ -88,6 +93,8 @@ export const API_ENDPOINTS = {
     SURVEY_DATES: '/dashboard/survey-dates',
     SAMPLE_STATISTICS: '/dashboard/sample-statistics',
     MASTER_AC_LIST: '/dashboard/master-ac/list',
+    MASTER_AC_UPDATE: '/dashboard/master-ac/update',
+    MASTER_AC_INDEX_UPDATE: '/dashboard/master-ac-index/acupdate',
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
@@ -518,6 +525,18 @@ class ApiService {
     if (isJson) {
       try {
         const data = await response.json();
+        
+        // Normalize API response format
+        // Some APIs return 'status: "success"' instead of 'success: true'
+        if (data.status === 'success' && !data.hasOwnProperty('success')) {
+          return {
+            success: true,
+            data: data.data,
+            message: data.message || 'Request successful',
+            timestamp: data.timestamp || new Date().toISOString()
+          };
+        }
+        
         return data;
       } catch (parseError) {
         throw new Error('Invalid JSON response from server');
@@ -799,6 +818,16 @@ class ApiService {
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
   }
 
+  async getMasterACForUpdate(acCode: number): Promise<ApiResponse<any>> {
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_UPDATE}/${acCode}`);
+  }
+
+  async getMasterACIndexForUpdate(acCode: number): Promise<ApiResponse<any>> {
+    const queryString = `?ac_code=${acCode}`;
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_INDEX_UPDATE}${queryString}`);
+  }
+
+
   async getPSFormList(params?: { page?: number; limit?: number; polling_station_name?: string; polling_station_no?: string; ac_code?: string }): Promise<any> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.PS_FORM_LIST}${queryString}`);
@@ -837,8 +866,16 @@ class ApiService {
   }
 
   // PMT Methods
-  async getAgencies(): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>(API_ENDPOINTS.PMT.AGENCIES);
+  async getAgencies(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DROPDOWN.AGENCIES);
+  }
+
+  async updateMasterACIndex(acCode: number, agencyId: number): Promise<ApiResponse<any>> {
+    const queryString = `?ac_code=${acCode}`;
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_INDEX_UPDATE}${queryString}`, {
+      method: 'PUT',
+      body: JSON.stringify({ agency_id: agencyId })
+    });
   }
 
   async getAgency(id: string): Promise<ApiResponse<any>> {
