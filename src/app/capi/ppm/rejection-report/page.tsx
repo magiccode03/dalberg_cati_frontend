@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -11,7 +11,8 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download, Play, Map } from 'lucide-react';
+import { Search, Download, Play, Map, Loader2 } from 'lucide-react';
+import { useRejectionReport } from '@/hooks/useApi';
 
 interface RejectionData {
   srNo: number;
@@ -49,109 +50,78 @@ export default function RejectionReportPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(100);
+  const [pageSize] = useState(25);
+  
+  // Memoize the API parameters to prevent infinite re-renders
+  const apiParams = React.useMemo(() => ({
+    report_days: filters.reportDays,
+    custom_date: filters.customDate,
+    custom_date_end: filters.customDateEnd,
+    report_level: filters.reportLevel,
+    interviewer_id: filters.interviewerId,
+    enumerator_id: filters.enumeratorId,
+    ac_code: filters.acCode,
+    district_code: filters.districtCode,
+    pc_code: filters.pcCode,
+    supervisor_id: filters.supervisorId,
+    server_id: filters.serverId,
+    mobile_no: filters.mobileNo,
+    fail_reason: filters.failReason,
+    page: currentPage,
+    per_page: pageSize
+  }), [filters, currentPage, pageSize]);
+  
+  // Fetch rejection report data from API
+  const { data, loading, error, refetch } = useRejectionReport(apiParams);
 
-  // Sample rejection data
-  const rejectionData: RejectionData[] = [
-    {
-      srNo: 1,
-      serverId: '301767',
-      acName: 'Chenari (SC)(207)',
-      psCode: '207_100',
-      interviewDate: '2025-06-15',
-      interviewerId: '935',
-      interviewDuration: '00:08:02',
-      respondentName: 'Anand mahto',
-      respondentMobile: '',
-      failReason: 'Rejected (N+W+RTA)',
-      audioQcId: '',
-      audioFailReason: '',
-      reAudioFailReason: '',
-      hasAudio: true,
-      hasGps: true
-    },
-    {
-      srNo: 2,
-      serverId: '301745',
-      acName: 'Chenari (SC)(207)',
-      psCode: '207_100',
-      interviewDate: '2025-06-15',
-      interviewerId: '935',
-      interviewDuration: '00:07:27',
-      respondentName: 'Golu thakur',
-      respondentMobile: '',
-      failReason: 'Rejected (Short Interview - 0 sec)',
-      audioQcId: '',
-      audioFailReason: '',
-      reAudioFailReason: '',
-      hasAudio: false,
-      hasGps: true
-    },
-    {
-      srNo: 3,
-      serverId: '301739',
-      acName: 'Chenari (SC)(207)',
-      psCode: '207_100',
-      interviewDate: '2025-06-15',
-      interviewerId: '721',
-      interviewDuration: '00:06:39',
-      respondentName: 'Vishal thakur',
-      respondentMobile: '',
-      failReason: 'Rejected (Short Interview - 0 sec)',
-      audioQcId: '',
-      audioFailReason: '',
-      reAudioFailReason: '',
-      hasAudio: false,
-      hasGps: true
-    },
-    {
-      srNo: 4,
-      serverId: '301705',
-      acName: 'Chenari (SC)(207)',
-      psCode: '207_100',
-      interviewDate: '2025-06-15',
-      interviewerId: '935',
-      interviewDuration: '00:9:27',
-      respondentName: 'Manju Devi',
-      respondentMobile: '',
-      failReason: 'Rejected (N+W+RTA)',
-      audioQcId: '',
-      audioFailReason: '',
-      reAudioFailReason: '',
-      hasAudio: true,
-      hasGps: true
-    },
-    {
-      srNo: 5,
-      serverId: '301702',
-      acName: 'Chenari (SC)(207)',
-      psCode: '207_100',
-      interviewDate: '2025-06-15',
-      interviewerId: '935',
-      interviewDuration: '00:08:33',
-      respondentName: 'Rina Devi',
-      respondentMobile: '',
-      failReason: 'Rejected (N+W+RTA)',
-      audioQcId: '',
-      audioFailReason: '',
-      reAudioFailReason: '',
-      hasAudio: true,
-      hasGps: true
+  // Handle page changes
+  useEffect(() => {
+    if (currentPage > 1) {
+      refetch();
     }
-  ];
+  }, [currentPage, refetch]);
+
+  // Transform API data to UI format
+  const transformAPIData = (apiData: any[]): RejectionData[] => {
+    return apiData.map((item, index) => ({
+      srNo: (currentPage - 1) * pageSize + index + 1,
+      serverId: item.server_id.toString(),
+      acName: item.ac_name,
+      psCode: item.ps_code,
+      interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
+      interviewerId: item.interviewer_id,
+      interviewDuration: formatDuration(item.total_duration),
+      respondentName: item.respondent_name,
+      respondentMobile: item.mobile_no || '',
+      failReason: item.fail_reason,
+      audioQcId: item.audio_qc_id?.toString() || '',
+      audioFailReason: item.audio_fail_reason || '',
+      reAudioFailReason: item.qc_recheck_status_audio_label || '',
+      hasAudio: item.audio_available,
+      hasGps: item.gps_available
+    }));
+  };
+
+  // Helper function to format duration from seconds to HH:MM:SS
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSearch = () => {
-    // Implement search logic
-    console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
+    refetch();
   };
 
   const getFailReasonBadge = (reason: string) => {
     if (reason.includes('N+W+RTA')) {
-      return <Badge variant="destructive" size="sm">N+W+RTA</Badge>;
+      return <Badge variant="error" size="sm">N+W+RTA</Badge>;
     } else if (reason.includes('Short Interview')) {
       return <Badge variant="secondary" size="sm">Short Interview</Badge>;
     } else if (reason.includes('Audio reject')) {
@@ -160,10 +130,47 @@ export default function RejectionReportPage() {
     return <Badge variant="secondary" size="sm">{reason}</Badge>;
   };
 
-  const totalPages = Math.ceil(55747 / pageSize);
+  // Extract data from API response
+  const rejectionData = data?.interviews ? transformAPIData(data.interviews) : [];
+  const totalPages = data?.pagination?.total_pages || 0;
+  const totalCount = data?.pagination?.total_count || 0;
+
+  // Debug logging
+  console.log('API Response:', { data, loading, error });
+  console.log('Transformed Data:', rejectionData);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Container maxWidth="full">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <Text>Loading rejection report data...</Text>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Container maxWidth="full">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Text className="text-red-600 mb-4">Error loading data: {error}</Text>
+            <Button onClick={refetch} variant="primary">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </Container>
+    );
+  }
 
   return (
-    <Container maxWidth="9xl">
+    <Container maxWidth="full">
         {/* Page Title */}
         <Heading level={1} className="text-2xl font-bold mb-6">
           Rejection Report
@@ -255,7 +262,10 @@ export default function RejectionReportPage() {
         {/* Rejection Report Table */}
         <Card className="">
           <div className="flex justify-between items-center mb-6">
-            <Heading level={4}>Rejection Report</Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+              <Heading level={4}>Rejection Report</Heading>
+            </div>
             <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
               <Download className="w-4 h-4 mr-2" />
               Download Data
@@ -344,7 +354,7 @@ export default function RejectionReportPage() {
             <PaginationStandard
               currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={55747}
+              totalItems={totalCount}
               itemsPerPage={pageSize}
               onPageChange={setCurrentPage}
             />

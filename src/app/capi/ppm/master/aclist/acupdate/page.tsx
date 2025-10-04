@@ -110,12 +110,12 @@ const ACUpdatePage = () => {
       </Heading>
 
       {/* Main Content Card */}
-      <Card className="p-6">
+      <Card>
         {/* Section Header */}
         <div className="mb-6">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-            <Heading level={4} className="text-gray-800 font-bold">
+            <div className="w-1 h-6 bg-blue-500 mr-3 mb-5"></div>
+            <Heading level={4} className="text-gray-800 font-bold mb-5">
               ASSIGN AGENCT TO: {acData.acName.toUpperCase()}
             </Heading>
           </div>
@@ -124,7 +124,7 @@ const ACUpdatePage = () => {
         {/* Form */}
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-5">
               Agency
             </label>
             <div className="relative">
