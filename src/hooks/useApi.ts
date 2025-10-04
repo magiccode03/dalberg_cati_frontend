@@ -380,6 +380,86 @@ export function useQualityIssues() {
   return useApi(() => apiService.getQualityIssues());
 }
 
+// Team Registration Hooks
+export function useCreateTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createTeamRegistration = useCallback(async (data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.createTeamRegistration(data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to create team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { createTeamRegistration, loading, error };
+}
+
+// Team Registration Update Hook
+export function useUpdateTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateTeamRegistration = useCallback(async (agencyId: number, data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.updateTeamRegistration(agencyId, data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to update team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateTeamRegistration, loading, error };
+}
+
 // Utility Hook for Manual API Calls
 export function useApiCall() {
   const [loading, setLoading] = useState(false);

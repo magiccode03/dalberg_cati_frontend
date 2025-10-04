@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -9,23 +9,28 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
-import { Key, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import { useCreateTeamRegistration } from '@/hooks/useApi';
+import { Key, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useUpdateTeamRegistration } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 
-const NewAgencyPage = () => {
+const AgencyUpdatePage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const agencyId = searchParams.get('agency_id');
+  
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     agency_name: '',
     qc_agency_id: '',
     show_second_level_column: '',
-    status: '1', // Default to Active
+    status: '1',
     qa_id: '',
     username: '',
     password: ''
   });
-  const { createTeamRegistration, loading, error } = useCreateTeamRegistration();
+  
+  const { updateTeamRegistration, loading: updateLoading, error: updateError } = useUpdateTeamRegistration();
   const { success, error: showError } = useToast();
 
   const qcAgencyOptions = [
@@ -45,6 +50,41 @@ const NewAgencyPage = () => {
     { value: '1', label: 'Active' },
     { value: '0', label: 'Inactive' }
   ];
+
+  // Fetch agency data on component mount
+  useEffect(() => {
+    if (agencyId) {
+      fetchAgencyData();
+    } else {
+      showError('No agency ID provided');
+      router.push('/capi/ppm/master/team-registration');
+    }
+  }, [agencyId]);
+
+  const fetchAgencyData = async () => {
+    try {
+      setLoading(true);
+      // For now, we'll use mock data. In a real app, you'd fetch from API
+      // You can replace this with actual API call to get agency details
+      const mockData = {
+        agency_name: `Agency ${agencyId}`,
+        qc_agency_id: '1',
+        show_second_level_column: '1',
+        status: '1',
+        qa_id: '1',
+        username: `user_${agencyId}`,
+        password: 'currentpassword123'
+      };
+      
+      setFormData(mockData);
+      console.log('Fetched agency data:', mockData);
+    } catch (err) {
+      console.error('Error fetching agency data:', err);
+      showError('Failed to fetch agency data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -68,7 +108,12 @@ const NewAgencyPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('Form data:', formData); // Debug log
+    if (!agencyId) {
+      showError('No agency ID provided');
+      return;
+    }
+    
+    console.log('Updating agency:', agencyId, 'with data:', formData);
     
     // Validate required fields
     if (!formData.agency_name || !formData.show_second_level_column || 
@@ -78,39 +123,52 @@ const NewAgencyPage = () => {
     }
 
     try {
-      const result = await createTeamRegistration({
+      const result = await updateTeamRegistration(parseInt(agencyId), {
         agency_name: formData.agency_name,
         qc_agency_id: parseInt(formData.qc_agency_id || '1'),
         show_second_level_column: parseInt(formData.show_second_level_column),
         status: parseInt(formData.status),
         qa_id: parseInt(formData.qa_id || '0'),
-        unique_id: formData.username, // Use username as unique_id
-        first_name: formData.username, // Use username as first_name
-        last_name: formData.username, // Use username as last_name
-        email: `${formData.username}@example.com`, // Generate email from username
+        unique_id: formData.username,
+        first_name: formData.username,
+        last_name: formData.username,
+        email: `${formData.username}@example.com`,
         password: formData.password
       });
 
       if (result) {
-        success('Team registration created successfully!');
+        success('Agency updated successfully!');
         // Navigate back to team registration list
         router.push('/capi/ppm/master/team-registration');
       }
     } catch (err) {
-      console.error('Error creating team registration:', err);
-      showError('Failed to create team registration. Please try again.');
+      console.error('Error updating agency:', err);
+      showError('Failed to update agency. Please try again.');
     }
   };
 
   const handleBack = () => {
-    router.back();
+    router.push('/capi/ppm/master/team-registration');
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <Text>Loading agency data...</Text>
+          </div>
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
-        New Team
+        Update Agency: {formData.agency_name}
       </Heading>
 
       {/* Main Content Card */}
@@ -120,7 +178,7 @@ const NewAgencyPage = () => {
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 mb-5"></div>
             <Heading level={4} className="text-gray-800 font-bold mb-5">
-              Team Registration
+              Update Team Registration
             </Heading>
           </div>
         </div>
@@ -266,33 +324,33 @@ const NewAgencyPage = () => {
               onClick={handleSubmit}
               variant="primary"
               className="flex-1"
-              disabled={loading}
+              disabled={updateLoading}
             >
-              {loading ? (
+              {updateLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
+                  Updating...
                 </div>
               ) : (
-                'Save'
+                'Update'
               )}
             </Button>
             <Button
               onClick={handleBack}
               variant="destructive"
               className="flex-1"
-              disabled={loading}
+              disabled={updateLoading}
             >
               Back
             </Button>
           </div>
 
           {/* Error Display */}
-          {error && (
+          {updateError && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center">
                 <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-                <Text className="text-red-700">{error}</Text>
+                <Text className="text-red-700">{updateError}</Text>
               </div>
             </div>
           )}
@@ -302,4 +360,4 @@ const NewAgencyPage = () => {
   );
 };
 
-export default NewAgencyPage;
+export default AgencyUpdatePage;

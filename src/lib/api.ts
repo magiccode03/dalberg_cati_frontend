@@ -91,6 +91,9 @@ export const API_ENDPOINTS = {
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
+    TEAM_REGISTRATION: '/dashboard/team-registration',
+    TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
+    TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
   },
 
   // Analysis
@@ -664,6 +667,54 @@ class ApiService {
       limit: limit.toString(),
     }).toString()}`;
     return this.request(`/dashboard/team-registration${queryString}`);
+  }
+
+  async createTeamRegistration(data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }): Promise<ApiResponse<{
+    agencyId: number;
+    userId: number;
+    agency_name: string;
+    unique_id: string;
+    message: string;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_CREATE, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async updateTeamRegistration(agencyId: number, data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }): Promise<ApiResponse<{
+    agencyId: number;
+    userId: number;
+    agency_name: string;
+    unique_id: string;
+    message: string;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_UPDATE(agencyId.toString()), {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
   }
 
   // Rejection Report Methods
