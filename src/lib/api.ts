@@ -130,6 +130,7 @@ export const API_ENDPOINTS = {
     RELIGION_WISE: '/demographic/religionwise',
     SOCIAL_CATEGORY_WISE: '/demographic/socialcategorywise',
     CASTE_WISE: '/demographic/castewise',
+    CASTE_DETAILS: '/demographics/caste',
   },
   
   // Field Data (FD)
@@ -360,6 +361,49 @@ export interface CasteWiseSummary {
 export interface CasteWiseResponse {
   summary: CasteWiseSummary;
   constituencies: CasteWiseConstituency[];
+}
+
+// Detailed Caste Demographics API Response Types
+export interface DetailedCasteInfo {
+  rank: number;
+  caste_name: string;
+  castecode: string;
+  caste: number;
+  minsample: number;
+  achievement_count: number;
+  achievement: number;
+  difference: number;
+  status: 'met' | 'not_met';
+  color_class: string;
+}
+
+export interface DetailedCasteACData {
+  ac_code: number;
+  ac_name: string;
+  sample_target: number;
+  valid_underqc_achived: number;
+  completion_rate: string;
+  castes: DetailedCasteInfo[];
+}
+
+export interface DetailedCastePCData {
+  pc_code: number;
+  pc_name: string;
+  district_name: string;
+  sample_target: number;
+  valid_underqc_achived: number;
+  completion_rate: string;
+  castes: DetailedCasteInfo[];
+}
+
+export interface DetailedCasteResponse {
+  progress_type: number;
+  progress_page: string;
+  total_records: number;
+  search_filters: Record<string, any>;
+  data_list: DetailedCasteACData[] | DetailedCastePCData[];
+  message: string;
+  timestamp: string;
 }
 
 // API Service Class
@@ -741,6 +785,18 @@ class ApiService {
 
   async getCasteWiseData(): Promise<ApiResponse<CasteWiseResponse>> {
     return this.request<CasteWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.CASTE_WISE);
+  }
+
+  async getDetailedCasteData(params?: { progress_type?: number; ac_code?: number; pc_code?: number; caste_not_met?: string }): Promise<ApiResponse<DetailedCasteResponse>> {
+    const stringParams: Record<string, string> = {};
+    if (params) {
+      if (params.progress_type) stringParams.progress_type = params.progress_type.toString();
+      if (params.ac_code) stringParams.ac_code = params.ac_code.toString();
+      if (params.pc_code) stringParams.pc_code = params.pc_code.toString();
+      if (params.caste_not_met) stringParams.caste_not_met = params.caste_not_met;
+    }
+    const queryString = Object.keys(stringParams).length ? `?${new URLSearchParams(stringParams).toString()}` : '';
+    return this.request<DetailedCasteResponse>(`${API_ENDPOINTS.DEMOGRAPHIC.CASTE_DETAILS}${queryString}`);
   }
 
   // Super Admin Methods - Role Management
