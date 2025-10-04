@@ -166,10 +166,10 @@ const TeamRegistrationPage = () => {
       </div>
 
       {/* Agency List Table */}
-      <Card className="p-6">
+      <Card>
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={4}>Agency List</Heading>
           </div>
           <Button variant="primary">

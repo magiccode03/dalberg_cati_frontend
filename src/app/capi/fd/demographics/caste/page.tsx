@@ -27,13 +27,14 @@ export default function CastePage() {
   const [acName, setAcName] = useState('');
   const [casteNotMet, setCasteNotMet] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('ACs');
 
   // Summary Cards Data
   const summaryCards = [
-    { title: 'ACs', value: '243', color: 'bg-green-600', opacity: 'opacity-100', progressType: '4' },
-    { title: 'PCs', value: '40', color: 'bg-green-600', opacity: 'opacity-50', progressType: '1' },
-    { title: 'Districts', value: '38', color: 'bg-green-600', opacity: 'opacity-50', progressType: '2' },
-    { title: 'Zones', value: '9', color: 'bg-green-600', opacity: 'opacity-50', progressType: '3' }
+    { title: 'ACs', value: '243', color: 'bg-green-600', progressType: '4' },
+    { title: 'PCs', value: '40', color: 'bg-green-600', progressType: '1' },
+    { title: 'Districts', value: '38', color: 'bg-green-600', progressType: '2' },
+    { title: 'Zones', value: '9', color: 'bg-green-600', progressType: '3' }
   ];
 
   // Sample caste data based on the HTML structure
@@ -60,6 +61,138 @@ export default function CastePage() {
     }
   ];
 
+  // Sample PCs data
+  const pcData: CasteData[] = [
+    {
+      acName: 'PC-1',
+      sample: '150/140',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 25, achievement: 18, difference: -7 },
+        caste2: { name: 'OBC', population: 35, achievement: 28, difference: -7 },
+        caste3: { name: 'SC/ST', population: 20, achievement: 15, difference: -5 },
+        caste4: { name: 'Others', population: 20, achievement: 12, difference: -8 }
+      }
+    },
+    {
+      acName: 'PC-2',
+      sample: '145/140',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 30, achievement: 25, difference: -5 },
+        caste2: { name: 'OBC', population: 40, achievement: 35, difference: -5 },
+        caste3: { name: 'SC/ST', population: 15, achievement: 10, difference: -5 },
+        caste4: { name: 'Others', population: 15, achievement: 8, difference: -7 }
+      }
+    },
+    {
+      acName: 'PC-3',
+      sample: '138/140',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 28, achievement: 20, difference: -8 },
+        caste2: { name: 'OBC', population: 32, achievement: 28, difference: -4 },
+        caste3: { name: 'SC/ST', population: 22, achievement: 18, difference: -4 },
+        caste4: { name: 'Others', population: 18, achievement: 10, difference: -8 }
+      }
+    }
+  ];
+
+  // Sample Districts data
+  const districtData: CasteData[] = [
+    {
+      acName: 'Patna',
+      sample: '250/240',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 30, achievement: 25, difference: -5 },
+        caste2: { name: 'OBC', population: 35, achievement: 30, difference: -5 },
+        caste3: { name: 'SC/ST', population: 20, achievement: 18, difference: -2 },
+        caste4: { name: 'Others', population: 15, achievement: 12, difference: -3 }
+      }
+    },
+    {
+      acName: 'Gaya',
+      sample: '245/240',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 25, achievement: 22, difference: -3 },
+        caste2: { name: 'OBC', population: 40, achievement: 35, difference: -5 },
+        caste3: { name: 'SC/ST', population: 25, achievement: 20, difference: -5 },
+        caste4: { name: 'Others', population: 10, achievement: 8, difference: -2 }
+      }
+    },
+    {
+      acName: 'Muzaffarpur',
+      sample: '238/240',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 28, achievement: 24, difference: -4 },
+        caste2: { name: 'OBC', population: 38, achievement: 32, difference: -6 },
+        caste3: { name: 'SC/ST', population: 22, achievement: 19, difference: -3 },
+        caste4: { name: 'Others', population: 12, achievement: 9, difference: -3 }
+      }
+    },
+    {
+      acName: 'Bhagalpur',
+      sample: '242/240',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 32, achievement: 28, difference: -4 },
+        caste2: { name: 'OBC', population: 42, achievement: 36, difference: -6 },
+        caste3: { name: 'SC/ST', population: 18, achievement: 15, difference: -3 },
+        caste4: { name: 'Others', population: 8, achievement: 6, difference: -2 }
+      }
+    }
+  ];
+
+  // Sample Zones data
+  const zonesData: CasteData[] = [
+    {
+      acName: 'Zone-1',
+      sample: '300/295',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 28, achievement: 24, difference: -4 },
+        caste2: { name: 'OBC', population: 38, achievement: 32, difference: -6 },
+        caste3: { name: 'SC/ST', population: 20, achievement: 17, difference: -3 },
+        caste4: { name: 'Others', population: 14, achievement: 11, difference: -3 }
+      }
+    },
+    {
+      acName: 'Zone-2',
+      sample: '298/295',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 30, achievement: 26, difference: -4 },
+        caste2: { name: 'OBC', population: 35, achievement: 30, difference: -5 },
+        caste3: { name: 'SC/ST', population: 22, achievement: 19, difference: -3 },
+        caste4: { name: 'Others', population: 13, achievement: 10, difference: -3 }
+      }
+    },
+    {
+      acName: 'Zone-3',
+      sample: '294/295',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 26, achievement: 22, difference: -4 },
+        caste2: { name: 'OBC', population: 40, achievement: 34, difference: -6 },
+        caste3: { name: 'SC/ST', population: 24, achievement: 20, difference: -4 },
+        caste4: { name: 'Others', population: 10, achievement: 8, difference: -2 }
+      }
+    },
+    {
+      acName: 'Zone-4',
+      sample: '297/295',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 32, achievement: 28, difference: -4 },
+        caste2: { name: 'OBC', population: 36, achievement: 31, difference: -5 },
+        caste3: { name: 'SC/ST', population: 18, achievement: 15, difference: -3 },
+        caste4: { name: 'Others', population: 14, achievement: 11, difference: -3 }
+      }
+    },
+    {
+      acName: 'Zone-5',
+      sample: '293/295',
+      casteData: {
+        caste1: { name: 'Forward Castes', population: 29, achievement: 25, difference: -4 },
+        caste2: { name: 'OBC', population: 37, achievement: 32, difference: -5 },
+        caste3: { name: 'SC/ST', population: 21, achievement: 18, difference: -3 },
+        caste4: { name: 'Others', population: 13, achievement: 10, difference: -3 }
+      }
+    }
+  ];
+
   const getDifferenceStyle = (difference: number) => {
     if (difference >= 0) {
       return 'bg-green-600 text-white';
@@ -68,9 +201,28 @@ export default function CastePage() {
     }
   };
 
+  const getCurrentData = () => {
+    switch (activeTab) {
+      case 'PCs':
+        return pcData;
+      case 'Districts':
+        return districtData;
+      case 'Zones':
+        return zonesData;
+      default:
+        return casteData;
+    }
+  };
+
   const handleCardClick = (progressType: string) => {
     // Handle card click to change progress type
-    console.log('Progress type changed to:', progressType);
+    const tabMap: { [key: string]: string } = {
+      '1': 'PCs',
+      '2': 'Districts', 
+      '3': 'Zones',
+      '4': 'ACs'
+    };
+    setActiveTab(tabMap[progressType] || 'ACs');
   };
 
   const handleDownload = () => {
@@ -117,7 +269,9 @@ export default function CastePage() {
         {summaryCards.map((card, index) => (
           <div
             key={index}
-            className={`${card.color} text-white ${card.opacity === 'opacity-50' ? 'opacity-50' : ''} cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700`}
+            className={`${card.color} text-white ${
+              activeTab === card.title ? 'opacity-100' : 'opacity-50'
+            } cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700`}
             onClick={() => handleCardClick(card.progressType)}
             data-progress-type={card.progressType}
           >
@@ -138,11 +292,16 @@ export default function CastePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  AC Code
+                  {activeTab === 'PCs' ? 'PC Code' : 
+                   activeTab === 'Districts' ? 'District Code' : 
+                   activeTab === 'Zones' ? 'Zone Code' : 'AC Code'}
                 </label>
                 <Input
                   type="text"
-                  placeholder="Search by AC Code"
+                  placeholder={activeTab === 'PCs' ? 'Search by PC Code' : 
+                             activeTab === 'Districts' ? 'Search by District Code' : 
+                             activeTab === 'Zones' ? 'Search by Zone Code' : 
+                             'Search by AC Code'}
                   value={acCode}
                   onChange={(e) => setAcCode(e.target.value)}
                   className="w-full"
@@ -150,11 +309,16 @@ export default function CastePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  AC Name
+                  {activeTab === 'PCs' ? 'PC Name' : 
+                   activeTab === 'Districts' ? 'District Name' : 
+                   activeTab === 'Zones' ? 'Zone Name' : 'AC Name'}
                 </label>
                 <Input
                   type="text"
-                  placeholder="Search by AC Name"
+                  placeholder={activeTab === 'PCs' ? 'Search by PC Name' : 
+                             activeTab === 'Districts' ? 'Search by District Name' : 
+                             activeTab === 'Zones' ? 'Search by Zone Name' : 
+                             'Search by AC Name'}
                   value={acName}
                   onChange={(e) => setAcName(e.target.value)}
                   className="w-full"
@@ -162,8 +326,8 @@ export default function CastePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Caste not Met
-                </label>
+                  {(activeTab === 'Districts' || activeTab === 'Zones') ? 'Caste not Meet' : 'Caste not Met'}
+              </label>
                 <SelectDropdown
                   value={casteNotMet}
                   onChange={(value) => setCasteNotMet(Array.isArray(value) ? value[0] : value)}
@@ -193,7 +357,7 @@ export default function CastePage() {
                     <th style={{ width: '10%' }} className="text-center">
                       <Button 
                         onClick={handleDownload}
-                        className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-2"
+                        className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-2 float-end"
                       >
                         <Download className="h-4 w-4" />
                         <span>Download</span>
@@ -202,7 +366,7 @@ export default function CastePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {casteData.map((row, index) => (
+                  {getCurrentData().map((row, index) => (
                     <React.Fragment key={index}>
                       {/* Caste Headers */}
                       <tr>

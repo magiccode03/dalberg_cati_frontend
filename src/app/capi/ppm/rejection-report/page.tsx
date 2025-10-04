@@ -178,7 +178,7 @@ export default function RejectionReportPage() {
 
         {/* Search Filters */}
         <Card className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div>
               <Text className="block text-sm font-medium mb-2">Report Days</Text>
               <SelectDropdown
@@ -249,13 +249,13 @@ export default function RejectionReportPage() {
                 onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
               />
             </div>
-          </div>
-          
-          <div className="mt-4">
-            <Button onClick={handleSearch}>
-              <Search className="w-4 h-4 mr-2" />
-              Search
-            </Button>
+
+            <div className="flex items-end">
+              <Button onClick={handleSearch} className="w-full">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
           </div>
         </Card>
 

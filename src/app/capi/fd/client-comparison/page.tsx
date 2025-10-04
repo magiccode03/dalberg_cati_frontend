@@ -1,24 +1,95 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Heading from '@/components/ui/Heading';
+import PaginationStandard from '@/components/ui/PaginationStandard';
+import { apiService } from '@/lib/api';
 
 interface ConstituencyData {
-  acCode: number;
-  acName: string;
-  targetSample: number;
-  validClient: number;
-  validPMT: number;
+  ac_code: number;
+  ac_name: string;
+  target_sample: number;
+  valid_client: number;
+  valid_pmt: number;
   difference: number;
+  color_code: string;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    success: boolean;
+    data: ConstituencyData[];
+    pagination: {
+      total: number;
+      page: number;
+      total_pages: number;
+      has_next: boolean;
+      has_previous: boolean;
+    };
+    totals: {
+      target_sample: string;
+      valid_client: number;
+      valid_pmt: number;
+      difference: number;
+      completion_percentage: number;
+      data_sync_status: string;
+    };
+    message: string;
+    timestamp: string;
+  };
+  message: string;
+  timestamp: string;
 }
 
 export default function ClientComparisonPage() {
-  const constituencyData: ConstituencyData[] = [
-    { acCode: 1, acName: 'Valmiki Nagar', targetSample: 300, validClient: 323, validPMT: 310, difference: -13 },
-    { acCode: 2, acName: 'Ramnagar (SC)', targetSample: 300, validClient: 341, validPMT: 346, difference: 5 },
-    { acCode: 3, acName: 'Narkatiaganj', targetSample: 300, validClient: 281, validPMT: 315, difference: 34 },
-  ];
+  const [constituencyData, setConstituencyData] = useState<ConstituencyData[]>([]);
+  const [totals, setTotals] = useState({
+    target_sample: 0,
+    valid_client: 0,
+    valid_pmt: 0,
+    difference: 0,
+    completion_percentage: 0,
+    data_sync_status: ''
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  useEffect(() => {
+    fetchData();
+  }, [currentPage]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiService.getFDInternalDashboard({
+        limit: 50,
+        page: currentPage
+      }) as APIResponse;
+
+      if (response.success && response.data.success) {
+        setConstituencyData(response.data.data);
+        setTotals({
+          ...response.data.totals,
+          target_sample: parseInt(response.data.totals.target_sample) || 0
+        });
+        setTotalPages(response.data.pagination.total_pages);
+        setTotalItems(response.data.pagination.total);
+      } else {
+        setError('Failed to fetch client comparison data');
+      }
+    } catch (err) {
+      setError('Error fetching data: ' + (err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getDifferenceColor = (difference: number): string => {
     if (difference <= 0) return '#b4eed4'; // Good - green
@@ -31,11 +102,6 @@ export default function ClientComparisonPage() {
     if (difference <= 20) return '🟡'; // Low Alert
     return '🔴'; // High Alert
   };
-
-  const totalTargetSample = constituencyData.reduce((sum, item) => sum + item.targetSample, 0);
-  const totalValidClient = constituencyData.reduce((sum, item) => sum + item.validClient, 0);
-  const totalValidPMT = constituencyData.reduce((sum, item) => sum + item.validPMT, 0);
-  const totalDifference = totalValidPMT - totalValidClient;
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -57,7 +123,7 @@ export default function ClientComparisonPage() {
         <div className="bg-purple-600 text-white rounded-lg shadow-lg">
           <div className="p-6 text-center">
             <h3 className="text-white text-xl font-semibold mb-0">
-              Interviews Valid (Client) - {totalValidClient.toLocaleString()}
+              Interviews Valid (Client) - {loading ? 'Loading...' : totals.valid_client.toLocaleString()}
             </h3>
           </div>
         </div>
@@ -65,7 +131,7 @@ export default function ClientComparisonPage() {
         <div className="bg-green-600 text-white rounded-lg shadow-lg">
           <div className="p-6 text-center">
             <h3 className="text-white text-xl font-semibold mb-0">
-              Interviews Valid (PMT) - {totalValidPMT.toLocaleString()}
+              Interviews Valid (PMT) - {loading ? 'Loading...' : totals.valid_pmt.toLocaleString()}
             </h3>
           </div>
         </div>
@@ -90,59 +156,88 @@ export default function ClientComparisonPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead>
-              <tr>
-                <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                  AC Code
-                </th>
-                <th className="bg-blue-100 border border-gray-300 font-semibold text-left py-3" style={{ width: '10%' }}>
-                  AC Name
-                </th>
-                <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                  Target Sample
-                </th>
-                <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                  Valid (Client)
-                </th>
-                <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                  Valid (PMT)
-                </th>
-                <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                  Difference
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {constituencyData.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="text-center font-medium border border-gray-300 py-2">{item.acCode}</td>
-                  <td className="text-left font-medium border border-gray-300 py-2">{item.acName}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{item.targetSample}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{item.validClient}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{item.validPMT}</td>
-                  <td 
-                    className="text-center font-medium border border-gray-300 py-2"
-                    style={{ backgroundColor: getDifferenceColor(item.difference) }}
-                  >
-                    {item.difference}
-                  </td>
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="text-lg text-gray-600">Loading data...</div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <div className="text-lg text-red-600">Error: {error}</div>
+            <button 
+              onClick={fetchData}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr>
+                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
+                    AC Code
+                  </th>
+                  <th className="bg-blue-100 border border-gray-300 font-semibold text-left py-3" style={{ width: '10%' }}>
+                    AC Name
+                  </th>
+                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
+                    Target Sample
+                  </th>
+                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
+                    Valid (Client)
+                  </th>
+                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
+                    Valid (PMT)
+                  </th>
+                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
+                    Difference
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="bg-gray-100 font-semibold">
-                <td className="text-center border border-gray-300 py-2"></td>
-                <td className="text-left border border-gray-300 py-2">Total</td>
-                <td className="text-center border border-gray-300 py-2">{totalTargetSample.toLocaleString()}</td>
-                <td className="text-center border border-gray-300 py-2">{totalValidClient.toLocaleString()}</td>
-                <td className="text-center border border-gray-300 py-2">{totalValidPMT.toLocaleString()}</td>
-                <td className="text-center border border-gray-300 py-2">{totalDifference.toLocaleString()}</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {constituencyData.map((item, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="text-center font-medium border border-gray-300 py-2">{item.ac_code}</td>
+                    <td className="text-left font-medium border border-gray-300 py-2">{item.ac_name}</td>
+                    <td className="text-center font-medium border border-gray-300 py-2">{item.target_sample}</td>
+                    <td className="text-center font-medium border border-gray-300 py-2">{item.valid_client}</td>
+                    <td className="text-center font-medium border border-gray-300 py-2">{item.valid_pmt}</td>
+                    <td 
+                      className="text-center font-medium border border-gray-300 py-2"
+                      style={{ backgroundColor: item.color_code || getDifferenceColor(item.difference) }}
+                    >
+                      {item.difference}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-gray-100 font-semibold">
+                  <td className="text-center border border-gray-300 py-2"></td>
+                  <td className="text-left border border-gray-300 py-2">Total</td>
+                  <td className="text-center border border-gray-300 py-2">{totals.target_sample}</td>
+                  <td className="text-center border border-gray-300 py-2">{totals.valid_client.toLocaleString()}</td>
+                  <td className="text-center border border-gray-300 py-2">{totals.valid_pmt.toLocaleString()}</td>
+                  <td className="text-center border border-gray-300 py-2">{totals.difference.toLocaleString()}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+        
+        {/* Pagination */}
+        {!loading && !error && constituencyData.length > 0 && (
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              totalItems={totalItems}
+              itemsPerPage={50}
+            />
+          </div>
+        )}
       </div>
 
       <style jsx>{`
