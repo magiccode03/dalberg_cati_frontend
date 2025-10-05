@@ -1,0 +1,16 @@
+Section,Type,Label/Column Name,
+,,,
+,,,
+Master Interviewer Data,Table Column,Sr No,id
+Master Interviewer Data,Table Column,Full Name,fullname
+Master Interviewer Data,Table Column,Login Id,login_id
+Master Interviewer Data,Table Column,Total Data Submit,total_data_submitted
+Master Interviewer Data,Table Column,Assigned ACS,No Attribute
+Master Interviewer Data,Table Column,Actions,No Attribute
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages
+Pagination,Data Field,Items Per Page,itemsPerPage
