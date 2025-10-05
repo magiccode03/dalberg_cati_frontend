@@ -298,13 +298,13 @@ const TelecallerProgressPage: React.FC = () => {
     bgColor: string;
     textColor?: string;
   }> = ({ title, value, icon, color, bgColor, textColor = 'text-white' }) => (
-    <div className={`${bgColor} rounded-lg p-4 border-l-4 ${color} shadow-sm hover:shadow-md transition-shadow`}>
+    <div className={`${bgColor} rounded-lg p-3 md:p-4 border-l-4 ${color} shadow-sm hover:shadow-md transition-shadow`}>
       <div className="flex items-center justify-between">
-        <div>
-          <p className={`text-sm font-medium ${textColor} opacity-90`}>{title}</p>
-          <p className={`text-2xl font-bold ${textColor} mt-1`}>{value}</p>
+        <div className="flex-1 min-w-0">
+          <p className={`text-xs md:text-sm font-medium ${textColor} opacity-90 truncate`}>{title}</p>
+          <p className={`text-lg md:text-2xl font-bold ${textColor} mt-1 break-all`}>{value}</p>
         </div>
-        <div className={`p-3 rounded-full bg-white bg-opacity-20`}>
+        <div className={`p-2 md:p-3 rounded-full bg-white bg-opacity-20 flex-shrink-0 ml-2`}>
           {icon}
         </div>
       </div>
@@ -312,11 +312,11 @@ const TelecallerProgressPage: React.FC = () => {
   );
 
   const SectionHeader: React.FC<{ title: string; icon: React.ReactNode }> = ({ title, icon }) => (
-    <div className="flex items-center gap-3 mb-6">
-      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+    <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
         {icon}
       </div>
-      <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+      <Heading level={2} className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
         {title}
       </Heading>
     </div>
@@ -327,7 +327,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Caller Performance Section */}
       <div className="mb-8">
         <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
           <MetricCard
             title="Total Callers"
             value={data.total_callers}
@@ -376,7 +376,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Call Dial Status Section */}
       <div className="mb-8">
         <SectionHeader title="CALL DIAL STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
             title="Call not Received"
             value={data.call_not_received}
@@ -411,7 +411,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Call Dial: Not Ringing Section */}
       <div className="mb-8">
         <SectionHeader title="CALL DIAL : NOT RINGING" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
             title="Switch Off"
             value={data.switch_off}
@@ -474,7 +474,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Call Dial: Ringing (Picked) Section */}
       <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING (PICKED)" icon={<BarChart3 className="h-6 w-6 text-green-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
             title="Call Continue"
             value={data.call_continue}
@@ -509,7 +509,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* General Metrics Section */}
       <div className="mb-8">
         <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
             title="Number Exhausted"
             value={data.number_exhausted}
@@ -548,34 +548,45 @@ const TelecallerProgressPage: React.FC = () => {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <Heading level={1} className="text-3xl font-bold text-gray-900 dark:text-white">
+          {/* Header Section - Responsive */}
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+            {/* Title Section */}
+            <div className="flex-1">
+              <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                 Caller Performance Dashboard
               </Heading>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
+              <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
               </p>
             </div>
             
-            {/* View Mode Toggle and Refresh */}
-            <div className="flex gap-2">
-              <Button
-                variant={viewMode === 'overall' ? 'primary' : 'outline'}
-                onClick={() => setViewMode('overall')}
-                className="flex items-center gap-2"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Overall
-              </Button>
-              <Button
-                variant={viewMode === 'daywise' ? 'primary' : 'outline'}
-                onClick={() => setViewMode('daywise')}
-                className="flex items-center gap-2"
-              >
-                <Calendar className="h-4 w-4" />
-                Day-wise
-              </Button>
+            {/* View Mode Toggle and Refresh - Responsive */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+              {/* View Mode Toggle Buttons */}
+              <div className="flex gap-2 flex-1 sm:flex-initial">
+                <Button
+                  variant={viewMode === 'overall' ? 'primary' : 'outline'}
+                  onClick={() => setViewMode('overall')}
+                  className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-3 py-2"
+                  size="sm"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span className="hidden xs:inline">Overall</span>
+                  <span className="xs:hidden">Overall</span>
+                </Button>
+                <Button
+                  variant={viewMode === 'daywise' ? 'primary' : 'outline'}
+                  onClick={() => setViewMode('daywise')}
+                  className="flex items-center justify-center gap-2 flex-1 sm:flex-initial px-3 py-2"
+                  size="sm"
+                >
+                  <Calendar className="h-4 w-4" />
+                  <span className="hidden xs:inline">Day-wise</span>
+                  <span className="xs:hidden">Day</span>
+                </Button>
+              </div>
+              
+              {/* Refresh Button */}
               <Button
                 variant="outline"
                 onClick={() => {
@@ -586,10 +597,12 @@ const TelecallerProgressPage: React.FC = () => {
                   }
                 }}
                 disabled={loading}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-3 py-2"
+                size="sm"
               >
                 <Activity className="h-4 w-4" />
-                {loading ? 'Loading...' : 'Refresh'}
+                <span className="hidden xs:inline">{loading ? 'Loading...' : 'Refresh'}</span>
+                <span className="xs:hidden">{loading ? '...' : '↻'}</span>
               </Button>
             </div>
           </div>
@@ -599,12 +612,12 @@ const TelecallerProgressPage: React.FC = () => {
         {/* Error Message */}
         {error && (
           <Alert type="error" className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold">Unable to Load Performance Data</h4>
-                <p className="mt-1">{error}</p>
-                <p className="mt-2 text-sm opacity-90">
-                  Make sure the backend server is running on <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded">http://localhost:4001</code>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <h4 className="font-semibold text-sm md:text-base">Unable to Load Performance Data</h4>
+                <p className="mt-1 text-sm">{error}</p>
+                <p className="mt-2 text-xs md:text-sm opacity-90">
+                  Make sure the backend server is running on <code className="bg-gray-200 dark:bg-gray-700 px-1 rounded text-xs">http://localhost:4001</code>
                 </p>
               </div>
               <Button
@@ -617,7 +630,7 @@ const TelecallerProgressPage: React.FC = () => {
                     fetchDayWiseData();
                   }
                 }}
-                className="ml-4"
+                className="w-full sm:w-auto flex-shrink-0"
               >
                 Retry
               </Button>
@@ -639,8 +652,11 @@ const TelecallerProgressPage: React.FC = () => {
             {metrics && viewMode === 'overall' && (
               <Alert type="success" className="mb-4">
                 <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  <span>Performance data loaded successfully. Last updated: {new Date().toLocaleTimeString()}</span>
+                  <Activity className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-sm md:text-base">
+                    <span className="hidden sm:inline">Performance data loaded successfully. Last updated: {new Date().toLocaleTimeString()}</span>
+                    <span className="sm:hidden">Data loaded • {new Date().toLocaleTimeString()}</span>
+                  </span>
                 </div>
               </Alert>
             )}
@@ -648,32 +664,44 @@ const TelecallerProgressPage: React.FC = () => {
             {dayWiseData.length > 0 && viewMode === 'daywise' && (
               <Alert type="success" className="mb-4">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>Day-wise performance data loaded successfully. Showing {dayWiseData.length} days of data.</span>
+                  <Calendar className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-sm md:text-base">
+                    <span className="hidden sm:inline">Day-wise performance data loaded successfully. Showing {dayWiseData.length} days of data.</span>
+                    <span className="sm:hidden">Day-wise data • {dayWiseData.length} days</span>
+                  </span>
                 </div>
               </Alert>
             )}
 
             {viewMode === 'overall' && metrics && (
-              <Card className="p-6">
+              <Card className="p-4 md:p-6">
                 {renderMetrics(metrics)}
               </Card>
             )}
 
             {viewMode === 'daywise' && dayWiseData.length > 0 && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {dayWiseData.map((dayData, index) => (
-                  <Card key={dayData.date} className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {new Date(dayData.date).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                  <Card key={dayData.date} className="p-4 md:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 md:mb-6">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+                        <span className="hidden sm:inline">
+                          {new Date(dayData.date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </span>
+                        <span className="sm:hidden">
+                          {new Date(dayData.date).toLocaleDateString('en-US', {
+                            weekday: 'short',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
                       </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
                         Day {dayData.metrics.days_till_now}
                       </span>
                     </div>

@@ -259,13 +259,16 @@ const TeleUserInfoPage: React.FC = () => {
     <FluidContainer>
       <div className="space-y-6">
         {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <Heading level={1} className="text-2xl font-bold text-gray-900">
+            <Heading level={1} className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Tele Caller
             </Heading>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Manage telecallers and their assignments
+            </p>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {/* Additional header content if needed */}
           </div>
         </div>
@@ -278,10 +281,10 @@ const TeleUserInfoPage: React.FC = () => {
         )}
 
         {/* Search Form */}
-        <Card className="">
+        <Card className="p-4 md:p-6">
           <form onSubmit={handleSearch}>
-            <div className="flex flex-col lg:flex-row gap-4 items-end">
-              <div className="flex-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+              <div className="lg:col-span-1">
                 <Input
                   type="text"
                   placeholder="Teleform User ID"
@@ -290,7 +293,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div className="flex-1">
+              <div className="lg:col-span-1">
                 <Input
                   type="text"
                   placeholder="Name"
@@ -299,7 +302,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div className="flex-1">
+              <div className="lg:col-span-1">
                 <Input
                   type="text"
                   placeholder="Mobile Number"
@@ -308,7 +311,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div className="flex-1">
+              <div className="lg:col-span-1">
                 <SelectDropdown
                   options={statusOptions}
                   value={searchFilters.status}
@@ -316,8 +319,8 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div className="flex-shrink-0">
-                <Button type="submit" disabled={loading}>
+              <div className="lg:col-span-1">
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                   <Search className="w-4 h-4 mr-2" />
                   {loading ? 'Searching...' : 'Search'}
                 </Button>
@@ -327,34 +330,39 @@ const TeleUserInfoPage: React.FC = () => {
         </Card>
 
         {/* Tele Caller Cards */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
+        <Card className="p-4 md:p-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-xl font-semibold text-gray-900">
+              <Heading level={2} className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
                 Tele Caller
               </Heading>
             </div>
-            <div className="flex space-x-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:space-x-2 gap-2 lg:gap-0">
               <Button 
                 variant="primary" 
                 size="sm"
                 onClick={() => router.push('/cati/ppm/manage-calling/create-tele-caller')}
+                className="w-full lg:w-auto"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add New User
+                <span className="hidden sm:inline">Add New User</span>
+                <span className="sm:hidden">Add User</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white">
+              <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
                 <Search className="w-4 h-4 mr-1" />
-                Calling User Check
+                <span className="hidden sm:inline">Calling User Check</span>
+                <span className="sm:hidden">User Check</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+              <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white w-full lg:w-auto">
                 <Edit className="w-4 h-4 mr-1" />
-                Redistribute Pending Data
+                <span className="hidden sm:inline">Redistribute Pending Data</span>
+                <span className="sm:hidden">Redistribute</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+              <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white w-full lg:w-auto">
                 <Plus className="w-4 h-4 mr-1" />
-                Refresh Progress Data
+                <span className="hidden sm:inline">Refresh Progress Data</span>
+                <span className="sm:hidden">Refresh</span>
               </Button>
             </div>
           </div>
@@ -372,81 +380,84 @@ const TeleUserInfoPage: React.FC = () => {
                 return (
                   <div key={user.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
                     {/* Main Row Content */}
-                    <div className="p-4">
-                      <div className="flex items-center">
-                        {/* Left Section - User Info (33.33% width) */}
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                    <div className="p-3 md:p-4">
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                        {/* Left Section - User Info */}
+                        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm md:text-base">
                             {user.name.charAt(0).toUpperCase()}
                           </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-3">
-                              <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white truncate">
                                 {user.name}
                               </h3>
-                              <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                ID: {user.teleform_user_id}
-                              </span>
-                              <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
-                                user.status === 1 
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                              }`}>
-                                {user.status === 1 ? 'Active' : 'Inactive'}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                  ID: {user.teleform_user_id}
+                                </span>
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
+                                  user.status === 1 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                }`}>
+                                  {user.status === 1 ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
                               <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
                               <span className="font-mono">{user.mobile_number}</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Center Section - Quick Stats (33.33% width) */}
-                        <div className="flex items-center justify-center gap-8 flex-1">
+                        {/* Center Section - Quick Stats */}
+                        <div className="flex items-center justify-center gap-4 md:gap-8 flex-1">
                           {stats ? (
                             <>
-                              <div className="text-center min-w-[60px]">
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
-                                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
                                   {stats.total_assigned_count}
                                 </p>
                               </div>
-                              <div className="text-center min-w-[60px]">
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Done</p>
-                                <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
                                   {stats.total_call_attempted}
                                 </p>
                               </div>
-                              <div className="text-center min-w-[60px]">
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
                                   {stats.total_call_pending}
                                 </p>
                               </div>
                             </>
                           ) : (
-                            <div className="text-sm text-gray-400">Loading stats...</div>
+                            <div className="text-xs md:text-sm text-gray-400">Loading stats...</div>
                           )}
                         </div>
 
-                        {/* Right Section - Actions (33.33% width) */}
-                        <div className="flex items-center justify-end gap-2 flex-1">
+                        {/* Right Section - Actions */}
+                        <div className="flex items-center justify-end gap-1 md:gap-2 flex-1 lg:flex-none">
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => toggleRowExpansion(user.teleform_user_id)}
                             title={isExpanded ? "Hide details" : "View details"}
+                            className="text-xs md:text-sm px-2 md:px-3"
                           >
                             {isExpanded ? (
                               <>
-                                <ChevronDown className="w-4 h-4 mr-1" />
-                                Hide
+                                <ChevronDown className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                                <span className="hidden sm:inline">Hide</span>
                               </>
                             ) : (
                               <>
-                                <ChevronRight className="w-4 h-4 mr-1" />
-                                View
+                                <ChevronRight className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                                <span className="hidden sm:inline">View</span>
                               </>
                             )}
                           </Button>
@@ -455,17 +466,18 @@ const TeleUserInfoPage: React.FC = () => {
                             size="sm"
                             onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.id}`)}
                             title="Edit telecaller"
+                            className="px-2 md:px-3"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-3 h-3 md:w-4 md:h-4" />
                           </Button>
                           <Button 
                             variant="secondary" 
                             size="sm" 
-                            className="bg-purple-500 hover:bg-purple-600 text-white" 
+                            className="bg-purple-500 hover:bg-purple-600 text-white px-2 md:px-3" 
                             onClick={() => handleAddData(user)}
                             title="Assign AC data"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3 h-3 md:w-4 md:h-4" />
                           </Button>
                         </div>
                       </div>
@@ -474,58 +486,58 @@ const TeleUserInfoPage: React.FC = () => {
                     {/* Expanded Details Section */}
                     {isExpanded && (
                       <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        <div className="p-4">
+                        <div className="p-3 md:p-4">
                           {stats ? (
                             <div className="space-y-3">
                               {/* Detailed Stats Row */}
-                              <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-6">
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 gap-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
                                   <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
                                     <span className="font-bold text-blue-600 dark:text-blue-400">
                                       {stats.total_assigned_count}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
                                     <span className="font-bold text-green-600 dark:text-green-400">
                                       {stats.total_call_attempted}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
                                     <span className="font-bold text-orange-600 dark:text-orange-400">
                                       {stats.total_call_pending}
                                     </span>
                                   </div>
                                 </div>
-                                <BarChart3 className="h-5 w-5 text-gray-400" />
+                                <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-gray-400 flex-shrink-0" />
                               </div>
                               
                               {/* AC Details Row */}
                               {stats.ac_detail && stats.ac_detail.length > 0 && (
                                 <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                  <div className="flex items-center gap-2 mb-2">
+                                  <div className="flex items-center gap-2 mb-3">
                                     <BarChart3 className="h-4 w-4 text-gray-500" />
                                     <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                       AC-wise Breakdown ({stats.ac_detail.length} ACs)
                                     </span>
                                   </div>
-                                  <div className="flex flex-wrap gap-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                     {stats.ac_detail.map((ac) => (
-                                      <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-2 border border-gray-200 dark:border-gray-700 min-w-[200px]">
-                                        <div className="flex items-center justify-between mb-1">
-                                          <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                      <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                                             {ac.ac_name}
                                           </span>
-                                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
                                             #{ac.ac_code}
                                           </span>
                                         </div>
-                                        <div className="flex items-center justify-between text-xs">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
                                           <div className="flex items-center gap-1">
                                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                                             <span className="text-gray-600 dark:text-gray-400">Attempted:</span>
@@ -576,11 +588,11 @@ const TeleUserInfoPage: React.FC = () => {
 
           {/* Pagination Footer */}
           {!loading && teleUserData.length > 0 && (
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
                 Showing <span className="font-semibold">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> telecallers.
               </div>
-              <div>
+              <div className="flex justify-center sm:justify-end">
                 <PaginationStandard
                   currentPage={currentPage}
                   totalPages={totalPages}
