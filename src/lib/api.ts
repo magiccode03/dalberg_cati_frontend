@@ -149,6 +149,9 @@ export const API_ENDPOINTS = {
     INTERNAL_DASHBOARD: '/fd/internal-dashboard',
     INTERVIEW_AUDIO: '/fd/interviewaudio',
   },
+  
+  // Interview Masters
+  INTERVIEW_MASTERS: '/interview-masters',
 } as const;
 
 // API Response Types
@@ -420,6 +423,25 @@ export interface DetailedCasteResponse {
   data_list: DetailedCasteACData[] | DetailedCastePCData[];
   message: string;
   timestamp: string;
+}
+
+// Interview Masters Types
+export interface InterviewMaster {
+  id: number;
+  fullname: string;
+  login_id: string;
+  total_data_submitted: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InterviewMastersResponse {
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  data: InterviewMaster[];
 }
 
 // API Service Class
@@ -1335,6 +1357,12 @@ class ApiService {
         throw secondError; // Throw the second error
       }
     }
+  }
+
+  // Interview Masters Methods
+  async getInterviewMasters(params?: { page?: number; limit?: number }): Promise<ApiResponse<InterviewMastersResponse>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}${queryString}`);
   }
 
   // Utility Methods
