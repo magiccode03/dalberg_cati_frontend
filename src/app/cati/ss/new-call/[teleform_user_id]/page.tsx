@@ -149,7 +149,8 @@ export default function NewCallPage() {
       }
       
       // Call click-to-call API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/click-to-call/initiate`, {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/click-to-call/initiate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -165,7 +166,6 @@ export default function NewCallPage() {
       
       if (data.success) {
         console.log('Call initiated successfully:', data);
-        alert(`Call initiated successfully! Call ID: ${data.data.callId}`);
         
         // Navigate to tele-form page with interview ID after successful call initiation
         router.push(`/cati/ss/tele-form/${interviewId}`);
@@ -238,18 +238,24 @@ export default function NewCallPage() {
               <Table className="table table-striped table-bordered">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
+                    <th className="hidden md:table-cell px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Server ID</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Code</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Name</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">District</th>
+                    <th className="hidden md:table-cell px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Code</th>
+                    <th className="hidden md:table-cell px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Name</th>
+                    <th className="hidden md:table-cell px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">District</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-8">
+                      <td colSpan={2} className="md:hidden text-center py-8">
+                        <div className="flex justify-center items-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                          <span className="text-gray-500 dark:text-gray-400">Loading interviews...</span>
+                        </div>
+                      </td>
+                      <td colSpan={6} className="hidden md:table-cell text-center py-8">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
                           <span className="text-gray-500 dark:text-gray-400">Loading interviews...</span>
@@ -258,7 +264,12 @@ export default function NewCallPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={6} className="text-center py-8">
+                      <td colSpan={2} className="md:hidden text-center py-8">
+                        <div className="text-red-500 dark:text-red-400">
+                          {error}
+                        </div>
+                      </td>
+                      <td colSpan={6} className="hidden md:table-cell text-center py-8">
                         <div className="text-red-500 dark:text-red-400">
                           {error}
                         </div>
@@ -267,19 +278,19 @@ export default function NewCallPage() {
                   ) : interviews.length > 0 ? (
                     interviews.map((interview, index) => (
                       <tr key={interview.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <td className="hidden md:table-cell px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           {index + 1}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
                           SRV00{interview.id}
                         </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <td className="hidden md:table-cell px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           {interview.ac_code}
                         </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <td className="hidden md:table-cell px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           {interview.ac_name}
                         </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                        <td className="hidden md:table-cell px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           {interview.ac_district_name || interview.district_name || '-'}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
@@ -297,7 +308,12 @@ export default function NewCallPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="text-center py-8">
+                      <td colSpan={2} className="md:hidden text-center py-8">
+                        <div className="text-gray-500 dark:text-gray-400">
+                          No interviews found.
+                        </div>
+                      </td>
+                      <td colSpan={6} className="hidden md:table-cell text-center py-8">
                         <div className="text-gray-500 dark:text-gray-400">
                           No interviews found.
                         </div>

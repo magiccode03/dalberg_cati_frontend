@@ -201,8 +201,8 @@ export default function Header() {
             </div>
           )}
 
-          {/* Teleform User Button - Show when teleform user data exists */}
-          {mounted && teleformUserData && (
+          {/* Teleform User Button - Show only for 'ss' role when teleform user data exists */}
+          {mounted && teleformUserData && user?.role === 'ss' && (
             <button
               onClick={handleTeleformUserClick}
               className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 transition-colors"
