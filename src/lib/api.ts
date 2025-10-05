@@ -155,6 +155,11 @@ export const API_ENDPOINTS = {
   
   // Interview Masters
   INTERVIEW_MASTERS: '/interview-masters',
+
+  // Findings
+  FINDINGS: {
+    GAIN_AND_LOSSES: '/dashboard/findings/gain-and-losses',
+  },
 } as const;
 
 // API Response Types
@@ -463,6 +468,57 @@ export interface InterviewMastersResponse {
   limit: number;
   total_pages: number;
   data: InterviewMaster[];
+}
+
+// Gain and Losses API Types
+export interface GainLossPreference {
+  BJP: number;
+  JDU: number;
+  HAMS: number;
+  VSIP: number;
+  'LJP(RV)': number;
+  INC: number;
+  RJD: number;
+  'CPI(M)': number;
+  JSP: number;
+  Others: number;
+  NWR: number;
+}
+
+export interface GainLossData {
+  '2020_party': string;
+  '2020_vote_share': number;
+  '2025_preference': GainLossPreference;
+}
+
+export interface GainLossZoneData {
+  zone_code: number;
+  zone_name: string;
+  data: GainLossData[];
+}
+
+export interface GainLossResponse {
+  success: boolean;
+  data: {
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: GainLossData[];
+    };
+    zone_breakdown: GainLossZoneData[];
+    zone_pagination: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+  };
+  message: string;
+  timestamp: string;
 }
 
 // API Service Class
@@ -1442,6 +1498,11 @@ class ApiService {
   async getInterviewMasters(params?: { page?: number; limit?: number }): Promise<ApiResponse<InterviewMastersResponse>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}${queryString}`);
+  }
+
+  // Gain and Losses Methods
+  async getGainAndLosses(): Promise<ApiResponse<GainLossResponse['data']>> {
+    return this.request(API_ENDPOINTS.FINDINGS.GAIN_AND_LOSSES);
   }
 
   // Utility Methods
