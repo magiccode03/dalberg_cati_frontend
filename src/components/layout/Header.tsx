@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGetAgencies } from '@/hooks/useApi';
 import { User, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 
@@ -10,6 +11,7 @@ export default function Header() {
   const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
+  const { getAgencies, data: agenciesData, loading: agenciesLoading, error: agenciesError } = useGetAgencies();
 
   // Helper function to get role display name
   const getRoleDisplayName = (role: string | undefined): string => {
@@ -33,8 +35,14 @@ export default function Header() {
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
 
-  // Sample agency list - replace with actual data from API
-  const agencyOptions = [
+  // Dynamic agency options from API
+  const agencyOptions = agenciesData ? [
+    { value: 'all', label: 'All Agencies' },
+    ...Object.entries(agenciesData).map(([key, value]) => ({
+      value: key,
+      label: value
+    }))
+  ] : [
     { value: 'all', label: 'All Agencies' },
     { value: 'agency_001', label: 'Agency 001' },
     { value: 'agency_002', label: 'Agency 002' },
@@ -70,6 +78,13 @@ export default function Header() {
       document.documentElement.classList.remove('dark');
     }
   }, []);
+
+  // Fetch agencies when component mounts and when user role changes
+  useEffect(() => {
+    if (showAgencySelector) {
+      getAgencies();
+    }
+  }, [showAgencySelector, getAgencies]);
 
 
   const toggleTheme = () => {
@@ -156,8 +171,14 @@ export default function Header() {
                 options={agencyOptions}
                 value={selectedAgency}
                 onChange={(value) => setSelectedAgency(value as string)}
-                placeholder="Select Agency"
+                placeholder={agenciesLoading ? "Loading..." : "Select Agency"}
+                disabled={agenciesLoading}
               />
+              {agenciesError && (
+                <div className="text-xs text-red-500 mt-1">
+                  Failed to load agencies
+                </div>
+              )}
             </div>
           )}
 

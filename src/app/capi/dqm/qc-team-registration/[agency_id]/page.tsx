@@ -133,14 +133,54 @@ const QCUpdatePage = () => {
     }
 
     try {
-      const apiData = {
-        agency_name: formData.agency_name.trim(),
-        status: parseInt(formData.status),
-        unique_id: formData.username.trim(),
-        password: formData.password.trim() || 'dummy_password' // Provide default if blank
+      // Validate and prepare data
+      const agencyName = formData.agency_name.trim();
+      const status = parseInt(formData.status);
+      const uniqueId = formData.username.trim();
+      
+      // Validate required fields
+      if (!agencyName) {
+        showError('Agency name is required');
+        return;
+      }
+      if (!uniqueId) {
+        showError('Username is required');
+        return;
+      }
+      if (isNaN(status)) {
+        showError('Invalid status value');
+        return;
+      }
+
+      // Include all required fields as per server validation
+      const apiData: any = {
+        agency_name: agencyName,
+        status: status,
+        unique_id: uniqueId,
+        qc_agency_id: 1, // Required number field
+        show_second_level_column: 1, // Required number field
+        qa_id: 1, // Required number field
+        first_name: uniqueId, // Required string field
+        last_name: uniqueId, // Required string field
+        email: `${uniqueId}@example.com` // Required valid email field
       };
 
+      // Only add password if it's not empty
+      if (formData.password.trim()) {
+        apiData.password = formData.password.trim();
+      }
+
       console.log('🔄 Updating QC team registration with data:', apiData);
+      console.log('🔄 API endpoint:', `/qc-team-registration/update/${agencyId}`);
+      console.log('🔄 Agency ID type:', typeof agencyId, 'Value:', agencyId);
+      console.log('🔄 Form data before processing:', formData);
+      console.log('🔄 Final API data structure:', JSON.stringify(apiData, null, 2));
+      
+      // Validate agency ID
+      if (!agencyId || isNaN(parseInt(agencyId))) {
+        showError('Invalid agency ID');
+        return;
+      }
       
       const result = await updateQCTeamRegistration(agencyId!, apiData);
       

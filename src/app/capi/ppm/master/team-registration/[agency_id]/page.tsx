@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Key, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useUpdateTeamRegistration, useGetTeamRegistrationById } from '@/hooks/useApi';
+import { useUpdateTeamRegistration, useGetTeamRegistrationById, useGetTeamRegistrationDropdownOptions } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 import SuccessBanner from '@/components/ui/SuccessBanner';
 
@@ -34,6 +34,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
   
   const { updateTeamRegistration, loading: updateLoading, error: updateError } = useUpdateTeamRegistration();
   const { getTeamRegistrationById, loading: fetchLoading, error: fetchError } = useGetTeamRegistrationById();
+  const { getDropdownOptions, data: dropdownData, loading: dropdownLoading, error: dropdownError } = useGetTeamRegistrationDropdownOptions();
   const { success, error: showError } = useToast();
 
   const qcAgencyOptions = [
@@ -42,13 +43,20 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
     { value: '2', label: 'Kadence (bhr2kadenceqc)' }
   ];
 
-  const showSecondLevelOptions = [
+  // Dynamic dropdown options from API
+  const showSecondLevelOptions = dropdownData?.show_second_level_column?.map(option => ({
+    value: option.value.toString(),
+    label: option.label
+  })) || [
     { value: '', label: 'Show 2nd Level Column(s)' },
     { value: '1', label: 'Yes' },
     { value: '0', label: 'No' }
   ];
 
-  const statusOptions = [
+  const statusOptions = dropdownData?.status?.map(option => ({
+    value: option.value.toString(),
+    label: option.label
+  })) || [
     { value: '', label: 'Status Status' },
     { value: '1', label: 'Active' },
     { value: '0', label: 'Inactive' }
@@ -63,6 +71,11 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
       router.push('/capi/ppm/master/team-registration');
     }
   }, [agencyId]);
+
+  // Fetch dropdown options on component mount
+  useEffect(() => {
+    getDropdownOptions();
+  }, [getDropdownOptions]);
 
   const fetchAgencyData = async () => {
     if (!agencyId) {
@@ -142,7 +155,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
       const result = await updateTeamRegistration(parseInt(agencyId), {
         agency_name: formData.agency_name,
         qc_agency_id: parseInt(formData.qc_agency_id || '1'),
-        show_second_level_column: 1, // Default value since field is hidden
+        show_second_level_column: parseInt(formData.show_second_level_column || '1'),
         status: parseInt(formData.status),
         qa_id: parseInt(formData.qa_id || '1'), // Default value since field is hidden
         unique_id: formData.username,
@@ -278,13 +291,32 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
+                  Show Second Level Column <span className="text-red-500">*</span>
+                </Text>
+                <SelectDropdown
+                  value={formData.show_second_level_column}
+                  onChange={(value) => handleInputChange('show_second_level_column', Array.isArray(value) ? value[0] : value)}
+                  options={showSecondLevelOptions}
+                  disabled={dropdownLoading}
+                />
+                {dropdownLoading && (
+                  <Text className="text-sm text-gray-500 mt-1">Loading options...</Text>
+                )}
+              </div>
+
+              <div>
+                <Text className="block text-sm font-medium text-gray-700 mb-2">
+                  Status <span className="text-red-500">*</span>
                 </Text>
                 <SelectDropdown
                   value={formData.status}
                   onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value)}
                   options={statusOptions}
+                  disabled={dropdownLoading}
                 />
+                {dropdownLoading && (
+                  <Text className="text-sm text-gray-500 mt-1">Loading options...</Text>
+                )}
               </div>
             </div>
           </div>
@@ -381,6 +413,18 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
               <div className="flex items-center">
                 <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
                 <Text className="text-red-700">{updateError}</Text>
+              </div>
+            </div>
+          )}
+
+          {/* Dropdown Options Error Display */}
+          {dropdownError && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center">
+                <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                <Text className="text-yellow-700">
+                  Warning: Could not load dropdown options. Using default values. ({dropdownError})
+                </Text>
               </div>
             </div>
           )}
