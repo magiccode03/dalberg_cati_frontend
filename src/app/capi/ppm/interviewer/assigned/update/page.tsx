@@ -44,11 +44,18 @@ const AssignedUpdateContent = () => {
         return;
       }
       
-      // Fetch both user data and AC list in parallel
-      const [userResponse, acResponse] = await Promise.all([
-        apiService.getInterviewMasterForUpdate(userId),
-        apiService.getACList()
-      ]);
+      // Fetch user data first, then AC dropdown list
+      const userResponse = await apiService.getInterviewMasterForUpdate(userId);
+      
+      // Try to fetch AC dropdown list, but don't fail if it doesn't exist
+      let acResponse = { success: false, data: {} };
+      try {
+        acResponse = await apiService.getACDropdownList();
+      } catch (acError) {
+        console.warn('AC dropdown API not available, using empty list:', acError);
+        // Fallback to empty AC list if API doesn't exist
+        acResponse = { success: true, data: {} };
+      }
       
       if (userResponse.success && userResponse.data) {
         setUserName(userResponse.data.fullname);
@@ -58,7 +65,12 @@ const AssignedUpdateContent = () => {
       }
 
       if (acResponse.success && acResponse.data) {
-        setAllACs(acResponse.data);
+        // Transform the API response format to match our component format
+        const transformedACs = Object.entries(acResponse.data).map(([key, value]) => ({
+          value: parseInt(key),
+          label: `${value} (${key})`
+        }));
+        setAllACs(transformedACs);
       } else {
         setError('Failed to fetch AC list');
       }
