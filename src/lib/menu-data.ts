@@ -241,7 +241,7 @@ export const menuData: MenuItem[] = [
       {
         id: 'capi-ppm-interviewer-master',
         label: 'Master',
-        href: '/capi/ppm/interviewer',
+        href: '/capi/ppm/interviewer/master',
         icon: 'Users',
         roles: ['ppm'],
         system: 'capi',
@@ -249,7 +249,7 @@ export const menuData: MenuItem[] = [
       {
         id: 'capi-ppm-interviewer-assigned',
         label: 'Assigned',
-        href: '/capi/ppm/interviewer',
+        href: '/capi/ppm/interviewer/assigned',
         icon: 'Users',
         roles: ['ppm'],
         system: 'capi',

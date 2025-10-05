@@ -109,7 +109,7 @@ export default function FieldworkProgressPage() {
       case 'completed':
         return 'bg-green-600 text-white';
       case 'in_progress':
-        return 'bg-orange-500 text-white';
+      return 'bg-orange-500 text-white';
       case 'yet_to_initiate':
         return 'bg-gray-200 text-gray-800';
       default:
@@ -163,9 +163,9 @@ export default function FieldworkProgressPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                Progress <i>Summary</i>
-              </Heading>
+            <Heading level={4} className="card-title mg-b-0">
+              Progress <i>Summary</i>
+            </Heading>
             </div>
             <span className="text-end">
             </span>
@@ -200,9 +200,9 @@ export default function FieldworkProgressPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                AC Wise Progress
-              </Heading>
+            <Heading level={4} className="card-title mg-b-0">
+              AC Wise Progress
+            </Heading>
             </div>
             <span className="text-end">
               {/* Download button can be added here */}
