@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -35,10 +35,16 @@ import { translations } from '../utils/translations';
 
 export default function TeleFormPage() {
   const router = useRouter();
+  const params = useParams();
+  const interviewId = params.id as string;
   const [language, setLanguage] = useState<string>('english');
   const [timer, setTimer] = useState<number>(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [toasts, setToasts] = useState<any[]>([]);
+  const [teleformUserName, setTeleformUserName] = useState<string>('');
+  const [teleformUserId, setTeleformUserId] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -55,6 +61,20 @@ export default function TeleFormPage() {
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
+
+  // Load teleform user data on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('teleform_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setTeleformUserName(userData.name || '');
+        setTeleformUserId(userData.teleform_user_id || '');
+      } catch (err) {
+        console.error('Error loading teleform user data:', err);
+      }
+    }
+  }, []);
 
   // Timer effect
   useEffect(() => {
@@ -315,49 +335,231 @@ export default function TeleFormPage() {
     data.thanks_future = '';
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const currentTime = new Date().toLocaleString();
-    
-    const submissionData = {
-      ...formData,
-      time: timer,
-      final_submit: 1,
-      user_timezone: timezone,
-      user_localdatetime: currentTime,
+  // Transform form data to match database schema
+  const transformFormDataForAPI = () => {
+    // Convert checkbox arrays to individual binary fields
+    const transformCheckboxArray = (arr: string[], prefix: string) => {
+      const result: any = {};
+      arr.forEach(value => {
+        result[`${prefix}_${value}`] = 1;
+      });
+      return result;
     };
+
+    // Transform Q10 checkboxes
+    const q10Data = transformCheckboxArray(formData.q10, 'q10');
     
-    console.log('Form submitted:', submissionData);
+    // Transform Q11 checkboxes - but Q11 is stored as single int in DB
+    const q11Data = transformCheckboxArray(formData.q11, 'q11');
     
-    // Simulate API call with delay
+    // Transform Q12 checkboxes - but Q12 is stored as single int in DB
+    const q12Data = transformCheckboxArray(formData.q12, 'q12');
+    
+    // Transform Q13 checkboxes - but Q13 is stored as single int in DB
+    const q13Data = transformCheckboxArray(formData.q13, 'q13');
+
+    return {
+      // Call Status Fields
+      number_status: formData.number_status ? parseInt(formData.number_status) : null,
+      call_not_ring: formData.call_not_ring ? parseInt(formData.call_not_ring) : null,
+      call_ring_status: formData.call_ring_status ? parseInt(formData.call_ring_status) : null,
+      q_call_status: formData.q_call_status ? parseInt(formData.q_call_status) : null,
+      call_reschedule_datetime: formData.call_reschedule || null,
+      
+      // Consent & Demographics
+      q_consent: formData.consent ? parseInt(formData.consent) : null,
+      q_age: formData.resp_age ? parseInt(formData.resp_age) : null,
+      q_register_voter: formData.resp_registered_voter ? parseInt(formData.resp_registered_voter) : null,
+      q_gender: formData.resp_gender ? parseInt(formData.resp_gender) : null,
+      
+      // Q5
+      q5: formData.q5 ? parseInt(formData.q5) : null,
+      q5_ind: formData.q5_ind || null,
+      
+      // Q6
+      q6: formData.q6 ? parseInt(formData.q6) : null,
+      q6_oth: formData.q6_oth || null,
+      q6_ind: formData.q6_ind || null,
+      
+      // Q7
+      ...transformCheckboxArray(formData.q7 ? [formData.q7] : [], 'q7'),
+      q7_oth: formData.q7_oth || null,
+      q7_ind: formData.q7_ind || null,
+      
+      // Q8
+      ...transformCheckboxArray(formData.q8 ? [formData.q8] : [], 'q8'),
+      q8_ind: formData.q8_ind || null,
+      
+      // Q9
+      ...transformCheckboxArray(formData.q9 ? [formData.q9] : [], 'q9'),
+      q9_ind: formData.q9_ind || null,
+      q9_other: formData.q9_oth || null,
+      
+      // Q10 (checkboxes)
+      ...q10Data,
+      q10_other: formData.q10_oth || null,
+      
+      // Q11 (stored as single int in DB)
+      q11: formData.q11.length > 0 ? parseInt(formData.q11[0]) : null,
+      q11_other: formData.q11_oth || null,
+      
+      // Q12 (stored as single int in DB)
+      q12: formData.q12.length > 0 ? parseInt(formData.q12[0]) : null,
+      q12_other: formData.q12_oth || null,
+      
+      // Q13 (stored as single int in DB)
+      q13: formData.q13.length > 0 ? parseInt(formData.q13[0]) : null,
+      q13_other: formData.q13_oth || null,
+      
+      // Q14-Q19 (Section 5)
+      q14: formData.q14 ? parseInt(formData.q14) : null,
+      q15: formData.q15 ? parseInt(formData.q15) : null,
+      q8a: formData.q16_a ? parseInt(formData.q16_a) : null,
+      q8b: formData.q16_b ? parseInt(formData.q16_b) : null,
+      // q17 maps to which field?
+      q19_oth: formData.q19_oth || null,
+      
+      // Section 6: Demographics
+      q_religion: formData.resp_religion ? parseInt(formData.resp_religion) : null,
+      q_religion_other: formData.resp_religion_oth || null,
+      q_social_category: formData.resp_social_cat ? parseInt(formData.resp_social_cat) : null,
+      q_caste_jati: formData.resp_caste_jati ? parseInt(formData.resp_caste_jati) : null,
+      q_caste_jati_other: formData.resp_caste_jati_oth || null,
+      q_female_education: formData.resp_female_edu ? parseInt(formData.resp_female_edu) : null,
+      resp_education: formData.resp_male_edu ? parseInt(formData.resp_male_edu) : null,
+      q_occupation: formData.resp_occupation ? parseInt(formData.resp_occupation) : null,
+      q_future_contact: formData.thanks_future ? parseInt(formData.thanks_future) : null,
+    };
+  };
+
+  // Auto-save function (draft save on every change)
+  const autoSaveForm = async () => {
     try {
-      showToast('Saving form data...', 'info');
+      const token = localStorage.getItem('accessToken');
+      if (!token || !interviewId) return;
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const transformedData = transformFormDataForAPI();
       
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...transformedData,
+          form_duration_seconds: timer,
+          language_used: language,
+        })
+      });
       
-      // Simulate successful save
-      showToast('Form submitted successfully! Data has been saved.', 'success');
-      
-      // Redirect to start-form-filling page after successful submission
-      setTimeout(() => {
-        router.push('/cati/ss/start-form-filling');
-      }, 2000);
-      
+      console.log('Auto-saved draft');
     } catch (error) {
-      console.error('Error saving form:', error);
-      showToast('Failed to save form. Please try again.', 'error');
+      console.error('Auto-save error:', error);
     }
   };
 
-  const handleCallDrop = () => {
-    if (window.confirm('Are you sure You Want to drop the Call?')) {
-      console.log('Call dropped by respondent');
-      // Handle redirect or close survey
+  // Trigger auto-save on form data change (debounced)
+  useEffect(() => {
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Set new timeout for auto-save after 1 second of inactivity
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSaveForm();
+    }, 1000);
+    
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData]);
+
+  const saveFormData = async (finalSubmit: number) => {
+    try {
+      setIsSubmitting(true);
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        showToast('No authentication token found', 'error');
+        return false;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const currentTime = new Date().toLocaleString();
+      
+      const transformedData = transformFormDataForAPI();
+      
+      const submissionData = {
+        ...transformedData,
+        form_duration_seconds: timer,
+        final_submit: finalSubmit,
+        language_used: language,
+        user_timezone: timezone,
+        user_localdatetime: currentTime,
+      };
+      
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submissionData)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        return true;
+      } else {
+        showToast(data.message || 'Failed to save form', 'error');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error saving form:', error);
+      showToast('Failed to save form. Please try again.', 'error');
+      return false;
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    showToast('Saving form data...', 'info');
+    
+    const success = await saveFormData(1);
+    
+    if (success) {
+      showToast('Form submitted successfully! Data has been saved.', 'success');
+      
+      setTimeout(() => {
+        router.push(`/cati/ss/new-call/${teleformUserId}`);
+      }, 1500);
+    }
+  };
+
+  const handleCallDropped = async () => {
+    showToast('Saving partial data...', 'info');
+    
+    const success = await saveFormData(0);
+    
+    if (success) {
+      showToast('Call dropped. Partial data has been saved.', 'success');
+      
+      setTimeout(() => {
+        router.push(`/cati/ss/new-call/${teleformUserId}`);
+      }, 1500);
+    }
+  };
+
 
   // Get translations
   const t = translations[language as keyof typeof translations];
@@ -695,7 +897,7 @@ export default function TeleFormPage() {
 
             <div className="mb-4">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-4">
-                {t.consentText.replace('{telecaller_name}', formData.telecaller_name || '[enumerator name]')}
+                {t.consentText.replace('{telecaller_name}', teleformUserName || '[enumerator name]')}
                 <br /><br />
                 {t.shouldContinue}
               </Text>
@@ -1533,16 +1735,27 @@ export default function TeleFormPage() {
           </div>
         </Card> */}
 
-        {/* Submit Button */}
+        {/* Submit Buttons */}
         <Card className="p-6">
           <div className="flex gap-4">
             <Button 
               type="submit" 
               size="lg"
+              disabled={isSubmitting}
               className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white"
             >
               <i className="fa fa-save mr-2"></i>
-              {t.submit}
+              {isSubmitting ? 'Submitting...' : t.submit}
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleCallDropped}
+              size="lg"
+              disabled={isSubmitting}
+              className="min-w-[150px] bg-red-600 hover:bg-red-700 text-white"
+            >
+              <i className="fa fa-phone-slash mr-2"></i>
+              {isSubmitting ? 'Saving...' : 'Call Dropped'}
             </Button>
           </div>
         </Card>

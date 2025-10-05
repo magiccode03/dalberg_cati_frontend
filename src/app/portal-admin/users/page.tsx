@@ -36,7 +36,7 @@ interface User {
   roleName: string;
   roleDisplayName: string;
   roleLevel: number;
-  isActive: number;
+  isActive: number | boolean;
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -71,43 +71,54 @@ export default function PortalAdminUsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiService.getUsers();
+      // Build API parameters
+      const params: any = {
+        page,
+        limit,
+      };
+      
+      // Add search parameter (name filter)
+      if (search) {
+        params.name = search;
+      }
+      
+      // Add role filter
+      if (role) {
+        // Find role ID from role name
+        const selectedRole = roles.find(r => r.name === role);
+        if (selectedRole) {
+          params.role_id = selectedRole.id;
+        }
+      }
+      
+      // Add status filter
+      if (status !== '') {
+        params.isActive = status === '1';
+      }
+      
+      const response = await apiService.getUsers(params);
       
       if (response.success && response.data) {
-        let filteredUsers = response.data.users || [];
+        setUsers(response.data.users || []);
         
-        // Apply search filter
-        if (search) {
-          filteredUsers = filteredUsers.filter(user => 
-            user.firstName.toLowerCase().includes(search.toLowerCase()) ||
-            user.lastName.toLowerCase().includes(search.toLowerCase()) ||
-            user.email.toLowerCase().includes(search.toLowerCase()) ||
-            user.uniqueId.toLowerCase().includes(search.toLowerCase())
-          );
+        // Update pagination with API response
+        if (response.data.pagination) {
+          setPagination({
+            page: response.data.pagination.page || page,
+            limit: response.data.pagination.limit || limit,
+            total: response.data.pagination.total || 0,
+            totalPages: response.data.pagination.totalPages || 0,
+          });
+        } else {
+          // Fallback if no pagination in response
+          const total = response.data.users?.length || 0;
+          setPagination({
+            page,
+            limit,
+            total,
+            totalPages: Math.ceil(total / limit),
+          });
         }
-        
-        // Apply role filter
-        if (role) {
-          filteredUsers = filteredUsers.filter(user => 
-            user.roleName === role
-          );
-        }
-        
-        // Apply status filter
-        if (status) {
-          const isActive = status === '1';
-          filteredUsers = filteredUsers.filter(user => 
-            user.isActive === (isActive ? 1 : 0)
-          );
-        }
-        
-        setUsers(filteredUsers);
-        setPagination(response.data.pagination || {
-          page: 1,
-          limit: 10,
-          total: filteredUsers.length,
-          totalPages: Math.ceil(filteredUsers.length / 10),
-        });
       } else {
         setError('Failed to fetch users');
       }
@@ -254,7 +265,10 @@ export default function PortalAdminUsersPage() {
           </div>
           <select
             value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            onChange={(e) => {
+              setFilterRole(e.target.value);
+              fetchUsers(1, pagination.limit, searchTerm, e.target.value, filterStatus);
+            }}
             className="w-full lg:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           >
             {roleOptions.map(option => (
@@ -265,7 +279,10 @@ export default function PortalAdminUsersPage() {
           </select>
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => {
+              setFilterStatus(e.target.value);
+              fetchUsers(1, pagination.limit, searchTerm, filterRole, e.target.value);
+            }}
             className="w-full lg:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           >
             {statusOptions.map(option => (
@@ -279,7 +296,10 @@ export default function PortalAdminUsersPage() {
               <Filter className="h-4 w-4 mr-2" />
               Filter
             </Button>
-            <Button onClick={() => fetchUsers()} variant="outline">
+            <Button 
+              onClick={() => fetchUsers(pagination.page, pagination.limit, searchTerm, filterRole, filterStatus)} 
+              variant="outline"
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
             </Button>
@@ -359,11 +379,11 @@ export default function PortalAdminUsersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge 
-                          status={user.isActive === 1 ? 'active' : 'inactive'}
-                          variant={user.isActive === 1 ? 'success' : 'error'}
+                          status={user.isActive === 1 || user.isActive === true ? 'active' : 'inactive'}
+                          variant={user.isActive === 1 || user.isActive === true ? 'success' : 'error'}
                           size="sm"
                         >
-                          {user.isActive === 1 ? 'Active' : 'Inactive'}
+                          {user.isActive === 1 || user.isActive === true ? 'Active' : 'Inactive'}
                         </StatusBadge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">

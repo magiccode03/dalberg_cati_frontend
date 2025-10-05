@@ -148,9 +148,10 @@ export default function NewCallPage() {
         return;
       }
       
-      // Call click-to-call API
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiBaseUrl}/api/click-to-call/initiate`, {
+      
+      // Call click-to-call API
+      const callResponse = await fetch(`${apiBaseUrl}/api/click-to-call/initiate`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -162,16 +163,37 @@ export default function NewCallPage() {
         })
       });
       
-      const data = await response.json();
+      const callData = await callResponse.json();
       
-      if (data.success) {
-        console.log('Call initiated successfully:', data);
+      if (callData.success) {
+        console.log('Call initiated successfully:', callData);
+        
+        // Update interview status to 1
+        const updateResponse = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            status: 1,
+            call_attempt: 1
+          })
+        });
+        
+        const updateData = await updateResponse.json();
+        
+        if (updateData.success) {
+          console.log('Interview status updated successfully');
+        } else {
+          console.error('Failed to update interview status:', updateData);
+        }
         
         // Navigate to tele-form page with interview ID after successful call initiation
         router.push(`/cati/ss/tele-form/${interviewId}`);
       } else {
-        console.error('Call initiation failed:', data);
-        alert(`Call initiation failed: ${data.message || 'Unknown error'}`);
+        console.error('Call initiation failed:', callData);
+        alert(`Call initiation failed: ${callData.message || 'Unknown error'}`);
       }
       
     } catch (error) {
