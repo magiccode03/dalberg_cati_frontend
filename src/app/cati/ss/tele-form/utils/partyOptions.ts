@@ -84,7 +84,6 @@ export const getQ12Options = (lang: 'english' | 'bengali') => [
 
 // Q13 options
 export const getQ13Options = (lang: 'english' | 'bengali') => [
-  { value: '1', label: lang === 'english' ? 'Professional Degree' : 'পেশাদার ডিগ্রি' },
   { value: '2', label: lang === 'english' ? 'Price rise / inflation' : 'মূল্য বৃদ্ধি / মুদ্রাস্ফীতি' },
   { value: '3', label: lang === 'english' ? 'Unemployment / lack of jobs' : 'বেকারত্ব / চাকরির অভাব' },
   { value: '4', label: lang === 'english' ? 'Electricity/power problems' : 'বিদ্যুৎ/বিদ্যুৎ সমস্যা' },

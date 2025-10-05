@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -33,6 +34,7 @@ import {
 import { translations } from './utils/translations';
 
 export default function TeleFormPage() {
+  const router = useRouter();
   const [language, setLanguage] = useState<string>('english');
   const [timer, setTimer] = useState<number>(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -313,7 +315,7 @@ export default function TeleFormPage() {
     data.thanks_future = '';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -328,7 +330,26 @@ export default function TeleFormPage() {
     };
     
     console.log('Form submitted:', submissionData);
-    // API call here
+    
+    // Simulate API call with delay
+    try {
+      showToast('Saving form data...', 'info');
+      
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate successful save
+      showToast('Form submitted successfully! Data has been saved.', 'success');
+      
+      // Redirect to start-form-filling page after successful submission
+      setTimeout(() => {
+        router.push('/cati/ss/start-form-filling');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error saving form:', error);
+      showToast('Failed to save form. Please try again.', 'error');
+    }
   };
 
   const handleCallDrop = () => {
@@ -418,7 +439,7 @@ export default function TeleFormPage() {
 
       <form onSubmit={handleSubmit}>
         {/* Section 1: Identification */}
-        <Card className="p-6 mb-6">
+        {/* <Card className="p-6 mb-6">
           <div className="mb-6">
             <Heading level={4} className="text-gray-900 dark:text-white mb-4">
               {t.section1}
@@ -494,7 +515,7 @@ export default function TeleFormPage() {
               maxLength={150}
             />
           </div>
-        </Card>
+        </Card> */}
 
         {/* Call Status Section */}
         <Card className="p-6 mb-6">
@@ -1383,7 +1404,7 @@ export default function TeleFormPage() {
             </div>
 
             {/* Q22: Caste */}
-            <div className="mb-6">
+            {/* <div className="mb-6">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
                 {t.q22}
               </Text>
@@ -1411,7 +1432,7 @@ export default function TeleFormPage() {
                   />
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Q23: Female Education */}
             <div className="mb-6">
