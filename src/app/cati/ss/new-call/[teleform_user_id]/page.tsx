@@ -14,10 +14,14 @@ interface InterviewData {
   phone: string;
   ac_code: number;
   ac_name: string;
-  ac_district_name: string;
-  ac_zone_name: string;
-  ac_mla_name: string;
-  ac_electorate: number;
+  ac_district_name?: string;
+  ac_zone_name?: string;
+  ac_mla_name?: string;
+  ac_electorate?: number;
+  district_name?: string;
+  zone_name?: string;
+  mla_name?: string;
+  electorate?: number;
   status: number;
   call_attempt: number;
   call_received: number;
@@ -36,6 +40,7 @@ export default function NewCallPage() {
   // Load teleform user data from localStorage on component mount
   useEffect(() => {
     const savedData = localStorage.getItem('teleform_user_data');
+    
     if (savedData) {
       try {
         const userData = JSON.parse(savedData);
@@ -48,8 +53,9 @@ export default function NewCallPage() {
         }
         
         // Auto-fetch interviews when component mounts
-        fetchInterviews();
+        fetchInterviews(userData);
       } catch (err) {
+        console.error('Error parsing teleform data:', err);
         setError('Invalid teleform user data. Please login again.');
       }
     } else {
@@ -57,32 +63,35 @@ export default function NewCallPage() {
     }
   }, [teleformUserId]);
 
-  const fetchInterviews = async () => {
+  const fetchInterviews = async (userData?: any) => {
     try {
       setLoading(true);
       setError('');
       
       const token = localStorage.getItem('accessToken');
+      
       if (!token) {
         setError('No authentication token found');
         return;
       }
 
-      if (!teleformUserData) {
+      // Use passed userData or state
+      const currentUserData = userData || teleformUserData;
+      if (!currentUserData) {
         setError('Teleform user data not found');
         return;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cati/interviews/teleform-user/${teleformUserData.id}?status=0&page=1&limit=10`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const apiUrl = `${apiBaseUrl}/api/cati/interviews/teleform-user/${currentUserData.teleform_user_id}?status=0&page=1&limit=10`;
+
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
-      );
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -97,10 +106,15 @@ export default function NewCallPage() {
           phone: item.phone,
           ac_code: item.ac_code,
           ac_name: item.ac_name,
-          ac_district_name: item.ac_district_name,
-          ac_zone_name: item.ac_zone_name,
-          ac_mla_name: item.ac_mla_name,
-          ac_electorate: item.ac_electorate,
+          // Support both naming conventions from API
+          ac_district_name: item.ac_district_name || item.district_name,
+          ac_zone_name: item.ac_zone_name || item.zone_name,
+          ac_mla_name: item.ac_mla_name || item.mla_name,
+          ac_electorate: item.ac_electorate || item.electorate,
+          district_name: item.district_name,
+          zone_name: item.zone_name,
+          mla_name: item.mla_name,
+          electorate: item.electorate,
           status: item.status,
           call_attempt: item.call_attempt,
           call_received: item.call_received
@@ -194,7 +208,7 @@ export default function NewCallPage() {
               New Call - Teleform User ID: {teleformUserId}
             </Heading>
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={handleRefresh}
@@ -204,7 +218,7 @@ export default function NewCallPage() {
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               {loading ? 'Refreshing...' : 'Refresh'}
             </Button>
-          </div>
+          </div> */}
         </div>
 
         {/* Error Message */}
@@ -226,21 +240,16 @@ export default function NewCallPage() {
                   <tr>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Server ID</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Phone Number</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Code</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Name</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">District</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Zone</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">MLA</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Electorate</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Call Attempts</th>
                     <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={11} className="text-center py-8">
+                      <td colSpan={6} className="text-center py-8">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
                           <span className="text-gray-500 dark:text-gray-400">Loading interviews...</span>
@@ -249,7 +258,7 @@ export default function NewCallPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={11} className="text-center py-8">
+                      <td colSpan={6} className="text-center py-8">
                         <div className="text-red-500 dark:text-red-400">
                           {error}
                         </div>
@@ -264,9 +273,6 @@ export default function NewCallPage() {
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
                           SRV00{interview.id}
                         </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
-                          {interview.phone}
-                        </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           {interview.ac_code}
                         </td>
@@ -274,25 +280,7 @@ export default function NewCallPage() {
                           {interview.ac_name}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {interview.ac_district_name}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {interview.ac_zone_name}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {interview.ac_mla_name}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {interview.ac_electorate?.toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            interview.call_attempt > 0 
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' 
-                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          }`}>
-                            {interview.call_attempt || 0}
-                          </span>
+                          {interview.ac_district_name || interview.district_name || '-'}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                           <Button
@@ -309,7 +297,7 @@ export default function NewCallPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={11} className="text-center py-8">
+                      <td colSpan={6} className="text-center py-8">
                         <div className="text-gray-500 dark:text-gray-400">
                           No interviews found.
                         </div>
