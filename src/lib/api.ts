@@ -92,6 +92,7 @@ export const API_ENDPOINTS = {
     POLLING_STATIONS: '/dashboard/polling-stations',
     SURVEY_DATES: '/dashboard/survey-dates',
     SAMPLE_STATISTICS: '/dashboard/sample-statistics',
+    FIELDWORK_PROGRESS: '/dataquality',
     MASTER_AC_LIST: '/dashboard/master-ac/list',
     MASTER_AC_UPDATE: '/dashboard/master-ac/update',
     MASTER_AC_INDEX_UPDATE: '/dashboard/master-ac-index/acupdate',
@@ -698,6 +699,31 @@ class ApiService {
     return this.request(API_ENDPOINTS.DASHBOARD.STATS);
   }
 
+  async getFieldworkProgress(): Promise<ApiResponse<{
+    summary: {
+      total_sample: number;
+      sample_achieved_numbers: number;
+      sample_achieved_percentage: number;
+      acs_completed: number;
+      acs_in_progress: number;
+      acs_yet_to_initiate: number;
+    };
+    ac_wise_progress: Array<{
+      ac_code: number;
+      ac_name: string;
+      district_name: string;
+      target_sample: number;
+      valid_interviews: number;
+      under_qc_interviews: number;
+      total_achieved: number;
+      rejected_interviews: number;
+      completion_percentage: string;
+      status: string;
+    }>;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.FIELDWORK_PROGRESS);
+  }
+
   // Team Registration Methods
   async getTeamRegistration(page: number = 1, limit: number = 20): Promise<ApiResponse<{
     team_registrations: Array<{
@@ -754,6 +780,91 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(data)
     });
+  }
+
+  async getTeamRegistrationById(agencyId: number): Promise<ApiResponse<{
+    agency_id: number;
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    username: string;
+    password: string;
+  } | null>> {
+    // Use the existing team registration endpoint and filter by agency_id
+    // This is a workaround since there might not be a single agency endpoint
+    try {
+      // Try to find the agency by searching through pages
+      let page = 1;
+      const limit = 100;
+      let foundAgency = null;
+      
+      // Search through multiple pages if needed (max 10 pages to avoid infinite loop)
+      while (page <= 10 && !foundAgency) {
+        const response = await this.getTeamRegistration(page, limit);
+        
+        if (response.success && response.data?.team_registrations) {
+          foundAgency = response.data.team_registrations.find(
+            (item: any) => item.agency_id === agencyId
+          );
+          
+          if (foundAgency) {
+            break;
+          }
+          
+          // If this is the last page, stop searching
+          if (!response.data.has_next) {
+            break;
+          }
+          
+          page++;
+        } else {
+          break;
+        }
+      }
+      
+      if (foundAgency) {
+        // Map the list data to the expected single agency format
+        return {
+          success: true,
+          data: {
+            agency_id: foundAgency.agency_id,
+            agency_name: foundAgency.agency_name,
+            qc_agency_id: 1, // Default value since not available in list
+            show_second_level_column: foundAgency.show_second_level_column ? 1 : 0,
+            status: foundAgency.status === 'Active' ? 1 : 0,
+            qa_id: 1, // Default value since not available in list
+            unique_id: foundAgency.username || '', // Use username as unique_id
+            first_name: '', // Not available in list
+            last_name: '', // Not available in list
+            email: '', // Not available in list
+            username: foundAgency.username || '',
+            password: '********' // Don't return actual password for security
+          },
+          message: 'Agency found successfully',
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        return {
+          success: false,
+          data: null,
+          message: `Agency with ID ${agencyId} not found`,
+          timestamp: new Date().toISOString()
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: `Error fetching agency: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: new Date().toISOString()
+      };
+    }
   }
 
   async updateTeamRegistration(agencyId: number, data: {

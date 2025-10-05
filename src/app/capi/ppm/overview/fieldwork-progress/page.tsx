@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
-import { config } from '@/lib/config';
+import { useFieldworkProgress } from '@/hooks/useApi';
 
 interface ProgressSummary {
   details: string;
@@ -22,39 +22,11 @@ interface ACProgress {
   completionPercent: number;
 }
 
-interface APIResponse {
-  success: boolean;
-  data: {
-    summary: {
-      total_sample: number;
-      sample_achieved_numbers: number;
-      sample_achieved_percentage: number;
-      acs_completed: number;
-      acs_in_progress: number;
-      acs_yet_to_initiate: number;
-    };
-    ac_wise_progress: Array<{
-      ac_code: number;
-      ac_name: string;
-      district_name: string;
-      target_sample: number;
-      valid_interviews: number;
-      under_qc_interviews: number;
-      total_achieved: number;
-      rejected_interviews: number;
-      completion_percentage: string;
-      status: string;
-    }>;
-  };
-  message: string;
-  timestamp: string;
-}
 
 export default function FieldworkProgressPage() {
   const [progressSummaryData, setProgressSummaryData] = useState<ProgressSummary[]>([]);
   const [acProgressData, setAcProgressData] = useState<ACProgress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { getFieldworkProgress, loading, error } = useFieldworkProgress();
 
   useEffect(() => {
     fetchFieldworkProgress();
@@ -62,47 +34,22 @@ export default function FieldworkProgressPage() {
 
   const fetchFieldworkProgress = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      const result = await getFieldworkProgress();
 
-      const token = localStorage.getItem('accessToken') || '';
-      
-      if (!token) {
-        throw new Error('No authentication token found. Please login again.');
-      }
-
-      const response = await fetch(`${config.api.baseUrl}${config.api.version}/dataquality`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Unauthorized. Please login again.');
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: APIResponse = await response.json();
-
-      if (result.success && result.data) {
+      if (result) {
         // Transform summary data
         const summaryData: ProgressSummary[] = [
-          { details: 'Total Sample', measure: result.data.summary.total_sample },
-          { details: 'Sample Achieved (Numbers)', measure: result.data.summary.sample_achieved_numbers },
-          { details: 'Sample Achieved (%)', measure: result.data.summary.sample_achieved_percentage },
-          { details: 'ACs completed', measure: result.data.summary.acs_completed },
-          { details: 'ACs not completed', measure: result.data.summary.acs_in_progress },
-          { details: 'ACs yet to be initiated', measure: result.data.summary.acs_yet_to_initiate }
+          { details: 'Total Sample', measure: result.summary.total_sample },
+          { details: 'Sample Achieved (Numbers)', measure: result.summary.sample_achieved_numbers },
+          { details: 'Sample Achieved (%)', measure: result.summary.sample_achieved_percentage },
+          { details: 'ACs completed', measure: result.summary.acs_completed },
+          { details: 'ACs not completed', measure: result.summary.acs_in_progress },
+          { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate }
         ];
         setProgressSummaryData(summaryData);
 
         // Transform AC progress data
-        const acData: ACProgress[] = result.data.ac_wise_progress.map(ac => ({
+        const acData: ACProgress[] = result.ac_wise_progress.map(ac => ({
           acCode: ac.ac_code,
           acName: ac.ac_name,
           districtName: ac.district_name,
@@ -111,14 +58,9 @@ export default function FieldworkProgressPage() {
           completionPercent: parseFloat(ac.completion_percentage)
         }));
         setAcProgressData(acData);
-      } else {
-        throw new Error(result.message || 'Failed to fetch data');
       }
     } catch (err) {
       console.error('Error fetching fieldwork progress:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-    } finally {
-      setLoading(false);
     }
   };
 

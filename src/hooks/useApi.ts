@@ -460,6 +460,64 @@ export function useUpdateTeamRegistration() {
   return { updateTeamRegistration, loading, error };
 }
 
+// Get Team Registration by ID Hook
+export function useGetTeamRegistrationById() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getTeamRegistrationById = useCallback(async (agencyId: number) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getTeamRegistrationById(agencyId);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getTeamRegistrationById, loading, error };
+}
+
+// Fieldwork Progress Hook
+export function useFieldworkProgress() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getFieldworkProgress = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getFieldworkProgress();
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch fieldwork progress');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getFieldworkProgress, loading, error };
+}
+
 // Utility Hook for Manual API Calls
 export function useApiCall() {
   const [loading, setLoading] = useState(false);

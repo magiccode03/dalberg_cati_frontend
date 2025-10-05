@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,16 +10,18 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Key, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useUpdateTeamRegistration } from '@/hooks/useApi';
+import { useUpdateTeamRegistration, useGetTeamRegistrationById } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
+import SuccessBanner from '@/components/ui/SuccessBanner';
 
-const AgencyUpdatePage = () => {
+const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const agencyId = searchParams.get('agency_id');
+  const resolvedParams = use(params);
+  const agencyId = resolvedParams.agency_id;
   
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [formData, setFormData] = useState({
     agency_name: '',
     qc_agency_id: '',
@@ -31,6 +33,7 @@ const AgencyUpdatePage = () => {
   });
   
   const { updateTeamRegistration, loading: updateLoading, error: updateError } = useUpdateTeamRegistration();
+  const { getTeamRegistrationById, loading: fetchLoading, error: fetchError } = useGetTeamRegistrationById();
   const { success, error: showError } = useToast();
 
   const qcAgencyOptions = [
@@ -62,27 +65,36 @@ const AgencyUpdatePage = () => {
   }, [agencyId]);
 
   const fetchAgencyData = async () => {
+    if (!agencyId) {
+      showError('No agency ID provided');
+      router.push('/capi/ppm/master/team-registration');
+      return;
+    }
+
     try {
-      setLoading(true);
-      // For now, we'll use mock data. In a real app, you'd fetch from API
-      // You can replace this with actual API call to get agency details
-      const mockData = {
-        agency_name: `Agency ${agencyId}`,
-        qc_agency_id: '1',
-        show_second_level_column: '1',
-        status: '1',
-        qa_id: '1',
-        username: `user_${agencyId}`,
-        password: 'currentpassword123'
-      };
+      console.log('🔍 Fetching agency data for ID:', agencyId);
+      const agencyData = await getTeamRegistrationById(parseInt(agencyId));
+      console.log('📊 Raw API response:', agencyData);
       
-      setFormData(mockData);
-      console.log('Fetched agency data:', mockData);
+      if (agencyData) {
+        const mappedData = {
+          agency_name: agencyData.agency_name || '',
+          qc_agency_id: agencyData.qc_agency_id?.toString() || '',
+          show_second_level_column: agencyData.show_second_level_column?.toString() || '',
+          status: agencyData.status?.toString() || '1',
+          qa_id: agencyData.qa_id?.toString() || '',
+          username: agencyData.username || '',
+          password: agencyData.password || ''
+        };
+        console.log('✅ Mapped form data:', mappedData);
+        setFormData(mappedData);
+      } else {
+        console.error('❌ No agency data received from API');
+        showError('Failed to fetch agency data - no data returned');
+      }
     } catch (err) {
-      console.error('Error fetching agency data:', err);
-      showError('Failed to fetch agency data');
-    } finally {
-      setLoading(false);
+      console.error('❌ Error fetching agency data:', err);
+      showError(`Failed to fetch agency data: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -137,9 +149,11 @@ const AgencyUpdatePage = () => {
       });
 
       if (result) {
-        success('Agency updated successfully!');
-        // Navigate back to team registration list
-        router.push('/capi/ppm/master/team-registration');
+        setShowSuccessBanner(true);
+        // Navigate back to team registration list after showing success message
+        setTimeout(() => {
+          router.push('/capi/ppm/master/team-registration');
+        }, 2000); // Show banner for 2 seconds before navigating
       }
     } catch (err) {
       console.error('Error updating agency:', err);
@@ -151,7 +165,7 @@ const AgencyUpdatePage = () => {
     router.push('/capi/ppm/master/team-registration');
   };
 
-  if (loading) {
+  if (fetchLoading) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -164,8 +178,45 @@ const AgencyUpdatePage = () => {
     );
   }
 
+  if (fetchError) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <Card className="mb-6">
+          <div className="card-body text-center">
+            <div className="text-red-500 mb-4">
+              <AlertCircle className="w-16 h-16 mx-auto" />
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Agency Data</Heading>
+            <Text className="text-gray-600 mb-4">{fetchError}</Text>
+            <div className="flex space-x-3 justify-center">
+              <Button 
+                onClick={() => fetchAgencyData()} 
+                variant="primary"
+              >
+                Retry
+              </Button>
+              <Button 
+                onClick={handleBack} 
+                variant="destructive"
+              >
+                Back to List
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Success Banner */}
+      {showSuccessBanner && (
+        <div className="mb-6">
+          <SuccessBanner message="Agency Updated Successfully" />
+        </div>
+      )}
+
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
         Update Agency: {formData.agency_name}

@@ -12,10 +12,12 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Key, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 import { useCreateTeamRegistration } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
+import SuccessBanner from '@/components/ui/SuccessBanner';
 
 const NewAgencyPage = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [formData, setFormData] = useState({
     agency_name: '',
     qc_agency_id: '',
@@ -92,9 +94,11 @@ const NewAgencyPage = () => {
       });
 
       if (result) {
-        success('Team registration created successfully!');
-        // Navigate back to team registration list
-        router.push('/capi/ppm/master/team-registration');
+        setShowSuccessBanner(true);
+        // Navigate back to team registration list after showing success message
+        setTimeout(() => {
+          router.push('/capi/ppm/master/team-registration');
+        }, 2000); // Show banner for 2 seconds before navigating
       }
     } catch (err) {
       console.error('Error creating team registration:', err);
@@ -108,6 +112,13 @@ const NewAgencyPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Success Banner */}
+      {showSuccessBanner && (
+        <div className="mb-6">
+          <SuccessBanner message="New Agency Added Successfully" />
+        </div>
+      )}
+
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
         New Team

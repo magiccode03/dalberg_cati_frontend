@@ -9,9 +9,10 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import { Edit, RefreshCw, XCircle, Loader2 } from 'lucide-react';
+import { Edit, Loader2 } from 'lucide-react';
 import { useTeamRegistration, useToggleReQcStatus } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
+import Switch from '@/components/ui/Switch';
 
 // TypeScript interfaces for API response
 interface TeamRegistrationData {
@@ -61,17 +62,6 @@ const TeamRegistrationPage = () => {
   // Type the data properly
   const typedData = data as TeamRegistrationResponse | null;
 
-  const getReQcStatusBadge = (reqcStatus: number | undefined) => {
-    const status = reqcStatus ?? 0; // Default to 0 if undefined
-    if (status === 1) {
-      return <Badge variant="success" size="sm">Enabled</Badge>;
-    } else if (status === 0) {
-      return <Badge variant="error" size="sm">Disabled</Badge>;
-    } else {
-      return <Badge variant="secondary" size="sm">Unknown</Badge>;
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Active':
@@ -84,67 +74,24 @@ const TeamRegistrationPage = () => {
   };
 
   const handleUpdateAgency = (agencyId: number) => {
-    // Navigate to the update page with agency ID
-    router.push(`/capi/ppm/master/team-registration/agencyupdate?agency_id=${agencyId}`);
+    // Navigate to the update page with agency ID as dynamic route
+    router.push(`/capi/ppm/master/team-registration/${agencyId}`);
   };
 
   const handleToggleReQc = async (agencyId: number, currentReqcStatus: number | undefined) => {
     try {
-      // Handle undefined status - default to 0 if undefined
       const currentStatus = currentReqcStatus ?? 0;
-      const newStatus = currentStatus === 1 ? 0 : 1; // Toggle between 0 and 1
-      
-      console.log('🔄 TOGGLE DEBUG:', {
-        agencyId,
-        currentReqcStatus,
-        currentStatus,
-        newStatus,
-        action: currentStatus === 1 ? 'DISABLING (1→0)' : 'ENABLING (0→1)',
-        sendingToAPI: {
-          agency_id: agencyId,
-          data_send_for_reqc: newStatus
-        }
-      });
+      const newStatus = currentStatus === 1 ? 0 : 1;
       
       const response = await toggleReQc(agencyId, newStatus);
       
       if (response.success) {
-        console.log('✅ API RESPONSE:', response);
-        console.log('📊 COMPARISON:', {
-          sent: newStatus,
-          received: response.data?.data_send_for_reqc,
-          match: response.data?.data_send_for_reqc === newStatus
-        });
-        
-        // Show success message
         success(`Re-QC status ${newStatus === 1 ? 'enabled' : 'disabled'} successfully!`);
-        
-        // Refresh the data to get updated status
-        console.log('🔄 Refreshing data...');
         await refetch();
-        console.log('✅ Data refreshed');
-        
-        // Force another refresh after a short delay to ensure we get the latest data
-        setTimeout(async () => {
-          console.log('🔄 Force refresh after delay...');
-          await refetch();
-          console.log('✅ Force refresh completed');
-        }, 500);
-        
-        // If the API response shows the correct value, show a warning if the UI doesn't update
-        setTimeout(() => {
-          if (response.data?.data_send_for_reqc !== newStatus) {
-            console.warn('⚠️ WARNING: API response does not match expected value!');
-            console.warn('Expected:', newStatus, 'Got from API:', response.data?.data_send_for_reqc);
-            showError(`Warning: API returned ${response.data?.data_send_for_reqc} but expected ${newStatus}. The database may not have been updated.`);
-          }
-        }, 1000);
       } else {
-        console.error('API returned success: false', response);
         showError(response.message || 'Failed to update Re-QC status');
       }
     } catch (err) {
-      console.error('Failed to toggle Re-QC status:', err);
       showError('Failed to update Re-QC status. Please try again.');
     }
   };
@@ -292,7 +239,7 @@ const TeamRegistrationPage = () => {
                         </th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Action</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Re-QC Status</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Re-QC Toggle</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -342,29 +289,16 @@ const TeamRegistrationPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex items-center justify-center space-x-2">
-                              {getReQcStatusBadge(item.data_send_for_reqc)}
-                              <span className="text-xs text-gray-500">({item.data_send_for_reqc ?? 'undefined'})</span>
-                              <span className="text-xs text-blue-600 font-medium">
-                                → {(item.data_send_for_reqc ?? 0) === 1 ? '0' : '1'}
-                              </span>
-                              <button
-                                onClick={() => handleToggleReQc(item.agency_id, item.data_send_for_reqc)}
+                              <Switch
+                                checked={(item.data_send_for_reqc ?? 0) === 1}
+                                onChange={() => handleToggleReQc(item.agency_id, item.data_send_for_reqc)}
                                 disabled={toggleLoading}
-                                className={`inline-flex items-center justify-center w-8 h-8 rounded transition-colors ${
-                                  toggleLoading 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
-                                    : (item.data_send_for_reqc ?? 0) === 1 
-                                      ? 'bg-red-600 hover:bg-red-700 text-white' 
-                                      : 'bg-green-600 hover:bg-green-700 text-white'
-                                }`}
-                                title={(item.data_send_for_reqc ?? 0) === 1 ? "Click to Disable Re-QC (set to 0)" : "Click to Enable Re-QC (set to 1)"}
-                              >
-                                {toggleLoading ? (
-                                  <Loader2 size={16} className="animate-spin" />
-                                ) : (
-                                  <RefreshCw size={16} />
-                                )}
-                              </button>
+                                color="success"
+                                size="sm"
+                              />
+                              {toggleLoading && (
+                                <Loader2 size={16} className="animate-spin text-gray-500" />
+                              )}
                             </div>
                           </td>
                         </tr>
