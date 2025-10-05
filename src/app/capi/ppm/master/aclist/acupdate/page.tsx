@@ -202,7 +202,7 @@ const ACUpdatePageContent = () => {
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
-        Assign Agency to : {acData?.ac_name || ''}
+        Assign Zonal Manager to : {acData?.ac_name || ''}
       </Heading>
 
       {/* Main Content Card */}
@@ -212,7 +212,7 @@ const ACUpdatePageContent = () => {
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
             <Heading level={4} className="text-gray-800 font-bold">
-              ASSIGN AGENCY TO: {acData?.ac_name?.toUpperCase() || ''}
+              ASSIGN ZONAL MANAGER TO: {acData?.ac_name?.toUpperCase() || ''}
             </Heading>
           </div>
         </div>
@@ -222,7 +222,7 @@ const ACUpdatePageContent = () => {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-5">
-              Agency
+              Zonal Manager
             </label>
             <div className="relative">
               <select
@@ -231,7 +231,7 @@ const ACUpdatePageContent = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
                 disabled={updating}
               >
-                <option value="">Select Agency</option>
+                <option value="">Select Zonal Manager</option>
                 {agencyOptions.map((agency) => (
                   <option key={agency.id} value={agency.name}>
                     {agency.name}

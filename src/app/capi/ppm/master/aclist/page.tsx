@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2, Edit } from 'lucide-react';
+import { Loader2, Edit, Plus, Search } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { apiService } from '@/lib/api';
 
@@ -305,7 +305,7 @@ const ACListPage = () => {
             </div>
             <div className="flex items-end">
               <Button type="submit" className="w-full">
-                <i className="fa fa-search mr-2"></i>
+              <Search className="w-4 h-4 mr-2" />
                 Search
               </Button>
             </div>
@@ -321,7 +321,8 @@ const ACListPage = () => {
             <Heading level={4}>AC List</Heading>
           </div>
           <Button variant="primary" className="bg-blue-600 text-white hover:bg-blue-500">
-            Update Data Agency Wise
+          <Plus className="w-4 h-4 mr-2" />
+            Update Data Team Wise
           </Button>
         </div>
 
@@ -337,8 +338,8 @@ const ACListPage = () => {
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700">AC Code</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Agency ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Agency Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Total Interview</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Valid Interview</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Action</th>
