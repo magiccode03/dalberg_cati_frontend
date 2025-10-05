@@ -84,7 +84,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
           status: agencyData.status?.toString() || '1',
           qa_id: agencyData.qa_id?.toString() || '',
           username: agencyData.username || '',
-          password: agencyData.password || ''
+          password: '' // Always blank for update form
         };
         console.log('✅ Mapped form data:', mappedData);
         setFormData(mappedData);
@@ -127,11 +127,16 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
     
     console.log('Updating agency:', agencyId, 'with data:', formData);
     
-    // Validate required fields
+    // Validate required fields (password is optional for updates)
     if (!formData.agency_name || !formData.show_second_level_column || 
-        !formData.username || !formData.password) {
+        !formData.username) {
       showError('Please fill in all required fields');
       return;
+    }
+
+    // If password is blank, we'll skip updating it
+    if (!formData.password.trim()) {
+      console.log('Password is blank, will not update password');
     }
 
     try {
@@ -335,16 +340,15 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
 
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Password <span className="text-red-500">*</span>
+                  Password <span className="text-gray-500">(Optional - leave blank to keep current)</span>
                 </Text>
                 <div className="flex items-center">
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="Enter Login Password"
+                    placeholder="Enter New Password (leave blank to keep current)"
                     className="rounded-r-none"
-                    required
                   />
                   <Button
                     type="button"

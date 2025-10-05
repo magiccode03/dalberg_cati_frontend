@@ -83,15 +83,20 @@ const TeamRegistrationPage = () => {
       const currentStatus = currentReqcStatus ?? 0;
       const newStatus = currentStatus === 1 ? 0 : 1;
       
+      console.log('🔄 Toggle clicked:', { agencyId, currentReqcStatus, currentStatus, newStatus });
+      
       const response = await toggleReQc(agencyId, newStatus);
       
       if (response.success) {
+        console.log('✅ Toggle success:', response);
         success(`Re-QC status ${newStatus === 1 ? 'enabled' : 'disabled'} successfully!`);
         await refetch();
       } else {
+        console.error('❌ Toggle failed:', response);
         showError(response.message || 'Failed to update Re-QC status');
       }
     } catch (err) {
+      console.error('❌ Toggle error:', err);
       showError('Failed to update Re-QC status. Please try again.');
     }
   };
@@ -288,10 +293,25 @@ const TeamRegistrationPage = () => {
                             </button>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex items-center justify-center space-x-2">
+                            <div 
+                              className="flex items-center justify-center space-x-2"
+                              onClick={() => {
+                                console.log('🔄 Container clicked for Agency:', item.agency_id);
+                                alert(`Container clicked for Agency ${item.agency_id}!`);
+                              }}
+                            >
                               <Switch
+                                id={`toggle-${item.agency_id}`}
                                 checked={(item.data_send_for_reqc ?? 0) === 1}
-                                onChange={() => handleToggleReQc(item.agency_id, item.data_send_for_reqc)}
+                                onChange={(checked) => {
+                                  console.log('🔄 Switch onChange triggered:', { 
+                                    agencyId: item.agency_id, 
+                                    currentStatus: item.data_send_for_reqc,
+                                    newChecked: checked 
+                                  });
+                                  alert(`Toggle clicked for Agency ${item.agency_id}! Current: ${item.data_send_for_reqc}, New: ${checked}`);
+                                  handleToggleReQc(item.agency_id, item.data_send_for_reqc);
+                                }}
                                 disabled={toggleLoading}
                                 color="success"
                                 size="sm"
@@ -299,6 +319,9 @@ const TeamRegistrationPage = () => {
                               {toggleLoading && (
                                 <Loader2 size={16} className="animate-spin text-gray-500" />
                               )}
+                              <span className="text-xs text-gray-600 ml-1">
+                                {(item.data_send_for_reqc ?? 0) === 1 ? 'ON' : 'OFF'}
+                              </span>
                             </div>
                           </td>
                         </tr>
