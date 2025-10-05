@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Download, Search } from 'lucide-react';
-import { apiService, DetailedCasteResponse, DetailedCasteACData, DetailedCastePCData } from '@/lib/api';
+import { apiService, DetailedCasteResponse, DetailedCasteACData, DetailedCastePCData, DetailedCasteDistrictData, DetailedCasteZoneData } from '@/lib/api';
 
 export default function CastePage() {
   const [acCode, setAcCode] = useState('');
@@ -18,7 +18,7 @@ export default function CastePage() {
   const [casteNotMet, setCasteNotMet] = useState('');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('ACs');
-  const [casteData, setCasteData] = useState<DetailedCasteACData[] | DetailedCastePCData[]>([]);
+  const [casteData, setCasteData] = useState<DetailedCasteACData[] | DetailedCastePCData[] | DetailedCasteDistrictData[] | DetailedCasteZoneData[]>([]);
   const [totalRecords, setTotalRecords] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +47,14 @@ export default function CastePage() {
       // For PCs tab, use pc_code
       else if (activeTab === 'PCs' && acCode) {
         params.pc_code = parseInt(acCode);
+      }
+      // For Districts tab, use district_code
+      else if (activeTab === 'Districts' && acCode) {
+        params.district_code = parseInt(acCode);
+      }
+      // For Zones tab, use region_code
+      else if (activeTab === 'Zones' && acCode) {
+        params.region_code = parseInt(acCode);
       }
       
       if (casteNotMet) params.caste_not_met = casteNotMet;
@@ -92,11 +100,10 @@ export default function CastePage() {
   };
 
   const getCurrentData = () => {
-    // Currently ACs and PCs are supported by the API
-    if (activeTab === 'ACs' || activeTab === 'PCs') {
+    // Currently ACs, PCs, Districts, and Zones are supported by the API
+    if (activeTab === 'ACs' || activeTab === 'PCs' || activeTab === 'Districts' || activeTab === 'Zones') {
       return casteData;
     }
-    // For now, return empty array for Districts and Zones until API supports them
     return [];
   };
 
@@ -256,19 +263,23 @@ export default function CastePage() {
                         <td className="bg-gray-200 border-t-2 border-black"></td>
                         <td className="bg-gray-200 border-t-2 border-black"></td>
                         <td className="bg-gray-200 border-t-2 border-black"></td>
-                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                        {row.castes.slice(0, activeTab === 'ACs' ? 4 : activeTab === 'Zones' ? 8 : 6).map((caste, casteIndex) => (
                           <th key={casteIndex} className="text-center bg-gray-200 border-t-2 border-black">
                             {caste.caste_name}
                           </th>
                         ))}
                       </tr>
                       
-                      {/* AC/PC Info */}
+                      {/* AC/PC/District/Zone Info */}
                       <tr>
                         <td rowSpan={4} className="font-semibold text-center">
                           {activeTab === 'ACs' ? 
                             `${(row as DetailedCasteACData).ac_code}-${(row as DetailedCasteACData).ac_name}` :
-                            `${(row as DetailedCastePCData).pc_code}-${(row as DetailedCastePCData).pc_name}${(row as DetailedCastePCData).district_name ? ` (${(row as DetailedCastePCData).district_name})` : ''}`
+                            activeTab === 'PCs' ?
+                            `${(row as DetailedCastePCData).pc_code}-${(row as DetailedCastePCData).pc_name}${(row as DetailedCastePCData).district_name ? ` (${(row as DetailedCastePCData).district_name})` : ''}` :
+                            activeTab === 'Districts' ?
+                            `${(row as DetailedCasteDistrictData).district_code}-${(row as DetailedCasteDistrictData).district_name}` :
+                            `${(row as DetailedCasteZoneData).region_code}-${(row as DetailedCasteZoneData).region_name}`
                           }
                         </td>
                         <td rowSpan={4} className="font-semibold text-center">
@@ -279,7 +290,7 @@ export default function CastePage() {
                       {/* Population % */}
                       <tr>
                         <th className="text-center">Population %</th>
-                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                        {row.castes.slice(0, activeTab === 'ACs' ? 4 : activeTab === 'Zones' ? 8 : 6).map((caste, casteIndex) => (
                           <td key={casteIndex} className="text-center">
                             {caste.caste}%
                           </td>
@@ -289,7 +300,7 @@ export default function CastePage() {
                       {/* Achievement % */}
                       <tr>
                         <th className="text-center">Achievement %</th>
-                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                        {row.castes.slice(0, activeTab === 'ACs' ? 4 : activeTab === 'Zones' ? 8 : 6).map((caste, casteIndex) => (
                           <td key={casteIndex} className="text-center">
                             {caste.achievement}%
                           </td>
@@ -299,7 +310,7 @@ export default function CastePage() {
                       {/* Difference */}
                       <tr>
                         <th className="text-center">Difference</th>
-                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                        {row.castes.slice(0, activeTab === 'ACs' ? 4 : activeTab === 'Zones' ? 8 : 6).map((caste, casteIndex) => (
                           <td key={casteIndex} className={`text-center ${getDifferenceStyle(caste.difference)}`}>
                             {caste.difference > 0 ? '+' : ''}{caste.difference}
                           </td>
@@ -311,7 +322,7 @@ export default function CastePage() {
                   {getCurrentData().length === 0 && !loading && (
                     <tr>
                       <td colSpan={9} className="text-center py-8 text-gray-500">
-                        {(activeTab === 'ACs' || activeTab === 'PCs') ? 'No caste data available' : 'API support for this tab is coming soon'}
+                        {(activeTab === 'ACs' || activeTab === 'PCs' || activeTab === 'Districts' || activeTab === 'Zones') ? 'No caste data available' : 'API support for this tab is coming soon'}
                       </td>
                     </tr>
                   )}
