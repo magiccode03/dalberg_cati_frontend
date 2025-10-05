@@ -56,23 +56,13 @@ export default function StartFormFillingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-fill form fields if user role is "ss" or from localStorage
+  // Auto-fill form fields if user role is "ss"
   useEffect(() => {
     if (user && user.role === 'ss') {
-      // Check localStorage first, then fallback to user data
-      const savedData = localStorage.getItem('teleform_user_data');
-      if (savedData) {
-        const parsedData = JSON.parse(savedData);
-        setFormData({
-          teleform_user_id: parsedData.teleform_user_id || user.uniqueId || '',
-          user_phone: parsedData.user_phone || user.mobile || ''
-        });
-      } else {
-        setFormData({
-          teleform_user_id: user.uniqueId || '',
-          user_phone: user.mobile || ''
-        });
-      }
+      setFormData({
+        teleform_user_id: user.uniqueId || '',
+        user_phone: user.mobile || ''
+      });
     }
   }, [user]);
 
@@ -188,18 +178,13 @@ export default function StartFormFillingPage() {
     e.preventDefault();
     
     if (validateForm()) {
-      // Save form data to localStorage
-      localStorage.setItem('teleform_user_data', JSON.stringify(formData));
-      console.log('Form submitted and saved to localStorage:', formData);
+      console.log('Form submitted:', formData);
       console.log('Fetching interviews for user ID:', getUserId());
       fetchInterviews();
     }
   };
 
   const handleClear = () => {
-    // Clear localStorage
-    localStorage.removeItem('teleform_user_data');
-    
     // Reset form data
     setFormData({
       teleform_user_id: '',
@@ -219,22 +204,15 @@ export default function StartFormFillingPage() {
     setInterviews([]);
     setError('');
     
-    console.log('Form cleared and localStorage removed');
+    console.log('Form cleared');
   };
 
   const handleConnectToCall = async (interviewId: number, phoneNumber: string) => {
     try {
       console.log('Initiating call:', { interviewId, phoneNumber });
       
-      // Get teleform_user_data from localStorage
-      const savedData = localStorage.getItem('teleform_user_data');
-      if (!savedData) {
-        alert('Please fill in your details first');
-        return;
-      }
-      
-      const userData = JSON.parse(savedData);
-      const fromPhone = userData.user_phone;
+      // Get from phone from form data
+      const fromPhone = formData.user_phone;
       
       if (!fromPhone) {
         alert('User phone number not found');

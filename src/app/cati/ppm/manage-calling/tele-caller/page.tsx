@@ -20,32 +20,39 @@ import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
 
 interface TeleUserData {
   id: number;
-  uniqueId: string;
-  firstName: string;
-  lastName: string;
-  mobile: string;
-  email: string;
-  isActive: boolean;
-  agency: number;
-  roleId: number;
-  createdAt: string;
-  updatedAt: string;
+  teleform_user_id: number;
+  name: string;
+  mobile_number: string;
+  form_id: number;
+  fill_form: number;
+  form_data: number;
+  qc: number;
+  qc_recheck: number;
+  supervisor_id: number;
+  agency_id: number;
+  telecalling_group_id: number;
+  under_training: number;
+  created_at: number;
+  created_by: number;
+  updated_at: number;
+  updated_by: number;
+  status: number;
 }
 
 interface SearchFilters {
-  uniqueId: string;
+  teleform_user_id: string;
   name: string;
-  mobile: string;
-  isActive: string;
+  mobile_number: string;
+  status: string;
 }
 
 const TeleUserInfoPage: React.FC = () => {
   const router = useRouter();
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
-    uniqueId: '',
+    teleform_user_id: '',
     name: '',
-    mobile: '',
-    isActive: '',
+    mobile_number: '',
+    status: '',
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,8 +69,8 @@ const TeleUserInfoPage: React.FC = () => {
 
   const statusOptions = [
     { value: '', label: 'All Status' },
-    { value: 'true', label: 'Active' },
-    { value: 'false', label: 'Inactive' },
+    { value: '1', label: 'Active' },
+    { value: '0', label: 'Inactive' },
   ];
 
   // Fetch telecallers from API
@@ -73,42 +80,45 @@ const TeleUserInfoPage: React.FC = () => {
 
     try {
       const params: any = {
-        role_id: 12,
-        agency: 1,
         page,
         limit: itemsPerPage,
       };
 
       // Add filters if they have values
-      if (searchFilters.uniqueId) params.uniqueId = searchFilters.uniqueId;
+      if (searchFilters.teleform_user_id) params.teleform_user_id = searchFilters.teleform_user_id;
       if (searchFilters.name) params.name = searchFilters.name;
-      if (searchFilters.mobile) params.mobile = searchFilters.mobile;
-      if (searchFilters.isActive) params.isActive = searchFilters.isActive === 'true';
+      if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
+      if (searchFilters.status) params.status = searchFilters.status;
 
       console.log('API Call Params:', params); // Debug log to see what's being sent
 
-      const response = await apiService.getUsers(params);
+      // Get auth token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
 
-      if (response.success && response.data) {
-        // Map User[] to TeleUserData[]
-        const mappedData: TeleUserData[] = response.data.users.map(user => ({
-          id: user.id,
-          uniqueId: user.uniqueId,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          mobile: user.mobile || '',
-          email: user.email,
-          isActive: typeof user.isActive === 'boolean' ? user.isActive : user.isActive === 1,
-          agency: user.agency || 1,
-          roleId: user.roleId,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        }));
-        setTeleUserData(mappedData);
-        setTotalItems(response.data.pagination.total);
-        setTotalPages(response.data.pagination.totalPages);
+      // Build query string
+      const queryParams = new URLSearchParams(params).toString();
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users?${queryParams}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setTeleUserData(result.data);
+        setTotalItems(result.pagination.total);
+        setTotalPages(result.pagination.totalPages);
       } else {
-        setError(response.message || 'Failed to fetch telecallers');
+        setError(result.message || 'Failed to fetch telecallers');
       }
     } catch (err: any) {
       setError(err.message || 'Error fetching telecallers');
@@ -143,8 +153,8 @@ const TeleUserInfoPage: React.FC = () => {
 
   const handleAddData = (user: TeleUserData) => {
     setSelectedTelecaller({
-      id: user.id,
-      name: `${user.firstName} ${user.lastName}`
+      id: user.teleform_user_id,
+      name: user.name
     });
     setIsModalOpen(true);
   };
@@ -189,8 +199,8 @@ const TeleUserInfoPage: React.FC = () => {
                 <Input
                   type="text"
                   placeholder="Teleform User ID"
-                  value={searchFilters.uniqueId}
-                  onChange={(e) => handleInputChange('uniqueId', e.target.value)}
+                  value={searchFilters.teleform_user_id}
+                  onChange={(e) => handleInputChange('teleform_user_id', e.target.value)}
                   className="w-full"
                 />
               </div>
@@ -207,16 +217,16 @@ const TeleUserInfoPage: React.FC = () => {
                 <Input
                   type="text"
                   placeholder="Mobile Number"
-                  value={searchFilters.mobile}
-                  onChange={(e) => handleInputChange('mobile', e.target.value)}
+                  value={searchFilters.mobile_number}
+                  onChange={(e) => handleInputChange('mobile_number', e.target.value)}
                   className="w-full"
                 />
               </div>
               <div>
                 <SelectDropdown
                   options={statusOptions}
-                  value={searchFilters.isActive}
-                  onChange={(value) => handleInputChange('isActive', Array.isArray(value) ? value[0] : value as string)}
+                  value={searchFilters.status}
+                  onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value as string)}
                   className="w-full"
                 />
               </div>
@@ -293,21 +303,21 @@ const TeleUserInfoPage: React.FC = () => {
                           {(currentPage - 1) * itemsPerPage + index + 1}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
-                          {user.uniqueId}
+                          {user.teleform_user_id}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {`${user.firstName} ${user.lastName}`}
+                          {user.name}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
-                          {user.mobile}
+                          {user.mobile_number}
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                           <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            user.isActive 
+                            user.status === 1 
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
                               : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                           }`}>
-                            {user.isActive ? 'Active' : 'Inactive'}
+                            {user.status === 1 ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">

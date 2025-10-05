@@ -418,12 +418,30 @@ export interface DetailedCastePCData {
   castes: DetailedCasteInfo[];
 }
 
+export interface DetailedCasteDistrictData {
+  district_code: number;
+  district_name: string;
+  sample_target: number;
+  valid_underqc_achived: number;
+  completion_rate: string;
+  castes: DetailedCasteInfo[];
+}
+
+export interface DetailedCasteZoneData {
+  region_code: number;
+  region_name: string;
+  sample_target: number;
+  valid_underqc_achived: number;
+  completion_rate: string;
+  castes: DetailedCasteInfo[];
+}
+
 export interface DetailedCasteResponse {
   progress_type: number;
   progress_page: string;
   total_records: number;
   search_filters: Record<string, any>;
-  data_list: DetailedCasteACData[] | DetailedCastePCData[];
+  data_list: DetailedCasteACData[] | DetailedCastePCData[] | DetailedCasteDistrictData[] | DetailedCasteZoneData[];
   message: string;
   timestamp: string;
 }
