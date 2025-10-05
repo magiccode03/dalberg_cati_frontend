@@ -156,6 +156,9 @@ export const API_ENDPOINTS = {
   // Interview Masters
   INTERVIEW_MASTERS: '/interview-masters',
 
+  // Interview Assigned
+  INTERVIEW_ASSIGNED: '/interview-assigned',
+
   // Findings
   FINDINGS: {
     GAIN_AND_LOSSES: '/dashboard/findings/gain-and-losses',
@@ -1498,6 +1501,32 @@ class ApiService {
   async getInterviewMasters(params?: { page?: number; limit?: number }): Promise<ApiResponse<InterviewMastersResponse>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}${queryString}`);
+  }
+
+  async getInterviewerAssignedACs(userId: string): Promise<ApiResponse<{ user_id: number; fullname: string; assigned_ac: number[] }>> {
+    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}/assigned-ac?user_id=${userId}`);
+  }
+
+  async updateInterviewerAssignedACs(userId: string, assignedACs: number[]): Promise<ApiResponse<any>> {
+    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}/assigned-ac?user_id=${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        assigned_ac: assignedACs
+      })
+    });
+  }
+
+  // Interview Assigned Methods
+  async getAssignedInterviewers(): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[] }> }>> {
+    return this.request(`${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list`);
+  }
+
+  async getInterviewMasterForUpdate(userId: string): Promise<ApiResponse<{ user_id: number; fullname: string; login_id: string; total_data_submitted: number; is_active: boolean; assigned_ac: number[]; updated_at: string }>> {
+    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}/update?user_id=${userId}`);
+  }
+
+  async getACList(): Promise<ApiResponse<Array<{ value: number; label: string }>>> {
+    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}/ac-list`);
   }
 
   // Gain and Losses Methods
