@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -12,7 +12,30 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Image, User } from 'lucide-react';
+import { Volume2, MapPin, Image, User, Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
+
+// TypeScript interfaces for API response
+interface InterviewData {
+  server_id: number;
+  interview_date: string;
+  sample_type: string;
+  ac_code: number;
+  ac_name: string;
+  ps_name: string;
+  device_id: string;
+  interviewer_id: string;
+  audio_qc_label: string;
+  audio_qc_id: string;
+  audio1_status_label: string;
+  qc_outcome: string;
+  status_label: string;
+  gender_label: string;
+  gps_available: boolean;
+  ps_image_available: boolean;
+  selfie_image_available: boolean;
+  audio_playback_available: boolean;
+}
 
 // Display data interface for transformed data
 interface DisplayInterviewData {
@@ -36,6 +59,29 @@ interface DisplayInterviewData {
   audio_playback_available: boolean;
 }
 
+interface PaginationData {
+  current_page: number;
+  per_page: number;
+  total_count: number;
+  total_pages: number;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    interviews: InterviewData[];
+    pagination: PaginationData;
+    filters_applied: Record<string, any>;
+    sorting: {
+      field: string;
+      direction: string;
+    };
+    message: string;
+  };
+  message: string;
+  timestamp: string;
+}
+
 const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
     agencyId: '',
@@ -56,6 +102,13 @@ const InterviewLogPage = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
+
+  // API state management
+  const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
+  const [totalCount, setTotalCount] = useState(108333);
+  const [totalPages, setTotalPages] = useState(25);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Sample data for dropdowns
   const agencyOptions = [
@@ -84,10 +137,10 @@ const InterviewLogPage = () => {
     { value: '10', label: 'Raxaul (10)' },
   ];
 
-  // Sample interview data
-  const interviewData: DisplayInterviewData[] = [
+  // Sample data fallback for when API fails
+  const sampleInterviewData = [
     {
-      server_id: '302275',
+      server_id: 302275,
       interview_date: '2025-06-17',
       sample_type: 'Sample',
       ac_code: 141,
@@ -107,7 +160,7 @@ const InterviewLogPage = () => {
       audio_playback_available: true,
     },
     {
-      server_id: '301767',
+      server_id: 301767,
       interview_date: '2025-06-15',
       sample_type: 'Booster',
       ac_code: 207,
@@ -127,7 +180,7 @@ const InterviewLogPage = () => {
       audio_playback_available: true,
     },
     {
-      server_id: '301745',
+      server_id: 301745,
       interview_date: '2025-06-15',
       sample_type: 'Booster',
       ac_code: 207,
@@ -147,7 +200,7 @@ const InterviewLogPage = () => {
       audio_playback_available: true,
     },
     {
-      server_id: '301739',
+      server_id: 301739,
       interview_date: '2025-06-15',
       sample_type: 'Booster',
       ac_code: 207,
@@ -167,7 +220,7 @@ const InterviewLogPage = () => {
       audio_playback_available: true,
     },
     {
-      server_id: '301705',
+      server_id: 301705,
       interview_date: '2025-06-15',
       sample_type: 'Booster',
       ac_code: 207,
@@ -187,6 +240,105 @@ const InterviewLogPage = () => {
       audio_playback_available: true,
     },
   ];
+
+  // Format date to YYYY-MM-DD format
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+    } catch {
+      return dateString; // Return as-is if parsing fails
+    }
+  };
+
+  // Transform API data to match UI expectations
+  const transformAPIData = (apiData: InterviewData[]): DisplayInterviewData[] => {
+    return apiData.map(item => ({
+      ...item,
+      // Convert numbers to strings for display
+      server_id: item.server_id.toString(),
+      interviewer_id: item.interviewer_id?.toString() || '',
+      audio_qc_id: item.audio_qc_id || '',
+      // Ensure date is in YYYY-MM-DD format
+      interview_date: formatDate(item.interview_date),
+    }));
+  };
+
+  // Fetch interview logs from API
+  const fetchInterviewLogs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build query parameters based on filters
+      const queryParams = new URLSearchParams();
+      
+      if (filters.agencyId) queryParams.append('agency_id', filters.agencyId);
+      if (filters.serverId) queryParams.append('server_id', filters.serverId);
+      if (filters.interviewDate) queryParams.append('interview_date', filters.interviewDate);
+      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
+      if (filters.psCode) queryParams.append('ps_code', filters.psCode);
+      if (filters.userId) queryParams.append('user_id', filters.userId);
+      if (filters.interviewerId) queryParams.append('interviewer_id', filters.interviewerId);
+      if (filters.deviceId) queryParams.append('device_id', filters.deviceId);
+      if (filters.mobileNo) queryParams.append('mobile_no', filters.mobileNo);
+      if (filters.audioQc.length > 0) queryParams.append('audio_qc', filters.audioQc.join(','));
+      if (filters.audioQcStatus.length > 0) queryParams.append('audio_qc_status', filters.audioQcStatus.join(','));
+      if (filters.audio1Status.length > 0) queryParams.append('audio_qc_status_detailed', filters.audio1Status.join(','));
+      if (filters.qcRecheckStatusAudio.length > 0) queryParams.append('audio_re_qc_status', filters.qcRecheckStatusAudio.join(','));
+      if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('per_page', pageSize.toString());
+
+      const response = await apiClient.get(`/overview/interview-log?${queryParams.toString()}`, {
+        timeout: 10000
+      });
+
+      const data: APIResponse = response.data;
+      
+      if (data.success && data.data.interviews) {
+        setInterviewData(transformAPIData(data.data.interviews));
+        setTotalCount(data.data.pagination.total_count);
+        setTotalPages(data.data.pagination.total_pages);
+      } else {
+        console.error('API did not return interview data:', data);
+        setInterviewData(transformAPIData(sampleInterviewData));
+        setError('No data received from API, using sample data');
+      }
+    } catch (err: any) {
+      console.error('Error fetching interview logs:', err);
+      
+      if (err.message?.includes('timeout') || err.code === 'ECONNABORTED') {
+        console.log('API request timed out after 10 seconds');
+      } else {
+        console.error('API Error:', err.response?.data || err.message);
+      }
+      
+      setError('Failed to load interview data');
+      // Use sample data as fallback
+      setInterviewData(transformAPIData(sampleInterviewData));
+      setTotalCount(108333);
+      setTotalPages(25);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load data on component mount and when filters change
+  useEffect(() => {
+    fetchInterviewLogs();
+  }, [currentPage, pageSize]);
+
+  // Debounced filter update
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchInterviewLogs();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [filters]);
 
   const getQcOutcomeBadge = (outcome: string) => {
     switch (outcome) {
@@ -485,11 +637,40 @@ const InterviewLogPage = () => {
               </Button>
             </div>
             
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Text className="ml-2 text-gray-600">Loading interview data...</Text>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && !loading && (
+              <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
+                <svg className="w-12 h-12 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.822-.833-2.592 0L4.27 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <Text className="text-red-700 font-medium mb-2">Error Loading Data</Text>
+                <Text className="text-red-600 text-sm mb-4 text-center">
+                  {error}
+                </Text>
+                <Button 
+                  variant="outline" 
+                  onClick={fetchInterviewLogs}
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+            
+            {!loading && (
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
-                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, 108333)}</strong> of <strong>108,333</strong> items.
+                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount.toLocaleString()}</strong> items.
                   </Text>
                 </div>
                 
@@ -607,8 +788,8 @@ const InterviewLogPage = () => {
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard
                     currentPage={currentPage}
-                    totalPages={Math.ceil(108333 / pageSize)}
-                    totalItems={108333}
+                      totalPages={totalPages}
+                      totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={(page) => setCurrentPage(page)}
                     className="justify-center"
@@ -616,6 +797,7 @@ const InterviewLogPage = () => {
                 </div>
               </div>
             </div>
+            )}
           </Card>
         </div>
         </div>

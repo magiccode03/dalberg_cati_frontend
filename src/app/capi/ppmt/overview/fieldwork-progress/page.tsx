@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
+import { useFieldworkProgress } from '@/hooks/useApi';
 
 interface ProgressSummary {
   details: string;
@@ -21,52 +22,47 @@ interface ACProgress {
   completionPercent: number;
 }
 
-const FieldworkProgressPage = () => {
-  // Progress Summary data
-  const progressSummaryData: ProgressSummary[] = [
-    { details: 'Total Sample', measure: '72900' },
-    { details: 'Sample Achieved (Numbers)', measure: '50025' },
-    { details: 'Sample Achieved (%)', measure: '68.62' },
-    { details: 'ACs completed', measure: '56' },
-    { details: 'ACs not completed', measure: '178' },
-    { details: 'ACs yet to be initiated', measure: '9' },
-  ];
 
-  // Complete AC Wise Progress data (243 ACs)
-  const acProgressData: ACProgress[] = [
-    { acCode: 1, acName: 'Valmiki Nagar', districtName: 'Pashchim Champaran', validUnderQc: 310, reject: 15, completionPercent: 103.3 },
-    { acCode: 2, acName: 'Ramnagar (SC)', districtName: 'Pashchim Champaran', validUnderQc: 346, reject: 44, completionPercent: 115.3 },
-    { acCode: 3, acName: 'Narkatiaganj', districtName: 'Pashchim Champaran', validUnderQc: 315, reject: 73, completionPercent: 105 },
-    { acCode: 4, acName: 'Bagaha', districtName: 'Pashchim Champaran', validUnderQc: 306, reject: 27, completionPercent: 102 },
-    { acCode: 5, acName: 'Lauriya', districtName: 'Pashchim Champaran', validUnderQc: 337, reject: 96, completionPercent: 112.3 },
-    { acCode: 6, acName: 'Nautan', districtName: 'Pashchim Champaran', validUnderQc: 326, reject: 73, completionPercent: 108.7 },
-    { acCode: 7, acName: 'Chanpatia', districtName: 'Pashchim Champaran', validUnderQc: 314, reject: 52, completionPercent: 104.7 },
-    { acCode: 8, acName: 'Bettiah', districtName: 'Pashchim Champaran', validUnderQc: 318, reject: 95, completionPercent: 106 },
-    { acCode: 9, acName: 'Sikta', districtName: 'Pashchim Champaran', validUnderQc: 351, reject: 11, completionPercent: 117 },
-    { acCode: 10, acName: 'Raxaul', districtName: 'Purba Champaran', validUnderQc: 325, reject: 104, completionPercent: 108.3 },
-    { acCode: 11, acName: 'Sugauli', districtName: 'Purba Champaran', validUnderQc: 238, reject: 182, completionPercent: 79.3 },
-    { acCode: 12, acName: 'Narkatia', districtName: 'Purba Champaran', validUnderQc: 303, reject: 8, completionPercent: 101 },
-    { acCode: 13, acName: 'Harsidhi (SC)', districtName: 'Purba Champaran', validUnderQc: 171, reject: 190, completionPercent: 57 },
-    { acCode: 14, acName: 'Govindganj', districtName: 'Purba Champaran', validUnderQc: 148, reject: 200, completionPercent: 49.3 },
-    { acCode: 15, acName: 'Kesaria', districtName: 'Purba Champaran', validUnderQc: 291, reject: 218, completionPercent: 97 },
-    { acCode: 16, acName: 'Kalyanpur', districtName: 'Purba Champaran', validUnderQc: 192, reject: 283, completionPercent: 64 },
-    { acCode: 17, acName: 'Pipra', districtName: 'Purba Champaran', validUnderQc: 189, reject: 345, completionPercent: 63 },
-    { acCode: 18, acName: 'Madhuban', districtName: 'Purba Champaran', validUnderQc: 209, reject: 102, completionPercent: 69.7 },
-    { acCode: 19, acName: 'Motihari', districtName: 'Purba Champaran', validUnderQc: 118, reject: 234, completionPercent: 39.3 },
-    { acCode: 20, acName: 'Chiraia', districtName: 'Purba Champaran', validUnderQc: 89, reject: 437, completionPercent: 29.7 },
-    { acCode: 21, acName: 'Dhaka', districtName: 'Purba Champaran', validUnderQc: 163, reject: 140, completionPercent: 54.3 },
-    { acCode: 22, acName: 'Sheohar', districtName: 'Sheohar', validUnderQc: 211, reject: 204, completionPercent: 70.3 },
-    { acCode: 23, acName: 'Riga', districtName: 'Sitamarhi', validUnderQc: 193, reject: 608, completionPercent: 64.3 },
-    { acCode: 24, acName: 'Bathnaha (SC)', districtName: 'Sitamarhi', validUnderQc: 210, reject: 394, completionPercent: 70 },
-    { acCode: 25, acName: 'Parihar', districtName: 'Sitamarhi', validUnderQc: 301, reject: 155, completionPercent: 100.3 },
-    { acCode: 26, acName: 'Sursand', districtName: 'Sitamarhi', validUnderQc: 292, reject: 308, completionPercent: 97.3 },
-    { acCode: 27, acName: 'Bajpatti', districtName: 'Sitamarhi', validUnderQc: 305, reject: 78, completionPercent: 101.7 },
-    { acCode: 28, acName: 'Sitamarhi', districtName: 'Sitamarhi', validUnderQc: 293, reject: 68, completionPercent: 97.7 },
-    { acCode: 29, acName: 'Runnisaidpur', districtName: 'Sitamarhi', validUnderQc: 166, reject: 599, completionPercent: 55.3 },
-    { acCode: 30, acName: 'Belsand', districtName: 'Sitamarhi', validUnderQc: 188, reject: 204, completionPercent: 62.7 },
-    // Continue with more data...
-    { acCode: 243, acName: 'Chakai', districtName: 'Jamui', validUnderQc: 2, reject: 318, completionPercent: 0.7 },
-  ];
+export default function FieldworkProgressPage() {
+  const [progressSummaryData, setProgressSummaryData] = useState<ProgressSummary[]>([]);
+  const [acProgressData, setAcProgressData] = useState<ACProgress[]>([]);
+  const { getFieldworkProgress, loading, error } = useFieldworkProgress();
+
+  useEffect(() => {
+    fetchFieldworkProgress();
+  }, []);
+
+  const fetchFieldworkProgress = async () => {
+    try {
+      const result = await getFieldworkProgress();
+
+      if (result) {
+        // Transform summary data
+        const summaryData: ProgressSummary[] = [
+          { details: 'Total Sample', measure: result.summary.total_sample },
+          { details: 'Sample Achieved (Numbers)', measure: result.summary.sample_achieved_numbers },
+          { details: 'Sample Achieved (%)', measure: result.summary.sample_achieved_percentage },
+          { details: 'ACs completed', measure: result.summary.acs_completed },
+          { details: 'ACs not completed', measure: result.summary.acs_in_progress },
+          { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate }
+        ];
+        setProgressSummaryData(summaryData);
+
+        // Transform AC progress data
+        const acData: ACProgress[] = result.ac_wise_progress.map(ac => ({
+          acCode: ac.ac_code,
+          acName: ac.ac_name,
+          districtName: ac.district_name,
+          validUnderQc: ac.total_achieved,
+          reject: ac.rejected_interviews,
+          completionPercent: parseFloat(ac.completion_percentage)
+        }));
+        setAcProgressData(acData);
+      }
+    } catch (err) {
+      console.error('Error fetching fieldwork progress:', err);
+    }
+  };
 
   const getRowStyle = (completionPercent: number) => {
     if (completionPercent >= 100) {
@@ -77,6 +73,44 @@ const FieldworkProgressPage = () => {
       return 'bg-gray-200 text-gray-900';
     }
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <Text className="text-gray-600">Loading fieldwork progress data...</Text>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <Card className="mb-6">
+          <div className="card-body text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -174,5 +208,3 @@ const FieldworkProgressPage = () => {
     </Container>
   );
 };
-
-export default FieldworkProgressPage;

@@ -192,7 +192,7 @@ const NewAgencyPage = () => {
           {/* Team Supervisor User Details Section */}
           <div>
             <Heading level={5} className="text-gray-800 mb-4">
-              Team Supervisor User Details
+              Zonal Manager User Details
             </Heading>
             
             {/* Row 1 - Username and Password */}
