@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,16 +9,23 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface AssignedInterviewerData {
-  id: number;
-  srNo: number;
-  interviewerId: string;
-  assignedACs: string;
+  user_id: number;
+  fullname: string;
+  login_id: string;
+  assigned_ac: number[];
+}
+
+interface AssignedInterviewersResponse {
+  total: number;
+  data: AssignedInterviewerData[];
 }
 
 const AssignedInterviewerContent = () => {
+  const router = useRouter();
   const [interviewerData, setInterviewerData] = useState<AssignedInterviewerData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,90 +34,25 @@ const AssignedInterviewerContent = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Sample data for the table
-  const sampleData: AssignedInterviewerData[] = [
-    {
-      id: 1,
-      srNo: 1,
-      interviewerId: 'INT001',
-      assignedACs: 'AC-01, AC-05'
-    },
-    {
-      id: 2,
-      srNo: 2,
-      interviewerId: 'INT002',
-      assignedACs: 'AC-03, AC-07, AC-15'
-    },
-    {
-      id: 3,
-      srNo: 3,
-      interviewerId: 'INT003',
-      assignedACs: 'AC-02, AC-09'
-    },
-    {
-      id: 4,
-      srNo: 4,
-      interviewerId: 'INT004',
-      assignedACs: 'AC-04, AC-08, AC-11, AC-16'
-    },
-    {
-      id: 5,
-      srNo: 5,
-      interviewerId: 'INT005',
-      assignedACs: 'AC-06, AC-10, AC-13'
-    },
-    {
-      id: 6,
-      srNo: 6,
-      interviewerId: 'INT006',
-      assignedACs: 'AC-14, AC-17'
-    },
-    {
-      id: 7,
-      srNo: 7,
-      interviewerId: 'INT007',
-      assignedACs: 'AC-01, AC-03, AC-05, AC-07'
-    },
-    {
-      id: 8,
-      srNo: 8,
-      interviewerId: 'INT008',
-      assignedACs: 'AC-09, AC-12, AC-15'
-    },
-    {
-      id: 9,
-      srNo: 9,
-      interviewerId: 'INT009',
-      assignedACs: 'AC-02, AC-08, AC-11'
-    },
-    {
-      id: 10,
-      srNo: 10,
-      interviewerId: 'INT010',
-      assignedACs: 'AC-04, AC-06, AC-10, AC-13, AC-16'
-    },
-  ];
 
-  // Simulate API call
+  // Fetch data from API
   const fetchInterviewerData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await apiService.getAssignedInterviewers();
       
-      // Paginate the sample data
-      const startIndex = (currentPage-1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedData = sampleData.slice(startIndex, endIndex);
-      
-      setInterviewerData(paginatedData);
-      setTotalCount(sampleData.length);
-      setTotalPages(Math.ceil(sampleData.length / pageSize));
+      if (response.success && response.data) {
+        setInterviewerData(response.data.data);
+        setTotalCount(response.data.total);
+        setTotalPages(Math.ceil(response.data.total / pageSize));
+      } else {
+        setError('Failed to fetch assigned interviewer data');
+      }
     } catch (err) {
-      console.error('Error fetching interviewer data:', err);
-      setError('Failed to load interviewer data');
+      console.error('Error fetching assigned interviewer data:', err);
+      setError('Error fetching assigned interviewer data');
     } finally {
       setLoading(false);
     }
@@ -118,10 +61,6 @@ const AssignedInterviewerContent = () => {
   useEffect(() => {
     fetchInterviewerData();
   }, [currentPage]);
-
-  const handleRefresh = () => {
-    fetchInterviewerData();
-  };
 
   if (loading && currentPage === 1) {
     return (
@@ -153,13 +92,6 @@ const AssignedInterviewerContent = () => {
                 </Heading>
                 <Text className="text-gray-600">{error}</Text>
               </div>
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                size="sm"
-              >
-                Retry
-              </Button>
             </div>
           </div>
         </Card>
@@ -172,21 +104,6 @@ const AssignedInterviewerContent = () => {
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
             <Heading level={4}>Assigned Interviewers List</Heading>
           </div>
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Loading...
-              </>
-            ) : (
-              'Refresh'
-            )}
-          </Button>
         </div>
 
         {/* Data Summary */}
@@ -207,22 +124,40 @@ const AssignedInterviewerContent = () => {
               <tr>
                 <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">ID</th>
+                <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">Assigned ACS</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
-              {interviewerData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
+              {interviewerData.map((item, index) => (
+                <tr key={item.user_id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                    {item.srNo}
+                    {(currentPage - 1) * pageSize + index + 1}
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200 font-mono">
-                    {item.interviewerId}
+                    {item.login_id}
+                  </td>
+                  <td className="px-4 py-3 border-b border-gray-200">
+                    <span className="text-gray-800">
+                      {item.fullname}
+                    </span>
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200">
                     <span className="text-gray-700">
-                      {item.assignedACs}
+                      {item.assigned_ac.join(', ')}
                     </span>
+                  </td>
+                  <td className="px-4 py-3 border-b border-gray-200 text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      onClick={() => router.push(`/capi/ppm/interviewer/assigned/update?user_id=${item.user_id}`)}
+                      title="Update Assigned ACs"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}

@@ -1,0 +1,15 @@
+Section,Type,Label/Column Name,Attribute/Field Name
+,,,
+,,,
+Assigned Interviewer Data,Table Column,Sr No,user_id
+Assigned Interviewer Data,Table Column,ID,login_id
+Assigned Interviewer Data,Table Column,Full Name,fullname
+Assigned Interviewer Data,Table Column,Assigned ACS,assigned_ac
+Assigned Interviewer Data,Table Column,Action,No Attribute
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalCount
+Pagination,Data Field,Total Pages,totalPages
+Pagination,Data Field,Items Per Page,pageSize
