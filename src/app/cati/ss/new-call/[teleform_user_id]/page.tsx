@@ -216,30 +216,6 @@ export default function NewCallPage() {
           </Card>
         )}
 
-        {/* Teleform User Info */}
-        {teleformUserData && (
-          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <div className="p-4">
-              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-2">
-                Teleform User Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-blue-800 dark:text-blue-400">Name:</span>
-                  <span className="ml-2 text-blue-700 dark:text-blue-300">{teleformUserData.name}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-blue-800 dark:text-blue-400">Teleform User ID:</span>
-                  <span className="ml-2 text-blue-700 dark:text-blue-300">{teleformUserData.teleform_user_id}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-blue-800 dark:text-blue-400">Mobile:</span>
-                  <span className="ml-2 text-blue-700 dark:text-blue-300">{teleformUserData.mobile_number}</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {/* New Call Table */}
         <Card>
