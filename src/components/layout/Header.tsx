@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
+import { User, LogOut, Sun, Moon, ChevronDown, UserCheck } from 'lucide-react';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 
 export default function Header() {
+  const router = useRouter();
   const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
@@ -29,6 +31,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAgency, setSelectedAgency] = useState<string>('all');
+  const [teleformUserData, setTeleformUserData] = useState<any>(null);
 
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
@@ -69,7 +72,40 @@ export default function Header() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    // Check for teleform user data
+    checkTeleformUserData();
+    
+    // Add storage event listener for real-time updates
+    const handleStorageChange = () => {
+      checkTeleformUserData();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for same-tab updates
+    window.addEventListener('teleformUserUpdated', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('teleformUserUpdated', handleStorageChange);
+    };
   }, []);
+
+  const checkTeleformUserData = () => {
+    const savedData = localStorage.getItem('teleform_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setTeleformUserData(userData);
+      } catch (err) {
+        console.error('Error parsing teleform user data:', err);
+        setTeleformUserData(null);
+      }
+    } else {
+      setTeleformUserData(null);
+    }
+  };
 
 
   const toggleTheme = () => {
@@ -102,6 +138,10 @@ export default function Header() {
     } else {
       window.location.href = '/';
     }
+  };
+
+  const handleTeleformUserClick = () => {
+    router.push('/cati/ss/start-form-filling');
   };
 
   return (
@@ -159,6 +199,25 @@ export default function Header() {
                 placeholder="Select Agency"
               />
             </div>
+          )}
+
+          {/* Teleform User Button - Show when teleform user data exists */}
+          {mounted && teleformUserData && (
+            <button
+              onClick={handleTeleformUserClick}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 transition-colors"
+              title="View Teleform User"
+            >
+              <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-medium text-green-800 dark:text-green-300">
+                  {teleformUserData.name}
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  ID: {teleformUserData.teleform_user_id}
+                </p>
+              </div>
+            </button>
           )}
 
           {/* Theme Toggle */}

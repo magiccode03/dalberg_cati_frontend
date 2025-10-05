@@ -321,7 +321,12 @@ const TeleUserInfoPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                          <Button variant="primary" size="sm" title="Edit Telecaller">
+                          <Button 
+                            variant="primary" 
+                            size="sm" 
+                            title="Edit Telecaller"
+                            onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.id}`)}
+                          >
                             <Edit className="w-4 h-4" />
                           </Button>
                         </td>
