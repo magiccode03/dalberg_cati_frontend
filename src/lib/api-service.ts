@@ -232,6 +232,40 @@ class ApiService {
     });
     return this.request<any>('GET', `/pmt/master-polling-station?${params}`);
   }
+
+  // Team Registration Methods
+  async getTeamRegistration(page: number = 1, limit: number = 20): Promise<ApiResponse<{
+    team_registrations: Array<{
+      agency_id: number;
+      agency_name: string;
+      username: string;
+      qc_agency: string;
+      total_ac: number;
+      total_interviews_conducted: number;
+      valid: number;
+      rejected: number;
+      under_qc: number;
+      show_second_level_column: boolean;
+      status: string;
+    }>;
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+    totals: {
+      total_interview: number;
+      valid_interview: string;
+      reject_interview: string;
+      interview_under_qc: string;
+    };
+  }>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return this.request<any>('GET', `/dashboard/team-registration?${params}`);
+  }
 }
 
 // Export singleton instance

@@ -231,6 +231,32 @@ export const menuData: MenuItem[] = [
     ],
   },
   {
+    id: 'capi-ppm-interviewer',
+    label: 'Interviewer',
+    href: '/capi/ppm/interviewer',
+    icon: 'Database',
+    roles: ['ppm'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-ppm-interviewer-master',
+        label: 'Master',
+        href: '/capi/ppm/interviewer/master',
+        icon: 'Users',
+        roles: ['ppm'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-ppm-interviewer-assigned',
+        label: 'Assigned',
+        href: '/capi/ppm/interviewer/assigned',
+        icon: 'Users',
+        roles: ['ppm'],
+        system: 'capi',
+      },
+    ],
+  },
+  {
     id: 'capi-ppm-progress-report',
     label: 'Progress Report',
     href: '/capi/ppm/progress-report',

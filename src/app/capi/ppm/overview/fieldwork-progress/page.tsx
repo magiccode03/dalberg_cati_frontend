@@ -1,48 +1,32 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Table } from '@/components/ui/Table';
+import Container from '@/components/ui/Container';
+import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { config } from '@/lib/config';
+import Text from '@/components/ui/Text';
+import { Table } from '@/components/ui/Table';
+import { useFieldworkProgress } from '@/hooks/useApi';
 
 interface ProgressSummary {
-  total_sample: number;
-  sample_achieved_numbers: number;
-  sample_achieved_percentage: number;
-  acs_completed: number;
-  acs_in_progress: number;
-  acs_yet_to_initiate: number;
+  details: string;
+  measure: string | number;
 }
 
-interface ACWiseProgress {
-  ac_code: number;
-  ac_name: string;
-  district_name: string;
-  target_sample: number;
-  valid_interviews: number;
-  under_qc_interviews: number;
-  total_achieved: number;
-  rejected_interviews: number;
-  completion_percentage: string;
-  status: string;
+interface ACProgress {
+  acCode: number;
+  acName: string;
+  districtName: string;
+  validUnderQc: number;
+  reject: number;
+  completionPercent: number;
 }
 
-interface APIResponse {
-  success: boolean;
-  data: {
-    summary: ProgressSummary;
-    ac_wise_progress: ACWiseProgress[];
-  };
-  message: string;
-  timestamp: string;
-}
 
-const FieldworkProgressPage = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [summary, setSummary] = useState<ProgressSummary | null>(null);
-  const [acWiseProgressData, setAcWiseProgressData] = useState<ACWiseProgress[]>([]);
+export default function FieldworkProgressPage() {
+  const [progressSummaryData, setProgressSummaryData] = useState<ProgressSummary[]>([]);
+  const [acProgressData, setAcProgressData] = useState<ACProgress[]>([]);
+  const { getFieldworkProgress, loading, error } = useFieldworkProgress();
 
   useEffect(() => {
     fetchFieldworkProgress();
@@ -50,201 +34,177 @@ const FieldworkProgressPage = () => {
 
   const fetchFieldworkProgress = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      const result = await getFieldworkProgress();
 
-      const token = localStorage.getItem('accessToken') || '';
-      
-      if (!token) {
-        throw new Error('No authentication token found. Please login again.');
-      }
+      if (result) {
+        // Transform summary data
+        const summaryData: ProgressSummary[] = [
+          { details: 'Total Sample', measure: result.summary.total_sample },
+          { details: 'Sample Achieved (Numbers)', measure: result.summary.sample_achieved_numbers },
+          { details: 'Sample Achieved (%)', measure: result.summary.sample_achieved_percentage },
+          { details: 'ACs completed', measure: result.summary.acs_completed },
+          { details: 'ACs not completed', measure: result.summary.acs_in_progress },
+          { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate }
+        ];
+        setProgressSummaryData(summaryData);
 
-      const response = await fetch(`${config.api.baseUrl}${config.api.version}/dataquality`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Unauthorized. Please login again.');
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: APIResponse = await response.json();
-
-      if (result.success && result.data) {
-        setSummary(result.data.summary);
-        setAcWiseProgressData(result.data.ac_wise_progress);
-      } else {
-        throw new Error(result.message || 'Failed to fetch data');
+        // Transform AC progress data
+        const acData: ACProgress[] = result.ac_wise_progress.map(ac => ({
+          acCode: ac.ac_code,
+          acName: ac.ac_name,
+          districtName: ac.district_name,
+          validUnderQc: ac.total_achieved,
+          reject: ac.rejected_interviews,
+          completionPercent: parseFloat(ac.completion_percentage)
+        }));
+        setAcProgressData(acData);
       }
     } catch (err) {
       console.error('Error fetching fieldwork progress:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Transform summary data for display
-  const progressSummaryData = summary ? [
-    { details: 'Total Sample', measure: summary.total_sample.toString() },
-    { details: 'Sample Achieved (Numbers)', measure: summary.sample_achieved_numbers.toString() },
-    { details: 'Sample Achieved (%)', measure: summary.sample_achieved_percentage.toString() },
-    { details: 'ACs completed', measure: summary.acs_completed.toString() },
-    { details: 'ACs not completed', measure: summary.acs_in_progress.toString() },
-    { details: 'ACs yet to be initiated', measure: summary.acs_yet_to_initiate.toString() },
-  ] : [];
-
-  const getRowStyle = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-600 text-white';
-      case 'in_progress':
-        return 'bg-orange-500 text-white';
-      case 'yet_to_initiate':
-        return 'bg-gray-200 text-gray-800';
-      default:
-        return 'bg-white text-gray-800';
+  const getRowStyle = (completionPercent: number) => {
+    if (completionPercent >= 100) {
+      return 'bg-green-600 text-white';
+    } else if (completionPercent >= 50) {
+      return 'bg-orange-500 text-white';
+    } else {
+      return 'bg-gray-200 text-gray-900';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <LoadingSpinner />
-      </div>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-center">
+
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <Text className="text-gray-600">Loading fieldwork progress data...</Text>
+          </div>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="main-container container mx-auto px-4 py-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          <p className="font-bold">Error loading data</p>
-          <p>{error}</p>
-          <button 
-            onClick={fetchFieldworkProgress}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        <Card className="mb-6">
+          <div className="card-body text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </Card>
+      </Container>
     );
   }
 
   return (
-    <div className="main-container container mx-auto px-4 py-6">
-      {/* Page Title */}
-      <div className="mb-6">
-        <Heading level={4}>Fieldwork Progress</Heading>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Breadcrumb Header */}
+      <div className="breadcrumb-header justify-content-between mb-6">
+        <div className="justify-content-center mt-2">
+        </div>
+        <div className="right-content">
+          <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
+        </div>
       </div>
 
       {/* Progress Summary Card */}
-      <div className="row mb-6">
-        <div className="col-xl-12">
-          <div className="card shadow-sm bg-white rounded-lg border border-gray-200 p-6">
-            <div className="card-header pb-0">
-              <div className="d-flex justify-content-between">
-                <h4 className="card-title mg-b-0 text-lg font-semibold">
-                  Progress <em>Summary</em>
-                </h4>
-                <span className="text-end"></span>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 bg-gray-50 font-semibold text-gray-700">Details</th>
-                      <th className="px-4 py-3 bg-gray-50 font-semibold text-gray-700">Measure</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {progressSummaryData.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 border-b border-gray-200">{item.details}</td>
-                        <td className="px-4 py-3 border-b border-gray-200 font-semibold text-gray-900">
-                          {item.measure}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </div>
+      <Card className="mb-6">
+        <div className="card-header pb-0 mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="card-title mg-b-0">
+              Progress <i>Summary</i>
+            </Heading>
           </div>
         </div>
-      </div>
+        
+        <div className="card-body">
+          <div className="table-responsive">
+            <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+              <thead>
+                <tr>
+                  <th>Details</th>
+                  <th>Measure</th>
+                </tr>
+              </thead>
+              <tbody>
+                {progressSummaryData.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.details}</td>
+                    <td>{item.measure}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </div>
+      </Card>
 
       {/* AC Wise Progress Card */}
-      <div className="row">
-        <div className="col-xl-12">
-          <div className="card shadow-sm bg-white rounded-lg border border-gray-200 p-6">
-            <div className="card-header pb-0">
-              <div className="d-flex justify-content-between">
-                <h4 className="card-title mg-b-0 text-lg font-semibold">
-                  AC Wise Progress
-                </h4>
-                <span className="text-end">
-                  <span className="text-sm text-gray-500">
-                    Total <strong>243</strong> items.
-                  </span>
-                </span>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <Table bordered striped hover>
-                  <thead className="sticky-header bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Code</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700">AC Name</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700">District Name</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Valid+Under QC</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Reject</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">% of Completion</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {acWiseProgressData.map((item, index) => (
-                      <tr key={index} className={`${getRowStyle(item.status)} hover:opacity-90`}>
-                        <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.ac_code}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                          {item.ac_name}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200">
-                          {item.district_name}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.total_achieved}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.rejected_interviews}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 text-center font-medium">
-                          {item.completion_percentage}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </div>
+      <Card>
+        <div className="card-header pb-0 mb-6">
+          <div className="flex items-center">
+          <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="card-title mg-b-0">
+              AC Wise Progress
+            </Heading>
+            <span className="text-end">
+              {/* Download button can be added here */}
+            </span>
           </div>
         </div>
-      </div>
-    </div>
+        
+        <div className="card-body">
+          <div className="table-responsive">
+            <div className="summary mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <b>{acProgressData.length}</b> items.
+              </Text>
+            </div>
+            
+            <Table className="table table-bordered table-striped table-hover">
+              <thead>
+                <tr>
+                  <th className="text-center">AC Code</th>
+                  <th>AC Name</th>
+                  <th>District Name</th>
+                  <th className="text-center">Valid+Under QC</th>
+                  <th className="text-center">Reject</th>
+                  <th className="text-center">% of Completion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {acProgressData.map((ac, index) => (
+                  <tr key={ac.acCode} className={getRowStyle(ac.completionPercent)}>
+                    <td className="text-center">{ac.acCode}</td>
+                    <td>{ac.acName}</td>
+                    <td>{ac.districtName}</td>
+                    <td className="text-center">{ac.validUnderQc}</td>
+                    <td className="text-center">{ac.reject}</td>
+                    <td className="text-center">{ac.completionPercent}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </div>
+      </Card>
+    </Container>
   );
-};
-
-export default FieldworkProgressPage;
+}

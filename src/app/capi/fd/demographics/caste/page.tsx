@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,55 +10,78 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Download, Search } from 'lucide-react';
-
-interface CasteData {
-  acName: string;
-  sample: string;
-  casteData: {
-    caste1: { name: string; population: number; achievement: number; difference: number };
-    caste2: { name: string; population: number; achievement: number; difference: number };
-    caste3: { name: string; population: number; achievement: number; difference: number };
-    caste4: { name: string; population: number; achievement: number; difference: number };
-  };
-}
+import { apiService, DetailedCasteResponse, DetailedCasteACData, DetailedCastePCData } from '@/lib/api';
 
 export default function CastePage() {
   const [acCode, setAcCode] = useState('');
   const [acName, setAcName] = useState('');
   const [casteNotMet, setCasteNotMet] = useState('');
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('ACs');
+  const [casteData, setCasteData] = useState<DetailedCasteACData[] | DetailedCastePCData[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  // Summary Cards Data
-  const summaryCards = [
-    { title: 'ACs', value: '243', color: 'bg-green-600', opacity: 'opacity-100', progressType: '4' },
-    { title: 'PCs', value: '40', color: 'bg-green-600', opacity: 'opacity-50', progressType: '1' },
-    { title: 'Districts', value: '38', color: 'bg-green-600', opacity: 'opacity-50', progressType: '2' },
-    { title: 'Zones', value: '9', color: 'bg-green-600', opacity: 'opacity-50', progressType: '3' }
-  ];
-
-  // Sample caste data based on the HTML structure
-  const casteData: CasteData[] = [
-    {
-      acName: '1-Valmiki Nagar',
-      sample: '311/300',
-      casteData: {
-        caste1: { name: 'Tharu', population: 15, achievement: 0, difference: -15 },
-        caste2: { name: 'Muslim', population: 12, achievement: 16, difference: 5 },
-        caste3: { name: 'Yadav / Raut', population: 12, achievement: 9, difference: -2 },
-        caste4: { name: 'Others', population: 38, achievement: 29, difference: -9 }
+  // Fetch data from API
+  const fetchCasteData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Map tab to progress_type
+      const tabProgressMap: { [key: string]: number } = {
+        'ACs': 4,
+        'PCs': 1,
+        'Districts': 2,
+        'Zones': 3
+      };
+      
+      const params: any = {
+        progress_type: tabProgressMap[activeTab] || 4 // Default to ACs
+      };
+      
+      // For ACs tab, use ac_code
+      if (activeTab === 'ACs' && acCode) {
+        params.ac_code = parseInt(acCode);
       }
-    },
-    {
-      acName: '243-Chakai',
-      sample: '2/300',
-      casteData: {
-        caste1: { name: 'Yadav / Raut', population: 23, achievement: 0, difference: -23 },
-        caste2: { name: 'Muslim', population: 11, achievement: 0, difference: -11 },
-        caste3: { name: 'Santhal', population: 11, achievement: 0, difference: -11 },
-        caste4: { name: 'Others', population: 13, achievement: 0, difference: -13 }
+      // For PCs tab, use pc_code
+      else if (activeTab === 'PCs' && acCode) {
+        params.pc_code = parseInt(acCode);
       }
+      
+      if (casteNotMet) params.caste_not_met = casteNotMet;
+      
+      const response = await apiService.getDetailedCasteData(params);
+      
+      if (response.success && response.data) {
+        setCasteData(response.data.data_list);
+        setTotalRecords(response.data.total_records);
+      } else {
+        setError('Failed to fetch caste data');
+      }
+    } catch (err) {
+      setError('Error fetching caste data');
+      console.error('Error fetching caste data:', err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchCasteData();
+  }, [activeTab]); // Only re-fetch when tab changes
+
+  // Summary Cards Data - using dynamic data for ACs and PCs
+  const summaryCards = [
+    { title: 'ACs', value: activeTab === 'ACs' ? totalRecords.toString() : '243', color: 'bg-green-600', progressType: '4' },
+    { title: 'PCs', value: activeTab === 'PCs' ? totalRecords.toString() : '40', color: 'bg-green-600', progressType: '1' },
+    { title: 'Districts', value: '38', color: 'bg-green-600', progressType: '2' },
+    { title: 'Zones', value: '9', color: 'bg-green-600', progressType: '3' }
   ];
+
+  // Note: The API only supports ACs (progress_type=4) currently
+  // When the API is extended for PCs, Districts, and Zones, we'll update this function
 
   const getDifferenceStyle = (difference: number) => {
     if (difference >= 0) {
@@ -68,9 +91,24 @@ export default function CastePage() {
     }
   };
 
+  const getCurrentData = () => {
+    // Currently ACs and PCs are supported by the API
+    if (activeTab === 'ACs' || activeTab === 'PCs') {
+      return casteData;
+    }
+    // For now, return empty array for Districts and Zones until API supports them
+    return [];
+  };
+
   const handleCardClick = (progressType: string) => {
     // Handle card click to change progress type
-    console.log('Progress type changed to:', progressType);
+    const tabMap: { [key: string]: string } = {
+      '1': 'PCs',
+      '2': 'Districts', 
+      '3': 'Zones',
+      '4': 'ACs'
+    };
+    setActiveTab(tabMap[progressType] || 'ACs');
   };
 
   const handleDownload = () => {
@@ -80,11 +118,7 @@ export default function CastePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    fetchCasteData();
   };
 
   return (
@@ -107,8 +141,21 @@ export default function CastePage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-center">Loading...</p>
+            <p className="mt-4 text-center">Loading caste data...</p>
           </div>
+        </div>
+      )}
+
+      {/* Error Display */}
+      {error && (
+        <div className="mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {error}
+          <button 
+            onClick={fetchCasteData}
+            className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
         </div>
       )}
 
@@ -117,15 +164,15 @@ export default function CastePage() {
         {summaryCards.map((card, index) => (
           <div
             key={index}
-            className={`${card.color} text-white ${card.opacity === 'opacity-50' ? 'opacity-50' : ''} cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700`}
+            className={`${card.color} text-white ${
+              activeTab === card.title ? 'opacity-100' : 'opacity-50'
+            } cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm`}
             onClick={() => handleCardClick(card.progressType)}
             data-progress-type={card.progressType}
           >
-            <div className="p-6">
-              <div className="text-center">
-                <h2 className="text-white mb-2">{card.title}</h2>
-                <h4 className="text-2xl font-bold text-white">{card.value}</h4>
-              </div>
+            <div className="p-6 text-center">
+              <h2 className="text-white mb-2">{card.title}</h2>
+              <h4 className="text-2xl font-bold text-white">{card.value}</h4>
             </div>
           </div>
         ))}
@@ -138,11 +185,16 @@ export default function CastePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  AC Code
+                  {activeTab === 'PCs' ? 'PC Code' : 
+                   activeTab === 'Districts' ? 'District Code' : 
+                   activeTab === 'Zones' ? 'Zone Code' : 'AC Code'}
                 </label>
                 <Input
                   type="text"
-                  placeholder="Search by AC Code"
+                  placeholder={activeTab === 'PCs' ? 'Search by PC Code' : 
+                             activeTab === 'Districts' ? 'Search by District Code' : 
+                             activeTab === 'Zones' ? 'Search by Zone Code' : 
+                             'Search by AC Code'}
                   value={acCode}
                   onChange={(e) => setAcCode(e.target.value)}
                   className="w-full"
@@ -150,11 +202,16 @@ export default function CastePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  AC Name
+                  {activeTab === 'PCs' ? 'PC Name' : 
+                   activeTab === 'Districts' ? 'District Name' : 
+                   activeTab === 'Zones' ? 'Zone Name' : 'AC Name'}
                 </label>
                 <Input
                   type="text"
-                  placeholder="Search by AC Name"
+                  placeholder={activeTab === 'PCs' ? 'Search by PC Name' : 
+                             activeTab === 'Districts' ? 'Search by District Name' : 
+                             activeTab === 'Zones' ? 'Search by Zone Name' : 
+                             'Search by AC Name'}
                   value={acName}
                   onChange={(e) => setAcName(e.target.value)}
                   className="w-full"
@@ -162,8 +219,8 @@ export default function CastePage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Caste not Met
-                </label>
+                  {(activeTab === 'Districts' || activeTab === 'Zones') ? 'Caste not Meet' : 'Caste not Met'}
+              </label>
                 <SelectDropdown
                   value={casteNotMet}
                   onChange={(value) => setCasteNotMet(Array.isArray(value) ? value[0] : value)}
@@ -180,83 +237,84 @@ export default function CastePage() {
           </div>
           
           <div className="card-body">
+            <div className="flex justify-end mb-4">
+              <Button 
+                onClick={handleDownload}
+                className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-2"
+              >
+                <Download className="h-4 w-4" />
+                <span>Download</span>
+              </Button>
+            </div>
             <div className="table-responsive">
               <Table className="table table-bordered" id="acreport" style={{ width: '100%', tableLayout: 'fixed' }}>
-                <thead>
-                  <tr>
-                    <th style={{ width: '10%' }}></th>
-                    <th style={{ width: '10%' }} className="text-center"></th>
-                    <th style={{ width: '10%' }} className="text-center"></th>
-                    <th style={{ width: '10%' }} className="text-center"></th>
-                    <th style={{ width: '10%' }} className="text-center"></th>
-                    <th style={{ width: '10%' }} className="text-center"></th>
-                    <th style={{ width: '10%' }} className="text-center">
-                      <Button 
-                        onClick={handleDownload}
-                        className="bg-green-600 text-white hover:bg-green-700 flex items-center space-x-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        <span>Download</span>
-                      </Button>
-                    </th>
-                  </tr>
-                </thead>
                 <tbody>
-                  {casteData.map((row, index) => (
+                  {getCurrentData().map((row, index) => (
                     <React.Fragment key={index}>
                       {/* Caste Headers */}
                       <tr>
                         <td className="bg-gray-200 border-t-2 border-black"></td>
                         <td className="bg-gray-200 border-t-2 border-black"></td>
                         <td className="bg-gray-200 border-t-2 border-black"></td>
-                        <th className="text-center bg-gray-200 border-t-2 border-black">{row.casteData.caste1.name}</th>
-                        <th className="text-center bg-gray-200 border-t-2 border-black">{row.casteData.caste2.name}</th>
-                        <th className="text-center bg-gray-200 border-t-2 border-black">{row.casteData.caste3.name}</th>
-                        <th className="text-center bg-gray-200 border-t-2 border-black">{row.casteData.caste4.name}</th>
+                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                          <th key={casteIndex} className="text-center bg-gray-200 border-t-2 border-black">
+                            {caste.caste_name}
+                          </th>
+                        ))}
                       </tr>
                       
-                      {/* AC Info */}
+                      {/* AC/PC Info */}
                       <tr>
-                        <td rowSpan={4} className="font-semibold text-center">{row.acName}</td>
-                        <td rowSpan={4} className="font-semibold text-center">{row.sample}</td>
+                        <td rowSpan={4} className="font-semibold text-center">
+                          {activeTab === 'ACs' ? 
+                            `${(row as DetailedCasteACData).ac_code}-${(row as DetailedCasteACData).ac_name}` :
+                            `${(row as DetailedCastePCData).pc_code}-${(row as DetailedCastePCData).pc_name}${(row as DetailedCastePCData).district_name ? ` (${(row as DetailedCastePCData).district_name})` : ''}`
+                          }
+                        </td>
+                        <td rowSpan={4} className="font-semibold text-center">
+                          {row.valid_underqc_achived}/{row.sample_target}
+                        </td>
                       </tr>
                       
                       {/* Population % */}
                       <tr>
                         <th className="text-center">Population %</th>
-                        <td className="text-center">{row.casteData.caste1.population}%</td>
-                        <td className="text-center">{row.casteData.caste2.population}%</td>
-                        <td className="text-center">{row.casteData.caste3.population}%</td>
-                        <td className="text-center">{row.casteData.caste4.population}%</td>
+                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                          <td key={casteIndex} className="text-center">
+                            {caste.caste}%
+                          </td>
+                        ))}
                       </tr>
                       
                       {/* Achievement % */}
                       <tr>
                         <th className="text-center">Achievement %</th>
-                        <td className="text-center">{row.casteData.caste1.achievement}%</td>
-                        <td className="text-center">{row.casteData.caste2.achievement}%</td>
-                        <td className="text-center">{row.casteData.caste3.achievement}%</td>
-                        <td className="text-center">{row.casteData.caste4.achievement}%</td>
+                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                          <td key={casteIndex} className="text-center">
+                            {caste.achievement}%
+                          </td>
+                        ))}
                       </tr>
                       
                       {/* Difference */}
                       <tr>
                         <th className="text-center">Difference</th>
-                        <td className={`text-center ${getDifferenceStyle(row.casteData.caste1.difference)}`}>
-                          {row.casteData.caste1.difference}
-                        </td>
-                        <td className={`text-center ${getDifferenceStyle(row.casteData.caste2.difference)}`}>
-                          {row.casteData.caste2.difference}
-                        </td>
-                        <td className={`text-center ${getDifferenceStyle(row.casteData.caste3.difference)}`}>
-                          {row.casteData.caste3.difference}
-                        </td>
-                        <td className={`text-center ${getDifferenceStyle(row.casteData.caste4.difference)}`}>
-                          {row.casteData.caste4.difference}
-                        </td>
+                        {row.castes.slice(0, 6).map((caste, casteIndex) => (
+                          <td key={casteIndex} className={`text-center ${getDifferenceStyle(caste.difference)}`}>
+                            {caste.difference > 0 ? '+' : ''}{caste.difference}
+                          </td>
+                        ))}
                       </tr>
                     </React.Fragment>
                   ))}
+                  
+                  {getCurrentData().length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={9} className="text-center py-8 text-gray-500">
+                        {(activeTab === 'ACs' || activeTab === 'PCs') ? 'No caste data available' : 'API support for this tab is coming soon'}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </Table>
             </div>

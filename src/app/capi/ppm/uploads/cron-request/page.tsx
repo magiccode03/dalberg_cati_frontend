@@ -114,12 +114,15 @@ export default function CronRequestPage() {
       </div>
 
       {/* Cron Request Form Card */}
-      <Card className="p-6 mb-6">
+      <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
-            <Heading level={4} className="card-title mg-b-0">
-              Cron Requests
-            </Heading>
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="card-title mg-b-0">
+                Cron Requests
+              </Heading>
+            </div>
             <span className="text-end">
               {/* Sample file download buttons can be added here */}
             </span>
@@ -159,8 +162,8 @@ export default function CronRequestPage() {
               </div>
 
               {/* Second Row */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                <div className="md:col-span-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
                   <Text className="block text-sm font-medium text-gray-700 mb-2">
                     Cron Execution Planning Time
                   </Text>
@@ -172,7 +175,7 @@ export default function CronRequestPage() {
                   />
                 </div>
                 
-                <div className="md:col-span-5">
+                <div>
                   <Text className="block text-sm font-medium text-gray-700 mb-2">
                     Additional Info
                   </Text>
@@ -185,8 +188,8 @@ export default function CronRequestPage() {
                   />
                 </div>
 
-                <div className="md:col-span-4 flex items-end">
-                  <Button type="submit" variant="primary">
+                <div className="flex items-end">
+                  <Button type="submit" variant="primary" className="w-full">
                     Save
                   </Button>
                 </div>
@@ -197,11 +200,14 @@ export default function CronRequestPage() {
       </Card>
 
       {/* Dynamic Recoding Requests Card */}
-      <Card className="p-6">
+      <Card className="">
         <div className="card-header mb-6">
-          <Heading level={4} className="card-title">
-            List of Dynamic Recoding Requests
-          </Heading>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="card-title">
+              List of Dynamic Recoding Requests
+            </Heading>
+          </div>
         </div>
         
         <div className="card-body">
@@ -247,7 +253,8 @@ export default function CronRequestPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewRequest(request.cronId)}
-                        className="mr-2"
+                        className="mr-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
+                        title="View Request"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>

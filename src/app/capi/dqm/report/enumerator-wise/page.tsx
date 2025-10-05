@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -10,7 +10,8 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface EnumeratorWiseData {
   id: number;
@@ -31,6 +32,44 @@ interface EnumeratorWiseData {
   audioQc: string;
 }
 
+interface APIResponse {
+  success: boolean;
+  data?: {
+    data: Array<{
+      id: number;
+      user_id: number;
+      interview_date: string;
+      device_id: string;
+      interviewerids: string;
+      total_interview: number;
+      total_interview_without_phone: number;
+      valid_interview: number;
+      invalid_interview: number;
+      reject_interview: number;
+      reject_interview_system: number;
+      underqc_interview: number;
+      progress_phase: number;
+      progressphase: string;
+      teleqcstatus: string;
+      audioqcstatus: string;
+      qcuser: {
+        qc_id: number;
+        name: string;
+        qcnameandid: string;
+      } | null;
+    }>;
+    pagination?: {
+      page: number;
+      pageSize: number;
+      totalCount: number;
+      pageCount: number;
+    };
+  };
+  error?: string;
+  message?: string;
+  timestamp: string;
+}
+
 export default function EnumeratorWisePage() {
   const [filters, setFilters] = useState({
     userId: '',
@@ -42,30 +81,64 @@ export default function EnumeratorWisePage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [enumeratorWiseData, setEnumeratorWiseData] = useState<EnumeratorWiseData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Sample data based on the provided HTML
-  const enumeratorWiseData: EnumeratorWiseData[] = [
-    { id: 1, enumeratorId: 1224, interviewDate: '2025-04-05', deviceId: 'cd05f858ccd8dc8c', interviewerIds: ',102', totalInterview: 33, totalInterviewWithoutPhone: 0, validInterview: 21, invalidInterview: 2, rejectInterview: 10, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 2, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: '01aa4d572f2065e0', interviewerIds: '141', totalInterview: 8, totalInterviewWithoutPhone: 0, validInterview: 8, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 3, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: '7696b69127cccc7e', interviewerIds: '145', totalInterview: 4, totalInterviewWithoutPhone: 0, validInterview: 4, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 4, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: 'ff6af232e1fd2ac7', interviewerIds: '144', totalInterview: 3, totalInterviewWithoutPhone: 0, validInterview: 3, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 5, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: 'd9ea4b01feb09fc0', interviewerIds: ',142', totalInterview: 9, totalInterviewWithoutPhone: 0, validInterview: 8, invalidInterview: 1, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 6, enumeratorId: 1156, interviewDate: '2025-04-05', deviceId: 'ff8b1a3eed5f9e5a', interviewerIds: '122', totalInterview: 17, totalInterviewWithoutPhone: 0, validInterview: 17, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 7, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: 'f7f584257d961018', interviewerIds: '', totalInterview: 1, totalInterviewWithoutPhone: 0, validInterview: 0, invalidInterview: 1, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'GPS Check Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 8, enumeratorId: 1317, interviewDate: '2025-04-05', deviceId: '28ec9c24bf8f7512', interviewerIds: ',932,935', totalInterview: 24, totalInterviewWithoutPhone: 0, validInterview: 21, invalidInterview: 1, rejectInterview: 2, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 9, enumeratorId: 1224, interviewDate: '2025-04-05', deviceId: '11f8e71ae84a41f3', interviewerIds: '101', totalInterview: 31, totalInterviewWithoutPhone: 0, validInterview: 30, invalidInterview: 0, rejectInterview: 1, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 10, enumeratorId: 1156, interviewDate: '2025-04-05', deviceId: '982cf23bd57fc839', interviewerIds: '', totalInterview: 4, totalInterviewWithoutPhone: 0, validInterview: 0, invalidInterview: 4, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'GPS Check Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 11, enumeratorId: 1156, interviewDate: '2025-04-05', deviceId: '8fb929c47c007e3e', interviewerIds: '990,121', totalInterview: 32, totalInterviewWithoutPhone: 0, validInterview: 32, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 12, enumeratorId: 1224, interviewDate: '2025-04-06', deviceId: '11f8e71ae84a41f3', interviewerIds: '101,', totalInterview: 55, totalInterviewWithoutPhone: 0, validInterview: 44, invalidInterview: 1, rejectInterview: 10, rejectInterviewSystem: 8, underQcInterview: 0, qcUser: '', status: 'GPS Check Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 13, enumeratorId: 1224, interviewDate: '2025-04-06', deviceId: 'cd05f858ccd8dc8c', interviewerIds: '102,', totalInterview: 51, totalInterviewWithoutPhone: 0, validInterview: 34, invalidInterview: 1, rejectInterview: 16, rejectInterviewSystem: 3, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 14, enumeratorId: 1172, interviewDate: '2025-04-06', deviceId: '687dc868b8b0c64f', interviewerIds: '', totalInterview: 2, totalInterviewWithoutPhone: 0, validInterview: 0, invalidInterview: 2, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'GPS Check Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 15, enumeratorId: 1318, interviewDate: '2025-04-06', deviceId: 'ce277ea2e22cd54e', interviewerIds: '176', totalInterview: 1, totalInterviewWithoutPhone: 0, validInterview: 1, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 16, enumeratorId: 1150, interviewDate: '2025-04-06', deviceId: 'd9ea4b01feb09fc0', interviewerIds: ',142', totalInterview: 27, totalInterviewWithoutPhone: 0, validInterview: 17, invalidInterview: 4, rejectInterview: 6, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 17, enumeratorId: 1318, interviewDate: '2025-04-06', deviceId: '26ff8fd34444f846', interviewerIds: '932', totalInterview: 12, totalInterviewWithoutPhone: 0, validInterview: 9, invalidInterview: 0, rejectInterview: 3, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 18, enumeratorId: 1318, interviewDate: '2025-04-06', deviceId: 'e3c06cc5c399eb58', interviewerIds: '932,933', totalInterview: 12, totalInterviewWithoutPhone: 0, validInterview: 11, invalidInterview: 0, rejectInterview: 1, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 19, enumeratorId: 1150, interviewDate: '2025-04-06', deviceId: '01aa4d572f2065e0', interviewerIds: '141,', totalInterview: 23, totalInterviewWithoutPhone: 0, validInterview: 16, invalidInterview: 2, rejectInterview: 5, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-    { id: 20, enumeratorId: 1168, interviewDate: '2025-04-06', deviceId: 'db741df245f48365', interviewerIds: '244', totalInterview: 3, totalInterviewWithoutPhone: 0, validInterview: 0, invalidInterview: 0, rejectInterview: 3, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
-  ];
+  // Helper function to format date to simple YYYY-MM-DD format
+  const formatDateToSimple = (dateString: string): string => {
+    try {
+      // If it's already in YYYY-MM-DD format, return as is
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+        return dateString;
+      }
+      
+      // If it contains time information, extract just the date part
+      if (dateString.includes('T')) {
+        const datePart = dateString.split('T')[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+          return datePart;
+        }
+      }
+      
+      // Try parsing as Date and extract date part
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split('T')[0];
+      }
+      
+      // If all parsing fails, try to extract the date pattern
+      const match = dateString.match(/(\d{4}-\d{2}-\d{2})/);
+      return match ? match[1] : dateString;
+    } catch {
+      // If all parsing fails, try to extract the date pattern
+      const match = dateString.match(/(\d{4}-\d{2}-\d{2})/);
+      return match ? match[1] : dateString;
+    }
+  };
+
+  // Helper function to transform API data to UI format
+  const transformAPIData = (apiData: any[]): EnumeratorWiseData[] => {
+    return apiData.map((item) => ({
+      id: item.id,
+      enumeratorId: item.user_id,
+      interviewDate: formatDateToSimple(item.interview_date),
+      deviceId: item.device_id,
+      interviewerIds: item.interviewerids,
+      totalInterview: item.total_interview,
+      totalInterviewWithoutPhone: item.total_interview_without_phone,
+      validInterview: item.valid_interview,
+      invalidInterview: item.invalid_interview,
+      rejectInterview: item.reject_interview,
+      rejectInterviewSystem: item.reject_interview_system,
+      underQcInterview: item.underqc_interview,
+      qcUser: item.qcuser ? item.qcuser.qcnameandid : '',
+      status: item.progressphase,
+      teleQc: item.teleqcstatus,
+      audioQc: item.audioqcstatus
+    }));
+  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
@@ -74,8 +147,124 @@ export default function EnumeratorWisePage() {
     }));
   };
 
+  // Fetch data from API
+  const fetchEnumeratorWiseData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Debug: Check if token exists
+      const token = localStorage.getItem('accessToken');
+      console.log('Access token exists:', !!token);
+      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+      
+      console.log('Making API request to: /report/enumerator-wise');
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      if (filters.userId) queryParams.append('user_id', filters.userId);
+      if (filters.interviewDate) queryParams.append('interview_date', filters.interviewDate);
+      if (filters.deviceId) queryParams.append('device_id', filters.deviceId);
+      if (filters.progressPhase) queryParams.append('progress_phase', filters.progressPhase);
+      if (filters.teleQcId) queryParams.append('tele_qc_id', filters.teleQcId);
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('pageSize', pageSize.toString());
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/report/enumerator-wise${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('API endpoint:', endpoint);
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+      });
+      
+      // Race between API call and timeout
+      const response = await Promise.race([
+        apiClient.get(endpoint),
+        timeoutPromise
+      ]) as any;
+      
+      const data: APIResponse = response.data;
+      
+      console.log('API Response:', data);
+      console.log('Response success:', data.success);
+      
+      if (data.success && data.data && Array.isArray(data.data.data)) {
+        const transformedData = transformAPIData(data.data.data);
+        setEnumeratorWiseData(transformedData);
+        setTotalCount(data.data.pagination?.totalCount || transformedData.length);
+        console.log('Transformed data:', transformedData);
+      } else {
+        console.error('Invalid API response structure or API error:', data.error);
+        setError(data.error || 'Invalid response format from server');
+        // Use fallback data
+        const fallbackData: EnumeratorWiseData[] = [
+          { id: 1, enumeratorId: 1224, interviewDate: '2025-04-05', deviceId: 'cd05f858ccd8dc8c', interviewerIds: ',102', totalInterview: 33, totalInterviewWithoutPhone: 0, validInterview: 21, invalidInterview: 2, rejectInterview: 10, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+          { id: 2, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: '01aa4d572f2065e0', interviewerIds: '141', totalInterview: 8, totalInterviewWithoutPhone: 0, validInterview: 8, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+        ];
+        setEnumeratorWiseData(fallbackData);
+        setTotalCount(fallbackData.length);
+      }
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      
+      // Better error handling for different error types
+      if (err.message === 'Request timeout after 10 seconds') {
+        console.error('Request timed out');
+        setError('Request timed out. The server may be slow or unavailable.');
+      } else if (err.code === 'ECONNABORTED') {
+        console.error('Connection aborted');
+        setError('Connection was aborted. Please check your network connection.');
+      } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+        console.error('Network error or no response');
+        setError('Network error. Please check your internet connection and try again.');
+      } else if (err.response?.status === 401) {
+        console.error('Authentication error');
+        setError('Authentication required. Please log in again.');
+      } else if (err.response?.status === 403) {
+        console.error('Forbidden error');
+        setError('Access forbidden. You do not have permission to view this data.');
+      } else if (err.response?.data?.error) {
+        console.error('API error:', err.response.data.error);
+        setError(err.response.data.error);
+      } else if (err.response?.data?.message) {
+        console.error('API message:', err.response.data.message);
+        setError(err.response.data.message);
+      } else {
+        console.error('Unknown error:', err.message);
+        setError(err.message || 'An error occurred while fetching data');
+      }
+      
+      // Use fallback data on error
+      console.log('API request failed, using fallback sample data...');
+      const fallbackData: EnumeratorWiseData[] = [
+        { id: 1, enumeratorId: 1224, interviewDate: '2025-04-05', deviceId: 'cd05f858ccd8dc8c', interviewerIds: ',102', totalInterview: 33, totalInterviewWithoutPhone: 0, validInterview: 21, invalidInterview: 2, rejectInterview: 10, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+        { id: 2, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: '01aa4d572f2065e0', interviewerIds: '141', totalInterview: 8, totalInterviewWithoutPhone: 0, validInterview: 8, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+        { id: 3, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: '7696b69127cccc7e', interviewerIds: '145', totalInterview: 4, totalInterviewWithoutPhone: 0, validInterview: 4, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+        { id: 4, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: 'ff6af232e1fd2ac7', interviewerIds: '144', totalInterview: 3, totalInterviewWithoutPhone: 0, validInterview: 3, invalidInterview: 0, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+        { id: 5, enumeratorId: 1150, interviewDate: '2025-04-05', deviceId: 'd9ea4b01feb09fc0', interviewerIds: ',142', totalInterview: 9, totalInterviewWithoutPhone: 0, validInterview: 8, invalidInterview: 1, rejectInterview: 0, rejectInterviewSystem: 0, underQcInterview: 0, qcUser: '', status: 'Audio/Tele QC Pending', teleQc: 'Tele Not Required', audioQc: 'Audio Not Required' },
+      ];
+      setEnumeratorWiseData(fallbackData);
+      setTotalCount(fallbackData.length);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchEnumeratorWiseData();
+  }, [currentPage, filters]);
+
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
+    fetchEnumeratorWiseData();
   };
 
   const generateDateOptions = () => {
@@ -103,10 +292,10 @@ export default function EnumeratorWisePage() {
     }
   };
 
-  const totalPages = Math.ceil(enumeratorWiseData.length / pageSize);
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentData = enumeratorWiseData.slice(startIndex, endIndex);
+  const currentData = enumeratorWiseData;
 
   return (
     <div className="main-content horizontal-content">
@@ -123,6 +312,37 @@ export default function EnumeratorWisePage() {
             <span></span>
           </div>
         </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <Text className="ml-2 text-gray-600">Loading enumerator wise report...</Text>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Card className="mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
+                    Error Loading Data
+                  </Heading>
+                  <Text className="text-gray-600">{error}</Text>
+                </div>
+                <Button
+                  onClick={fetchEnumeratorWiseData}
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Search Form */}
         <div className="mb-6">
@@ -196,7 +416,8 @@ export default function EnumeratorWisePage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>   
                 <Heading level={4} className="text-lg font-semibold text-gray-900">
                   Field Enumerator Wise Report
                 </Heading>
@@ -236,7 +457,7 @@ export default function EnumeratorWisePage() {
                       <tr key={data.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.enumeratorId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.interviewDate}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.interviewDate}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.deviceId}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.interviewerIds}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterview.toLocaleString()}</td>
@@ -259,13 +480,13 @@ export default function EnumeratorWisePage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, enumeratorWiseData.length)}</span> of <span className="font-semibold">{enumeratorWiseData.length}</span> items
+                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
                 </div>
                 <div>
                   <PaginationStandard
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    totalItems={enumeratorWiseData.length}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={setCurrentPage}
                   />

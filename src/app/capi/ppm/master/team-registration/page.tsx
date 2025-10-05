@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,143 +9,58 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import { Edit, RefreshCw, XCircle } from 'lucide-react';
+import { Edit, Loader2 } from 'lucide-react';
+import { useTeamRegistration, useToggleReQcStatus } from '@/hooks/useApi';
+import { useToast } from '@/components/ui/Toast';
+import Switch from '@/components/ui/Switch';
+
+// TypeScript interfaces for API response
+interface TeamRegistrationData {
+  agency_id: number;
+  agency_name: string;
+  username: string;
+  qc_agency: string;
+  total_ac: number;
+  total_interviews_conducted: number;
+  valid: number;
+  rejected: number;
+  under_qc: number;
+  show_second_level_column: boolean;
+  status: string;
+  data_send_for_reqc?: number; // Re-QC status field
+}
+
+interface TeamRegistrationResponse {
+  team_registrations: TeamRegistrationData[];
+  total_count: number;
+  current_page: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+  totals: {
+    total_interview: number;
+    valid_interview: string;
+    reject_interview: string;
+    interview_under_qc: string;
+  };
+}
 
 const TeamRegistrationPage = () => {
-  // Sample agency data
-  const agencyData = [
-    {
-      id: 1,
-      agencyId: 1,
-      agencyName: 'Kadence',
-      supervisorUsername: 'bhr2kadence',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 47,
-      totalInterviewsConducted: 19916,
-      valid: 9141,
-      rejected: 10775,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Disable',
-    },
-    {
-      id: 2,
-      agencyId: 2,
-      agencyName: 'Chandan',
-      supervisorUsername: 'bhr2chandan',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 56,
-      totalInterviewsConducted: 27388,
-      valid: 11527,
-      rejected: 15861,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-    {
-      id: 3,
-      agencyId: 3,
-      agencyName: 'Rohit',
-      supervisorUsername: 'bhr2rohit',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 17,
-      totalInterviewsConducted: 7164,
-      valid: 4865,
-      rejected: 2299,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-    {
-      id: 4,
-      agencyId: 4,
-      agencyName: 'Parbhat',
-      supervisorUsername: 'bhr2parbhat',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 37,
-      totalInterviewsConducted: 16237,
-      valid: 10348,
-      rejected: 5889,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-    {
-      id: 5,
-      agencyId: 5,
-      agencyName: 'Navin',
-      supervisorUsername: 'bhr2navin',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 4,
-      totalInterviewsConducted: 1227,
-      valid: 831,
-      rejected: 396,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-    {
-      id: 6,
-      agencyId: 6,
-      agencyName: 'Aeon',
-      supervisorUsername: 'bhr2aeon',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 8,
-      totalInterviewsConducted: 4190,
-      valid: 1744,
-      rejected: 2446,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-    {
-      id: 7,
-      agencyId: 7,
-      agencyName: 'Abhinav',
-      supervisorUsername: 'abhinavbihar',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 5,
-      totalInterviewsConducted: 1748,
-      valid: 1023,
-      rejected: 725,
-      underQc: 0,
-      showSecondLevelColumn: 'No',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-    {
-      id: 8,
-      agencyId: 8,
-      agencyName: 'Inhouse',
-      supervisorUsername: 'bhr2inhouse',
-      qcAgency: 'Internal (bhr2internalqc)',
-      totalAc: 69,
-      totalInterviewsConducted: 30463,
-      valid: 10546,
-      rejected: 19917,
-      underQc: 0,
-      showSecondLevelColumn: 'Yes',
-      status: 'Active',
-      reQcStatus: 'Enable',
-    },
-  ];
-
-  const getReQcStatusBadge = (status: string) => {
-    switch (status) {
-      case 'Enable':
-        return <Badge variant="success" size="sm">Enable</Badge>;
-      case 'Disable':
-        return <Badge variant="error" size="sm">Disable</Badge>;
-      default:
-        return <Badge variant="secondary" size="sm">{status}</Badge>;
-    }
-  };
+  const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
+  
+  // Fetch team registration data from API
+  const { data, loading, error, refetch } = useTeamRegistration(currentPage, pageSize);
+  
+  // Toggle Re-QC status hook
+  const { toggleReQc, loading: toggleLoading, error: toggleError } = useToggleReQcStatus();
+  
+  // Toast notifications
+  const { success, error: showError } = useToast();
+  
+  // Type the data properly
+  const typedData = data as TeamRegistrationResponse | null;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -155,6 +71,73 @@ const TeamRegistrationPage = () => {
       default:
         return <Badge variant="secondary" size="sm">{status}</Badge>;
     }
+  };
+
+  const handleUpdateAgency = (agencyId: number) => {
+    // Navigate to the update page with agency ID as dynamic route
+    router.push(`/capi/ppm/master/team-registration/${agencyId}`);
+  };
+
+  const handleToggleReQc = async (agencyId: number, currentReqcStatus: number | undefined) => {
+    try {
+      const currentStatus = currentReqcStatus ?? 0;
+      const newStatus = currentStatus === 1 ? 0 : 1;
+      
+      console.log('🔄 Toggle clicked:', { agencyId, currentReqcStatus, currentStatus, newStatus });
+      
+      const response = await toggleReQc(agencyId, newStatus);
+      
+      if (response.success) {
+        console.log('✅ Toggle success:', response);
+        success(`Re-QC status ${newStatus === 1 ? 'enabled' : 'disabled'} successfully!`);
+        await refetch();
+      } else {
+        console.error('❌ Toggle failed:', response);
+        showError(response.message || 'Failed to update Re-QC status');
+      }
+    } catch (err) {
+      console.error('❌ Toggle error:', err);
+      showError('Failed to update Re-QC status. Please try again.');
+    }
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <Text>Loading team registration data...</Text>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <Text className="text-red-600 mb-4">Error loading data: {error}</Text>
+            <Button onClick={refetch} variant="primary">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  // Extract data from API response
+  const agencyData = typedData?.team_registrations || [];
+  const totals = typedData?.totals || {
+    total_interview: 0,
+    valid_interview: "0",
+    reject_interview: "0",
+    interview_under_qc: "0"
   };
 
   return (
@@ -171,7 +154,7 @@ const TeamRegistrationPage = () => {
               Total Interview
             </Heading>
             <Text className="text-white text-xl font-semibold">
-              1,08,333
+              {totals.total_interview.toLocaleString()}
             </Text>
           </div>
         </Card>
@@ -182,7 +165,7 @@ const TeamRegistrationPage = () => {
               Valid Interview
             </Heading>
             <Text className="text-white text-xl font-semibold">
-              50,025
+              {parseInt(totals.valid_interview).toLocaleString()}
             </Text>
           </div>
         </Card>
@@ -193,7 +176,7 @@ const TeamRegistrationPage = () => {
               Reject Interview
             </Heading>
             <Text className="text-white text-xl font-semibold">
-              58,308
+              {parseInt(totals.reject_interview).toLocaleString()}
             </Text>
           </div>
         </Card>
@@ -204,25 +187,40 @@ const TeamRegistrationPage = () => {
               Interview Under QC
             </Heading>
             <Text className="text-white text-xl font-semibold">
-              0
+              {parseInt(totals.interview_under_qc).toLocaleString()}
             </Text>
           </div>
         </Card>
       </div>
 
       {/* Agency List Table */}
-      <Card className="p-6">
+      <Card>
         <div className="flex justify-between items-center mb-6">
-          <Heading level={4}>Agency List</Heading>
-          <Button variant="primary">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4}>Agency List</Heading>
+          </div>
+          <Button 
+            variant="primary"
+            onClick={() => router.push('/capi/ppm/master/team-registration/newagency')}
+          >
             <i className="fa fa-plus mr-2"></i>
             New Agency
           </Button>
         </div>
 
+        {/* Error display for toggle operations */}
+        {toggleError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <Text className="text-red-700 text-sm">
+              Error updating Re-QC status: {toggleError}
+            </Text>
+          </div>
+        )}
+
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
-            Total <strong>8</strong> items.
+            Total <strong>{typedData?.total_count || 0}</strong> items.
           </Text>
         </div>
                   
@@ -246,29 +244,29 @@ const TeamRegistrationPage = () => {
                         </th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Action</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Re-QC Status</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Re-QC Toggle</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {agencyData.map((item, index) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
+                      {agencyData.map((item: TeamRegistrationData, index: number) => (
+                        <tr key={item.agency_id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                            {item.agencyId}
+                            {item.agency_id}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                            {item.agencyName}
+                            {item.agency_name}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            {item.supervisorUsername}
+                            {item.username}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            {item.qcAgency}
+                            {item.qc_agency}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                            {item.totalAc}
+                            {item.total_ac}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                            {item.totalInterviewsConducted.toLocaleString()}
+                            {item.total_interviews_conducted.toLocaleString()}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-green-600">
                             {item.valid.toLocaleString()}
@@ -277,17 +275,17 @@ const TeamRegistrationPage = () => {
                             {item.rejected.toLocaleString()}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                            {item.underQc}
+                            {item.under_qc}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            {item.showSecondLevelColumn}
+                            {item.show_second_level_column ? 'Yes' : 'No'}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
                             {getStatusBadge(item.status)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <button
-                              onClick={() => console.log(`Update Agency ${item.agencyId}`)}
+                              onClick={() => handleUpdateAgency(item.agency_id)}
                               className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
                               title="Update Agency"
                             >
@@ -295,17 +293,36 @@ const TeamRegistrationPage = () => {
                             </button>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <button
-                              onClick={() => console.log(`${item.reQcStatus} Re-QC for Agency ${item.agencyId}`)}
-                              className={`inline-flex items-center justify-center w-8 h-8 text-white rounded transition-colors ${
-                                item.reQcStatus === 'Enable' 
-                                  ? 'bg-green-600 hover:bg-green-700' 
-                                  : 'bg-red-600 hover:bg-red-700'
-                              }`}
-                              title={`${item.reQcStatus} Re-QC for this agency`}
+                            <div 
+                              className="flex items-center justify-center space-x-2"
+                              onClick={() => {
+                                console.log('🔄 Container clicked for Agency:', item.agency_id);
+                                alert(`Container clicked for Agency ${item.agency_id}!`);
+                              }}
                             >
-                              {item.reQcStatus === 'Enable' ? <RefreshCw size={16} /> : <XCircle size={16} />}
-                            </button>
+                              <Switch
+                                id={`toggle-${item.agency_id}`}
+                                checked={(item.data_send_for_reqc ?? 0) === 1}
+                                onChange={(checked) => {
+                                  console.log('🔄 Switch onChange triggered:', { 
+                                    agencyId: item.agency_id, 
+                                    currentStatus: item.data_send_for_reqc,
+                                    newChecked: checked 
+                                  });
+                                  alert(`Toggle clicked for Agency ${item.agency_id}! Current: ${item.data_send_for_reqc}, New: ${checked}`);
+                                  handleToggleReQc(item.agency_id, item.data_send_for_reqc);
+                                }}
+                                disabled={toggleLoading}
+                                color="success"
+                                size="sm"
+                              />
+                              {toggleLoading && (
+                                <Loader2 size={16} className="animate-spin text-gray-500" />
+                              )}
+                              <span className="text-xs text-gray-600 ml-1">
+                                {(item.data_send_for_reqc ?? 0) === 1 ? 'ON' : 'OFF'}
+                              </span>
+                            </div>
                           </td>
                         </tr>
                       ))}

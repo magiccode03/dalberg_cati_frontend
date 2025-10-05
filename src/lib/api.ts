@@ -77,6 +77,11 @@ export const API_ENDPOINTS = {
     INFO: '/system/info',
   },
   
+  // Dropdown APIs
+  DROPDOWN: {
+    AGENCIES: '/dropdown/agencies'
+  },
+
   // Dashboard Data
   DASHBOARD: {
     STATS: '/dashboard/stats',
@@ -87,9 +92,16 @@ export const API_ENDPOINTS = {
     POLLING_STATIONS: '/dashboard/polling-stations',
     SURVEY_DATES: '/dashboard/survey-dates',
     SAMPLE_STATISTICS: '/dashboard/sample-statistics',
+    FIELDWORK_PROGRESS: '/dataquality',
     MASTER_AC_LIST: '/dashboard/master-ac/list',
+    MASTER_AC_UPDATE: '/dashboard/master-ac/update',
+    MASTER_AC_INDEX_UPDATE: '/dashboard/master-ac-index/acupdate',
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
+    PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
+    TEAM_REGISTRATION: '/dashboard/team-registration',
+    TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
+    TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
   },
 
   // Analysis
@@ -129,7 +141,17 @@ export const API_ENDPOINTS = {
     RELIGION_WISE: '/demographic/religionwise',
     SOCIAL_CATEGORY_WISE: '/demographic/socialcategorywise',
     CASTE_WISE: '/demographic/castewise',
+    CASTE_DETAILS: '/demographics/caste',
   },
+  
+  // Field Data (FD)
+  FD: {
+    INTERNAL_DASHBOARD: '/fd/internal-dashboard',
+    INTERVIEW_AUDIO: '/fd/interviewaudio',
+  },
+  
+  // Interview Masters
+  INTERVIEW_MASTERS: '/interview-masters',
 } as const;
 
 // API Response Types
@@ -250,6 +272,11 @@ export interface GenderWiseResponse {
   constituencies: DemographicConstituency[];
 }
 
+export interface DemographicMetadata {
+  total_constituencies: number;
+  last_updated: string;
+}
+
 // Age-wise data types
 export interface AgeGroupData {
   min_sample: number;
@@ -355,6 +382,68 @@ export interface CasteWiseResponse {
   constituencies: CasteWiseConstituency[];
 }
 
+// Detailed Caste Demographics API Response Types
+export interface DetailedCasteInfo {
+  rank: number;
+  caste_name: string;
+  castecode: string;
+  caste: number;
+  minsample: number;
+  achievement_count: number;
+  achievement: number;
+  difference: number;
+  status: 'met' | 'not_met';
+  color_class: string;
+}
+
+export interface DetailedCasteACData {
+  ac_code: number;
+  ac_name: string;
+  sample_target: number;
+  valid_underqc_achived: number;
+  completion_rate: string;
+  castes: DetailedCasteInfo[];
+}
+
+export interface DetailedCastePCData {
+  pc_code: number;
+  pc_name: string;
+  district_name: string;
+  sample_target: number;
+  valid_underqc_achived: number;
+  completion_rate: string;
+  castes: DetailedCasteInfo[];
+}
+
+export interface DetailedCasteResponse {
+  progress_type: number;
+  progress_page: string;
+  total_records: number;
+  search_filters: Record<string, any>;
+  data_list: DetailedCasteACData[] | DetailedCastePCData[];
+  message: string;
+  timestamp: string;
+}
+
+// Interview Masters Types
+export interface InterviewMaster {
+  id: number;
+  fullname: string;
+  login_id: string;
+  total_data_submitted: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InterviewMastersResponse {
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  data: InterviewMaster[];
+}
+
 // API Service Class
 class ApiService {
   private baseURL: string;
@@ -409,6 +498,18 @@ class ApiService {
       },
     };
 
+    // Debug logging for POST requests
+    if (config.method === 'POST') {
+      console.log('Making POST request:', {
+        url,
+        method: config.method,
+        headers: config.headers,
+        body: config.body,
+        baseURL: this.baseURL,
+        fullEndpoint: endpoint
+      });
+    }
+
     try {
       const response = await fetch(url, config);
       
@@ -436,6 +537,10 @@ class ApiService {
       return await this.handleResponse<T>(response);
     } catch (error) {
       console.error('API Request failed:', error);
+      // Don't call global error handler for toggle Re-QC requests
+      if (endpoint.includes('toggle-reqc')) {
+        throw error; // Re-throw to let our custom handler deal with it
+      }
       handleApiError(error);
     }
   }
@@ -446,22 +551,49 @@ class ApiService {
     const isJson = contentType && contentType.includes('application/json');
 
     if (!response.ok) {
+      console.error(`HTTP Error ${response.status}:`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: response.url,
+        contentType: contentType
+      });
+
       if (isJson) {
         try {
           const data = await response.json();
+          console.error('Error response data:', data);
           throw new Error(data.message || `HTTP error! status: ${response.status}`);
         } catch (parseError) {
+          console.error('Failed to parse error response as JSON:', parseError);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
       } else {
         // Handle non-JSON error responses (like HTML 404 pages)
-        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        try {
+          const text = await response.text();
+          console.error('Non-JSON error response:', text);
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        } catch (textError) {
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
       }
     }
 
     if (isJson) {
       try {
         const data = await response.json();
+        
+        // Normalize API response format
+        // Some APIs return 'status: "success"' instead of 'success: true'
+        if (data.status === 'success' && !data.hasOwnProperty('success')) {
+          return {
+            success: true,
+            data: data.data,
+            message: data.message || 'Request successful',
+            timestamp: data.timestamp || new Date().toISOString()
+          };
+        }
+        
         return data;
       } catch (parseError) {
         throw new Error('Invalid JSON response from server');
@@ -471,7 +603,8 @@ class ApiService {
       return {
         success: true,
         data: {} as T,
-        message: 'Request successful'
+        message: 'Request successful',
+        timestamp: new Date().toISOString()
       };
     }
   }
@@ -532,7 +665,7 @@ class ApiService {
 
     // Save tokens on successful registration
     if (response.success && response.data) {
-      this.saveTokens(response.data.token, response.data.refreshToken);
+      this.saveTokens(response.data.accessToken, response.data.refreshToken);
     }
 
     return response;
@@ -588,6 +721,273 @@ class ApiService {
     return this.request(API_ENDPOINTS.DASHBOARD.STATS);
   }
 
+  async getFieldworkProgress(): Promise<ApiResponse<{
+    summary: {
+      total_sample: number;
+      sample_achieved_numbers: number;
+      sample_achieved_percentage: number;
+      acs_completed: number;
+      acs_in_progress: number;
+      acs_yet_to_initiate: number;
+    };
+    ac_wise_progress: Array<{
+      ac_code: number;
+      ac_name: string;
+      district_name: string;
+      target_sample: number;
+      valid_interviews: number;
+      under_qc_interviews: number;
+      total_achieved: number;
+      rejected_interviews: number;
+      completion_percentage: string;
+      status: string;
+    }>;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.FIELDWORK_PROGRESS);
+  }
+
+  // Team Registration Methods
+  async getTeamRegistration(page: number = 1, limit: number = 20): Promise<ApiResponse<{
+    team_registrations: Array<{
+      agency_id: number;
+      agency_name: string;
+      username: string;
+      qc_agency: string;
+      total_ac: number;
+      total_interviews_conducted: number;
+      valid: number;
+      rejected: number;
+      under_qc: number;
+      show_second_level_column: boolean;
+      status: string;
+    }>;
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+    totals: {
+      total_interview: number;
+      valid_interview: string;
+      reject_interview: string;
+      interview_under_qc: string;
+    };
+  }>> {
+    const queryString = `?${new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    }).toString()}`;
+    return this.request(`/dashboard/team-registration${queryString}`);
+  }
+
+  async createTeamRegistration(data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }): Promise<ApiResponse<{
+    agencyId: number;
+    userId: number;
+    agency_name: string;
+    unique_id: string;
+    message: string;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_CREATE, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getTeamRegistrationById(agencyId: number): Promise<ApiResponse<{
+    agency_id: number;
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    username: string;
+    password: string;
+  } | null>> {
+    // Use the existing team registration endpoint and filter by agency_id
+    // This is a workaround since there might not be a single agency endpoint
+    try {
+      // Try to find the agency by searching through pages
+      let page = 1;
+      const limit = 100;
+      let foundAgency = null;
+      
+      // Search through multiple pages if needed (max 10 pages to avoid infinite loop)
+      while (page <= 10 && !foundAgency) {
+        const response = await this.getTeamRegistration(page, limit);
+        
+        if (response.success && response.data?.team_registrations) {
+          foundAgency = response.data.team_registrations.find(
+            (item: any) => item.agency_id === agencyId
+          );
+          
+          if (foundAgency) {
+            break;
+          }
+          
+          // If this is the last page, stop searching
+          if (!response.data.has_next) {
+            break;
+          }
+          
+          page++;
+        } else {
+          break;
+        }
+      }
+      
+      if (foundAgency) {
+        // Map the list data to the expected single agency format
+        return {
+          success: true,
+          data: {
+            agency_id: foundAgency.agency_id,
+            agency_name: foundAgency.agency_name,
+            qc_agency_id: 1, // Default value since not available in list
+            show_second_level_column: foundAgency.show_second_level_column ? 1 : 0,
+            status: foundAgency.status === 'Active' ? 1 : 0,
+            qa_id: 1, // Default value since not available in list
+            unique_id: foundAgency.username || '', // Use username as unique_id
+            first_name: '', // Not available in list
+            last_name: '', // Not available in list
+            email: '', // Not available in list
+            username: foundAgency.username || '',
+            password: '********' // Don't return actual password for security
+          },
+          message: 'Agency found successfully',
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        return {
+          success: false,
+          data: null,
+          message: `Agency with ID ${agencyId} not found`,
+          timestamp: new Date().toISOString()
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        data: null,
+        message: `Error fetching agency: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  async updateTeamRegistration(agencyId: number, data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }): Promise<ApiResponse<{
+    agencyId: number;
+    userId: number;
+    agency_name: string;
+    unique_id: string;
+    message: string;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_UPDATE(agencyId.toString()), {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
+  // Rejection Report Methods
+  async getRejectionReport(params?: {
+    report_days?: string;
+    custom_date?: string;
+    custom_date_end?: string;
+    report_level?: string;
+    interviewer_id?: string;
+    enumerator_id?: string;
+    ac_code?: string;
+    district_code?: string;
+    pc_code?: string;
+    supervisor_id?: string;
+    server_id?: string;
+    mobile_no?: string;
+    fail_reason?: string;
+    page?: number;
+    per_page?: number;
+  }): Promise<ApiResponse<{
+    interviews: Array<{
+      server_id: number;
+      interview_date: string;
+      ac_code: number;
+      ac_name: string;
+      district_name: string;
+      pc_name: string;
+      ps_code: string;
+      ps_name: string;
+      interviewer_id: string;
+      supervisor_id: string;
+      user_id: number;
+      respondent_name: string;
+      mobile_no: string | null;
+      status: number;
+      status_reason_reject: number;
+      fail_reason: string;
+      total_duration: number;
+      audio_duration: number;
+      audio_qc_id: number | null;
+      audio_fail_reason: string;
+      audio1_status: number;
+      audio1_status_label: string;
+      qc_recheck_status_audio: number | null;
+      qc_recheck_status_audio_label: string;
+      outcome_color: string;
+      qc_scenario_color: string;
+      qc_outcome: string;
+      agency_id: number;
+      agency_name: string;
+      device_id: string;
+      start_time: string;
+      end_time: string;
+      created_at: number;
+      updated_at: number;
+      audio_available: boolean;
+      gps_available: boolean;
+    }>;
+    pagination: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+    filters_applied: any;
+    sorting: any;
+    level_filter: any;
+    message: string;
+  }>> {
+    const queryString = params ? `?${new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)])
+    ).toString()}` : '';
+    return this.request(`/progress/rejectreport${queryString}`);
+  }
+
   async getDashboardOverview(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.OVERVIEW);
   }
@@ -633,6 +1033,21 @@ class ApiService {
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
   }
 
+  async getMasterACForUpdate(acCode: number): Promise<ApiResponse<any>> {
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_UPDATE}/${acCode}`);
+  }
+
+  async getMasterACIndexForUpdate(acCode: number): Promise<ApiResponse<any>> {
+    const queryString = `?ac_code=${acCode}`;
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_INDEX_UPDATE}${queryString}`);
+  }
+
+
+  async getPSFormList(params?: { page?: number; limit?: number; polling_station_name?: string; polling_station_no?: string; ac_code?: string }): Promise<any> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.PS_FORM_LIST}${queryString}`);
+  }
+
   // Demographic Methods
   async getDemographicGenderWise(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DEMOGRAPHIC.GENDER_WISE);
@@ -666,8 +1081,16 @@ class ApiService {
   }
 
   // PMT Methods
-  async getAgencies(): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>(API_ENDPOINTS.PMT.AGENCIES);
+  async getAgencies(): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DROPDOWN.AGENCIES);
+  }
+
+  async updateMasterACIndex(acCode: number, agencyId: number): Promise<ApiResponse<any>> {
+    const queryString = `?ac_code=${acCode}`;
+    return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_INDEX_UPDATE}${queryString}`, {
+      method: 'PUT',
+      body: JSON.stringify({ agency_id: agencyId })
+    });
   }
 
   async getAgency(id: string): Promise<ApiResponse<any>> {
@@ -729,6 +1152,18 @@ class ApiService {
 
   async getCasteWiseData(): Promise<ApiResponse<CasteWiseResponse>> {
     return this.request<CasteWiseResponse>(API_ENDPOINTS.DEMOGRAPHIC.CASTE_WISE);
+  }
+
+  async getDetailedCasteData(params?: { progress_type?: number; ac_code?: number; pc_code?: number; caste_not_met?: string }): Promise<ApiResponse<DetailedCasteResponse>> {
+    const stringParams: Record<string, string> = {};
+    if (params) {
+      if (params.progress_type) stringParams.progress_type = params.progress_type.toString();
+      if (params.ac_code) stringParams.ac_code = params.ac_code.toString();
+      if (params.pc_code) stringParams.pc_code = params.pc_code.toString();
+      if (params.caste_not_met) stringParams.caste_not_met = params.caste_not_met;
+    }
+    const queryString = Object.keys(stringParams).length ? `?${new URLSearchParams(stringParams).toString()}` : '';
+    return this.request<DetailedCasteResponse>(`${API_ENDPOINTS.DEMOGRAPHIC.CASTE_DETAILS}${queryString}`);
   }
 
   // Super Admin Methods - Role Management
@@ -865,6 +1300,69 @@ class ApiService {
 
   async getSystemInfo(): Promise<ApiResponse<any>> {
     return this.request<any>(API_ENDPOINTS.SYSTEM.INFO);
+  }
+
+  // Field Data (FD) Methods
+  async getFDInternalDashboard(params?: { page?: number; limit?: number }): Promise<any> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.FD.INTERNAL_DASHBOARD}${queryString}`);
+  }
+
+  async getInterviewAudio(params?: { page?: number; limit?: number; ac_code?: string; interview_date?: string }): Promise<any> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO}${queryString}`);
+  }
+
+  async toggleReQcStatus(agencyId: number, dataSendForReqc: number): Promise<ApiResponse<{
+    agencyId: number;
+    data_send_for_reqc: number;
+    message: string;
+  }>> {
+    console.log('Attempting toggle Re-QC with:', { agencyId, dataSendForReqc });
+    
+    // Try the original endpoint first
+    try {
+      const primaryEndpoint = '/dashboard/team-registration/newregistration/toggle-reqc';
+      console.log('Trying primary endpoint:', primaryEndpoint);
+      
+      return await this.request(primaryEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          agency_id: agencyId,
+          data_send_for_reqc: dataSendForReqc
+        })
+      });
+    } catch (error) {
+      console.error('Primary endpoint failed:', error);
+      
+      // Try alternative endpoint format
+      try {
+        const secondaryEndpoint = '/dashboard/team-registration/toggle-reqc';
+        console.log('Trying alternative endpoint:', secondaryEndpoint);
+        
+        return await this.request(secondaryEndpoint, {
+          method: 'POST',
+          body: JSON.stringify({
+            agency_id: agencyId,
+            data_send_for_reqc: dataSendForReqc
+          })
+        });
+      } catch (secondError) {
+        console.error('Both endpoints failed:', { 
+          primary: error, 
+          secondary: secondError,
+          agencyId,
+          dataSendForReqc
+        });
+        throw secondError; // Throw the second error
+      }
+    }
+  }
+
+  // Interview Masters Methods
+  async getInterviewMasters(params?: { page?: number; limit?: number }): Promise<ApiResponse<InterviewMastersResponse>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}${queryString}`);
   }
 
   // Utility Methods

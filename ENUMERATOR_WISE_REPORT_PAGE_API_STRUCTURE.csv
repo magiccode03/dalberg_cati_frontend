@@ -1,0 +1,17 @@
+Section,Type,Label/Column Name,API Field Name
+Enumerator Wise Report,Table Column,#,id
+Enumerator Wise Report,Table Column,Enumerator ID,user_id
+Enumerator Wise Report,Table Column,Interview Date,interview_date
+Enumerator Wise Report,Table Column,Device Id,device_id
+Enumerator Wise Report,Table Column,Interviewer IDs,interviewerids
+Enumerator Wise Report,Table Column,Total Interview,total_interview 
+Enumerator Wise Report,Table Column,Total Interview Without Phone,total_interview_without_phone
+Enumerator Wise Report,Table Column,Valid Interview,valid_interview
+Enumerator Wise Report,Table Column,Invalid Interview,invalid_interview
+Enumerator Wise Report,Table Column,Reject Interview,reject_interview 
+Enumerator Wise Report,Table Column,Reject Interview System,reject_interview_system
+Enumerator Wise Report,Table Column,Under QC Interview,underqc_interview
+Enumerator Wise Report,Table Column,QC User,qcuser
+Enumerator Wise Report,Table Column,Status,progressphase
+Enumerator Wise Report,Table Column,Tele QC,teleqcstatus
+Enumerator Wise Report,Table Column,Audio QC,audioqcstatus

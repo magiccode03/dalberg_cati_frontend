@@ -1,0 +1,7 @@
+Section,Type,Label/Column Name,API Field Name
+QC Agency List,Table Column,Agency ID,agency_id
+QC Agency List,Table Column,Agency Name,agency_name
+QC Agency List,Table Column,Supervisor Username,supervisor_username
+QC Agency List,Table Column,Total User,total_user
+QC Agency List,Table Column,Status,status
+QC Agency List,Table Column,Action,

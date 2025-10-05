@@ -1,0 +1,6 @@
+Section,Type,Label/Column Name,API Field Name
+QC User Progress,Table Column,Caller Name,name
+QC User Progress,Table Column,QC ID,qc_id
+QC User Progress,Table Column,Audio QC Completed,audio_qc_completed
+QC User Progress,Table Column,Audio QC Pass,audio_qc_pass
+QC User Progress,Table Column,Audio QC Fail,audio_qc_fail

@@ -10,8 +10,31 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
-import DataGrid from '@/components/ui/DataGrid';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Volume2, MapPin, Image, User } from 'lucide-react';
+
+// Display data interface for transformed data
+interface DisplayInterviewData {
+  server_id: string;
+  interview_date: string;
+  sample_type: string;
+  ac_code: number;
+  ac_name: string;
+  ps_name: string;
+  device_id: string;
+  interviewer_id: string;
+  audio_qc_label: string;
+  audio_qc_id: string;
+  audio1_status_label: string;
+  qc_outcome: string;
+  status_label: string;
+  gender_label: string;
+  gps_available: boolean;
+  ps_image_available: boolean;
+  selfie_image_available: boolean;
+  audio_playback_available: boolean;
+}
 
 const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
@@ -62,255 +85,106 @@ const InterviewLogPage = () => {
   ];
 
   // Sample interview data
-  const interviewData = [
+  const interviewData: DisplayInterviewData[] = [
     {
-      id: 1,
-      serverId: '302275',
-      interviewDate: '2025-06-17',
-      sampleType: 'Sample',
-      acName: 'Cheria Bariarpur (141)',
-      psName: '111. Utkramit Madhya Vidyalaya,Shekha Tola',
-      deviceId: '9b565985d11c4d77',
-      interviewerId: '',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Terminated',
-      psImage: '',
-      selfieImage: '',
-      gender: '',
+      server_id: '302275',
+      interview_date: '2025-06-17',
+      sample_type: 'Sample',
+      ac_code: 141,
+      ac_name: 'Cheria Bariarpur (141)',
+      ps_name: '111. Utkramit Madhya Vidyalaya,Shekha Tola',
+      device_id: '9b565985d11c4d77',
+      interviewer_id: '',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Terminated',
+      gender_label: '',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 2,
-      serverId: '301767',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '935',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (N+W+RTA)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Male',
+      server_id: '301767',
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '935',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (N+W+RTA)',
+      gender_label: 'Male',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 3,
-      serverId: '301745',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '935',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (Short Interview - 0 sec)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Male',
+      server_id: '301745',
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '935',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (Short Interview - 0 sec)',
+      gender_label: 'Male',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 4,
-      serverId: '301739',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '721',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (Short Interview - 0 sec)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Male',
+      server_id: '301739',
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '721',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (Short Interview - 0 sec)',
+      gender_label: 'Male',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
     {
-      id: 5,
-      serverId: '301705',
-      interviewDate: '2025-06-15',
-      sampleType: 'Booster',
-      acName: 'Chenari (SC) (207)',
-      psName: '100. Primary School, Kekai',
-      deviceId: '5e47ae85d3f83fa7',
-      interviewerId: '935',
-      audioQc: 'NA',
-      audioQcId: '',
-      audioFailReason: '',
-      qcOutcome: 'Fail',
-      status: 'Rejected (N+W+RTA)',
-      psImage: '',
-      selfieImage: '',
-      gender: 'Female',
-    },
-  ];
-
-  // DataGrid columns configuration
-  const columns = [
-    {
-      key: 'index',
-      title: '#',
-      dataIndex: 'index',
-      width: 60,
-      align: 'center' as const,
-      render: (value: any, record: any, index: number) => (
-        <span className="text-gray-500 font-medium">{index + 1}</span>
-      ),
-    },
-    {
-      key: 'serverId',
-      title: 'Server ID',
-      dataIndex: 'serverId',
-      width: 120,
-      render: (value: string) => (
-        <span className="font-mono text-sm font-medium text-blue-600">{value}</span>
-      ),
-    },
-    {
-      key: 'interviewDate',
-      title: 'Interview Date',
-      dataIndex: 'interviewDate',
-      width: 120,
-    },
-    {
-      key: 'sampleType',
-      title: 'Sample Type',
-      dataIndex: 'sampleType',
-      width: 100,
-    },
-    {
-      key: 'acName',
-      title: 'AC Name',
-      dataIndex: 'acName',
-      width: 200,
-    },
-    {
-      key: 'psName',
-      title: 'PS Name',
-      dataIndex: 'psName',
-      width: 250,
-    },
-    {
-      key: 'deviceId',
-      title: 'Device ID',
-      dataIndex: 'deviceId',
-      width: 150,
-    },
-    {
-      key: 'interviewerId',
-      title: 'Interviewer ID',
-      dataIndex: 'interviewerId',
-      width: 120,
-    },
-    {
-      key: 'audioQc',
-      title: 'Audio QC',
-      dataIndex: 'audioQc',
-      width: 100,
-    },
-    {
-      key: 'audioQcId',
-      title: 'Audio QC ID',
-      dataIndex: 'audioQcId',
-      width: 120,
-    },
-    {
-      key: 'audioFailReason',
-      title: 'Audio Fail Reason',
-      dataIndex: 'audioFailReason',
-      width: 150,
-    },
-    {
-      key: 'qcOutcome',
-      title: 'QC Outcome',
-      dataIndex: 'qcOutcome',
-      width: 120,
-      align: 'center' as const,
-      render: (value: string) => getQcOutcomeBadge(value),
-    },
-    {
-      key: 'status',
-      title: 'Status',
-      dataIndex: 'status',
-      width: 150,
-    },
-    {
-      key: 'psImage',
-      title: 'PS Image',
-      dataIndex: 'psImage',
-      width: 100,
-      align: 'center' as const,
-      render: (value: string) => (
-        <div className="flex justify-center">
-          {value ? (
-            <img src={value} alt="PS Image" className="w-8 h-8 rounded object-cover" />
-          ) : (
-            <i className="fa fa-image text-gray-400 text-lg"></i>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'selfieImage',
-      title: 'Selfie Image',
-      dataIndex: 'selfieImage',
-      width: 100,
-      align: 'center' as const,
-      render: (value: string) => (
-        <div className="flex justify-center">
-          {value ? (
-            <img src={value} alt="Selfie Image" className="w-8 h-8 rounded object-cover" />
-          ) : (
-            <i className="fa fa-user-circle text-gray-400 text-lg"></i>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'gender',
-      title: 'Gender',
-      dataIndex: 'gender',
-      width: 80,
-      align: 'center' as const,
-      render: (value: string) => (
-        <span className={`font-medium ${value === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-          {value}
-        </span>
-      ),
-    },
-    {
-      key: 'playAudio',
-      title: 'Play Audio',
-      dataIndex: 'playAudio',
-      width: 100,
-      align: 'center' as const,
-      render: (value: any, record: any) => (
-        <Button size="sm" className="h-8 w-8 p-0 bg-teal-500 hover:bg-teal-600 text-white border-0" title="Play Audio">
-          <i className="fa fa-volume-up text-white text-sm"></i>
-        </Button>
-      ),
-    },
-    {
-      key: 'gpsMap',
-      title: 'GPS Map',
-      dataIndex: 'gpsMap',
-      width: 100,
-      align: 'center' as const,
-      render: (value: any, record: any) => (
-        <Button size="sm" className="h-8 w-8 p-0 bg-teal-500 hover:bg-teal-600 text-white border-0" title="GPS Map">
-          <i className="fa fa-map text-white text-sm"></i>
-        </Button>
-      ),
+      server_id: '301705',
+      interview_date: '2025-06-15',
+      sample_type: 'Booster',
+      ac_code: 207,
+      ac_name: 'Chenari (SC) (207)',
+      ps_name: '100. Primary School, Kekai',
+      device_id: '5e47ae85d3f83fa7',
+      interviewer_id: '935',
+      audio_qc_label: 'NA',
+      audio_qc_id: '',
+      audio1_status_label: '',
+      qc_outcome: 'Fail',
+      status_label: 'Rejected (N+W+RTA)',
+      gender_label: 'Female',
+      gps_available: true,
+      ps_image_available: false,
+      selfie_image_available: false,
+      audio_playback_available: true,
     },
   ];
 
@@ -345,7 +219,7 @@ const InterviewLogPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={1} className="mb-6">
+      <Heading level={4} className="mb-6">
         Interview Log
       </Heading>
 
@@ -386,11 +260,11 @@ const InterviewLogPage = () => {
                 <SelectDropdown
                   options={[
                     { value: '', label: 'Select Interview Date' },
-                    { value: '2025-09-26', label: '2025-09-26' },
-                    { value: '2025-09-25', label: '2025-09-25' },
-                    { value: '2025-09-24', label: '2025-09-24' },
-                    { value: '2025-09-23', label: '2025-09-23' },
-                    { value: '2025-09-22', label: '2025-09-22' },
+                    { value: '2025-06-17', label: '2025-06-17' },
+                    { value: '2025-06-15', label: '2025-06-15' },
+                    { value: '2025-06-14', label: '2025-06-14' },
+                    { value: '2025-06-13', label: '2025-06-13' },
+                    { value: '2025-06-12', label: '2025-06-12' },
                   ]}
                   value={filters.interviewDate}
                   onChange={(value) => handleFilterChange('interviewDate', value)}
@@ -490,8 +364,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.audioQc.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('audioQc', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('audioQc', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -512,8 +386,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.audioQcStatus.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('audioQcStatus', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('audioQcStatus', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -536,8 +410,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.audio1Status.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('audio1Status', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('audio1Status', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -558,8 +432,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.qcRecheckStatusAudio.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('qcRecheckStatusAudio', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('qcRecheckStatusAudio', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -583,8 +457,8 @@ const InterviewLogPage = () => {
                     <Checkbox
                       key={option.value}
                       checked={filters.status.includes(option.value)}
-                      onChange={(e) => 
-                        handleCheckboxChange('status', option.value, e.target.checked)
+                      onCheckedChange={(checked) => 
+                        handleCheckboxChange('status', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -599,30 +473,136 @@ const InterviewLogPage = () => {
         <div className="lg:col-span-10">
           <Card>
             <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
               <Heading level={4}>
                 Interview Details
               </Heading>
-              <Button variant="outline" className="flex items-center gap-2">
+                </div>
+                <Button variant="outline" className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 border-blue-600">
                 <i className="fa fa-download"></i>
                 Download
               </Button>
             </div>
             
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
-                    Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, 108333)}</strong> of <strong>108,333</strong> items.
+                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, 108333)}</strong> of <strong>108,333</strong> items.
                   </Text>
                 </div>
                 
-                <DataGrid
-                  data={interviewData}
-                  columns={columns}
-                  loading={false}
-                  size="small"
-                  className="border-0"
-                />
+                <div className="overflow-x-auto">
+                  <Table striped bordered hover className="min-w-full">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-center w-16">#</TableHead>
+                        <TableHead className="w-32">Server ID</TableHead>
+                        <TableHead className="w-32">Interview Date</TableHead>
+                        <TableHead className="w-24">Sample Type</TableHead>
+                        <TableHead className="w-48">AC Name</TableHead>
+                        <TableHead className="w-64">PS Name</TableHead>
+                        <TableHead className="w-40">Device ID</TableHead>
+                        <TableHead className="w-32">Interviewer ID</TableHead>
+                        <TableHead className="w-24">Audio QC</TableHead>
+                        <TableHead className="w-32">Audio QC ID</TableHead>
+                        <TableHead className="w-40">Audio Fail Reason</TableHead>
+                        <TableHead className="text-center w-32">QC Outcome</TableHead>
+                        <TableHead className="w-48">Status</TableHead>
+                        <TableHead className="text-center w-24">PS Image</TableHead>
+                        <TableHead className="text-center w-24">Selfie Image</TableHead>
+                        <TableHead className="text-center w-20">Gender</TableHead>
+                        <TableHead className="text-center w-24">Play Audio</TableHead>
+                        <TableHead className="text-center w-24">GPS Map</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {interviewData.map((interview, index) => (
+                          <TableRow key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
+                          <TableCell className="text-center text-gray-500 font-medium w-16">
+                              {((currentPage - 1) * pageSize) + index + 1}
+                          </TableCell>
+                          <TableCell className="w-32">
+                            <span className="font-mono text-sm font-medium text-blue-600">
+                                {interview.server_id}
+                            </span>
+                          </TableCell>
+                            <TableCell className="w-32 font-mono text-sm">{interview.interview_date}</TableCell>
+                            <TableCell className="w-24">{interview.sample_type}</TableCell>
+                            <TableCell className="w-48">{interview.ac_name}</TableCell>
+                            <TableCell className="w-64">{interview.ps_name}</TableCell>
+                            <TableCell className="w-40">{interview.device_id}</TableCell>
+                            <TableCell className="w-32">{interview.interviewer_id || '-'}</TableCell>
+                            <TableCell className="w-24">{interview.audio_qc_label}</TableCell>
+                            <TableCell className="w-32">{interview.audio_qc_id || '-'}</TableCell>
+                            <TableCell className="w-40">{interview.audio1_status_label || '-'}</TableCell>
+                          <TableCell className="text-center w-32">
+                              {getQcOutcomeBadge(interview.qc_outcome)}
+                          </TableCell>
+                            <TableCell className="w-48">{interview.status_label}</TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                                {interview.ps_image_available ? (
+                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <Image className="w-4 h-4 text-green-600" />
+                                  </div>
+                              ) : (
+                                <Image className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                                {interview.selfie_image_available ? (
+                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <User className="w-4 h-4 text-green-600" />
+                                  </div>
+                              ) : (
+                                <User className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center w-20">
+                              <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                                {interview.gender_label || '-'}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                              <button 
+                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                    interview.audio_playback_available 
+                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                  title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                                  disabled={!interview.audio_playback_available}
+                              >
+                                <Volume2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center w-24">
+                            <div className="flex justify-center items-center">
+                              <button 
+                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                    interview.gps_available 
+                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  }`}
+                                  title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                                  disabled={!interview.gps_available}
+                              >
+                                <MapPin className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
                 
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard

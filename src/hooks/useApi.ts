@@ -296,6 +296,77 @@ export function useGPSData(params?: any) {
   return useApi(() => apiService.getGPSData(params), [params]);
 }
 
+// Team Registration Hooks
+export function useTeamRegistration(page: number = 1, limit: number = 20) {
+  return useApi(() => apiService.getTeamRegistration(page, limit), [page, limit]);
+}
+
+// Rejection Report Hooks
+export function useRejectionReport(params?: any) {
+  return useApi(() => apiService.getRejectionReport(params), [
+    params?.report_days,
+    params?.custom_date,
+    params?.custom_date_end,
+    params?.report_level,
+    params?.interviewer_id,
+    params?.enumerator_id,
+    params?.ac_code,
+    params?.district_code,
+    params?.pc_code,
+    params?.supervisor_id,
+    params?.server_id,
+    params?.mobile_no,
+    params?.fail_reason,
+    params?.page,
+    params?.per_page
+  ]);
+}
+
+export function useToggleReQcStatus() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleReQc = async (agencyId: number, dataSendForReqc: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Toggling Re-QC status:', { agencyId, dataSendForReqc });
+      
+      // First, let's test if the endpoint exists with a simple request
+      console.log('Testing endpoint availability...');
+      
+      const response = await apiService.toggleReQcStatus(agencyId, dataSendForReqc);
+      
+      console.log('Toggle Re-QC response:', response);
+      
+      return response;
+    } catch (err: any) {
+      console.error('Toggle Re-QC error:', err);
+      
+      let errorMessage = 'Failed to toggle Re-QC status';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      // Add more specific error information
+      if (err.message?.includes('500')) {
+        errorMessage += ' (Server Error - Check if endpoint exists)';
+      }
+      
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { toggleReQc, loading, error };
+}
+
 // Data Quality Hooks
 export function useDataValidation() {
   return useApi(() => apiService.getDataValidation());
@@ -307,6 +378,144 @@ export function useQualityMetrics() {
 
 export function useQualityIssues() {
   return useApi(() => apiService.getQualityIssues());
+}
+
+// Team Registration Hooks
+export function useCreateTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createTeamRegistration = useCallback(async (data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.createTeamRegistration(data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to create team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { createTeamRegistration, loading, error };
+}
+
+// Team Registration Update Hook
+export function useUpdateTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateTeamRegistration = useCallback(async (agencyId: number, data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.updateTeamRegistration(agencyId, data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to update team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateTeamRegistration, loading, error };
+}
+
+// Get Team Registration by ID Hook
+export function useGetTeamRegistrationById() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getTeamRegistrationById = useCallback(async (agencyId: number) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getTeamRegistrationById(agencyId);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getTeamRegistrationById, loading, error };
+}
+
+// Fieldwork Progress Hook
+export function useFieldworkProgress() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getFieldworkProgress = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getFieldworkProgress();
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch fieldwork progress');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getFieldworkProgress, loading, error };
 }
 
 // Utility Hook for Manual API Calls

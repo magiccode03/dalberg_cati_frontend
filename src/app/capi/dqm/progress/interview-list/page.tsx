@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -12,7 +12,8 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Eye, Edit, Check } from 'lucide-react';
+import { Search, Eye, Edit, Check, Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface InterviewData {
   id: number;
@@ -27,6 +28,35 @@ interface InterviewData {
   audioQcId: number;
   audioFailReason: string;
   qcOutcome: string;
+}
+
+interface APIResponse {
+  success: boolean;
+  data: {
+    data: Array<{
+      server_id: number;
+      interview_date: string;
+      ac_code: number;
+      ac_name: string;
+      interviewer_id: string;
+      respondent_name: string;
+      gender: number;
+      audio_qc_complete_date: string;
+      audio_qc_status: number;
+      audio_qc_id: number;
+      audio1_status: number;
+      status: number;
+      qc_scenario_color: string;
+    }>;
+    pagination: {
+      page: number;
+      pageSize: number;
+      totalCount: number;
+      pageCount: number;
+    };
+  };
+  message: string;
+  timestamp: string;
 }
 
 export default function InterviewListPage() {
@@ -44,23 +74,28 @@ export default function InterviewListPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(50);
+  const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Sample data based on the provided HTML
-  const interviewData: InterviewData[] = [
-    { id: 1, serverId: 188970, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Amitabh kumar ojha', gender: 'Male', audioQcDate: '2025-04-10', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 2, serverId: 188971, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Suresh ojha', gender: 'Male', audioQcDate: '2025-04-07', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 3, serverId: 188972, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Sandip singh', gender: 'Male', audioQcDate: '2025-04-16', audioQc: 'Pass', audioQcId: 109, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 4, serverId: 188973, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Anwar hussain', gender: 'Male', audioQcDate: '2025-04-16', audioQc: 'Pass', audioQcId: 109, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 5, serverId: 188974, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Anwar hussain', gender: 'Male', audioQcDate: '2025-04-07', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 6, serverId: 188975, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Avisek kumar', gender: 'Male', audioQcDate: '2025-04-21', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 7, serverId: 188976, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Mithilesh ojha', gender: 'Male', audioQcDate: '2025-04-07', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 8, serverId: 188977, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Saimul khatun', gender: 'Female', audioQcDate: '2025-04-16', audioQc: 'Pass', audioQcId: 109, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 9, serverId: 188979, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Soni devi', gender: 'Female', audioQcDate: '2025-04-07', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 10, serverId: 188981, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Vivek Kumar ojha', gender: 'Male', audioQcDate: '2025-05-22', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
-    { id: 11, serverId: 188995, interviewDate: '2025-04-05', acName: 'Gaura Bauram (79)', interviewerId: 102, respondentName: 'Punam devi', gender: 'Female', audioQcDate: '2025-04-08', audioQc: 'Fail', audioQcId: 102, audioFailReason: 'No Conversation', qcOutcome: 'Fail' },
-    { id: 12, serverId: 188999, interviewDate: '2025-04-05', acName: 'Gaura Bauram (79)', interviewerId: 102, respondentName: 'Silam devi', gender: 'Female', audioQcDate: '2025-04-09', audioQc: 'Fail', audioQcId: 102, audioFailReason: 'No Conversation', qcOutcome: 'Fail' },
-    { id: 13, serverId: 189010, interviewDate: '2025-04-05', acName: 'Biharsharif (172)', interviewerId: 932, respondentName: 'Vikram yadav', gender: 'Male', audioQcDate: '2025-05-27', audioQc: 'Fail', audioQcId: 103, audioFailReason: 'No Conversation', qcOutcome: 'Fail' },
-  ];
+  // Helper function to transform API data to UI format
+  const transformAPIData = (apiData: any[]): InterviewData[] => {
+    return apiData.map((item, index) => ({
+      id: index + 1,
+      serverId: item.server_id,
+      interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
+      acName: item.ac_name,
+      interviewerId: parseInt(item.interviewer_id),
+      respondentName: item.respondent_name,
+      gender: item.gender === 1 ? 'Male' : 'Female',
+      audioQcDate: new Date(item.audio_qc_complete_date).toISOString().split('T')[0],
+      audioQc: item.audio_qc_status === 1 ? 'Pass' : 'Fail',
+      audioQcId: item.audio_qc_id,
+      audioFailReason: item.audio1_status === 1 ? 'Survey Conversation can be heard' : 'No Conversation',
+      qcOutcome: item.qc_scenario_color === 'green' ? 'Pass' : item.qc_scenario_color === 'red' ? 'Fail' : 'Pending'
+    }));
+  };
 
   // Generate date options for dropdowns
   const generateDateOptions = () => {
@@ -111,8 +146,103 @@ export default function InterviewListPage() {
     }));
   };
 
+  // Fetch data from API
+  const fetchInterviewData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Debug: Check if token exists
+      const token = localStorage.getItem('accessToken');
+      console.log('Access token exists:', !!token);
+      console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+      
+      console.log('Making API request to: /progress/interview-list');
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      
+      if (filters.serverId) queryParams.append('server_id', filters.serverId);
+      if (filters.interviewDate) queryParams.append('interview_date', filters.interviewDate);
+      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
+      if (filters.interviewerId) queryParams.append('interviewer_id', filters.interviewerId);
+      if (filters.qcDate) queryParams.append('qc_date', filters.qcDate);
+      if (filters.qcId) queryParams.append('qc_id', filters.qcId);
+      if (filters.audioQcStatus.length > 0) queryParams.append('audio_qc_status', filters.audioQcStatus.join(','));
+      if (filters.audio1Status.length > 0) queryParams.append('audio1_status', filters.audio1Status.join(','));
+      if (filters.qcScenarioColor.length > 0) queryParams.append('qc_scenario_color', filters.qcScenarioColor.join(','));
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('pageSize', pageSize.toString());
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/progress/interview-list${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('API endpoint:', endpoint);
+      
+      const response = await apiClient.get(endpoint);
+      
+      const data: APIResponse = response.data;
+      
+      console.log('API Response:', data);
+      console.log('Response success:', data.success);
+      
+      if (data.success && data.data && Array.isArray(data.data.data)) {
+        const transformedData = transformAPIData(data.data.data);
+        setInterviewData(transformedData);
+        setTotalCount(data.data.pagination.totalCount);
+        console.log('Transformed data:', transformedData);
+      } else {
+        console.error('Invalid API response structure');
+        setError('Invalid response format from server');
+        // Use fallback data
+        const fallbackData: InterviewData[] = [
+          { id: 1, serverId: 188970, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Amitabh kumar ojha', gender: 'Male', audioQcDate: '2025-04-10', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
+          { id: 2, serverId: 188971, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Suresh ojha', gender: 'Male', audioQcDate: '2025-04-07', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
+          { id: 3, serverId: 188972, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Sandip singh', gender: 'Male', audioQcDate: '2025-04-16', audioQc: 'Pass', audioQcId: 109, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
+        ];
+        setInterviewData(fallbackData);
+        setTotalCount(fallbackData.length);
+      }
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      
+      if (err.response?.status === 401) {
+        setError('Authentication required. Please log in again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to view this data.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError(err.message || 'An error occurred while fetching data');
+      }
+      
+      // Use fallback data on error
+      console.log('API request failed, using fallback sample data...');
+      const fallbackData: InterviewData[] = [
+        { id: 1, serverId: 188970, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Amitabh kumar ojha', gender: 'Male', audioQcDate: '2025-04-10', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
+        { id: 2, serverId: 188971, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 990, respondentName: 'Suresh ojha', gender: 'Male', audioQcDate: '2025-04-07', audioQc: 'Pass', audioQcId: 101, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
+        { id: 3, serverId: 188972, interviewDate: '2025-04-05', acName: 'Sugauli (11)', interviewerId: 121, respondentName: 'Sandip singh', gender: 'Male', audioQcDate: '2025-04-16', audioQc: 'Pass', audioQcId: 109, audioFailReason: 'Survey Conversation can be heard', qcOutcome: 'Pass' },
+      ];
+      setInterviewData(fallbackData);
+      setTotalCount(fallbackData.length);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when filters change
+  useEffect(() => {
+    fetchInterviewData();
+  }, [currentPage, filters]);
+
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
+    fetchInterviewData();
   };
 
   const handleAudioView = (serverId: number) => {
@@ -138,10 +268,10 @@ export default function InterviewListPage() {
     }
   };
 
-  const totalPages = Math.ceil(interviewData.length / pageSize);
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentData = interviewData.slice(startIndex, endIndex);
+  const currentData = interviewData;
 
   return (
     <div className="main-content horizontal-content">
@@ -159,10 +289,41 @@ export default function InterviewListPage() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <Text className="ml-2 text-gray-600">Loading interview data...</Text>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Card className="mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
+                    Error Loading Data
+                  </Heading>
+                  <Text className="text-gray-600">{error}</Text>
+                </div>
+                <Button
+                  onClick={fetchInterviewData}
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Filters Sidebar */}
           <div className="lg:col-span-2">
-            <Card className="sticky top-0 overflow-scroll" style={{ zIndex: 10 }}>
+            <Card className="sticky top-0 overflow-scroll z-10">
               <div className="py-4 border-b border-gray-200">
                 <div className="flex justify-between items-center">
                   <Heading level={4} className="text-lg font-semibold text-gray-900">
@@ -359,7 +520,8 @@ export default function InterviewListPage() {
           <div className="lg:col-span-10">
             <Card>
               <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                <div className="w-1 h-6 bg-blue-500 mr-3"></div>
                   <Heading level={4} className="text-lg font-semibold text-gray-900">
                     Interview Details
                   </Heading>
@@ -446,15 +608,22 @@ export default function InterviewListPage() {
                             {getQcOutcomeBadge(interview.qcOutcome)}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => handleEdit(interview.serverId)}
-                              title="Edit Response"
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </Button>
+                            <div className="relative group">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEdit(interview.serverId)}
+                                className="bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600 p-2"
+                                title="Edit Response"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              {/* Tooltip */}
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                Edit
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                              </div>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -465,13 +634,13 @@ export default function InterviewListPage() {
                 {/* Table Footer */}
                 <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                   <div className="text-sm text-gray-700">
-                    Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, interviewData.length)}</span> of <span className="font-semibold">{interviewData.length}</span> items.
+                    Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items.
                   </div>
                   <div>
                     <PaginationStandard
                       currentPage={currentPage}
                       totalPages={totalPages}
-                      totalItems={interviewData.length}
+                      totalItems={totalCount}
                       itemsPerPage={pageSize}
                       onPageChange={setCurrentPage}
                     />

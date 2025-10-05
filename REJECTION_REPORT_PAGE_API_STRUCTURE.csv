@@ -1,0 +1,29 @@
+Section,Type,Label/Column Name,API Field Name
+Rejection Report,Filters,Report Days,report_days
+Rejection Report,Filters,Custom Date,custom_date
+Rejection Report,Filters,Custom Date End,custom_date_end
+Rejection Report,Filters,Level,report_level
+Rejection Report,Filters,Interviewer ID,interviewer_id
+Rejection Report,Filters,Enumerator ID,enumerator_id
+Rejection Report,Filters,AC Code,ac_code
+Rejection Report,Filters,District Code,district_code
+Rejection Report,Filters,PC Code,pc_code
+Rejection Report,Filters,Supervisor ID,supervisor_id
+Rejection Report,Filters,Server ID,server_id
+Rejection Report,Filters,Mobile Number,mobile_no
+Rejection Report,Filters,Fail Reason,fail_reason
+Rejection Report,Table Column,Sr. No,
+Rejection Report,Table Column,Server ID,server_id
+Rejection Report,Table Column,Ac Name,ac_name
+Rejection Report,Table Column,PS Code,ps_code
+Rejection Report,Table Column,Interview Date,interview_date
+Rejection Report,Table Column,Interviewer ID,interviewer_id
+Rejection Report,Table Column,Interview Duration,total_duration
+Rejection Report,Table Column,Respondent Name,respondent_name
+Rejection Report,Table Column,Respondent Mobile,mobile_no
+Rejection Report,Table Column,Fail Reason,fail_reason
+Rejection Report,Table Column,Audio QC ID,audio_qc_id
+Rejection Report,Table Column,Audio Fail Reason,audio_fail_reason
+Rejection Report,Table Column,Re-Audio Fail Reason,qc_recheck_status_audio
+Rejection Report,Table Column,Audio,audio_available
+Rejection Report,Table Column,GPS,gps_available

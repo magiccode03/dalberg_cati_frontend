@@ -12,7 +12,7 @@ const API_VERSION = '/api';
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: `${API_BASE_URL}${API_VERSION}`,
-  timeout: 30000,
+  timeout: 10000, // Reduced from 30000 to 10000ms (10 seconds)
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
