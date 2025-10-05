@@ -124,6 +124,9 @@ export const API_ENDPOINTS = {
     TASK: (id: string) => `/qc/tasks/${id}`,
     GPS_DATA: '/qc/gps',
     REPORTS: '/qc/reports',
+    TEAM_REGISTRATION: '/qc-team-registration/newregistration',
+    TEAM_REGISTRATIONS: '/qc-team-registration',
+    TEAM_REGISTRATION_UPDATE: (id: string) => `/qc-team-registration/update/${id}`,
   },
   
   // Data Quality
@@ -1114,6 +1117,64 @@ class ApiService {
   async getGPSData(params?: any): Promise<ApiResponse<any[]>> {
     const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
     return this.request<any[]>(`${API_ENDPOINTS.QC.GPS_DATA}${queryString}`);
+  }
+
+  async createQCTeamRegistration(data: {
+    agency_name: string;
+    status: number;
+    unique_id: string;
+    password: string;
+  }): Promise<ApiResponse<{
+    agency_id: number;
+    user_id: number;
+    agency_name: string;
+    status: number;
+    unique_id: string;
+  }>> {
+    return this.request(API_ENDPOINTS.QC.TEAM_REGISTRATION, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getQCTeamRegistrations(params?: { page?: number; pageSize?: number }): Promise<ApiResponse<{
+    agencies: Array<{
+      agency_id: number;
+      agency_name: string;
+      supervisor_username: string;
+      status: string;
+      total_users: number;
+      supervisor_details: any;
+      created_at: string | number;
+      updated_at: string | number;
+    }>;
+    pagination: {
+      total_count: number;
+      page_count: number;
+      current_page: number;
+      per_page: number;
+    };
+  }>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.QC.TEAM_REGISTRATIONS}${queryString}`);
+  }
+
+  async updateQCTeamRegistration(id: string, data: {
+    agency_name: string;
+    status: number;
+    unique_id: string;
+    password: string;
+  }): Promise<ApiResponse<{
+    agency_id: number;
+    user_id: number;
+    agency_name: string;
+    status: number;
+    unique_id: string;
+  }>> {
+    return this.request(API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id), {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
   }
 
   // Data Quality Methods

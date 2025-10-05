@@ -9,10 +9,11 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import { Edit, Loader2 } from 'lucide-react';
+import { Edit, Loader2, Plus } from 'lucide-react';
 import { useTeamRegistration, useToggleReQcStatus } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 import Switch from '@/components/ui/Switch';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 
 // TypeScript interfaces for API response
 interface TeamRegistrationData {
@@ -198,14 +199,14 @@ const TeamRegistrationPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4}>Agency List</Heading>
+            <Heading level={4}>Team Registration List</Heading>
           </div>
           <Button 
             variant="primary"
             onClick={() => router.push('/capi/ppm/master/team-registration/newagency')}
           >
-            <i className="fa fa-plus mr-2"></i>
-            New Agency
+            <Plus className="w-4 h-4 mr-2" />
+            New Team Registration
           </Button>
         </div>
 
@@ -228,10 +229,10 @@ const TeamRegistrationPage = () => {
           <Table className="table table-vcenter text-nowrap table-bordered border-bottom">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Agency ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Agency Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Team ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Team Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Supervisor Username</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">QC Agency</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">QC Team</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Total AC</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Total Interviews Conducted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Valid</th>
@@ -329,6 +330,24 @@ const TeamRegistrationPage = () => {
                     </tbody>
                   </Table>
                 </div>
+
+        {/* Pagination Controls */}
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Showing <strong>{(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, typedData?.total_count || 0)}</strong> of <strong>{typedData?.total_count || 0}</strong> items.
+          </Text>
+        </div>
+        
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={typedData?.total_pages || 1}
+            totalItems={typedData?.total_count || 0}
+            itemsPerPage={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+            className="justify-center"
+          />
+        </div>
       </Card>
     </Container>
   );

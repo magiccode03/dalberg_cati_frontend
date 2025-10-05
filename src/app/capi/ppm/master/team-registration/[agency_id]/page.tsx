@@ -128,8 +128,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
     console.log('Updating agency:', agencyId, 'with data:', formData);
     
     // Validate required fields (password is optional for updates)
-    if (!formData.agency_name || !formData.show_second_level_column || 
-        !formData.username) {
+    if (!formData.agency_name || !formData.username) {
       showError('Please fill in all required fields');
       return;
     }
@@ -143,9 +142,9 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
       const result = await updateTeamRegistration(parseInt(agencyId), {
         agency_name: formData.agency_name,
         qc_agency_id: parseInt(formData.qc_agency_id || '1'),
-        show_second_level_column: parseInt(formData.show_second_level_column),
+        show_second_level_column: 1, // Default value since field is hidden
         status: parseInt(formData.status),
-        qa_id: parseInt(formData.qa_id || '0'),
+        qa_id: parseInt(formData.qa_id || '1'), // Default value since field is hidden
         unique_id: formData.username,
         first_name: formData.username,
         last_name: formData.username,
@@ -265,20 +264,6 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
 
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Show Second Level Column <span className="text-red-500">*</span>
-                </Text>
-                <SelectDropdown
-                  value={formData.show_second_level_column}
-                  onChange={(value) => handleInputChange('show_second_level_column', Array.isArray(value) ? value[0] : value)}
-                  options={showSecondLevelOptions}
-                />
-              </div>
-            </div>
-
-            {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
                   QC Team
                 </Text>
                 <SelectDropdown
@@ -287,7 +272,10 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                   options={qcAgencyOptions}
                 />
               </div>
+            </div>
 
+            {/* Row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
                   Status
@@ -296,19 +284,6 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                   value={formData.status}
                   onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value)}
                   options={statusOptions}
-                />
-              </div>
-
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Quality Assurance ID
-                </Text>
-                <Input
-                  type="number"
-                  value={formData.qa_id}
-                  onChange={(e) => handleInputChange('qa_id', e.target.value)}
-                  placeholder="Enter QA ID"
-                  min="1"
                 />
               </div>
             </div>
