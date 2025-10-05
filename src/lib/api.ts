@@ -79,7 +79,8 @@ export const API_ENDPOINTS = {
   
   // Dropdown APIs
   DROPDOWN: {
-    AGENCIES: '/dropdown/agencies'
+    AGENCIES: '/dropdown/agencies',
+    AC_LIST: '/dropdown/ac-list'
   },
 
   // Dashboard Data
@@ -1466,6 +1467,10 @@ class ApiService {
 
   async getACList(): Promise<ApiResponse<Array<{ value: number; label: string }>>> {
     return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}/ac-list`);
+  }
+
+  async getACDropdownList(): Promise<ApiResponse<Record<string, string>>> {
+    return this.request(API_ENDPOINTS.DROPDOWN.AC_LIST);
   }
 
   // Gain and Losses Methods
