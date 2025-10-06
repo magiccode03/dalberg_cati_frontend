@@ -1121,15 +1121,15 @@ export const menuData: MenuItem[] = [
   {
     id: 'cati-ppm-progress',
     label: 'Progress',
-    href: '/cati/ppm/progress/telecaller-daily-progress',
+    href: '/cati/ppm/progress/telecaller-progress',
     icon: 'BarChart3',
     roles: ['ppm'],
     system: 'cati',
     children: [
       {
         id: 'cati-ppm-telecaller-daily-progress',
-        label: 'Telecaller Daily Progress',
-        href: '/cati/ppm/progress/telecaller-daily-progress',
+        label: 'Telecaller Progress',
+        href: '/cati/ppm/progress/telecaller-progress',
         icon: 'TrendingUp',
         roles: ['ppm'],
         system: 'cati',

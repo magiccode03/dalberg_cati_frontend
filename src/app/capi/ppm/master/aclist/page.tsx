@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Edit } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { apiService } from '@/lib/api';
 
@@ -366,12 +366,20 @@ const ACListPage = () => {
                             {item.validInterview}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            <button
-                              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
-                              onClick={() => handleUpdateAgency(item)}
-                            >
-                              Update Agency
-                            </button>
+                            <div className="relative group">
+                              <button
+                                className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                                onClick={() => handleUpdateAgency(item)}
+                                title="Update Agency"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              {/* Tooltip */}
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                Update Agency
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                              </div>
+                            </div>
                           </td>
                         </tr>
                       ))}

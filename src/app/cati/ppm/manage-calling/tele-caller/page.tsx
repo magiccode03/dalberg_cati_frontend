@@ -12,7 +12,7 @@ import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Checkbox from '@/components/ui/Checkbox';
-import { Edit, Plus, Search } from 'lucide-react';
+import { Edit, Plus, Search, ChevronDown, ChevronRight, BarChart3 } from 'lucide-react';
 import { apiService } from '@/lib/api-service';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
@@ -37,6 +37,18 @@ interface TeleUserData {
   updated_at: number;
   updated_by: number;
   status: number;
+}
+
+interface UserStatistics {
+  total_assigned_count: number;
+  ac_detail: Array<{
+    ac_code: number;
+    ac_name: string;
+    call_attempted: number;
+    call_pending: number;
+  }>;
+  total_call_attempted: number;
+  total_call_pending: number;
 }
 
 interface SearchFilters {
@@ -66,6 +78,10 @@ const TeleUserInfoPage: React.FC = () => {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTelecaller, setSelectedTelecaller] = useState<{id: number, name: string} | null>(null);
+  
+  // Expanded row state for statistics
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [userStatistics, setUserStatistics] = useState<Map<number, UserStatistics>>(new Map());
 
   const statusOptions = [
     { value: '', label: 'All Status' },
@@ -134,6 +150,18 @@ const TeleUserInfoPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
+  // Fetch statistics for all visible users
+  useEffect(() => {
+    if (teleUserData.length > 0) {
+      teleUserData.forEach(user => {
+        if (!userStatistics.has(user.teleform_user_id)) {
+          fetchUserStatistics(user.teleform_user_id);
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teleUserData]);
+
   const handleInputChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
       ...prev,
@@ -164,22 +192,83 @@ const TeleUserInfoPage: React.FC = () => {
     setSelectedTelecaller(null);
   };
 
-  const handleAssignmentSuccess = () => {
-    // Refresh the data or show success message
+  const handleAssignmentSuccess = async () => {
+    // Small delay to ensure backend has processed the assignment
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Refresh the telecallers data
     fetchTelecallers(currentPage);
+    
+    // Force refresh statistics for all visible users to update analytics
+    if (teleUserData.length > 0) {
+      teleUserData.forEach(user => {
+        fetchUserStatistics(user.teleform_user_id, true); // Force refresh
+      });
+    }
+  };
+
+  const fetchUserStatistics = async (teleformUserId: number, forceRefresh: boolean = false) => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      
+      // Add timestamp to force fresh data if forceRefresh is true
+      const url = forceRefresh 
+        ? `${apiBaseUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics?t=${Date.now()}`
+        : `${apiBaseUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`;
+        
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setUserStatistics(prev => new Map(prev).set(teleformUserId, result.data));
+      }
+    } catch (err) {
+      console.error('Error fetching statistics:', err);
+    }
+  };
+
+  const toggleRowExpansion = (teleformUserId: number) => {
+    const newExpandedRows = new Set(expandedRows);
+    
+    if (newExpandedRows.has(teleformUserId)) {
+      newExpandedRows.delete(teleformUserId);
+    } else {
+      // Close all other expanded rows
+      newExpandedRows.clear();
+      newExpandedRows.add(teleformUserId);
+      // Fetch statistics if not already loaded
+      if (!userStatistics.has(teleformUserId)) {
+        fetchUserStatistics(teleformUserId);
+      }
+    }
+    
+    setExpandedRows(newExpandedRows);
   };
 
   return (
     <FluidContainer>
       <div className="space-y-6">
         {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <Heading level={1} className="text-2xl font-bold text-gray-900">
+            <Heading level={1} className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Tele Caller
             </Heading>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Manage telecallers and their assignments
+            </p>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {/* Additional header content if needed */}
           </div>
         </div>
@@ -192,10 +281,10 @@ const TeleUserInfoPage: React.FC = () => {
         )}
 
         {/* Search Form */}
-        <Card className="">
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
+        <Card className="p-4 md:p-6">
+          <form onSubmit={handleSearch}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+              <div className="lg:col-span-1">
                 <Input
                   type="text"
                   placeholder="Teleform User ID"
@@ -204,7 +293,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div>
+              <div className="lg:col-span-1">
                 <Input
                   type="text"
                   placeholder="Name"
@@ -213,7 +302,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div>
+              <div className="lg:col-span-1">
                 <Input
                   type="text"
                   placeholder="Mobile Number"
@@ -222,7 +311,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-              <div>
+              <div className="lg:col-span-1">
                 <SelectDropdown
                   options={statusOptions}
                   value={searchFilters.status}
@@ -230,133 +319,280 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                 />
               </div>
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit" disabled={loading}>
-                <Search className="w-4 h-4 mr-2" />
-                {loading ? 'Searching...' : 'Search'}
-              </Button>
+              <div className="lg:col-span-1">
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                  <Search className="w-4 h-4 mr-2" />
+                  {loading ? 'Searching...' : 'Search'}
+                </Button>
+              </div>
             </div>
           </form>
         </Card>
 
-        {/* Data Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
+        {/* Tele Caller Cards */}
+        <Card className="p-4 md:p-6">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-xl font-semibold text-gray-900">
+              <Heading level={2} className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
                 Tele Caller
               </Heading>
             </div>
-            <div className="flex space-x-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:space-x-2 gap-2 lg:gap-0">
               <Button 
                 variant="primary" 
                 size="sm"
                 onClick={() => router.push('/cati/ppm/manage-calling/create-tele-caller')}
+                className="w-full lg:w-auto"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                Add New User
+                <span className="hidden sm:inline">Add New User</span>
+                <span className="sm:hidden">Add User</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white">
+              <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
                 <Search className="w-4 h-4 mr-1" />
-                Calling User Check
+                <span className="hidden sm:inline">Calling User Check</span>
+                <span className="sm:hidden">User Check</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white">
+              <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white w-full lg:w-auto">
                 <Edit className="w-4 h-4 mr-1" />
-                Redistribute Pending Data
+                <span className="hidden sm:inline">Redistribute Pending Data</span>
+                <span className="sm:hidden">Redistribute</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white">
+              <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white w-full lg:w-auto">
                 <Plus className="w-4 h-4 mr-1" />
-                Refresh Progress Data
+                <span className="hidden sm:inline">Refresh Progress Data</span>
+                <span className="sm:hidden">Refresh</span>
               </Button>
             </div>
           </div>
 
-          <div className="table-responsive">
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <LoadingSpinner size="lg" />
-              </div>
-            ) : (
-              <Table striped bordered hover>
-                <thead>
-                  <tr>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Teleform User ID</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Name</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Mobile Number</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                      Actions <Edit className="inline w-4 h-4 ml-1" />
-                    </th>
-                    <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                      Add Data <Plus className="inline w-4 h-4 ml-1" />
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teleUserData.length > 0 ? (
-                    teleUserData.map((user, index) => (
-                      <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {(currentPage - 1) * itemsPerPage + index + 1}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
-                          {user.teleform_user_id}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          {user.name}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-mono">
-                          {user.mobile_number}
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            user.status === 1 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          }`}>
-                            {user.status === 1 ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                          <Button variant="primary" size="sm" title="Edit Telecaller">
-                            <Edit className="w-4 h-4" />
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <LoadingSpinner size="lg" />
+            </div>
+          ) : teleUserData.length > 0 ? (
+            <div className="space-y-3">
+              {teleUserData.map((user, index) => {
+                const isExpanded = expandedRows.has(user.teleform_user_id);
+                const stats = userStatistics.get(user.teleform_user_id);
+                
+                return (
+                  <div key={user.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+                    {/* Main Row Content */}
+                    <div className="p-3 md:p-4">
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                        {/* Left Section - User Info */}
+                        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm md:text-base">
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white truncate">
+                                {user.name}
+                              </h3>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                  ID: {user.teleform_user_id}
+                                </span>
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
+                                  user.status === 1 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                }`}>
+                                  {user.status === 1 ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                              <span className="font-mono">{user.mobile_number}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Center Section - Quick Stats */}
+                        <div className="flex items-center justify-center gap-4 md:gap-8 flex-1">
+                          {stats ? (
+                            <>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {stats.total_assigned_count}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Done</p>
+                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
+                                  {stats.total_call_attempted}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                                  {stats.total_call_pending}
+                                </p>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-xs md:text-sm text-gray-400">Loading stats...</div>
+                          )}
+                        </div>
+
+                        {/* Right Section - Actions */}
+                        <div className="flex items-center justify-end gap-1 md:gap-2 flex-1 lg:flex-none">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => toggleRowExpansion(user.teleform_user_id)}
+                            title={isExpanded ? "Hide details" : "View details"}
+                            className="text-xs md:text-sm px-2 md:px-3"
+                          >
+                            {isExpanded ? (
+                              <>
+                                <ChevronDown className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                                <span className="hidden sm:inline">Hide</span>
+                              </>
+                            ) : (
+                              <>
+                                <ChevronRight className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                                <span className="hidden sm:inline">View</span>
+                              </>
+                            )}
                           </Button>
-                        </td>
-                        <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                          <Button 
+                            variant="primary" 
+                            size="sm"
+                            onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.id}`)}
+                            title="Edit telecaller"
+                            className="px-2 md:px-3"
+                          >
+                            <Edit className="w-3 h-3 md:w-4 md:h-4" />
+                          </Button>
                           <Button 
                             variant="secondary" 
                             size="sm" 
-                            className="bg-blue-500 hover:bg-blue-600 text-white" 
-                            title="Add Data"
+                            className="bg-purple-500 hover:bg-purple-600 text-white px-2 md:px-3" 
                             onClick={() => handleAddData(user)}
+                            title="Assign AC data"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3 h-3 md:w-4 md:h-4" />
                           </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                        No telecallers found. Try adjusting your search filters.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            )}
-          </div>
+                        </div>
+                      </div>
+                    </div>
 
-          {/* Table Footer */}
-          {!loading && teleUserData.length > 0 && (
-            <div className="flex justify-between items-center mt-6">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                Showing <span className="font-semibold">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> items.
+                    {/* Expanded Details Section */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                        <div className="p-3 md:p-4">
+                          {stats ? (
+                            <div className="space-y-3">
+                              {/* Detailed Stats Row */}
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 gap-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
+                                    <span className="font-bold text-blue-600 dark:text-blue-400">
+                                      {stats.total_assigned_count}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
+                                    <span className="font-bold text-green-600 dark:text-green-400">
+                                      {stats.total_call_attempted}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
+                                    <span className="font-bold text-orange-600 dark:text-orange-400">
+                                      {stats.total_call_pending}
+                                    </span>
+                                  </div>
+                                </div>
+                                <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-gray-400 flex-shrink-0" />
+                              </div>
+                              
+                              {/* AC Details Row */}
+                              {stats.ac_detail && stats.ac_detail.length > 0 && (
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <BarChart3 className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                      AC-wise Breakdown ({stats.ac_detail.length} ACs)
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {stats.ac_detail.map((ac) => (
+                                      <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                            {ac.ac_name}
+                                          </span>
+                                          <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
+                                            #{ac.ac_code}
+                                          </span>
+                                        </div>
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
+                                          <div className="flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">Attempted:</span>
+                                            <span className="font-semibold text-green-600 dark:text-green-400">
+                                              {ac.call_attempted}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">Pending:</span>
+                                            <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                              {ac.call_pending}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex justify-center items-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
+                              <span className="text-sm text-gray-500">Loading statistics...</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                <Search className="w-12 h-12 text-gray-400" />
               </div>
-              <div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No telecallers found
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Try adjusting your search filters or add a new telecaller.
+              </p>
+            </div>
+          )}
+
+          {/* Pagination Footer */}
+          {!loading && teleUserData.length > 0 && (
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
+                Showing <span className="font-semibold">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> telecallers.
+              </div>
+              <div className="flex justify-center sm:justify-end">
                 <PaginationStandard
                   currentPage={currentPage}
                   totalPages={totalPages}

@@ -8,32 +8,8 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
-import { Phone } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface CallData {
-  id: number;
-  serverId: string;
-  webForm: string;
-  respondentName: string;
-  callAttempt?: number;
-  rescheduleDateTime?: string;
-}
-
-interface InterviewData {
-  id: number;
-  phone: string;
-  ac_code: number;
-  ac_name: string;
-  ac_district_name: string;
-  ac_zone_name: string;
-  ac_mla_name: string;
-  ac_electorate: number;
-  status: number;
-  call_attempt: number;
-  call_received: number;
-}
 
 export default function StartFormFillingPage() {
   const router = useRouter();
@@ -49,22 +25,24 @@ export default function StartFormFillingPage() {
   });
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showTable, setShowTable] = useState(false);
-  const [activeTab, setActiveTab] = useState('new-calls');
-  const [showNewCallSection, setShowNewCallSection] = useState(false);
-  const [interviews, setInterviews] = useState<InterviewData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Auto-fill form fields if user role is "ss"
+  // Check for teleform user data and auto-fill if exists
   useEffect(() => {
-    if (user && user.role === 'ss') {
-      setFormData({
-        teleform_user_id: user.uniqueId || '',
-        user_phone: user.mobile || ''
-      });
+    const savedData = localStorage.getItem('teleform_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setFormData({
+          teleform_user_id: userData.teleform_user_id.toString(),
+          user_phone: userData.mobile_number
+        });
+      } catch (err) {
+        console.error('Error loading teleform user data:', err);
+      }
     }
-  }, [user]);
+  }, []);
 
   // Get user ID from user object
   const getUserId = () => {
@@ -108,7 +86,7 @@ export default function StartFormFillingPage() {
     return !Object.values(newErrors).some(error => error !== '');
   };
 
-  const fetchInterviews = async () => {
+  const verifyTeleformUser = async () => {
     try {
       setLoading(true);
       setError('');
@@ -116,26 +94,21 @@ export default function StartFormFillingPage() {
       const token = localStorage.getItem('accessToken');
       if (!token) {
         setError('No authentication token found');
-        return;
+        return false;
       }
 
-      // Get user ID from the user object
-      const userId = getUserId();
-      if (!userId) {
-        setError('User ID not found');
-        return;
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cati/interviews/teleform-user/${userId}?status=0&page=1&limit=10`,
-        {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users/verify`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          teleform_user_id: parseInt(formData.teleform_user_id),
+          mobile_number: formData.user_phone
+        })
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -143,48 +116,46 @@ export default function StartFormFillingPage() {
 
       const data = await response.json();
       
-      if (data.success && data.data?.data) {
-        // Transform API data to our interface
-        const interviewList = data.data.data.map((item: any) => ({
-          id: item.id,
-          phone: item.phone,
-          ac_code: item.ac_code,
-          ac_name: item.ac_name,
-          ac_district_name: item.ac_district_name,
-          ac_zone_name: item.ac_zone_name,
-          ac_mla_name: item.ac_mla_name,
-          ac_electorate: item.ac_electorate,
-          status: item.status,
-          call_attempt: item.call_attempt,
-          call_received: item.call_received
-        }));
+      if (data.success && data.data) {
+        // Save response data to localStorage
+        localStorage.setItem('teleform_user_data', JSON.stringify(data.data));
         
-        setInterviews(interviewList);
-        setIsLoggedIn(true);
-        setShowTable(true);
-        setShowNewCallSection(true);
+        // Dispatch custom event to update header
+        window.dispatchEvent(new Event('teleformUserUpdated'));
+        
+        // Redirect to new-call page with teleform_user_id in URL
+        router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+        
+        return true;
       } else {
-        setError(data.message || 'Failed to fetch interviews');
+        setError(data.message || 'Verification failed');
+        return false;
       }
     } catch (err) {
-      console.error('Error fetching interviews:', err);
-      setError('Failed to fetch interviews. Please try again.');
+      console.error('Error verifying teleform user:', err);
+      setError('Failed to verify teleform user. Please try again.');
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
       console.log('Form submitted:', formData);
-      console.log('Fetching interviews for user ID:', getUserId());
-      fetchInterviews();
+      await verifyTeleformUser();
     }
   };
 
   const handleClear = () => {
+    // Clear teleform user data from localStorage
+    localStorage.removeItem('teleform_user_data');
+    
+    // Dispatch custom event to update header
+    window.dispatchEvent(new Event('teleformUserUpdated'));
+    
     // Reset form data
     setFormData({
       teleform_user_id: '',
@@ -199,63 +170,19 @@ export default function StartFormFillingPage() {
     
     // Reset other states
     setIsLoggedIn(false);
-    setShowTable(false);
-    setShowNewCallSection(false);
-    setInterviews([]);
     setError('');
     
-    console.log('Form cleared');
+    console.log('Form cleared and teleform user data removed');
   };
 
-  const handleConnectToCall = async (interviewId: number, phoneNumber: string) => {
-    try {
-      console.log('Initiating call:', { interviewId, phoneNumber });
-      
-      // Get from phone from form data
-      const fromPhone = formData.user_phone;
-      
-      if (!fromPhone) {
-        alert('User phone number not found');
-        return;
-      }
-      
-      // Get auth token
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        alert('Authentication required');
-        return;
-      }
-      
-      // Call click-to-call API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/click-to-call/initiate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: fromPhone,
-          to: phoneNumber
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        console.log('Call initiated successfully:', data);
-        alert(`Call initiated successfully! Call ID: ${data.data.callId}`);
-        
-        // Navigate to tele-form page with interview ID after successful call initiation
-        router.push(`/cati/ss/tele-form/${interviewId}`);
-      } else {
-        console.error('Call initiation failed:', data);
-        alert(`Call initiation failed: ${data.message || 'Unknown error'}`);
-      }
-      
-    } catch (error) {
-      console.error('Error initiating call:', error);
-      alert('Failed to initiate call. Please try again.');
-    }
+  const handleGoToNewCall = () => {
+    // Get teleform_user_id from localStorage or form data
+    const teleformUserData = localStorage.getItem('teleform_user_data');
+    const teleformUserId = teleformUserData 
+      ? JSON.parse(teleformUserData).teleform_user_id 
+      : formData.teleform_user_id;
+    
+    router.push(`/cati/ss/new-call/${teleformUserId}`);
   };
 
   // Removed handleBackToLogin function
@@ -263,8 +190,8 @@ export default function StartFormFillingPage() {
   return (
     <Container maxWidth="full">
       <div className="space-y-6">
-        {/* Enter Teleuser ID Section - Show only when New Call section is hidden */}
-        {!showNewCallSection && (
+        {/* Enter Teleuser ID Section */}
+        {!isLoggedIn && (
           <>
             {/* Breadcrumb Header */}
             <div className="flex justify-between items-center mb-6">
@@ -336,13 +263,16 @@ export default function StartFormFillingPage() {
                       <Button
                         type="submit"
                         className="flex-1"
+                        disabled={loading}
+                        loading={loading}
                       >
-                        Submit
+                        {loading ? 'Verifying...' : 'Submit'}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
                         onClick={handleClear}
+                        disabled={loading}
                         className="flex-1 bg-red-50 hover:bg-red-100 border-red-300 text-red-700 hover:text-red-800"
                       >
                         Clear
@@ -355,80 +285,37 @@ export default function StartFormFillingPage() {
           </>
         )}
 
+        {/* Error Message */}
+        {error && (
+          <Card className="border-red-200 bg-red-50 dark:bg-red-900/20">
+            <div className="p-4 text-red-700 dark:text-red-400">
+              {error}
+            </div>
+          </Card>
+        )}
 
-        {/* New Call Section - Show only after form submission */}
-        {showNewCallSection && (
-          <>
-            <div className="mt-10 flex justify-between items-center mb-6">
-              <div className="left-content">
-                <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
-                  New Call
-                </Heading>
-              </div>
-              <div className="right-content">
-                <span className="text-sm text-gray-500 dark:text-gray-400"></span>
+        {/* Success Section - Show after successful login */}
+        {isLoggedIn && (
+          <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-green-900 dark:text-green-300 mb-2">
+                    Login Successful!
+                  </h3>
+                  <p className="text-green-800 dark:text-green-400">
+                    Welcome, {formData.teleform_user_id}! You can now proceed to view your assigned calls.
+                  </p>
+                </div>
+                <Button
+                  onClick={handleGoToNewCall}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  View New Calls
+                </Button>
               </div>
             </div>
-        <Card>
-          <div className="card-body">
-            <div className="table-responsive">
-              <Table className="table table-striped table-bordered">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Server ID</th>
-                    <th className="action-column">Connect To Call</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr>
-                      <td colSpan={3} className="text-center py-8">
-                        <div className="text-gray-500 dark:text-gray-400">
-                          Loading interviews...
-                        </div>
-                      </td>
-                    </tr>
-                  ) : error ? (
-                    <tr>
-                      <td colSpan={3} className="text-center py-8">
-                        <div className="text-red-500 dark:text-red-400">
-                          {error}
-                        </div>
-                      </td>
-                    </tr>
-                  ) : isLoggedIn && showTable && interviews.length > 0 ? (
-                    interviews.map((interview) => (
-                      <tr key={interview.id}>
-                        <td>{interview.id}</td>
-                        <td>SRV00{interview.id}</td>
-                        <td className="text-center">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleConnectToCall(interview.id, interview.phone)}
-                            className="text-white"
-                          >
-                            <Phone className="w-4 h-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={3} className="text-center py-8">
-                        <div className="text-gray-500 dark:text-gray-400">
-                          {isLoggedIn && showTable ? 'No interviews found.' : 'Please login to view data.'}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </div>
-          </div>
-        </Card>
-          </>
+          </Card>
         )}
       </div>
     </Container>

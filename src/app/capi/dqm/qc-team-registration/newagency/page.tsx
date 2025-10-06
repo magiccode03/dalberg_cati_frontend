@@ -9,38 +9,23 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
-import { Key, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import { useCreateTeamRegistration } from '@/hooks/useApi';
+import { Key, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useCreateQCTeamRegistration } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 import SuccessBanner from '@/components/ui/SuccessBanner';
 
-const NewAgencyPage = () => {
+const NewQCAgencyPage = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [formData, setFormData] = useState({
     agency_name: '',
-    qc_agency_id: '',
-    show_second_level_column: '',
     status: '1', // Default to Active
-    qa_id: '',
     username: '',
     password: ''
   });
-  const { createTeamRegistration, loading, error } = useCreateTeamRegistration();
+  const { createQCTeamRegistration, loading, error } = useCreateQCTeamRegistration();
   const { success, error: showError } = useToast();
-
-  const qcAgencyOptions = [
-    { value: '', label: 'Status QC Team' },
-    { value: '1', label: 'Internal (bhr2internalqc)' },
-    { value: '2', label: 'Kadence (bhr2kadenceqc)' }
-  ];
-
-  const showSecondLevelOptions = [
-    { value: '', label: 'Show 2nd Level Column(s)' },
-    { value: '1', label: 'Yes' },
-    { value: '0', label: 'No' }
-  ];
 
   const statusOptions = [
     { value: '', label: 'Status Status' },
@@ -79,34 +64,33 @@ const NewAgencyPage = () => {
     }
 
     try {
-      const result = await createTeamRegistration({
-        agency_name: formData.agency_name,
-        qc_agency_id: parseInt(formData.qc_agency_id || '1'),
-        show_second_level_column: 1, // Default value since field is hidden
+      const apiData = {
+        agency_name: formData.agency_name.trim(),
         status: parseInt(formData.status),
-        qa_id: parseInt(formData.qa_id || '1'), // Default value since field is hidden
-        unique_id: formData.username, // Use username as unique_id
-        first_name: formData.username, // Use username as first_name
-        last_name: formData.username, // Use username as last_name
-        email: `${formData.username}@example.com`, // Generate email from username
-        password: formData.password
-      });
+        unique_id: formData.username.trim(),
+        password: formData.password.trim()
+      };
+      
+      console.log('🚀 Sending QC Team Registration data:', apiData);
+      
+      const result = await createQCTeamRegistration(apiData);
 
       if (result) {
+        success('QC Team Registration created successfully!');
         setShowSuccessBanner(true);
-        // Navigate back to team registration list after showing success message
+        // Navigate back to QC agency list after showing success message
         setTimeout(() => {
-          router.push('/capi/ppm/master/team-registration');
+          router.push('/capi/dqm/qc-team-registration');
         }, 2000); // Show banner for 2 seconds before navigating
       }
     } catch (err) {
-      console.error('Error creating team registration:', err);
-      showError('Failed to create team registration. Please try again.');
+      console.error('Error creating QC team registration:', err);
+      showError('Failed to create QC team registration. Please try again.');
     }
   };
 
   const handleBack = () => {
-    router.back();
+    router.push('/capi/dqm/qc-team-registration');
   };
 
   return (
@@ -114,46 +98,55 @@ const NewAgencyPage = () => {
       {/* Success Banner */}
       {showSuccessBanner && (
         <div className="mb-6">
-          <SuccessBanner message="New Agency Added Successfully" />
+          <SuccessBanner message="New QC Team Registration Added Successfully" />
         </div>
       )}
 
-      {/* Page Title */}
-      <Heading level={3} className="mb-6 text-gray-800">
-        New Team
-      </Heading>
+      {/* Breadcrumb Header */}
+      <div className="breadcrumb-header justify-content-between mb-6">
+        <div className="left-content">
+          <Heading level={1} className="text-2xl font-bold mb-0">
+            New Qc Team Registration
+          </Heading>
+        </div>
+        <div className="justify-content-center mt-2">
+        </div>
+        <div className="right-content">
+          <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
+        </div>
+      </div>
 
       {/* Main Content Card */}
       <Card>
-        {/* Section Header */}
+        {/* Card Header */}
         <div className="mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 mb-5"></div>
             <Heading level={4} className="text-gray-800 font-bold mb-5">
-              Team Registration
+              QC Team Registration
             </Heading>
           </div>
         </div>
 
-        {/* Form */}
-        <div className="space-y-6">
-          {/* Team Details Section */}
-          <div>
+        {/* Card Body */}
+        <div className="card-body">
+          {/* Agency Details Section */}
+          <div className="mb-6">
             <Heading level={5} className="text-gray-800 mb-4">
-              Team Details
+              QC Team Details
             </Heading>
             
-            {/* Row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* Row 1 - Agency Name and Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Team Name <span className="text-red-500">*</span>
+                  QC Team Name <span className="text-red-500">*</span>
                 </Text>
                 <Input
                   type="text"
                   value={formData.agency_name}
                   onChange={(e) => handleInputChange('agency_name', e.target.value)}
-                  placeholder="Enter Team Name"
+                  placeholder="Enter Agency Name"
                   maxLength={500}
                   required
                 />
@@ -161,21 +154,7 @@ const NewAgencyPage = () => {
 
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  QC Team
-                </Text>
-                <SelectDropdown
-                  value={formData.qc_agency_id}
-                  onChange={(value) => handleInputChange('qc_agency_id', Array.isArray(value) ? value[0] : value)}
-                  options={qcAgencyOptions}
-                />
-              </div>
-            </div>
-
-            {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
+                  Status <span className="text-red-500">*</span>
                 </Text>
                 <SelectDropdown
                   value={formData.status}
@@ -189,10 +168,10 @@ const NewAgencyPage = () => {
           {/* Divider */}
           <hr className="my-6 border-gray-200" />
 
-          {/* Team Supervisor User Details Section */}
-          <div>
+          {/* Agency Supervisor User Details Section */}
+          <div className="mb-6">
             <Heading level={5} className="text-gray-800 mb-4">
-              Zonal Manager User Details
+              QC Team Supervisor User Details
             </Heading>
             
             {/* Row 1 - Username and Password */}
@@ -205,7 +184,7 @@ const NewAgencyPage = () => {
                   type="text"
                   value={formData.username}
                   onChange={(e) => handleInputChange('username', e.target.value)}
-                  placeholder="Enter Team Login ID"
+                  placeholder="Enter Agency Login ID"
                   required
                 />
               </div>
@@ -288,4 +267,4 @@ const NewAgencyPage = () => {
   );
 };
 
-export default NewAgencyPage;
+export default NewQCAgencyPage;

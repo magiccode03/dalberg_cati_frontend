@@ -9,10 +9,9 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import { Edit, Loader2 } from 'lucide-react';
-import { useTeamRegistration, useToggleReQcStatus } from '@/hooks/useApi';
-import { useToast } from '@/components/ui/Toast';
-import Switch from '@/components/ui/Switch';
+import { Edit, Loader2, Plus } from 'lucide-react';
+import { useTeamRegistration } from '@/hooks/useApi';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 
 // TypeScript interfaces for API response
 interface TeamRegistrationData {
@@ -25,9 +24,7 @@ interface TeamRegistrationData {
   valid: number;
   rejected: number;
   under_qc: number;
-  show_second_level_column: boolean;
   status: string;
-  data_send_for_reqc?: number; // Re-QC status field
 }
 
 interface TeamRegistrationResponse {
@@ -53,12 +50,6 @@ const TeamRegistrationPage = () => {
   // Fetch team registration data from API
   const { data, loading, error, refetch } = useTeamRegistration(currentPage, pageSize);
   
-  // Toggle Re-QC status hook
-  const { toggleReQc, loading: toggleLoading, error: toggleError } = useToggleReQcStatus();
-  
-  // Toast notifications
-  const { success, error: showError } = useToast();
-  
   // Type the data properly
   const typedData = data as TeamRegistrationResponse | null;
 
@@ -76,29 +67,6 @@ const TeamRegistrationPage = () => {
   const handleUpdateAgency = (agencyId: number) => {
     // Navigate to the update page with agency ID as dynamic route
     router.push(`/capi/ppm/master/team-registration/${agencyId}`);
-  };
-
-  const handleToggleReQc = async (agencyId: number, currentReqcStatus: number | undefined) => {
-    try {
-      const currentStatus = currentReqcStatus ?? 0;
-      const newStatus = currentStatus === 1 ? 0 : 1;
-      
-      console.log('🔄 Toggle clicked:', { agencyId, currentReqcStatus, currentStatus, newStatus });
-      
-      const response = await toggleReQc(agencyId, newStatus);
-      
-      if (response.success) {
-        console.log('✅ Toggle success:', response);
-        success(`Re-QC status ${newStatus === 1 ? 'enabled' : 'disabled'} successfully!`);
-        await refetch();
-      } else {
-        console.error('❌ Toggle failed:', response);
-        showError(response.message || 'Failed to update Re-QC status');
-      }
-    } catch (err) {
-      console.error('❌ Toggle error:', err);
-      showError('Failed to update Re-QC status. Please try again.');
-    }
   };
 
   // Show loading state
@@ -198,25 +166,16 @@ const TeamRegistrationPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4}>Agency List</Heading>
+            <Heading level={4}>Team Registration List</Heading>
           </div>
           <Button 
             variant="primary"
             onClick={() => router.push('/capi/ppm/master/team-registration/newagency')}
           >
-            <i className="fa fa-plus mr-2"></i>
-            New Agency
+            <Plus className="w-4 h-4 mr-2" />
+            New Team Registration
           </Button>
         </div>
-
-        {/* Error display for toggle operations */}
-        {toggleError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <Text className="text-red-700 text-sm">
-              Error updating Re-QC status: {toggleError}
-            </Text>
-          </div>
-        )}
 
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
@@ -228,23 +187,17 @@ const TeamRegistrationPage = () => {
           <Table className="table table-vcenter text-nowrap table-bordered border-bottom">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Agency ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Agency Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Supervisor Username</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">QC Agency</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Team ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Team Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager Username</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">QC Team</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Total AC</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Total Interviews Conducted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Valid</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Rejected</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Under QC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">
-                          <a href="#" className="text-blue-600 hover:text-blue-800">
-                            Show Second Level Column
-                          </a>
-                        </th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
                         <th className="px-4 py-3 font-semibold text-gray-700">Action</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Re-QC Toggle</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -278,9 +231,6 @@ const TeamRegistrationPage = () => {
                             {item.under_qc}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">
-                            {item.show_second_level_column ? 'Yes' : 'No'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
                             {getStatusBadge(item.status)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
@@ -292,43 +242,29 @@ const TeamRegistrationPage = () => {
                               <Edit size={16} />
                             </button>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div 
-                              className="flex items-center justify-center space-x-2"
-                              onClick={() => {
-                                console.log('🔄 Container clicked for Agency:', item.agency_id);
-                                alert(`Container clicked for Agency ${item.agency_id}!`);
-                              }}
-                            >
-                              <Switch
-                                id={`toggle-${item.agency_id}`}
-                                checked={(item.data_send_for_reqc ?? 0) === 1}
-                                onChange={(checked) => {
-                                  console.log('🔄 Switch onChange triggered:', { 
-                                    agencyId: item.agency_id, 
-                                    currentStatus: item.data_send_for_reqc,
-                                    newChecked: checked 
-                                  });
-                                  alert(`Toggle clicked for Agency ${item.agency_id}! Current: ${item.data_send_for_reqc}, New: ${checked}`);
-                                  handleToggleReQc(item.agency_id, item.data_send_for_reqc);
-                                }}
-                                disabled={toggleLoading}
-                                color="success"
-                                size="sm"
-                              />
-                              {toggleLoading && (
-                                <Loader2 size={16} className="animate-spin text-gray-500" />
-                              )}
-                              <span className="text-xs text-gray-600 ml-1">
-                                {(item.data_send_for_reqc ?? 0) === 1 ? 'ON' : 'OFF'}
-                              </span>
-                            </div>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </Table>
                 </div>
+
+        {/* Pagination Controls */}
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Showing <strong>{(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, typedData?.total_count || 0)}</strong> of <strong>{typedData?.total_count || 0}</strong> items.
+          </Text>
+        </div>
+        
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={typedData?.total_pages || 1}
+            totalItems={typedData?.total_count || 0}
+            itemsPerPage={pageSize}
+            onPageChange={(page) => setCurrentPage(page)}
+            className="justify-center"
+          />
+        </div>
       </Card>
     </Container>
   );

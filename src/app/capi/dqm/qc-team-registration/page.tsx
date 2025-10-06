@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,8 +9,8 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import { Plus, Edit } from 'lucide-react';
-import apiClient from '@/lib/api-client';
-import { API_ENDPOINTS } from '@/lib/api';
+import { useGetQCTeamRegistrations } from '@/hooks/useApi';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 
 interface QCAgency {
   id: number;
@@ -37,107 +38,41 @@ interface APIResponse {
 }
 
 export default function QCTeamRegistrationPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(20);
   const [qcAgencyData, setQcAgencyData] = useState<QCAgency[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const { getQCTeamRegistrations, loading, error } = useGetQCTeamRegistrations();
 
   // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        console.log('🔄 Fetching QC Team Registrations...');
+        const data = await getQCTeamRegistrations({ page: currentPage, pageSize });
         
-        // Debug: Check if token exists
-        const token = localStorage.getItem('accessToken');
-        console.log('Access token exists:', !!token);
-        console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
+        console.log('📊 Raw API response:', data);
         
-        // Use centralized API endpoints
-        let response;
-        let data: APIResponse;
-        
-        try {
-          // Try dataquality endpoint first (from curl request)
-          response = await apiClient.get('/dataquality');
-          data = response.data;
-        } catch (firstError) {
-          console.log('Dataquality endpoint failed, trying alternatives...');
-          try {
-            // Try dashboard stats as fallback
-            response = await apiClient.get(API_ENDPOINTS.DASHBOARD.STATS);
-            data = response.data;
-          } catch (secondError) {
-            // Try QC tasks as another fallback
-            response = await apiClient.get(API_ENDPOINTS.QC.TASKS);
-            data = response.data;
-          }
-        }
-        
-        console.log('API Response:', data);
-        console.log('Response success:', data.success);
-        console.log('Response data:', data.data);
-        
-        // Handle different response structures
-        if (data.success && data.data) {
-          // Check if qc_agencies exists in the response
-          if (data.data.qc_agencies && Array.isArray(data.data.qc_agencies)) {
-            // Transform QC agency data
-            const agencyData: QCAgency[] = data.data.qc_agencies.map(agency => ({
-              id: agency.id,
-              agencyId: agency.agency_id,
-              agencyName: agency.agency_name,
-              supervisorUsername: agency.supervisor_username,
-              totalUser: agency.total_user,
-              status: agency.status
-            }));
-            setQcAgencyData(agencyData);
-          } else {
-            // If qc_agencies doesn't exist, use fallback data
-            console.log('qc_agencies not found in response, using fallback data...');
-            const fallbackData: QCAgency[] = [
-              {
-                id: 1,
-                agencyId: 1,
-                agencyName: 'Internal',
-                supervisorUsername: 'bhr2internalqc',
-                totalUser: 41,
-                status: 'Active'
-              },
-              {
-                id: 2,
-                agencyId: 2,
-                agencyName: 'Kadence',
-                supervisorUsername: 'bhr2kadenceqc',
-                totalUser: 34,
-                status: 'Active'
-              },
-              {
-                id: 3,
-                agencyId: 3,
-                agencyName: 'Parbhat',
-                supervisorUsername: 'bhr2parbhatqc',
-                totalUser: 0,
-                status: 'Inactive'
-              },
-              {
-                id: 4,
-                agencyId: 4,
-                agencyName: 'Rohit',
-                supervisorUsername: 'bhr2rohitqc',
-                totalUser: 0,
-                status: 'Inactive'
-              }
-            ];
-            setQcAgencyData(fallbackData);
-          }
-        } else if (data.error) {
-          setError(data.error);
+        if (data && data.agencies) {
+          console.log('✅ QC Team Registrations data:', data);
+          // Transform QC agency data
+          const agencyData: QCAgency[] = data.agencies.map(agency => ({
+            id: agency.agency_id, // Use agency_id as id
+            agencyId: agency.agency_id,
+            agencyName: agency.agency_name,
+            supervisorUsername: agency.supervisor_username,
+            totalUser: agency.total_users, // Use total_users from API
+            status: agency.status
+          }));
+          setQcAgencyData(agencyData);
+          setTotalCount(data.pagination?.total_count || agencyData.length);
+          setTotalPages(data.pagination?.page_count || Math.ceil(agencyData.length / pageSize));
+          console.log('📊 Transformed agency data:', agencyData);
         } else {
-          // Fallback to sample data if API fails
-          console.log('API returned no data, using fallback sample data...');
+          console.log('❌ No QC agencies data received, data structure:', data);
+          // Use fallback data if API fails
           const fallbackData: QCAgency[] = [
             {
               id: 1,
@@ -154,45 +89,16 @@ export default function QCTeamRegistrationPage() {
               supervisorUsername: 'bhr2kadenceqc',
               totalUser: 34,
               status: 'Active'
-            },
-            {
-              id: 3,
-              agencyId: 3,
-              agencyName: 'Parbhat',
-              supervisorUsername: 'bhr2parbhatqc',
-              totalUser: 0,
-              status: 'Inactive'
-            },
-            {
-              id: 4,
-              agencyId: 4,
-              agencyName: 'Rohit',
-              supervisorUsername: 'bhr2rohitqc',
-              totalUser: 0,
-              status: 'Inactive'
             }
           ];
           setQcAgencyData(fallbackData);
+          setTotalCount(fallbackData.length);
+          setTotalPages(Math.ceil(fallbackData.length / pageSize));
+          console.log('🔄 Using fallback data:', fallbackData);
         }
-      } catch (err: any) {
-        console.error('Error fetching data:', err);
-        console.error('Error response:', err.response?.data || 'No response data');
-        console.error('Error status:', err.response?.status || 'No status code');
-        
-        if (err.response?.status === 401) {
-          setError('Authentication required. Please log in again.');
-        } else if (err.response?.status === 403) {
-          setError('Access forbidden. You do not have permission to view this data.');
-        } else if (err.response?.data?.error) {
-          setError(err.response.data.error);
-        } else if (err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          setError(err.message || 'An error occurred while fetching data');
-        }
-        
-        // Use fallback data on error (always show sample data even if API fails)
-        console.log('All API endpoints failed, using fallback sample data...');
+      } catch (err) {
+        console.error('❌ Error fetching QC team registrations:', err);
+        // Use fallback data on error
         const fallbackData: QCAgency[] = [
           {
             id: 1,
@@ -209,42 +115,68 @@ export default function QCTeamRegistrationPage() {
             supervisorUsername: 'bhr2kadenceqc',
             totalUser: 34,
             status: 'Active'
-          },
-          {
-            id: 3,
-            agencyId: 3,
-            agencyName: 'Parbhat',
-            supervisorUsername: 'bhr2parbhatqc',
-            totalUser: 0,
-            status: 'Inactive'
-          },
-          {
-            id: 4,
-            agencyId: 4,
-            agencyName: 'Rohit',
-            supervisorUsername: 'bhr2rohitqc',
-            totalUser: 0,
-            status: 'Inactive'
           }
         ];
         setQcAgencyData(fallbackData);
-      } finally {
-        setLoading(false);
+        setTotalCount(fallbackData.length);
+        setTotalPages(Math.ceil(fallbackData.length / pageSize));
+        console.log('🔄 Using fallback data due to error:', fallbackData);
       }
     };
 
     fetchData();
-  }, []);
+  }, [getQCTeamRegistrations, currentPage, pageSize]);
 
   const handleNewAgency = () => {
-    // Handle new agency creation logic here
-    console.log('Create New Agency');
+    // Navigate to new agency page
+    router.push('/capi/dqm/qc-team-registration/newagency');
   };
 
   const handleUpdateAgency = (agencyId: number) => {
-    // Handle update agency logic here
-    console.log('Update Agency ID:', agencyId);
+    // Navigate to the update page with agency ID as dynamic route
+    router.push(`/capi/dqm/qc-team-registration/${agencyId}`);
   };
+
+  // Refresh data function
+  const refreshData = async () => {
+    try {
+      console.log('🔄 Refreshing QC Team Registrations...');
+      const data = await getQCTeamRegistrations({ page: currentPage, pageSize });
+      
+      if (data && data.agencies) {
+        const agencyData: QCAgency[] = data.agencies.map(agency => ({
+          id: agency.agency_id, // Use agency_id as id
+          agencyId: agency.agency_id,
+          agencyName: agency.agency_name,
+          supervisorUsername: agency.supervisor_username,
+          totalUser: agency.total_users, // Use total_users from API
+          status: agency.status
+        }));
+        setQcAgencyData(agencyData);
+        setTotalCount(data.pagination?.total_count || agencyData.length);
+        setTotalPages(data.pagination?.page_count || Math.ceil(agencyData.length / pageSize));
+        console.log('✅ Data refreshed successfully:', agencyData);
+      }
+    } catch (err) {
+      console.error('❌ Error refreshing data:', err);
+    }
+  };
+
+  // Refresh data when component mounts or when returning from new agency page
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page became visible, refreshing data...');
+        refreshData();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [getQCTeamRegistrations]);
 
   const getStatusBadge = (status: string) => {
     if (status === 'Active') {
@@ -255,19 +187,13 @@ export default function QCTeamRegistrationPage() {
     return <span className="badge bg-warning text-white">{status}</span>;
   };
 
-  const totalItems = qcAgencyData.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
-  const currentAgencies = qcAgencyData.slice(startIndex, endIndex);
-
   if (loading) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <Text className="text-gray-600">Loading QC agency data...</Text>
+            <Text className="text-gray-600">Loading QC team registration data...</Text>
           </div>
         </div>
       </Container>
@@ -304,7 +230,7 @@ export default function QCTeamRegistrationPage() {
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
           <Heading level={1} className="text-2xl font-bold mb-0">
-            QC Agency List
+            QC Team Registration List
           </Heading>
         </div>
         <div className="justify-content-center mt-2">
@@ -321,7 +247,7 @@ export default function QCTeamRegistrationPage() {
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
               <Heading level={4} className="card-title mg-b-0">
-                QC Agency List
+                QC Team Registration List
               </Heading>
             </div>
             <div className="text-end">
@@ -331,7 +257,7 @@ export default function QCTeamRegistrationPage() {
                 className="ml-5"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                New Agency
+                New Team Registration
               </Button>
             </div>
           </div>
@@ -339,11 +265,11 @@ export default function QCTeamRegistrationPage() {
         
         <div className="card-body">
           <div className="table-responsive">
-            <Table className="table table-vcenter text-nowrap table-bordered border-bottom">
+            <Table className="table table-vcenter text-nowrap table-bordered">
               <thead>
                 <tr>
-                  <th>Agency ID</th>
-                  <th>Agency Name</th>
+                  <th>Qc Team ID</th>
+                  <th>Qc Team Name</th>
                   <th>Supervisior Username</th>
                   <th>Total User</th>
                   <th>Status</th>
@@ -351,7 +277,7 @@ export default function QCTeamRegistrationPage() {
                 </tr>
               </thead>
               <tbody>
-                {currentAgencies.map((agency) => (
+                {qcAgencyData.map((agency) => (
                   <tr key={agency.id}>
                     <td>{agency.agencyId}</td>
                     <td>{agency.agencyName}</td>
@@ -381,27 +307,21 @@ export default function QCTeamRegistrationPage() {
               </tbody>
             </Table>
             
-            <div className="table-footer d-flex justify-content-between mt-4">
-              <div className="col-lg-6">
-                <div className="table-footer-left">
-                  <div className="summary">
-                    <Text className="text-sm text-gray-600">
-                      Total <b>{totalItems}</b> items.
-                    </Text>
-                  </div>
-                </div>
-              </div>
-              <div className="table-footer-right">
-                <div className="col-lg-6">
-                  <div className="main-card mb-3">
-                    <nav className="pagination-rounded" aria-label="Page navigation example">
-                      <ul className="pagination">
-                        {/* Pagination would go here if needed */}
-                      </ul>
-                    </nav>
-                  </div>
-                </div>
-              </div>
+            <div className="mb-4 hidden">
+              <Text className="text-sm text-gray-600">
+                Showing <strong>{(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount}</strong> items.
+              </Text>
+            </div>
+            
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                itemsPerPage={pageSize}
+                onPageChange={(page) => setCurrentPage(page)}
+                className="justify-center"
+              />
             </div>
           </div>
         </div>

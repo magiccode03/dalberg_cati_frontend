@@ -195,14 +195,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return permissions[role as keyof typeof permissions] || ['dashboard:read'];
   };
 
-  const logout = async () => {
-    try {
-      // Call API logout endpoint
-      await apiService.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Always clear local state
+  const logout = () => {
+    // Redirect first, then clear state to avoid UI flash
+    router.replace('/login');
+    
+    // Use setTimeout to clear state after redirect starts
+    setTimeout(() => {
       setUser(null);
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('user');
@@ -210,8 +208,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('tokenExpiresAt');
-      router.push('/login');
-    }
+      localStorage.removeItem('teleform_user_data'); // Clear teleform data as well
+      
+      // Dispatch event to update header
+      window.dispatchEvent(new Event('teleformUserUpdated'));
+    }, 0);
+    
+    // Call API logout endpoint in background (don't wait for it)
+    apiService.logout().catch(error => {
+      console.error('Logout API error:', error);
+    });
   };
 
   // Function to clear stored user data and force re-login (for updating user structure)
@@ -450,6 +456,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // SS role (CATI System Supervisor/Telecaller) goes to start-form-filling page
     if (role === 'ss') return '/cati/ss/start-form-filling';
+    
+    // PPMT role goes directly to fieldwork progress page
+    if (role === 'ppmt') return '/capi/ppmt/overview/fieldwork-progress';
     
     // All other roles (including research, ppm, dqm, fd, etc.) go to /home
     return '/home';
