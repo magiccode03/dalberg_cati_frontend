@@ -11,16 +11,6 @@ import { SuccessAlert } from '@/components/ui/Alert';
 import { Loader2, Save, X, ChevronDown } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
-// Mock AC data - replace with actual API call
-const allACs = [
-  { value: 1, label: 'Mekliganj (1)' },
-  { value: 2, label: 'Mathabhanga (2)' },
-  { value: 3, label: 'Cooch Behar Uttar (3)' },
-  { value: 4, label: 'Cooch Behar Dakshin (4)' },
-  { value: 5, label: 'Sitalkuchi (5)' },
-  // Add more ACs as needed
-];
-
 const AssignedACContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -31,6 +21,7 @@ const AssignedACContent = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [userName, setUserName] = useState('');
+  const [allACs, setAllACs] = useState<Array<{ value: number; label: string }>>([]);
   const [selectedACs, setSelectedACs] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -38,7 +29,7 @@ const AssignedACContent = () => {
 
   useEffect(() => {
     if (userId) {
-      fetchUserData();
+      fetchData();
     }
   }, [userId]);
 
@@ -61,26 +52,53 @@ const AssignedACContent = () => {
     );
     const allFilteredSelected = filteredACs.every(ac => selectedACs.includes(ac.value));
     setSelectAllChecked(allFilteredSelected && filteredACs.length > 0);
-  }, [selectedACs, searchTerm]);
+  }, [selectedACs, searchTerm, allACs]);
 
-  const fetchUserData = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // TODO: Replace with actual API call
-      // const response = await apiService.getInterviewerAssignedACs(userId);
-      
-      // Mock data
-      setTimeout(() => {
-        setUserName('wbop295');
-        setSelectedACs([1, 2, 3]); // Mock selected ACs
+      if (!userId) {
+        setError('User ID is required');
         setLoading(false);
-      }, 500);
+        return;
+      }
       
+      // Fetch user data first, then AC dropdown list
+      const userResponse = await apiService.getInterviewerAssignedACs(userId);
+      
+      // Try to fetch AC dropdown list, but don't fail if it doesn't exist
+      let acResponse = { success: false, data: {} };
+      try {
+        acResponse = await apiService.getACDropdownList();
+      } catch (acError) {
+        console.warn('AC dropdown API not available, using empty list:', acError);
+        // Fallback to empty AC list if API doesn't exist
+        acResponse = { success: true, data: {} };
+      }
+      
+      if (userResponse.success && userResponse.data) {
+        setUserName(userResponse.data.fullname);
+        setSelectedACs(userResponse.data.assigned_ac || []);
+      } else {
+        setError('Failed to fetch user data');
+      }
+
+      if (acResponse.success && acResponse.data) {
+        // Transform the API response format to match our component format
+        const transformedACs = Object.entries(acResponse.data).map(([key, value]) => ({
+          value: parseInt(key),
+          label: `${value} (${key})`
+        }));
+        setAllACs(transformedACs);
+      } else {
+        setError('Failed to fetch AC list');
+      }
     } catch (err) {
-      console.error('Error fetching user data:', err);
-      setError('Error fetching user data');
+      console.error('Error fetching data:', err);
+      setError('Error fetching data');
+    } finally {
       setLoading(false);
     }
   };
@@ -125,7 +143,15 @@ const AssignedACContent = () => {
         return;
       }
       
+      console.log('Saving assigned ACs:', {
+        userId,
+        selectedACs,
+        selectedACsLength: selectedACs.length
+      });
+      
       const response = await apiService.updateInterviewerAssignedACs(userId, selectedACs);
+      
+      console.log('Save response:', response);
       
       if (response.success) {
         setSuccess('Assigned ACs updated successfully!');
@@ -134,11 +160,12 @@ const AssignedACContent = () => {
           router.push('/capi/ppmt/interviewer/master');
         }, 2000);
       } else {
-        setError('Failed to update assigned ACs');
+        console.error('Save failed:', response);
+        setError(`Failed to update assigned ACs: ${response.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error saving assigned ACs:', err);
-      setError('Error saving assigned ACs');
+      setError(`Error saving assigned ACs: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -154,7 +181,7 @@ const AssignedACContent = () => {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center space-x-2">
             <Loader2 className="h-6 w-6 animate-spin" />
-            <Text>Loading user data...</Text>
+            <Text>Loading data...</Text>
           </div>
         </div>
       </Container>
