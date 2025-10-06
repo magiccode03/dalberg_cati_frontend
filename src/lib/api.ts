@@ -104,6 +104,7 @@ export const API_ENDPOINTS = {
     TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
     TEAM_REGISTRATION_DROPDOWN_OPTIONS: '/dashboard/team-registration/newregistration/dropdown-options',
+    QC_AGENCIES: '/dashboard/team-registration/qc-agencies',
   },
 
   // Analysis
@@ -1049,6 +1050,14 @@ class ApiService {
     }>;
   }>> {
     return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_DROPDOWN_OPTIONS);
+  }
+
+  async getQCAgencies(): Promise<ApiResponse<Array<{
+    id: number;
+    agency_name: string;
+    username: string;
+  }>>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.QC_AGENCIES);
   }
 
   // Rejection Report Methods

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Key, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import { useCreateTeamRegistration } from '@/hooks/useApi';
+import { useCreateTeamRegistration, useGetQCAgencies } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 import SuccessBanner from '@/components/ui/SuccessBanner';
 
@@ -18,6 +18,7 @@ const NewAgencyPage = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const [formData, setFormData] = useState({
     agency_name: '',
     qc_agency_id: '',
@@ -28,10 +29,18 @@ const NewAgencyPage = () => {
     password: ''
   });
   const { createTeamRegistration, loading, error } = useCreateTeamRegistration();
+  const { getQCAgencies, data: qcAgenciesData, loading: qcAgenciesLoading, error: qcAgenciesError } = useGetQCAgencies();
   const { success, error: showError } = useToast();
 
-  const qcAgencyOptions = [
-    { value: '', label: 'Status QC Team' },
+  // Dynamic QC agency options from API
+  const qcAgencyOptions = qcAgenciesData ? [
+    { value: '', label: 'Select QC Team' },
+    ...qcAgenciesData.map(agency => ({
+      value: agency.id.toString(),
+      label: `${agency.agency_name} (${agency.username})`
+    }))
+  ] : [
+    { value: '', label: 'Select QC Team' },
     { value: '1', label: 'Internal (bhr2internalqc)' },
     { value: '2', label: 'Kadence (bhr2kadenceqc)' }
   ];
@@ -48,11 +57,56 @@ const NewAgencyPage = () => {
     { value: '0', label: 'Inactive' }
   ];
 
+  // Fetch QC agencies on component mount
+  useEffect(() => {
+    getQCAgencies();
+  }, [getQCAgencies]);
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    // Required field validations
+    if (!formData.agency_name.trim()) {
+      errors.agency_name = 'Team Name is required';
+    } else if (formData.agency_name.trim().length < 2) {
+      errors.agency_name = 'Team Name must be at least 2 characters';
+    }
+    
+    if (!formData.username.trim()) {
+      errors.username = 'Username is required';
+    } else if (formData.username.trim().length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username.trim())) {
+      errors.username = 'Username can only contain letters, numbers, and underscores';
+    }
+    
+    if (!formData.password.trim()) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+    
+    if (!formData.qc_agency_id) {
+      errors.qc_agency_id = 'Please select a QC Team';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+    
+    // Clear validation error for this field when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   };
 
   const generatePassword = () => {
@@ -72,9 +126,9 @@ const NewAgencyPage = () => {
     
     console.log('Form data:', formData); // Debug log
     
-    // Validate required fields
-    if (!formData.agency_name || !formData.username || !formData.password) {
-      showError('Please fill in all required fields');
+    // Validate form before submission
+    if (!validateForm()) {
+      showError('Please fix the validation errors below');
       return;
     }
 
@@ -156,18 +210,34 @@ const NewAgencyPage = () => {
                   placeholder="Enter Team Name"
                   maxLength={500}
                   required
+                  className={validationErrors.agency_name ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.agency_name && (
+                  <Text className="text-sm text-red-500 mt-1">{validationErrors.agency_name}</Text>
+                )}
               </div>
 
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  QC Team
+                  QC Team <span className="text-red-500">*</span>
                 </Text>
                 <SelectDropdown
                   value={formData.qc_agency_id}
                   onChange={(value) => handleInputChange('qc_agency_id', Array.isArray(value) ? value[0] : value)}
                   options={qcAgencyOptions}
+                  disabled={qcAgenciesLoading}
+                  placeholder={qcAgenciesLoading ? "Loading QC teams..." : "Select QC Team"}
+                  className={validationErrors.qc_agency_id ? 'border-red-500' : ''}
                 />
+                {validationErrors.qc_agency_id && (
+                  <Text className="text-sm text-red-500 mt-1">{validationErrors.qc_agency_id}</Text>
+                )}
+                {qcAgenciesLoading && (
+                  <Text className="text-sm text-gray-500 mt-1">Loading QC teams...</Text>
+                )}
+                {qcAgenciesError && (
+                  <Text className="text-sm text-red-500 mt-1">Failed to load QC teams</Text>
+                )}
               </div>
             </div>
 
@@ -207,7 +277,11 @@ const NewAgencyPage = () => {
                   onChange={(e) => handleInputChange('username', e.target.value)}
                   placeholder="Enter Team Login ID"
                   required
+                  className={validationErrors.username ? 'border-red-500 focus:border-red-500' : ''}
                 />
+                {validationErrors.username && (
+                  <Text className="text-sm text-red-500 mt-1">{validationErrors.username}</Text>
+                )}
               </div>
 
               <div>
@@ -220,7 +294,7 @@ const NewAgencyPage = () => {
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
                     placeholder="Enter Login Password"
-                    className="rounded-r-none"
+                    className={`rounded-r-none ${validationErrors.password ? 'border-red-500 focus:border-red-500' : ''}`}
                     required
                   />
                   <Button
@@ -242,6 +316,9 @@ const NewAgencyPage = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
+                {validationErrors.password && (
+                  <Text className="text-sm text-red-500 mt-1">{validationErrors.password}</Text>
+                )}
               </div>
             </div>
           </div>
@@ -279,6 +356,18 @@ const NewAgencyPage = () => {
               <div className="flex items-center">
                 <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
                 <Text className="text-red-700">{error}</Text>
+              </div>
+            </div>
+          )}
+
+          {/* QC Agencies Error Display */}
+          {qcAgenciesError && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center">
+                <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                <Text className="text-yellow-700">
+                  Warning: Could not load QC teams. Using default values. ({qcAgenciesError})
+                </Text>
               </div>
             </div>
           )}
