@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -11,17 +11,30 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Plus, Edit, Check, Eye } from 'lucide-react';
+import { Search, Plus, Edit, Check, Eye, Loader2 } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface QCUserData {
   id: number;
-  qcId: number;
+  qc_id: number;
   name: string;
-  mobileNumber: string;
-  gps: boolean;
-  audio: boolean;
-  reChecking: boolean;
+  mobile_number: string;
+  gps: number;
+  audio: number;
+  clientaudiocheck: number;
   status: string;
+  agency_id: number;
+  tele: number;
+  access_permissions: {
+    audio_qc: boolean;
+    gps_qc: boolean;
+    tele_qc: boolean;
+    rechecking: boolean;
+  };
+  assigned_ac_count: number;
+  assigned_ac_interviewers: string;
+  created_at: number | string;
+  updated_at: number | string;
 }
 
 export default function QCUserRegistrationPage() {
@@ -37,49 +50,55 @@ export default function QCUserRegistrationPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [statistics, setStatistics] = useState({
+    total_users: 0,
+    active_users: '0',
+    inactive_users: '0',
+    audio_qc_users: '0',
+    gps_qc_users: '0',
+    rechecking_users: '0'
+  });
 
-  // Sample data based on the provided HTML
-  const qcUserData: QCUserData[] = [
-    { id: 9, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 27, qcId: 117, name: 'Riya', mobileNumber: '8287465958', gps: false, audio: true, reChecking: true, status: 'Active' },
-    { id: 28, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 29, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', gps: true, audio: true, reChecking: true, status: 'Active' },
-    { id: 30, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 31, qcId: 122, name: 'Rama', mobileNumber: '9625885362', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 37, qcId: 135, name: 'Parveen Sharma', mobileNumber: '7011783380', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 38, qcId: 128, name: 'Kumudmessey', mobileNumber: '9990744898', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 39, qcId: 127, name: 'Faizal Saifi', mobileNumber: '7290857388', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 51, qcId: 130, name: 'Himanshi', mobileNumber: '8802624605', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 52, qcId: 136, name: 'Muskan', mobileNumber: '8448096724', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 53, qcId: 137, name: 'Muskan Siddiqui', mobileNumber: '7398814662', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 55, qcId: 139, name: 'Himanshi-2', mobileNumber: '8920180129', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 56, qcId: 140, name: 'Priyanka', mobileNumber: '8076066334', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 57, qcId: 2001, name: 'Vijay Sharma', mobileNumber: '8423257507', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 58, qcId: 2002, name: 'Mehul Kapoor', mobileNumber: '7275477996', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 59, qcId: 2003, name: 'Nishi', mobileNumber: '8953989468', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 60, qcId: 2004, name: 'Asha Chaurasiya', mobileNumber: '6386460589', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 61, qcId: 2011, name: 'Sucharita Das', mobileNumber: '9123306043', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 62, qcId: 2012, name: 'Srabani Mondal', mobileNumber: '8585862838', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 63, qcId: 2013, name: 'Kiran Naskar', mobileNumber: '8777043262', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 64, qcId: 2014, name: 'Mousimi Parida', mobileNumber: '9804022156', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 65, qcId: 2015, name: 'Rohini Das', mobileNumber: '9163792436', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 66, qcId: 2006, name: 'Deepanjali Trivedi', mobileNumber: '6388846837', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 67, qcId: 2007, name: 'Puja Pandey', mobileNumber: '9792822296', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 68, qcId: 2008, name: 'Archana Singh', mobileNumber: '8887176399', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 69, qcId: 2009, name: 'Seema', mobileNumber: '9721518355', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 70, qcId: 2005, name: 'Meenu Trivedi', mobileNumber: '9454271142', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 71, qcId: 2010, name: 'Shashi Tiwari', mobileNumber: '9161054887', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 72, qcId: 2016, name: 'Dwipannita Sanyanal', mobileNumber: '9874382415', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 73, qcId: 2017, name: 'Rupa Mondal', mobileNumber: '8240170825', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 74, qcId: 2020, name: 'Pratishtha Mishra', mobileNumber: '9450458554', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 75, qcId: 1022, name: 'Priyanak Mondal', mobileNumber: '8910346616', gps: false, audio: true, reChecking: false, status: 'Active' },
-  ];
+  // Fetch QC User data from API
+  const fetchQCUserData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiService.getQCUserRegistration();
+      
+      if (response.success && response.data) {
+        setQcUserData(response.data.qc_users);
+        setTotalCount(response.data.pagination.total_count);
+        setStatistics(response.data.statistics);
+      } else {
+        setError('Failed to fetch QC user data');
+      }
+    } catch (err) {
+      console.error('Error fetching QC user data:', err);
+      setError('Error fetching QC user data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQCUserData();
+  }, []);
 
   const handleFilterChange = (field: string, value: string | boolean) => {
     setFilters(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleRefresh = () => {
+    fetchQCUserData();
   };
 
   const handleSearch = () => {
@@ -107,18 +126,50 @@ export default function QCUserRegistrationPage() {
     console.log('View assigned AC for user:', userId);
   };
 
-  const renderIcon = (value: boolean) => {
-    return value ? (
+  const renderIcon = (value: number) => {
+    return value === 1 ? (
       <span className="text-black text-lg">✓</span>
     ) : (
       <span className="text-black text-lg">✗</span>
     );
   };
 
-  const totalPages = Math.ceil(qcUserData.length / pageSize);
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentData = qcUserData.slice(startIndex, endIndex);
+
+  if (loading) {
+    return (
+      <div className="main-content horizontal-content">
+        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <Text>Loading QC user data...</Text>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="main-content horizontal-content">
+        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Card className="p-6 text-center">
+              <Text className="text-red-600 mb-4">{error}</Text>
+              <Button onClick={handleRefresh} variant="primary">
+                Try Again
+              </Button>
+            </Card>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div className="main-content horizontal-content">
@@ -132,7 +183,9 @@ export default function QCUserRegistrationPage() {
           </div>
           <div className="flex-1"></div>
           <div className="flex-1">
-            <span></span>
+            <Button onClick={handleRefresh} variant="outline" size="sm">
+              Refresh
+            </Button>
           </div>
         </div>
 
@@ -264,12 +317,12 @@ export default function QCUserRegistrationPage() {
                     {currentData.map((user, index) => (
                       <tr key={user.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.qcId}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.qc_id}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.mobileNumber}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.mobile_number}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.gps)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.audio)}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.reChecking)}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.clientaudiocheck)}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.status}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           <Button
@@ -307,13 +360,13 @@ export default function QCUserRegistrationPage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{qcUserData.length}</span> items.
+                  Total <span className="font-semibold">{totalCount}</span> items.
                 </div>
                 <div>
                   <PaginationStandard
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    totalItems={qcUserData.length}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={setCurrentPage}
                   />

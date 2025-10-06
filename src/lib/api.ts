@@ -83,6 +83,15 @@ export const API_ENDPOINTS = {
     AC_LIST: '/dropdown/ac-list'
   },
 
+  // QC User Registration
+  QC_USER_REGISTRATION: '/qc-user-registration',
+
+  // QC User Progress
+  QC_USER_PROGRESS: '/progress/qc-user-progress',
+
+  // QC User Pending Data
+  QC_USER_PENDING_DATA: '/progress/qc-user-pending-data',
+
   // Dashboard Data
   DASHBOARD: {
     STATS: '/dashboard/stats',
@@ -1543,6 +1552,117 @@ class ApiService {
 
   async getACDropdownList(): Promise<ApiResponse<Record<string, string>>> {
     return this.request(API_ENDPOINTS.DROPDOWN.AC_LIST);
+  }
+
+  // QC User Registration Methods
+  async getQCUserRegistration(): Promise<ApiResponse<{
+    qc_users: Array<{
+      id: number;
+      qc_id: number;
+      name: string;
+      mobile_number: string;
+      audio: number;
+      gps: number;
+      tele: number;
+      agency_id: number;
+      status: string;
+      clientaudiocheck: number;
+      access_permissions: {
+        audio_qc: boolean;
+        gps_qc: boolean;
+        tele_qc: boolean;
+        rechecking: boolean;
+      };
+      assigned_ac_count: number;
+      assigned_ac_interviewers: string;
+      created_at: number | string;
+      updated_at: number | string;
+    }>;
+    statistics: {
+      total_users: number;
+      active_users: string;
+      inactive_users: string;
+      audio_qc_users: string;
+      gps_qc_users: string;
+      rechecking_users: string;
+    };
+    filters_applied: Record<string, any>;
+    pagination: {
+      total_count: number;
+      page_count: number;
+      current_page: number;
+      per_page: number;
+    };
+  }>> {
+    return this.request(API_ENDPOINTS.QC_USER_REGISTRATION);
+  }
+
+  // QC User Progress Methods
+  async getQCUserProgress(params?: {
+    start_date?: string;
+    end_date?: string;
+    qc_id?: string;
+    telecaller_status?: string;
+    report_type?: string;
+  }): Promise<ApiResponse<{
+    data: Array<{
+      qc_id: number;
+      name: string;
+      mobile_number: string;
+      audio: number;
+      gps: number;
+      tele: number;
+      agency_id: number;
+      status: string;
+      statistics: {
+        audio_qc_completed: number;
+        audio_qc_pass: number;
+        audio_qc_fail: number;
+        audio_qc_fail_blank_audio: number;
+        audio_qc_fail_irrelevant: number;
+      };
+    }>;
+    pagination: {
+      totalCount: number;
+      pageCount: number;
+      currentPage: number;
+      perPage: number | boolean;
+    };
+    summary: string;
+    report_type: string;
+    filters_applied: Record<string, any>;
+  }>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const url = queryParams.toString() 
+      ? `${API_ENDPOINTS.QC_USER_PROGRESS}?${queryParams.toString()}`
+      : API_ENDPOINTS.QC_USER_PROGRESS;
+    
+    return this.request(url);
+  }
+
+  // QC User Pending Data Methods
+  async getQCUserPendingData(): Promise<ApiResponse<{
+    data: Array<{
+      qc_id: number;
+      name: string;
+      pending_interview: number;
+    }>;
+    pagination: {
+      page: number;
+      pageSize: number | boolean;
+      totalCount: number;
+      pageCount: number;
+    };
+  }>> {
+    return this.request(API_ENDPOINTS.QC_USER_PENDING_DATA);
   }
 
   // Gain and Losses Methods

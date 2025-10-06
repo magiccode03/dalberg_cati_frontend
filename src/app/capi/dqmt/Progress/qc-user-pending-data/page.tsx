@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,55 +8,48 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface QCPendingData {
-  id: number;
-  qcId: number;
+  qc_id: number;
   name: string;
-  pendingInterview: number;
+  pending_interview: number;
 }
 
 export default function QCUserPendingDataPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [qcPendingData, setQcPendingData] = useState<QCPendingData[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Sample data based on the provided HTML
-  const qcPendingData: QCPendingData[] = [
-    { id: 1, qcId: 109, name: 'Kundan', pendingInterview: 0 },
-    { id: 2, qcId: 117, name: 'Riya', pendingInterview: 0 },
-    { id: 3, qcId: 119, name: 'Mohd Usman', pendingInterview: 0 },
-    { id: 4, qcId: 120, name: 'Supriya', pendingInterview: 0 },
-    { id: 5, qcId: 121, name: 'Ashifa', pendingInterview: 0 },
-    { id: 6, qcId: 122, name: 'Rama', pendingInterview: 0 },
-    { id: 7, qcId: 135, name: 'Parveen Sharma', pendingInterview: 0 },
-    { id: 8, qcId: 128, name: 'Kumudmessey', pendingInterview: 0 },
-    { id: 9, qcId: 127, name: 'Faizal Saifi', pendingInterview: 0 },
-    { id: 10, qcId: 130, name: 'Himanshi', pendingInterview: 0 },
-    { id: 11, qcId: 136, name: 'Muskan', pendingInterview: 0 },
-    { id: 12, qcId: 137, name: 'Muskan Siddiqui', pendingInterview: 0 },
-    { id: 13, qcId: 139, name: 'Himanshi-2', pendingInterview: 0 },
-    { id: 14, qcId: 140, name: 'Priyanka', pendingInterview: 0 },
-    { id: 15, qcId: 2001, name: 'Vijay Sharma', pendingInterview: 0 },
-    { id: 16, qcId: 2002, name: 'Mehul Kapoor', pendingInterview: 0 },
-    { id: 17, qcId: 2003, name: 'Nishi', pendingInterview: 0 },
-    { id: 18, qcId: 2004, name: 'Asha Chaurasiya', pendingInterview: 0 },
-    { id: 19, qcId: 2011, name: 'Sucharita Das', pendingInterview: 0 },
-    { id: 20, qcId: 2012, name: 'Srabani Mondal', pendingInterview: 0 },
-    { id: 21, qcId: 2013, name: 'Kiran Naskar', pendingInterview: 0 },
-    { id: 22, qcId: 2014, name: 'Mousimi Parida', pendingInterview: 0 },
-    { id: 23, qcId: 2015, name: 'Rohini Das', pendingInterview: 0 },
-    { id: 24, qcId: 2006, name: 'Deepanjali Trivedi', pendingInterview: 0 },
-    { id: 25, qcId: 2007, name: 'Puja Pandey', pendingInterview: 0 },
-    { id: 26, qcId: 2008, name: 'Archana Singh', pendingInterview: 0 },
-    { id: 27, qcId: 2009, name: 'Seema', pendingInterview: 0 },
-    { id: 28, qcId: 2005, name: 'Meenu Trivedi', pendingInterview: 0 },
-    { id: 29, qcId: 2010, name: 'Shashi Tiwari', pendingInterview: 0 },
-    { id: 30, qcId: 2016, name: 'Dwipannita Sanyanal', pendingInterview: 0 },
-    { id: 31, qcId: 2017, name: 'Rupa Mondal', pendingInterview: 0 },
-    { id: 32, qcId: 2020, name: 'Pratishtha Mishra', pendingInterview: 0 },
-    { id: 33, qcId: 1022, name: 'Priyanak Mondal', pendingInterview: 0 },
-  ];
+  // Fetch QC User Pending Data from API
+  const fetchQCPendingData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiService.getQCUserPendingData();
+      
+      if (response.success && response.data) {
+        setQcPendingData(response.data.data);
+        setTotalCount(response.data.pagination.totalCount);
+      } else {
+        setError('Failed to fetch QC user pending data');
+      }
+    } catch (err) {
+      console.error('Error fetching QC user pending data:', err);
+      setError('Error fetching QC user pending data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQCPendingData();
+  }, []);
 
   const handleDistributeQC = () => {
     console.log('Distribute QC');
@@ -66,10 +59,46 @@ export default function QCUserPendingDataPage() {
     console.log('Distribute Re-Checking QC');
   };
 
-  const totalPages = Math.ceil(qcPendingData.length / pageSize);
+  const handleRefresh = () => {
+    fetchQCPendingData();
+  };
+
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentData = qcPendingData.slice(startIndex, endIndex);
+
+  if (loading) {
+    return (
+      <div className="main-content horizontal-content">
+        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <Text>Loading QC user pending data...</Text>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="main-content horizontal-content">
+        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Card className="p-6 text-center">
+              <Text className="text-red-600 mb-4">{error}</Text>
+              <Button onClick={handleRefresh} variant="primary">
+                Try Again
+              </Button>
+            </Card>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div className="main-content horizontal-content">
@@ -83,7 +112,9 @@ export default function QCUserPendingDataPage() {
           </div>
           <div className="flex-1"></div>
           <div className="flex-1">
-            <span></span>
+            <Button onClick={handleRefresh} variant="outline" size="sm">
+              Refresh
+            </Button>
           </div>
         </div>
 
@@ -136,11 +167,11 @@ export default function QCUserPendingDataPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((qcUser) => (
-                      <tr key={qcUser.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{qcUser.qcId}</td>
+                    {currentData.map((qcUser, index) => (
+                      <tr key={qcUser.qc_id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{qcUser.qc_id}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{qcUser.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{qcUser.pendingInterview}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{qcUser.pending_interview}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -150,13 +181,13 @@ export default function QCUserPendingDataPage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{qcPendingData.length}</span> items.
+                  Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items.
                 </div>
                 <div>
                   <PaginationStandard
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    totalItems={qcPendingData.length}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={setCurrentPage}
                   />
