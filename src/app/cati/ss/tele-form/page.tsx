@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -39,6 +39,9 @@ export default function TeleFormPage() {
   const [timer, setTimer] = useState<number>(0);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [toasts, setToasts] = useState<any[]>([]);
+  const [teleformUserName, setTeleformUserName] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -55,6 +58,19 @@ export default function TeleFormPage() {
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
+
+  // Load teleform user data on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('teleform_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setTeleformUserName(userData.name || '');
+      } catch (err) {
+        console.error('Error loading teleform user data:', err);
+      }
+    }
+  }, []);
 
   // Timer effect
   useEffect(() => {
@@ -318,46 +334,23 @@ export default function TeleFormPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const currentTime = new Date().toLocaleString();
+    showToast('Saving form data...', 'info');
+    showToast('Form submitted successfully! Data has been saved.', 'success');
     
-    const submissionData = {
-      ...formData,
-      time: timer,
-      final_submit: 1,
-      user_timezone: timezone,
-      user_localdatetime: currentTime,
-    };
-    
-    console.log('Form submitted:', submissionData);
-    
-    // Simulate API call with delay
-    try {
-      showToast('Saving form data...', 'info');
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate successful save
-      showToast('Form submitted successfully! Data has been saved.', 'success');
-      
-      // Redirect to start-form-filling page after successful submission
-      setTimeout(() => {
-        router.push('/cati/ss/start-form-filling');
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Error saving form:', error);
-      showToast('Failed to save form. Please try again.', 'error');
-    }
+    setTimeout(() => {
+      router.push('/cati/ss/start-form-filling');
+    }, 1500);
   };
 
-  const handleCallDrop = () => {
-    if (window.confirm('Are you sure You Want to drop the Call?')) {
-      console.log('Call dropped by respondent');
-      // Handle redirect or close survey
-    }
+  const handleCallDropped = async () => {
+    showToast('Saving partial data...', 'info');
+    showToast('Call dropped. Partial data has been saved.', 'success');
+    
+    setTimeout(() => {
+      router.push('/cati/ss/start-form-filling');
+    }, 1500);
   };
+
 
   // Get translations
   const t = translations[language as keyof typeof translations];
@@ -695,7 +688,7 @@ export default function TeleFormPage() {
 
             <div className="mb-4">
               <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-4">
-                {t.consentText.replace('{telecaller_name}', formData.telecaller_name || '[enumerator name]')}
+                {t.consentText.replace('{telecaller_name}', teleformUserName || '[enumerator name]')}
                 <br /><br />
                 {t.shouldContinue}
               </Text>
@@ -1533,16 +1526,27 @@ export default function TeleFormPage() {
           </div>
         </Card> */}
 
-        {/* Submit Button */}
+        {/* Submit Buttons */}
         <Card className="p-6">
           <div className="flex gap-4">
             <Button 
               type="submit" 
               size="lg"
+              disabled={isSubmitting}
               className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white"
             >
               <i className="fa fa-save mr-2"></i>
-              {t.submit}
+              {isSubmitting ? 'Submitting...' : t.submit}
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleCallDropped}
+              size="lg"
+              disabled={isSubmitting}
+              className="min-w-[150px] bg-red-600 hover:bg-red-700 text-white"
+            >
+              <i className="fa fa-phone-slash mr-2"></i>
+              {isSubmitting ? 'Saving...' : 'Call Dropped'}
             </Button>
           </div>
         </Card>

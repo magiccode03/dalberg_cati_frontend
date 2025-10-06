@@ -38,57 +38,151 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   onSuccess,
 }) => {
   const [acList, setAcList] = useState<ACData[]>([]);
-  const [filteredAcList, setFilteredAcList] = useState<ACData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedAc, setSelectedAc] = useState<ACData | null>(null);
+  const [selectedAcs, setSelectedAcs] = useState<ACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [userStats, setUserStats] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const listRef = React.useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch AC details on modal open
+  // Fetch AC details and user statistics on modal open
   useEffect(() => {
     if (isOpen) {
-      fetchACDetails();
+      setCurrentPage(1);
+      setAcList([]);
+      fetchACDetails(1, '');
+      fetchUserStatistics();
     }
   }, [isOpen]);
 
-  // Filter AC list based on search term
+  // Handle search with debounce
   useEffect(() => {
-    if (!Array.isArray(acList)) {
-      setFilteredAcList([]);
-      return;
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
 
-    if (searchTerm.trim() === '') {
-      setFilteredAcList(acList);
-    } else {
-      const filtered = acList.filter(ac =>
-        ac.ac_code.toString().includes(searchTerm) ||
-        ac.ac_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ac.district_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ac.zone_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ac.pc_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ac.mla_name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredAcList(filtered);
-    }
-  }, [searchTerm, acList]);
+    searchTimeoutRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      setAcList([]);
+      fetchACDetails(1, searchTerm);
+    }, 500); // 500ms debounce
 
-  const fetchACDetails = async () => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
+
+  const fetchUserStatistics = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const token = localStorage.getItem('accessToken');
+      
+      const response = await fetch(`${apiUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setUserStats(result.data);
+      }
+    } catch (err) {
+      console.error('Error fetching user statistics:', err);
+    }
+  };
+
+  // Load more data when scrolling
+  const loadMoreData = () => {
+    if (hasMore && !loading && currentPage < totalPages) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchACDetails(nextPage, searchTerm);
+    }
+  };
+
+  // Scroll handler for lazy loading with throttling
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    // Capture scroll values immediately before they become null
+    const target = e.currentTarget;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+    
+    // Clear existing timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Throttle scroll events
+    scrollTimeoutRef.current = setTimeout(() => {
+      // Check if user has scrolled to within 100px of the bottom
+      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
+      
+      if (isNearBottom && hasMore && currentPage < totalPages) {
+        console.log('Loading more ACs...', {
+          currentPage,
+          totalPages,
+          scrollTop,
+          scrollHeight,
+          clientHeight
+        });
+        loadMoreData();
+      }
+    }, 100); // 100ms throttle
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const fetchACDetails = async (page: number = 1, search: string = '') => {
     setLoading(true);
     setError(null);
 
     try {
-      // Check if API URL is available
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        throw new Error('API URL not configured');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const token = localStorage.getItem('accessToken');
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '20',
+      });
+
+      // Add search parameters if search term exists
+      if (search.trim()) {
+        // Try to determine if it's an AC code (number) or name
+        if (!isNaN(Number(search))) {
+          params.append('ac_code', search);
+        } else {
+          params.append('ac_name', search);
+          params.append('district_name', search);
+          params.append('pc_name', search);
+        }
       }
 
-      const response = await fetch(`${apiUrl}/api/cati/ac-details`, {
+      const response = await fetch(`${apiUrl}/api/cati/ac-details?${params.toString()}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -98,15 +192,24 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       }
 
       const data = await response.json();
-      console.log('AC Details API Response:', data); // Debug log
+      console.log('AC Details API Response:', data);
 
       if (data.success) {
-        // Handle nested data structure: data.data.data
         const acData = Array.isArray(data.data?.data) ? data.data.data : [];
-        setAcList(acData);
-        setFilteredAcList(acData);
+        const pagination = data.data?.pagination || {};
         
-        if (acData.length === 0) {
+        // Append to existing list for pagination
+        if (page === 1) {
+          setAcList(acData);
+        } else {
+          setAcList(prev => [...prev, ...acData]);
+        }
+        
+        setTotalPages(pagination.totalPages || 1);
+        setTotalItems(pagination.total || acData.length);
+        setHasMore(pagination.page < pagination.totalPages);
+        
+        if (acData.length === 0 && page === 1) {
           setError('No Assembly Constituencies found');
         }
       } else {
@@ -114,76 +217,33 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       }
     } catch (err: any) {
       console.error('Error fetching AC details:', err);
-      
-      // Fallback to mock data for development/testing
-      if (err.message.includes('API URL not configured') || err.message.includes('Failed to fetch')) {
-        console.log('Using mock AC data for development');
-        const mockData: ACData[] = [
-          {
-            ac_code: 1,
-            ac_name: "Mekliganj",
-            district_name: "Cooch Behar",
-            zone_name: "North Bengal",
-            mla_name: "John Doe",
-            electorate: 150000,
-            pc_code: 1,
-            pc_name: "Cooch Behar",
-            total_data: 4250,
-            assigned_data: 4208,
-            pending_data: 0,
-            complete_data: 4208,
-            data_available: 77
-          },
-          {
-            ac_code: 2,
-            ac_name: "Mathabhanga",
-            district_name: "Cooch Behar",
-            zone_name: "North Bengal",
-            mla_name: "Jane Smith",
-            electorate: 180000,
-            pc_code: 2,
-            pc_name: "Alipurduars",
-            total_data: 5927,
-            assigned_data: 5578,
-            pending_data: 0,
-            complete_data: 5578,
-            data_available: 0
-          },
-          {
-            ac_code: 105,
-            ac_name: "Kolkata North",
-            district_name: "Kolkata",
-            zone_name: "South Bengal",
-            mla_name: "Alice Johnson",
-            electorate: 220000,
-            pc_code: 15,
-            pc_name: "Barrackpore",
-            total_data: 8896,
-            assigned_data: 8464,
-            pending_data: 0,
-            complete_data: 8464,
-            data_available: 327
-          }
-        ];
-        
-        setAcList(mockData);
-        setFilteredAcList(mockData);
-        setError('Using mock data - API not available');
-      } else {
-        setError(err.message || 'Error fetching AC details');
-      }
+      setError(err.message || 'Error fetching AC details');
     } finally {
       setLoading(false);
     }
   };
 
   const handleACSelect = (ac: ACData) => {
-    setSelectedAc(ac);
+    const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
+    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+    
+    // Don't allow deselecting already assigned ACs
+    if (isAssigned) return;
+    
+    if (isAlreadySelected) {
+      setSelectedAcs(selectedAcs.filter(selected => selected.ac_code !== ac.ac_code));
+    } else {
+      setSelectedAcs([...selectedAcs, ac]);
+    }
+  };
+
+  const handleRemoveSelection = (ac: ACData) => {
+    setSelectedAcs(selectedAcs.filter(selected => selected.ac_code !== ac.ac_code));
   };
 
   const handleSubmit = async () => {
-    if (!selectedAc) {
-      setError('Please select an Assembly Constituency');
+    if (selectedAcs.length === 0) {
+      setError('Please select at least one Assembly Constituency');
       return;
     }
 
@@ -196,58 +256,49 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         throw new Error('API URL not configured');
       }
 
-      const response = await fetch(`${apiUrl}/api/cati/ac-details/assign-data`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          teleform_user_id: teleformUserId,
-          ac_code: selectedAc.ac_code,
-        }),
-      });
+      // Submit all selected ACs
+      const promises = selectedAcs.map(ac => 
+        fetch(`${apiUrl}/api/cati/ac-details/assign-data`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            teleform_user_id: teleformUserId,
+            ac_code: ac.ac_code,
+          }),
+        })
+      );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      const responses = await Promise.all(promises);
+      const allSuccess = responses.every(r => r.ok);
 
-      const data = await response.json();
-      console.log('Assignment API Response:', data); // Debug log
-
-      if (data.success) {
-        onSuccess();
+      if (allSuccess) {
+        onSuccess(); // This will trigger refresh on the main page
         onClose();
-        setSelectedAc(null);
+        setSelectedAcs([]);
         setSearchTerm('');
       } else {
-        setError(data.message || 'Failed to assign data');
+        setError('Some assignments failed. Please try again.');
       }
     } catch (err: any) {
       console.error('Error assigning data:', err);
-      
-      // For development/testing, simulate success
-      if (err.message.includes('API URL not configured') || err.message.includes('Failed to fetch')) {
-        console.log('Simulating successful assignment for development');
-        alert(`Successfully assigned ${selectedAc.ac_name} to ${telecallerName}`);
-        onSuccess();
-        onClose();
-        setSelectedAc(null);
-        setSearchTerm('');
-      } else {
-        setError(err.message || 'Error assigning data');
-      }
+      setError(err.message || 'Error assigning data');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    setSelectedAc(null);
+    setSelectedAcs([]);
     setSearchTerm('');
     setError(null);
     onClose();
   };
+
+  // Get assigned ACs from stats
+  const assignedACs = userStats?.ac_detail || [];
 
   return (
     <Modal
@@ -255,22 +306,68 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       onClose={handleClose}
       title="Assign Assembly Constituency Data"
       size="lg"
+      className="max-h-[85vh]"
     >
-      <div className="space-y-6">
-        {/* Telecaller Info */}
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <div>
-              <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                Assigning data for: {telecallerName}
-              </p>
-              <p className="text-xs text-blue-700 dark:text-blue-400">
-                Teleform User ID: {teleformUserId}
-              </p>
+      <div className="space-y-4">
+        {/* Compact Telecaller Info */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
+          <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
+            Assigning data for: {telecallerName}
+          </p>
+        </div>
+
+        {/* Selected and Assigned ACs Chips */}
+        {(assignedACs.length > 0 || selectedAcs.length > 0) && (
+          <div className="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                Selected ACs ({assignedACs.length + selectedAcs.length})
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {/* Already Assigned ACs - Can't remove */}
+              {assignedACs.map((ac: any) => (
+                <div
+                  key={`assigned-${ac.ac_code}`}
+                  className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full px-2 py-1"
+                  title="Already assigned"
+                >
+                  <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                    {ac.ac_name}
+                  </span>
+                  <span className="text-xs text-green-600 dark:text-green-400">
+                    #{ac.ac_code}
+                  </span>
+                </div>
+              ))}
+              
+              {/* Newly Selected ACs - Can remove */}
+              {selectedAcs.map((ac) => (
+                <div
+                  key={`selected-${ac.ac_code}`}
+                  className="inline-flex items-center gap-1.5 bg-blue-100 dark:bg-blue-900/30 border border-blue-300 dark:border-blue-700 rounded-full px-2 py-1 group"
+                >
+                  <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                    {ac.ac_name}
+                  </span>
+                  <span className="text-xs text-blue-600 dark:text-blue-400">
+                    #{ac.ac_code}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveSelection(ac)}
+                    className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    title="Remove"
+                  >
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -296,10 +393,15 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           </p>
         </div>
 
-        {/* AC List */}
+        {/* AC List with Lazy Loading */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Select Assembly Constituency
+            {totalItems > 0 && (
+              <span className="ml-2 text-xs text-gray-500">
+                (Showing {acList.length} of {totalItems})
+              </span>
+            )}
           </label>
           
           {loading ? (
@@ -307,55 +409,92 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
-              {filteredAcList.length > 0 ? (
+            <div 
+              ref={listRef}
+              className="max-h-[45vh] min-h-[200px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg"
+              onScroll={handleScroll}
+              style={{ scrollBehavior: 'smooth' }}
+            >
+              {acList.length > 0 ? (
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredAcList.map((ac) => (
+                  {acList.map((ac) => {
+                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+                    const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
+                    
+                    return (
                     <div
                       key={ac.ac_code}
-                      className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                        selectedAc?.ac_code === ac.ac_code
+                      className={`p-2 cursor-pointer transition-colors ${
+                        isSelected
                           ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                          : ''
+                          : isAssigned
+                          ? 'bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                       onClick={() => handleACSelect(ac)}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                            <span className="font-medium text-gray-900 dark:text-white">
-                              {ac.ac_name}
-                            </span>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                              (Code: {ac.ac_code})
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                            <p>
-                              <span className="font-medium">District:</span> {ac.district_name}
-                            </p>
-                            <p>
-                              <span className="font-medium">Zone:</span> {ac.zone_name}
-                            </p>
-                            <p>
-                              <span className="font-medium">PC:</span> {ac.pc_name}
-                            </p>
-                            <p>
-                              <span className="font-medium">MLA:</span> {ac.mla_name}
-                            </p>
+                      <div className="flex items-center justify-between gap-3">
+                        {/* Left: AC Name & Code */}
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <MapPin className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                {ac.ac_name}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                #{ac.ac_code}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {ac.district_name}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 ml-4">
-                          <Users className="h-4 w-4 text-gray-400" />
-                          <div className="text-sm text-gray-500 dark:text-gray-400 text-right">
-                            <div>Electorate: {ac.electorate.toLocaleString()}</div>
-                            <div>Available: {ac.data_available}</div>
+
+                        {/* Right: Available Count & Status */}
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          {isAssigned && (
+                            <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full whitespace-nowrap">
+                              Assigned
+                            </span>
+                          )}
+                          {isSelected && (
+                            <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full whitespace-nowrap">
+                              Selected
+                            </span>
+                          )}
+                          <div className="text-right">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Available</div>
+                            <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {ac.total_data}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
+                  
+                  {/* Loading more indicator and manual load button */}
+                  {hasMore && currentPage < totalPages && (
+                    <div className="p-3 text-center border-t border-gray-200 dark:border-gray-700">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="text-sm text-gray-500">
+                          Showing {acList.length} of {totalItems} ACs
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={loadMoreData}
+                          disabled={loading}
+                          className="text-xs"
+                        >
+                          {loading ? 'Loading...' : `Load More (Page ${currentPage + 1}/${totalPages})`}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="p-8 text-center text-gray-500 dark:text-gray-400">
@@ -366,25 +505,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           )}
         </div>
 
-        {/* Selected AC Summary */}
-        {selectedAc && (
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="h-4 w-4 text-green-600 dark:text-green-400" />
-              <span className="font-medium text-green-900 dark:text-green-300">
-                Selected: {selectedAc.ac_name}
-              </span>
-            </div>
-            <div className="text-sm text-green-800 dark:text-green-400 space-y-1">
-              <p>District: {selectedAc.district_name} | Zone: {selectedAc.zone_name}</p>
-              <p>MLA: {selectedAc.mla_name} | Electorate: {selectedAc.electorate.toLocaleString()}</p>
-              <p>PC: {selectedAc.pc_name} | Available Data: {selectedAc.data_available}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        {/* Action Buttons - Always visible */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800">
           <Button
             type="button"
             variant="outline"
@@ -397,10 +519,10 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
             type="button"
             variant="primary"
             onClick={handleSubmit}
-            disabled={!selectedAc || submitting}
+            disabled={selectedAcs.length === 0 || submitting}
             loading={submitting}
           >
-            {submitting ? 'Assigning...' : 'Assign Data'}
+            {submitting ? 'Assigning...' : `Assign ${selectedAcs.length > 0 ? `(${selectedAcs.length})` : 'Data'}`}
           </Button>
         </div>
       </div>
@@ -409,3 +531,4 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 };
 
 export default ACAssignmentModal;
+

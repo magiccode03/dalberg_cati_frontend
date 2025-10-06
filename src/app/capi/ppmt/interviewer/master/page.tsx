@@ -10,23 +10,11 @@ import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Loader2, Eye } from 'lucide-react';
-import { apiService } from '@/lib/api';
+import { apiService, InterviewMaster, InterviewMastersResponse } from '@/lib/api';
 
-interface AssignedInterviewerData {
-  user_id: number;
-  fullname: string;
-  login_id: string;
-  assigned_ac: number[];
-}
-
-interface AssignedInterviewersResponse {
-  total: number;
-  data: AssignedInterviewerData[];
-}
-
-const AssignedInterviewerContent = () => {
+const MasterInterviewerContent = () => {
   const router = useRouter();
-  const [interviewerData, setInterviewerData] = useState<AssignedInterviewerData[]>([]);
+  const [interviewerData, setInterviewerData] = useState<InterviewMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,25 +22,27 @@ const AssignedInterviewerContent = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-
   // Fetch data from API
   const fetchInterviewerData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await apiService.getAssignedInterviewers();
+      const response = await apiService.getInterviewMasters({
+        page: currentPage,
+        limit: pageSize
+      });
       
       if (response.success && response.data) {
         setInterviewerData(response.data.data);
         setTotalCount(response.data.total);
-        setTotalPages(Math.ceil(response.data.total / pageSize));
+        setTotalPages(response.data.total_pages);
       } else {
-        setError('Failed to fetch assigned interviewer data');
+        setError('Failed to fetch interviewer data');
       }
     } catch (err) {
-      console.error('Error fetching assigned interviewer data:', err);
-      setError('Error fetching assigned interviewer data');
+      console.error('Error fetching interviewer data:', err);
+      setError('Error fetching interviewer data');
     } finally {
       setLoading(false);
     }
@@ -61,6 +51,14 @@ const AssignedInterviewerContent = () => {
   useEffect(() => {
     fetchInterviewerData();
   }, [currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleRefresh = () => {
+    fetchInterviewerData();
+  };
 
   if (loading && currentPage === 1) {
     return (
@@ -79,7 +77,7 @@ const AssignedInterviewerContent = () => {
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
-        Assigned Interviewers
+        Master Interviewers
       </Heading>
 
       {error && (
@@ -92,6 +90,13 @@ const AssignedInterviewerContent = () => {
                 </Heading>
                 <Text className="text-gray-600">{error}</Text>
               </div>
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+              >
+                Retry
+              </Button>
             </div>
           </div>
         </Card>
@@ -102,7 +107,7 @@ const AssignedInterviewerContent = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4}>Assigned Interviewers List</Heading>
+            <Heading level={4}>Master Interviewers List</Heading>
           </div>
         </div>
 
@@ -113,7 +118,7 @@ const AssignedInterviewerContent = () => {
             <strong>
               {(currentPage-1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}
             </strong>{' '}
-            of <strong>{totalCount}</strong> assigned interviewers.
+            of <strong>{totalCount}</strong> master interviewers.
           </Text>
         </div>
 
@@ -123,29 +128,27 @@ const AssignedInterviewerContent = () => {
             <thead className="sticky-header bg-gray-50">
               <tr>
                 <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">ID</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Assigned ACS</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
+                <th className="px-4 py-3 font-semibold text-gray-700">Login Id</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Data Submit</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Assigned ACS</th>
               </tr>
             </thead>
             <tbody>
               {interviewerData.map((item, index) => (
-                <tr key={item.user_id} className="hover:bg-gray-50">
+                <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b border-gray-200 font-medium">
                     {(currentPage - 1) * pageSize + index + 1}
+                  </td>
+                  <td className="px-4 py-3 border-b border-gray-200">
+                    {item.fullname}
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200 font-mono">
                     {item.login_id}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className="text-gray-800">
-                      {item.fullname}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className="text-gray-700">
-                      {item.assigned_ac.join(', ')}
+                  <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
+                      {item.total_data_submitted}
                     </span>
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200 text-center">
@@ -153,8 +156,8 @@ const AssignedInterviewerContent = () => {
                       variant="outline"
                       size="sm"
                       className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                      onClick={() => router.push(`/capi/ppm/interviewer/assigned/update?user_id=${item.user_id}`)}
-                      title="Update Assigned ACs"
+                      onClick={() => router.push(`/capi/ppmt/interviewer/master/assigned-ac?user_id=${item.id}`)}
+                      title="View ACs"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -169,7 +172,7 @@ const AssignedInterviewerContent = () => {
         {interviewerData.length === 0 && !loading && (
           <div className="text-center py-12">
             <Text className="text-gray-500 text-lg">
-              No assigned interviewers found.
+              No master interviewers found.
             </Text>
           </div>
         )}
@@ -189,7 +192,7 @@ const AssignedInterviewerContent = () => {
   );
 };
 
-const AssignedInterviewerPage = () => {
+const MasterInterviewerPage = () => {
   return (
     <Suspense fallback={
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -201,9 +204,9 @@ const AssignedInterviewerPage = () => {
         </div>
       </Container>
     }>
-      <AssignedInterviewerContent />
+      <MasterInterviewerContent />
     </Suspense>
   );
 };
 
-export default AssignedInterviewerPage;
+export default MasterInterviewerPage;

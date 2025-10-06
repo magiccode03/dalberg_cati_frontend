@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,10 +9,11 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye } from 'lucide-react';
 import { apiService, InterviewMaster, InterviewMastersResponse } from '@/lib/api';
 
 const MasterInterviewerContent = () => {
+  const router = useRouter();
   const [interviewerData, setInterviewerData] = useState<InterviewMaster[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -168,10 +170,11 @@ const MasterInterviewerContent = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-sm"
-                      onClick={() => console.log(`View ACs for ${item.fullname}`)}
+                      className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      onClick={() => router.push(`/capi/ppm/interviewer/master/assigned-ac?user_id=${item.id}`)}
+                      title="View ACs"
                     >
-                      View ACS
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </td>
                 </tr>

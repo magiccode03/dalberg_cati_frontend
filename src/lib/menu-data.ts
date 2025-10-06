@@ -233,8 +233,8 @@ export const menuData: MenuItem[] = [
   {
     id: 'capi-ppm-interviewer',
     label: 'Interviewer',
-    href: '/capi/ppm/interviewer',
-    icon: 'Database',
+    href: '/capi/ppm/interviewer/master',
+    icon: 'Users',
     roles: ['ppm'],
     system: 'capi',
     children: [
@@ -395,6 +395,32 @@ export const menuData: MenuItem[] = [
         label: 'Interview Log',
         href: '/capi/ppmt/overview/interview-log',
         icon: 'FileText',
+        roles: ['ppmt'],
+        system: 'capi',
+      },
+    ],
+  },
+  {
+    id: 'capi-ppmt-interviewer',
+    label: 'Interviewer',
+    href: '/capi/ppmt/interviewer/master',
+    icon: 'Users',
+    roles: ['ppmt'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-ppmt-interviewer-master',
+        label: 'Master',
+        href: '/capi/ppmt/interviewer/master',
+        icon: 'Users',
+        roles: ['ppmt'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-ppmt-interviewer-assigned',
+        label: 'Assigned',
+        href: '/capi/ppmt/interviewer/assigned',
+        icon: 'Users',
         roles: ['ppmt'],
         system: 'capi',
       },
@@ -1095,15 +1121,15 @@ export const menuData: MenuItem[] = [
   {
     id: 'cati-ppm-progress',
     label: 'Progress',
-    href: '/cati/ppm/progress/telecaller-daily-progress',
+    href: '/cati/ppm/progress/telecaller-progress',
     icon: 'BarChart3',
     roles: ['ppm'],
     system: 'cati',
     children: [
       {
         id: 'cati-ppm-telecaller-daily-progress',
-        label: 'Telecaller Daily Progress',
-        href: '/cati/ppm/progress/telecaller-daily-progress',
+        label: 'Telecaller Progress',
+        href: '/cati/ppm/progress/telecaller-progress',
         icon: 'TrendingUp',
         roles: ['ppm'],
         system: 'cati',

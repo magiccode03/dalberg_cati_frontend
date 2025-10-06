@@ -34,7 +34,6 @@ const AssignedInterviewerContent = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-
   // Fetch data from API
   const fetchInterviewerData = async () => {
     try {
@@ -153,7 +152,7 @@ const AssignedInterviewerContent = () => {
                       variant="outline"
                       size="sm"
                       className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                      onClick={() => router.push(`/capi/ppm/interviewer/assigned/update?user_id=${item.user_id}`)}
+                      onClick={() => router.push(`/capi/ppmt/interviewer/assigned/update?user_id=${item.user_id}`)}
                       title="Update Assigned ACs"
                     >
                       <Eye className="h-4 w-4" />

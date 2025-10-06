@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetAgencies } from '@/hooks/useApi';
-import { User, LogOut, Sun, Moon, ChevronDown } from 'lucide-react';
+import { User, LogOut, Sun, Moon, ChevronDown, UserCheck } from 'lucide-react';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 
 export default function Header() {
+  const router = useRouter();
   const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
@@ -31,9 +33,25 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAgency, setSelectedAgency] = useState<string>('all');
+  const [teleformUserData, setTeleformUserData] = useState<any>(null);
 
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
+
+  const checkTeleformUserData = () => {
+    const savedData = localStorage.getItem('teleform_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setTeleformUserData(userData);
+      } catch (err) {
+        console.error('Error parsing teleform user data:', err);
+        setTeleformUserData(null);
+      }
+    } else {
+      setTeleformUserData(null);
+    }
+  };
 
   // Dynamic agency options from API
   const agencyOptions = agenciesData ? [
@@ -77,6 +95,24 @@ export default function Header() {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    // Check for teleform user data
+    checkTeleformUserData();
+    
+    // Add storage event listener for real-time updates
+    const handleStorageChange = () => {
+      checkTeleformUserData();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Custom event for same-tab updates
+    window.addEventListener('teleformUserUpdated', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('teleformUserUpdated', handleStorageChange);
+    };
   }, []);
 
   // Fetch agencies when component mounts and when user role changes
@@ -85,7 +121,6 @@ export default function Header() {
       getAgencies();
     }
   }, [showAgencySelector, getAgencies]);
-
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -119,12 +154,16 @@ export default function Header() {
     }
   };
 
+  const handleTeleformUserClick = () => {
+    router.push('/cati/ss/start-form-filling');
+  };
+
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-40">
-      <div className="flex items-center justify-between px-6 py-2">
+      {/* Desktop Layout */}
+      <div className="hidden md:flex items-center justify-between px-6 py-2">
         {/* Left side - Logo */}
         <div className="flex items-center space-x-4">
-          {/* Logo */}
           <div className="flex items-center space-x-3">
             <div 
               className="flex items-center justify-center w-26 h-12 overflow-hidden rounded-lg hover:opacity-80 transition-opacity cursor-pointer"
@@ -136,7 +175,6 @@ export default function Header() {
                 alt="Bihar Election Logo" 
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  // Fallback to text if logo fails to load
                   e.currentTarget.style.display = 'none';
                   const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
                   if (nextElement) {
@@ -148,23 +186,19 @@ export default function Header() {
                 <span className="text-white font-bold text-lg">BE</span>
               </div>
             </div>
-            {/* <div className="hidden md:block">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Bihar Election</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Analysis Dashboard</p>
-            </div> */}
           </div>
         </div>
 
         {/* Center - Project Title */}
         <div className="flex-1 text-center">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-          West Bengal Opinion Poll 2025
+            West Bengal Opinion Poll 2025
           </h1>
         </div>
 
         {/* Right side - Actions */}
         <div className="flex items-center space-x-4">
-          {/* Agency Selector - Show for PPM and DQM roles */}
+          {/* Agency Selector */}
           {showAgencySelector && (
             <div className="w-40">
               <SelectDropdown
@@ -180,6 +214,25 @@ export default function Header() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* Teleform User Button */}
+          {mounted && teleformUserData && user?.role === 'ss' && (
+            <button
+              onClick={handleTeleformUserClick}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 transition-colors"
+              title="View Teleform User"
+            >
+              <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="text-left">
+                <p className="text-xs font-medium text-green-800 dark:text-green-300">
+                  {teleformUserData.name}
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  ID: {teleformUserData.teleform_user_id}
+                </p>
+              </div>
+            </button>
           )}
 
           {/* Theme Toggle */}
@@ -208,7 +261,7 @@ export default function Header() {
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <User className="h-4 w-4 text-white" />
               </div>
-              <div className="hidden md:block text-left">
+              <div className="text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {user?.name || 'Admin User'}
                 </p>
@@ -218,40 +271,142 @@ export default function Header() {
               </div>
               <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             </button>
+          </div>
+        </div>
+      </div>
 
-            {/* Profile dropdown */}
-            {profileOpen && mounted && createPortal(
-              <div className="fixed right-4 top-16 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]">
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {user?.name || 'Admin User'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {user?.email || 'admin@biharelection.gov.in'}
-                      </p>
-                    </div>
-                  </div>
+      {/* Mobile Layout */}
+      <div className="md:hidden">
+        {/* Top Row - Logo and User */}
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Logo */}
+          <div 
+            className="flex items-center justify-center w-20 h-10 overflow-hidden rounded-lg hover:opacity-80 transition-opacity cursor-pointer"
+            onClick={handleLogoClick}
+            title="Go to Dashboard"
+          >
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const nextElement = e.currentTarget.nextElementSibling as HTMLElement;
+                if (nextElement) {
+                  nextElement.style.display = 'flex';
+                }
+              }}
+            />
+            <div className="w-full h-full bg-blue-600 rounded-lg flex items-center justify-center hidden">
+              <span className="text-white font-bold text-sm">BE</span>
+            </div>
+          </div>
+
+          {/* Right Actions - Compact */}
+          <div className="flex items-center space-x-2">
+            {/* Teleform User Button - Compact */}
+            {mounted && teleformUserData && user?.role === 'ss' && (
+              <button
+                onClick={handleTeleformUserClick}
+                className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 transition-colors"
+                title="View Teleform User"
+              >
+                <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-xs font-medium text-green-800 dark:text-green-300">
+                  {teleformUserData.name?.split(' ')[0] || 'User'}
+                </span>
+              </button>
+            )}
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="Toggle theme"
+            >
+              {mounted ? (
+                theme === 'light' ? (
+                  <Moon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                ) : (
+                  <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+                )
+              ) : (
+                <Sun className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              )}
+            </button>
+
+            {/* User Profile - Compact */}
+            <div className="relative">
+              <button
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center space-x-2 p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center">
+                  <User className="h-3 w-3 text-white" />
                 </div>
-                <div className="p-2">
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center space-x-3"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </div>,
-              document.body
+                <ChevronDown className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Row - Project Title and Agency Selector */}
+        <div className="px-4 pb-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col space-y-2">
+            {/* Project Title */}
+            <h1 className="text-sm font-semibold text-gray-900 dark:text-white text-center">
+              West Bengal Opinion Poll 2025
+            </h1>
+            
+            {/* Agency Selector - Mobile */}
+            {showAgencySelector && (
+              <div className="w-full">
+                <SelectDropdown
+                  options={agencyOptions}
+                  value={selectedAgency}
+                  onChange={(value) => setSelectedAgency(value as string)}
+                  placeholder="Select Agency"
+                  className="text-sm"
+                />
+              </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Profile dropdown - Mobile responsive */}
+      {profileOpen && mounted && createPortal(
+        <div className="fixed right-2 top-16 md:right-4 md:top-16 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <User className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {user?.name || 'Admin User'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {user?.email || 'admin@biharelection.gov.in'}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {user?.roleDisplayName || getRoleDisplayName(user?.role) || 'admin'}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="p-2">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center space-x-3"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
     </header>
   );
 }
