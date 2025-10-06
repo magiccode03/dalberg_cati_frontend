@@ -42,6 +42,7 @@ export default function QCUserProgressPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [qcUserProgressData, setQcUserProgressData] = useState<QCUserProgressData[]>([]);
+  const [qcUsersList, setQcUsersList] = useState<QCUserProgressData[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [summary, setSummary] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,86 +63,36 @@ export default function QCUserProgressPage() {
     return options;
   };
 
-  // Generate QC User options
+  // Generate QC User options from API data
   const generateQCUserOptions = () => {
-    return [
-      { value: '', label: 'Select User' },
-      { value: '101', label: 'Komal (101)' },
-      { value: '102', label: 'Priyanshi (102)' },
-      { value: '103', label: 'Sonu Kumari (103)' },
-      { value: '104', label: 'Varsha (104)' },
-      { value: '105', label: 'Simran (105)' },
-      { value: '106', label: 'Swati (106)' },
-      { value: '108', label: 'Seema (108)' },
-      { value: '109', label: 'Kundan (109)' },
-      { value: '110', label: 'Nishant (110)' },
-      { value: '111', label: 'Shilpa (111)' },
-      { value: '112', label: 'Priya (112)' },
-      { value: '113', label: 'Kajal Jha (113)' },
-      { value: '114', label: 'Khushbu (114)' },
-      { value: '115', label: 'Sanjivani Rai (115)' },
-      { value: '116', label: 'Sabha Hijab (116)' },
-      { value: '117', label: 'Riya (117)' },
-      { value: '118', label: 'Sanjivani Rai (118)' },
-      { value: '119', label: 'Mohd Usman (119)' },
-      { value: '120', label: 'Supriya (120)' },
-      { value: '121', label: 'Ashifa (121)' },
-      { value: '122', label: 'Rama (122)' },
-      { value: '123', label: 'Preeti (123)' },
-      { value: '124', label: 'Priya (124)' },
-      { value: '125', label: 'Sanjivani Rai (125)' },
-      { value: '126', label: 'Radha Rani (126)' },
-      { value: '127', label: 'Faizal Saifi (127)' },
-      { value: '128', label: 'Kumudmessey (128)' },
-      { value: '129', label: 'Ananya (129)' },
-      { value: '130', label: 'Himanshi (130)' },
-      { value: '135', label: 'Parveen Sharma (135)' },
-      { value: '136', label: 'Muskan (136)' },
-      { value: '137', label: 'Muskan Siddiqui (137)' },
-      { value: '138', label: 'Aman Kumar (138)' },
-      { value: '139', label: 'Himanshi-2 (139)' },
-      { value: '140', label: 'Priyanka (140)' },
-      { value: '201', label: 'Pinky (201)' },
-      { value: '202', label: 'Renu (202)' },
-      { value: '203', label: 'Sangeeta (203)' },
-      { value: '204', label: 'Sanju (204)' },
-      { value: '205', label: 'Khelan (205)' },
-      { value: '206', label: 'Manish (206)' },
-      { value: '999', label: 'Test User (999)' },
-      { value: '1001', label: 'KARTICK (1001)' },
-      { value: '1002', label: 'RUSHA DUTTA (1002)' },
-      { value: '1003', label: 'APARNA MAJIMDER (1003)' },
-      { value: '1004', label: 'DISHA NATH (1004)' },
-      { value: '1005', label: 'PRITHIJIT (1005)' },
-      { value: '1006', label: 'SHREYA MONDAL (1006)' },
-      { value: '1007', label: 'DEBARATI AICH (1007)' },
-      { value: '1008', label: 'SUSMITA HALDER (1008)' },
-      { value: '1009', label: 'NANDITA GHOSH (1009)' },
-      { value: '1010', label: 'RINKI ROY (1010)' },
-      { value: '1011', label: 'RUKHSAR BEGUM (1011)' },
-      { value: '1012', label: 'SHAMMA KHATOON (1012)' },
-      { value: '1020', label: 'APARNA SINGH (1020)' },
-      { value: '1021', label: 'PRIYANKA MONDAL (1021)' },
-      { value: '1022', label: 'Priyanak Mondal (1022)' },
-      { value: '2001', label: 'Vijay Sharma (2001)' },
-      { value: '2002', label: 'Mehul Kapoor (2002)' },
-      { value: '2003', label: 'Nishi (2003)' },
-      { value: '2004', label: 'Asha Chaurasiya (2004)' },
-      { value: '2005', label: 'Meenu Trivedi (2005)' },
-      { value: '2006', label: 'Deepanjali Trivedi (2006)' },
-      { value: '2007', label: 'Puja Pandey (2007)' },
-      { value: '2008', label: 'Archana Singh (2008)' },
-      { value: '2009', label: 'Seema (2009)' },
-      { value: '2010', label: 'Shashi Tiwari (2010)' },
-      { value: '2011', label: 'Sucharita Das (2011)' },
-      { value: '2012', label: 'Srabani Mondal (2012)' },
-      { value: '2013', label: 'Kiran Naskar (2013)' },
-      { value: '2014', label: 'Mousimi Parida (2014)' },
-      { value: '2015', label: 'Rohini Das (2015)' },
-      { value: '2016', label: 'Dwipannita Sanyanal (2016)' },
-      { value: '2017', label: 'Rupa Mondal (2017)' },
-      { value: '2020', label: 'Pratishtha Mishra (2020)' },
-    ];
+    const options = [{ value: '', label: 'Select User' }];
+    
+    qcUsersList.forEach(user => {
+      options.push({
+        value: user.qc_id.toString(),
+        label: `${user.name} (${user.qc_id})`
+      });
+    });
+    
+    return options;
+  };
+
+  // Fetch QC Users list for dropdown
+  const fetchQCUsersList = async () => {
+    try {
+      const params = {
+        telecaller_status: '1', // Get active users
+        report_type: 'summary',
+      };
+      
+      const response = await apiService.getQCUserProgress(params);
+      
+      if (response.success && response.data) {
+        setQcUsersList(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching QC users list:', err);
+    }
   };
 
   // Fetch QC User Progress data from API
@@ -150,12 +101,18 @@ export default function QCUserProgressPage() {
       setLoading(true);
       setError(null);
       
+      // Extract name from selected QC user option using API data
+      const selectedUser = qcUsersList.find(user => user.qc_id.toString() === filters.qcId);
+      const selectedUserName = selectedUser ? selectedUser.name : undefined;
+      
       const params = {
-        start_date: filters.startDate || undefined,
-        end_date: filters.endDate || undefined,
         qc_id: filters.qcId || undefined,
+        name: selectedUserName || undefined,
         telecaller_status: filters.telecallerStatus || undefined,
         report_type: filters.reportType || undefined,
+        custom_date: filters.startDate || undefined,
+        custom_date_end: filters.endDate || undefined,
+        qc_complete_date: undefined, // Not used in current UI
       };
       
       const response = await apiService.getQCUserProgress(params);
@@ -176,7 +133,13 @@ export default function QCUserProgressPage() {
   };
 
   useEffect(() => {
-    fetchQCUserProgress();
+    // Load QC users list first, then load progress data
+    const loadData = async () => {
+      await fetchQCUsersList();
+      await fetchQCUserProgress();
+    };
+    
+    loadData();
   }, []);
 
   const handleFilterChange = (field: string, value: string) => {

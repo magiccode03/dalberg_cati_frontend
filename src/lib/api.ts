@@ -535,6 +535,13 @@ export interface GainLossResponse {
   timestamp: string;
 }
 
+// Report Endpoints
+export const REPORT_ENDPOINTS = {
+  ENUMERATOR_WISE: '/report/enumerator-wise',
+  AC_WISE: '/report/acwisereport',
+  ASSIGNED_AC: '/report/assigned-ac',
+};
+
 // API Service Class
 class ApiService {
   private baseURL: string;
@@ -1135,6 +1142,32 @@ class ApiService {
     return this.request(`/progress/rejectreport${queryString}`);
   }
 
+  // Assigned AC Report Methods
+  async getAssignedACReport(params?: {
+    page?: number;
+    pageSize?: number;
+  }): Promise<ApiResponse<{
+    data: Array<{
+      qc_id: number;
+      qc_user_name: string;
+      mobile_number: string;
+      audio: number;
+      tele: number;
+      gps: number;
+      clientaudiocheck: number;
+      status: number;
+      agency_id: number;
+      assignments: Array<{
+        ac_code: number;
+        ac_name: string;
+        interviewer_id: number;
+      }>;
+    }>;
+  }>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${REPORT_ENDPOINTS.ASSIGNED_AC}${queryString}`);
+  }
+
   async getDashboardOverview(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.OVERVIEW);
   }
@@ -1650,7 +1683,17 @@ class ApiService {
   }
 
   // QC User Registration Methods
-  async getQCUserRegistration(): Promise<ApiResponse<{
+  async getQCUserRegistration(params?: {
+    qc_id?: string;
+    name?: string;
+    mobile_number?: string;
+    status?: string;
+    gps?: number;
+    audio?: number;
+    clientaudiocheck?: number;
+    page?: number;
+    per_page?: number;
+  }): Promise<ApiResponse<{
     qc_users: Array<{
       id: number;
       qc_id: number;
@@ -1681,7 +1724,15 @@ class ApiService {
       gps_qc_users: string;
       rechecking_users: string;
     };
-    filters_applied: Record<string, any>;
+    filters_applied?: {
+      qc_id?: number;
+      name?: string;
+      mobile_number?: string;
+      status?: number;
+      gps?: number;
+      audio?: number;
+      clientaudiocheck?: number;
+    };
     pagination: {
       total_count: number;
       page_count: number;
@@ -1689,16 +1740,25 @@ class ApiService {
       per_page: number;
     };
   }>> {
-    return this.request(API_ENDPOINTS.QC_USER_REGISTRATION);
+    const queryString = params ? `?${new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)])
+    ).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.QC_USER_REGISTRATION}${queryString}`);
   }
 
   // QC User Progress Methods
   async getQCUserProgress(params?: {
-    start_date?: string;
-    end_date?: string;
     qc_id?: string;
+    name?: string;
     telecaller_status?: string;
     report_type?: string;
+    custom_date?: string;
+    custom_date_end?: string;
+    qc_complete_date?: string;
+    page?: number;
+    per_page?: number;
   }): Promise<ApiResponse<{
     data: Array<{
       qc_id: number;
@@ -1725,7 +1785,15 @@ class ApiService {
     };
     summary: string;
     report_type: string;
-    filters_applied: Record<string, any>;
+    filters_applied?: {
+      qc_id?: number;
+      name?: string;
+      telecaller_status?: number;
+      report_type?: string;
+      custom_date?: string;
+      custom_date_end?: string;
+      qc_complete_date?: string;
+    };
   }>> {
     const queryParams = new URLSearchParams();
     if (params) {
@@ -1768,6 +1836,116 @@ class ApiService {
   // Utility Methods
   isAuthenticated(): boolean {
     return !!this.token;
+  }
+
+  // Enumerator Wise Report Methods
+  async getEnumeratorWiseReport(params?: {
+    user_id?: string;
+    interview_date?: string;
+    device_id?: string;
+    progressphase?: string;
+    progress_phase?: string; // Alternative parameter name
+    qcuser_qc_id?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<ApiResponse<{
+    data: Array<{
+      id: number;
+      user_id: number;
+      interview_date: string;
+      device_id: string;
+      interviewerids: string;
+      total_interview: number;
+      total_interview_without_phone: number;
+      valid_interview: number;
+      invalid_interview: number;
+      reject_interview: number;
+      reject_interview_system: number;
+      underqc_interview: number;
+      progress_phase: number;
+      progressphase: string;
+      teleqcstatus: string;
+      audioqcstatus: string;
+      qcuser: {
+        qc_id: number;
+        name: string;
+        qcnameandid: string;
+      } | null;
+    }>;
+    pagination?: {
+      page: number;
+      pageSize: number;
+      totalCount: number;
+      pageCount: number;
+    };
+  }>> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== '') {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    
+    const queryString = queryParams.toString();
+    return this.request(`${REPORT_ENDPOINTS.ENUMERATOR_WISE}${queryString ? `?${queryString}` : ''}`);
+  }
+
+  // Second Choice Methods
+  async getSecondChoiceData(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        first_choice: string;
+        second_choice_breakdown: {
+          BJP: number;
+          JDU: number;
+          HAMS: number;
+          VSIP: number;
+          "LJP(RV)": number;
+          INC: number;
+          RJD: number;
+          "CPI(M)": number;
+          JSP: number;
+          Others: number;
+          NWR: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        first_choice: string;
+        second_choice_breakdown: {
+          BJP: number;
+          JDU: number;
+          HAMS: number;
+          VSIP: number;
+          "LJP(RV)": number;
+          INC: number;
+          RJD: number;
+          "CPI(M)": number;
+          JSP: number;
+          Others: number;
+          NWR: number;
+        };
+      }>;
+    }>;
+    zone_pagination: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+  }>> {
+    return this.request('/dashboard/findings/second-choice');
   }
 
   getToken(): string | null {

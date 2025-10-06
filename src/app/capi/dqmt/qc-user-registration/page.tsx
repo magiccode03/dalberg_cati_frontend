@@ -39,13 +39,13 @@ interface QCUserData {
 
 export default function QCUserRegistrationPage() {
   const [filters, setFilters] = useState({
-    qcId: '',
+    qc_id: '',
     name: '',
-    mobileNumber: '',
+    mobile_number: '',
     status: '1', // Default to Active
     gps: false,
     audio: false,
-    reChecking: false,
+    clientaudiocheck: false,
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,17 +64,54 @@ export default function QCUserRegistrationPage() {
   });
 
   // Fetch QC User data from API
-  const fetchQCUserData = async () => {
+  const fetchQCUserData = async (searchFilters?: any) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await apiService.getQCUserRegistration();
+      // Build API parameters from filters
+      const apiParams: any = {
+        page: currentPage,
+        per_page: pageSize,
+      };
+
+      // Add filter parameters if provided
+      if (searchFilters) {
+        // Text-based filters (only add if not empty)
+        if (searchFilters.qc_id && searchFilters.qc_id.trim() !== '') {
+          apiParams.qc_id = searchFilters.qc_id.trim();
+        }
+        if (searchFilters.name && searchFilters.name.trim() !== '') {
+          apiParams.name = searchFilters.name.trim();
+        }
+        if (searchFilters.mobile_number && searchFilters.mobile_number.trim() !== '') {
+          apiParams.mobile_number = searchFilters.mobile_number.trim();
+        }
+        if (searchFilters.status && searchFilters.status !== '') {
+          apiParams.status = searchFilters.status;
+        }
+        
+        // Boolean filters (only add if true)
+        if (searchFilters.gps === true) {
+          apiParams.gps = 1;
+        }
+        if (searchFilters.audio === true) {
+          apiParams.audio = 1;
+        }
+        if (searchFilters.clientaudiocheck === true) {
+          apiParams.clientaudiocheck = 1;
+        }
+      }
+      
+      console.log('API params:', apiParams);
+      
+      const response = await apiService.getQCUserRegistration(apiParams);
       
       if (response.success && response.data) {
         setQcUserData(response.data.qc_users);
         setTotalCount(response.data.pagination.total_count);
         setStatistics(response.data.statistics);
+        console.log('Filters applied:', response.data.filters_applied);
       } else {
         setError('Failed to fetch QC user data');
       }
@@ -88,7 +125,7 @@ export default function QCUserRegistrationPage() {
 
   useEffect(() => {
     fetchQCUserData();
-  }, []);
+  }, [currentPage]);
 
   const handleFilterChange = (field: string, value: string | boolean) => {
     setFilters(prev => ({
@@ -97,14 +134,13 @@ export default function QCUserRegistrationPage() {
     }));
   };
 
-  const handleRefresh = () => {
-    fetchQCUserData();
-  };
 
   const handleSearch = () => {
-    // Implement search logic here
     console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
+    fetchQCUserData(filters);
   };
+
 
   const handleAddNewUser = () => {
     // Implement add new user logic here
@@ -161,7 +197,7 @@ export default function QCUserRegistrationPage() {
           <div className="flex items-center justify-center min-h-[400px]">
             <Card className="p-6 text-center">
               <Text className="text-red-600 mb-4">{error}</Text>
-              <Button onClick={handleRefresh} variant="primary">
+              <Button onClick={() => fetchQCUserData()} variant="primary">
                 Try Again
               </Button>
             </Card>
@@ -183,9 +219,7 @@ export default function QCUserRegistrationPage() {
           </div>
           <div className="flex-1"></div>
           <div className="flex-1">
-            <Button onClick={handleRefresh} variant="outline" size="sm">
-              Refresh
-            </Button>
+            <span></span>
           </div>
         </div>
 
@@ -197,8 +231,8 @@ export default function QCUserRegistrationPage() {
                 <Input
                   type="text"
                   placeholder="QC ID"
-                  value={filters.qcId}
-                  onChange={(e) => handleFilterChange('qcId', e.target.value)}
+                  value={filters.qc_id}
+                  onChange={(e) => handleFilterChange('qc_id', e.target.value)}
                 />
               </div>
 
@@ -215,8 +249,8 @@ export default function QCUserRegistrationPage() {
                 <Input
                   type="text"
                   placeholder="Mobile Number"
-                  value={filters.mobileNumber}
-                  onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
+                  value={filters.mobile_number}
+                  onChange={(e) => handleFilterChange('mobile_number', e.target.value)}
                 />
               </div>
 
@@ -250,8 +284,8 @@ export default function QCUserRegistrationPage() {
 
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  checked={filters.reChecking}
-                  onCheckedChange={(checked) => handleFilterChange('reChecking', checked as boolean)}
+                  checked={filters.clientaudiocheck}
+                  onCheckedChange={(checked) => handleFilterChange('clientaudiocheck', checked as boolean)}
                 />
                 <Text className="text-sm text-gray-700">Re-Checking</Text>
               </div>
@@ -266,9 +300,12 @@ export default function QCUserRegistrationPage() {
                   Search
                 </Button>
               </div>
+
             </div>
           </Card>
         </div>
+
+
 
         {/* QC User Table */}
         <div className="w-full">

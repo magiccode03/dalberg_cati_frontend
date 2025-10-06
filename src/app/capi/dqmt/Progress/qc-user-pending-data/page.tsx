@@ -59,9 +59,6 @@ export default function QCUserPendingDataPage() {
     console.log('Distribute Re-Checking QC');
   };
 
-  const handleRefresh = () => {
-    fetchQCPendingData();
-  };
 
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -90,7 +87,7 @@ export default function QCUserPendingDataPage() {
           <div className="flex items-center justify-center min-h-[400px]">
             <Card className="p-6 text-center">
               <Text className="text-red-600 mb-4">{error}</Text>
-              <Button onClick={handleRefresh} variant="primary">
+              <Button onClick={() => fetchQCPendingData()} variant="primary">
                 Try Again
               </Button>
             </Card>
@@ -112,9 +109,7 @@ export default function QCUserPendingDataPage() {
           </div>
           <div className="flex-1"></div>
           <div className="flex-1">
-            <Button onClick={handleRefresh} variant="outline" size="sm">
-              Refresh
-            </Button>
+            <span></span>
           </div>
         </div>
 
