@@ -587,17 +587,67 @@ export function useUpdateQCTeamRegistration() {
     agency_name: string;
     status: number;
     unique_id: string;
-    password: string;
+    password?: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    qa_id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
   }) => {
     setLoading(true);
     setError(null);
     
     try {
+      console.log('🔄 Hook: Updating QC team registration:', { id, data });
       const response = await apiService.updateQCTeamRegistration(id, data);
+      console.log('🔄 Hook: API response:', response);
+      
       if (response.success) {
         return response.data;
       } else {
         setError(response.message || 'Failed to update QC team registration');
+        return null;
+      }
+    } catch (err) {
+      console.error('🔄 Hook: Error updating QC team registration:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateQCTeamRegistration, loading, error };
+}
+
+// Get Team Registration Dropdown Options Hook
+export function useGetTeamRegistrationDropdownOptions() {
+  const [data, setData] = useState<{
+    show_second_level_column: Array<{
+      value: number;
+      label: string;
+    }>;
+    status: Array<{
+      value: number;
+      label: string;
+    }>;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getDropdownOptions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getTeamRegistrationDropdownOptions();
+      if (response.success) {
+        setData(response.data);
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch dropdown options');
         return null;
       }
     } catch (err) {
@@ -609,7 +659,38 @@ export function useUpdateQCTeamRegistration() {
     }
   }, []);
 
-  return { updateQCTeamRegistration, loading, error };
+  return { getDropdownOptions, data, loading, error };
+}
+
+// Get Agencies Hook
+export function useGetAgencies() {
+  const [data, setData] = useState<{ [key: string]: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getAgencies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getAgencies();
+      if (response.success) {
+        setData(response.data);
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch agencies');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getAgencies, data, loading, error };
 }
 
 // Utility Hook for Manual API Calls

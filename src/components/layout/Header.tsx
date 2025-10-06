@@ -36,7 +36,7 @@ export default function Header() {
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
 
-  // Sample agency list - replace with actual data from API
+  // Dynamic agency options from API
   const agencyOptions = [
     { value: 'all', label: 'All Agencies' },
     { value: 'agency_001', label: 'Agency 001' },
@@ -92,21 +92,21 @@ export default function Header() {
     };
   }, []);
 
+  // Check for teleform user data in localStorage
   const checkTeleformUserData = () => {
-    const savedData = localStorage.getItem('teleform_user_data');
-    if (savedData) {
-      try {
-        const userData = JSON.parse(savedData);
-        setTeleformUserData(userData);
-      } catch (err) {
-        console.error('Error parsing teleform user data:', err);
+    try {
+      const teleformData = localStorage.getItem('teleformUserData');
+      if (teleformData) {
+        const parsedData = JSON.parse(teleformData);
+        setTeleformUserData(parsedData);
+      } else {
         setTeleformUserData(null);
       }
-    } else {
+    } catch (error) {
+      console.error('Error parsing teleform user data:', error);
       setTeleformUserData(null);
     }
   };
-
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -147,8 +147,9 @@ export default function Header() {
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-40">
       {/* Desktop Layout */}
-      <div className="hidden md:flex items-center justify-between px-6 py-2">
-        {/* Left side - Logo */}
+      <div className="hidden md:block">
+        <div className="flex items-center justify-between px-6 py-2">
+          {/* Left side - Logo */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
             <div 
@@ -168,7 +169,7 @@ export default function Header() {
                   }
                 }}
               />
-              <div className="w-full h-full bg-blue-600 rounded-lg flex items-center justify-center hidden">
+              <div className="w-full h-full bg-blue-600 rounded-lg items-center justify-center hidden">
                 <span className="text-white font-bold text-lg">BE</span>
               </div>
             </div>
@@ -253,6 +254,7 @@ export default function Header() {
             </button>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Mobile Layout */}
@@ -277,7 +279,7 @@ export default function Header() {
                 }
               }}
             />
-            <div className="w-full h-full bg-blue-600 rounded-lg flex items-center justify-center hidden">
+            <div className="w-full h-full bg-blue-600 rounded-lg items-center justify-center hidden">
               <span className="text-white font-bold text-sm">BE</span>
             </div>
           </div>

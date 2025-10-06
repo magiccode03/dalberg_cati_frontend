@@ -112,6 +112,7 @@ export const API_ENDPOINTS = {
     TEAM_REGISTRATION: '/dashboard/team-registration',
     TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
+    TEAM_REGISTRATION_DROPDOWN_OPTIONS: '/dashboard/team-registration/newregistration/dropdown-options',
   },
 
   // Analysis
@@ -588,9 +589,9 @@ class ApiService {
       },
     };
 
-    // Debug logging for POST requests
-    if (config.method === 'POST') {
-      console.log('Making POST request:', {
+    // Debug logging for POST and PUT requests
+    if (config.method === 'POST' || config.method === 'PUT') {
+      console.log(`Making ${config.method} request:`, {
         url,
         method: config.method,
         headers: config.headers,
@@ -602,6 +603,31 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
+      
+    // Debug response for PUT requests
+    if (config.method === 'PUT') {
+      console.log(`PUT response status:`, response.status);
+      console.log(`PUT response headers:`, Object.fromEntries(response.headers.entries()));
+      
+      // Clone response to read body without consuming it
+      const responseClone = response.clone();
+      try {
+        const responseText = await responseClone.text();
+        console.log(`PUT response body:`, responseText);
+        
+        // Try to parse as JSON if it looks like JSON
+        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+          try {
+            const jsonData = JSON.parse(responseText);
+            console.log(`PUT response JSON:`, jsonData);
+          } catch (e) {
+            console.log(`PUT response is not valid JSON:`, e);
+          }
+        }
+      } catch (e) {
+        console.log(`Could not read PUT response body:`, e);
+      }
+    }
       
       // Handle token refresh if 401
       if (response.status === 401 && this.refreshToken) {
@@ -652,7 +678,25 @@ class ApiService {
         try {
           const data = await response.json();
           console.error('Error response data:', data);
-          throw new Error(data.message || `HTTP error! status: ${response.status}`);
+          console.error('Error response data type:', typeof data);
+          console.error('Error response data keys:', Object.keys(data || {}));
+          
+          // Handle different error response formats
+          let errorMessage = `HTTP error! status: ${response.status}`;
+          
+          if (data && typeof data === 'object') {
+            if (data.message) {
+              errorMessage = data.message;
+            } else if (data.error) {
+              errorMessage = data.error;
+            } else if (data.details) {
+              errorMessage = data.details;
+            } else if (Object.keys(data).length > 0) {
+              errorMessage = `Server error: ${JSON.stringify(data)}`;
+            }
+          }
+          
+          throw new Error(errorMessage);
         } catch (parseError) {
           console.error('Failed to parse error response as JSON:', parseError);
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1003,6 +1047,19 @@ class ApiService {
     });
   }
 
+  async getTeamRegistrationDropdownOptions(): Promise<ApiResponse<{
+    show_second_level_column: Array<{
+      value: number;
+      label: string;
+    }>;
+    status: Array<{
+      value: number;
+      label: string;
+    }>;
+  }>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_DROPDOWN_OPTIONS);
+  }
+
   // Rejection Report Methods
   async getRejectionReport(params?: {
     report_days?: string;
@@ -1171,7 +1228,7 @@ class ApiService {
   }
 
   // PMT Methods
-  async getAgencies(): Promise<ApiResponse<any>> {
+  async getAgencies(): Promise<ApiResponse<{ [key: string]: string }>> {
     return this.request(API_ENDPOINTS.DROPDOWN.AGENCIES);
   }
 
@@ -1250,7 +1307,13 @@ class ApiService {
     agency_name: string;
     status: number;
     unique_id: string;
-    password: string;
+    password?: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    qa_id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
   }): Promise<ApiResponse<{
     agency_id: number;
     user_id: number;
@@ -1258,10 +1321,42 @@ class ApiService {
     status: number;
     unique_id: string;
   }>> {
-    return this.request(API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id), {
-      method: 'PUT',
-      body: JSON.stringify(data)
+    console.log('🔄 API Service: Updating QC team registration:', { id, data });
+    console.log('🔄 API Service: Endpoint:', API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id));
+    console.log('🔄 API Service: Full URL:', `${this.baseURL}${API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id)}`);
+    console.log('🔄 API Service: Request body:', JSON.stringify(data));
+    console.log('🔄 API Service: Request headers will include:', {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer [token]'
     });
+    
+    // Try the dashboard endpoint instead of QC endpoint
+    const dashboardEndpoint = API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_UPDATE(id);
+    console.log('🔄 API Service: Trying dashboard endpoint:', dashboardEndpoint);
+    console.log('🔄 API Service: Dashboard URL:', `${this.baseURL}${dashboardEndpoint}`);
+    
+    try {
+      const response = await this.request<{
+        agency_id: number;
+        user_id: number;
+        agency_name: string;
+        status: number;
+        unique_id: string;
+      }>(dashboardEndpoint, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      console.log('🔄 API Service: Response received:', response);
+      return response;
+    } catch (error) {
+      console.error('🔄 API Service: Error in updateQCTeamRegistration:', error);
+      console.error('🔄 API Service: Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      throw error;
+    }
   }
 
   // Data Quality Methods
