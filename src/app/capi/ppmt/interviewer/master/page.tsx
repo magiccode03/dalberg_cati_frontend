@@ -21,6 +21,7 @@ const MasterInterviewerContent = () => {
   const [pageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
 
   // Fetch data from API
   const fetchInterviewerData = async () => {
@@ -56,8 +57,27 @@ const MasterInterviewerContent = () => {
     setCurrentPage(page);
   };
 
-  const handleRefresh = () => {
-    fetchInterviewerData();
+  const handleViewACs = async (userId: string) => {
+    try {
+      setLoadingUserId(userId);
+      // Fetch user data first to ensure the user exists and get their details
+      const response = await apiService.getInterviewMasterForUpdate(userId);
+      
+      if (response.success && response.data) {
+        // Navigate to the assigned AC page with user data
+        router.push(`/capi/ppmt/interviewer/master/assigned-ac?user_id=${userId}`);
+      } else {
+        console.error('Failed to fetch user data:', response);
+        // Still navigate but show error on the target page
+        router.push(`/capi/ppmt/interviewer/master/assigned-ac?user_id=${userId}`);
+      }
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+      // Still navigate but show error on the target page
+      router.push(`/capi/ppmt/interviewer/master/assigned-ac?user_id=${userId}`);
+    } finally {
+      setLoadingUserId(null);
+    }
   };
 
   if (loading && currentPage === 1) {
@@ -156,10 +176,15 @@ const MasterInterviewerContent = () => {
                       variant="outline"
                       size="sm"
                       className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                      onClick={() => router.push(`/capi/ppmt/interviewer/master/assigned-ac?user_id=${item.id}`)}
+                      onClick={() => handleViewACs(item.id.toString())}
+                      disabled={loadingUserId === item.id.toString()}
                       title="View ACs"
                     >
-                      <Eye className="h-4 w-4" />
+                      {loadingUserId === item.id.toString() ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </td>
                 </tr>

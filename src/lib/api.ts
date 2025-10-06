@@ -1509,11 +1509,22 @@ class ApiService {
   }
 
   async updateInterviewerAssignedACs(userId: string, assignedACs: number[]): Promise<ApiResponse<any>> {
-    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}/assigned-ac?user_id=${userId}`, {
-      method: 'POST',
-      body: JSON.stringify({
-        assigned_ac: assignedACs
-      })
+    const url = `${API_ENDPOINTS.INTERVIEW_MASTERS}/update?user_id=${userId}`;
+    const body = JSON.stringify({
+      assigned_ac: assignedACs
+    });
+    
+    console.log('API Request:', {
+      url,
+      method: 'PUT',
+      body,
+      userId,
+      assignedACs
+    });
+    
+    return this.request(url, {
+      method: 'PUT',
+      body
     });
   }
 
