@@ -1331,10 +1331,10 @@ class ApiService {
       'Authorization': 'Bearer [token]'
     });
     
-    // Try the dashboard endpoint instead of QC endpoint
-    const dashboardEndpoint = API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_UPDATE(id);
-    console.log('🔄 API Service: Trying dashboard endpoint:', dashboardEndpoint);
-    console.log('🔄 API Service: Dashboard URL:', `${this.baseURL}${dashboardEndpoint}`);
+    // Use the QC endpoint for QC team registration updates
+    const qcEndpoint = API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id);
+    console.log('🔄 API Service: Using QC endpoint:', qcEndpoint);
+    console.log('🔄 API Service: QC URL:', `${this.baseURL}${qcEndpoint}`);
     
     try {
       const response = await this.request<{
@@ -1343,7 +1343,7 @@ class ApiService {
         agency_name: string;
         status: number;
         unique_id: string;
-      }>(dashboardEndpoint, {
+      }>(qcEndpoint, {
         method: 'PUT',
         body: JSON.stringify(data)
       });
