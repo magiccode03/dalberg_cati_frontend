@@ -97,6 +97,7 @@ export const API_ENDPOINTS = {
     MASTER_AC_LIST: '/dashboard/master-ac/list',
     MASTER_AC_UPDATE: '/dashboard/master-ac/update',
     MASTER_AC_INDEX_UPDATE: '/dashboard/master-ac-index/acupdate',
+    INTERVIEW_LOG: '/overview/interview-log',
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
@@ -1137,6 +1138,58 @@ class ApiService {
 
   async getDashboardOverview(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.OVERVIEW);
+  }
+
+  async getInterviewLog(params?: {
+    server_id?: string;
+    interview_date?: string;
+    ac_code?: string;
+    interviewer_id?: string;
+    qc_date?: string;
+    qc_id?: string;
+    audio_qc_status?: string;
+    audio1_status?: string;
+    qc_scenario_color?: string;
+    page?: number;
+    per_page?: number;
+    sort_field?: string;
+    sort_direction?: 'ASC' | 'DESC';
+  }): Promise<ApiResponse<{
+    interviews: Array<{
+      server_id: number;
+      interview_date: string;
+      sample_type: string;
+      ac_code: number;
+      ac_name: string;
+      ps_name: string;
+      device_id: string;
+      interviewer_id: string;
+      audio_qc_label: string;
+      audio_qc_id: string;
+      audio1_status_label: string;
+      qc_outcome: string;
+      status_label: string;
+      gender_label: string;
+      gps_available: boolean;
+      ps_image_available: boolean;
+      selfie_image_available: boolean;
+      audio_playback_available: boolean;
+    }>;
+    pagination: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+    filters_applied: Record<string, any>;
+    sorting: {
+      field: string;
+      direction: string;
+    };
+    message: string;
+  }>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.INTERVIEW_LOG}${queryString}`);
   }
 
   async getRecentActivities(): Promise<ApiResponse<any[]>> {
