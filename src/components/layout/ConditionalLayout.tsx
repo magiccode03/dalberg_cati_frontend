@@ -30,6 +30,7 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
   const fdRoutes = [
     // CAPI FD routes
     '/capi/fd/fieldwork-progress',
+    '/capi/fd/progress-report',
     '/capi/fd/demographics/basic-demographics',
     '/capi/fd/demographics/caste',
     '/capi/fd/interview-audio',
@@ -42,6 +43,9 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
     '/cati/fd/download',
     '/cati/fd/tracking-dashboard',
     '/cati/fd/data-analysis',
+    '/cati/fd/telecaller-progress',
+    '/cati/fd/telecaller-daily-call-details',
+    '/cati/fd/interview-audio',
   ];
   const isFDRoute = fdRoutes.some(route => pathname.startsWith(route));
   
