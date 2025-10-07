@@ -203,9 +203,10 @@ export default function FieldworkProgressPage() {
       </div>
 
       {/* Progress Summary Card */}
-      <Card className="p-6 mb-6">
+      <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
             <Heading level={4} className="card-title mg-b-0">
               Progress <i>Summary</i>
             </Heading>
@@ -237,9 +238,10 @@ export default function FieldworkProgressPage() {
       </Card>
 
       {/* AC Wise Progress Card */}
-      <Card className="p-6">
+      <Card>
         <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center">
+          <div className="w-1 h-6 bg-green-500 mr-3"></div> 
             <Heading level={4} className="card-title mg-b-0">
               AC Wise Progress
             </Heading>
