@@ -1,0 +1,126 @@
+Section,Type,Tag,,Required,Description,Display_Condition,Constraint
+-,string,call_id,,Yes,,,
+Timer Section,info,timer_section,,No,Timer display,,
+Section 1: Identification,info,spd_sec1_iden,,Yes,Identification Section Header,,
+Section 1: Identification,string,ac_code,,Yes,Assembly Constituency code,,Min: 1 | Max: 150
+Section 1: Identification,string,ac_name,,Yes,Assembly Constituency name,,Min: 1 | Max: 150
+Section 1: Identification,string,pc_name,,No,Parliamentary Constituency Name,,Min: 1 | Max: 150
+Section 1: Identification,string,pc_code,,No,Parliamentary Constituency Code,,Min: 1 | Max: 150
+Section 1: Identification,string,district_name,,No,District Name,,Min: 1 | Max: 150
+Section 1: Identification,string,district_code,,No,District Code,,Min: 1 | Max: 150
+Section 1: Identification,string,region_name,,No,Region Name,,Min: 1 | Max: 150
+Section 1: Identification,string,region_code,,No,Region Code,,Min: 1 | Max: 150
+Section 1: Identification,string,mla_name,,Yes,MLA Name,,Min: 1 | Max: 150
+Section 1: Identification,string,mp_name,,Yes,MP Name,,Min: 1 | Max: 150
+Call Status,select1,number_status,,Yes,"Number Status (Options: 3=Call Not Received to Telecaller, 1=Ringing, 2=Not Ringing)",,
+Call Status,select1,call_not_ring,,Yes,"Call Not Ring Status (Options: 1=Switch Off, 2=Number Not Reachable, 3=Number Does not exist)",number_status == 2,
+Call Status,select1,call_ring_status,,Yes,"Call Ring Status (Options: 1=Picked, 2=Did not picked)",number_status == 1,
+Call Status,select1,q_call_status,,Yes,"Call Status (Options: 1=Continue, 2=Wrong Number, 5=Respondent Not available/Reschedule Interview)",call_ring_status == 1,
+Call Status,datetime,call_reschedule,,Yes,Reschedule Interview,q_call_status == 5,
+Call Status,hidden,telecaller_id,,No,Telecaller Id,,
+Call Status,string,telecaller_name,,No,Telecaller Name,,Min: 0 | Max: 255
+Call Status,string,callid,,No,Call ID,,Min: 0 | Max: 50
+Section 2: Consent,select1,consent,,Yes,"Namaste my name is [enumerator name]. We are from Convergent an independent research organization. We are conducting a survey on social and political issues in West Bengal. Should I continue? (Options: 1=Yes, 2=No)",q_call_status == 1,
+Section 3: Basic Demographic,int,resp_age,,Yes,Could you please tell me your age in complete years?,consent == 1,Min: 10 | Max: 99
+Section 3: Basic Demographic,select1,resp_registered_voter,,Yes,"Are you a registered voter in this assembly Constituency? (Options: 1=Yes, 2=No)",resp_age >= 18,
+Section 3: Basic Demographic,select1,resp_gender,,Yes,"Please note the respondent's gender (Options: 1=Male, 2=Female)",resp_registered_voter == 1 && consent == 1,
+Section 4: Party Preferences,select1,q5,,Yes,5. Which party did you vote for in the last assembly elections (MLA) in 2021? (PROBE BUT DO NOT PROMPT) (Options from party_2019.csv),resp_age >= 22,
+Section 4: Party Preferences,string,q5_oth,,Yes,Other (Please specify),q5 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,string,q5_ind,,Yes,Independent (Please specify),q5 == 12,Min: 1 | Max: 150
+Section 4: Party Preferences,select1,q6,,Yes,6. Which party did you vote for in the last Lok Sabha elections (MP) in 2024? (PROBE BUT DO NOT PROMPT) (Options from party_2019.csv),resp_age >= 19,
+Section 4: Party Preferences,string,q6_oth,,Yes,Other (Please specify),q6 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,string,q6_ind,,Yes,Independent (Please specify),q6 == 12,Min: 1 | Max: 150
+Section 4: Party Preferences,select1,q7,,Yes,7. Which party did you vote for in the by elections held in your assembly constituency (MLA) after 2021? (PROBE BUT DO NOT PROMPT) (Options from party_2019.csv),resp_age >= 20,
+Section 4: Party Preferences,string,q7_oth,,Yes,Other (Please specify),q7 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,string,q7_ind,,Yes,Independent (Please specify),q7 == 12,Min: 1 | Max: 150
+Section 4: Party Preferences,select1,q8,,Yes,8. If assembly elections (MLA) were to be held tomorrow then which party would you vote for? (PROBE BUT DO NOT PROMPT) (Options from party_2019.csv),consent == 1,
+Section 4: Party Preferences,string,q8_oth,,Yes,Other (Please specify),q8 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,string,q8_ind,,Yes,Independent (Please specify),q8 == 12,Min: 1 | Max: 150
+Section 4: Party Preferences,select1,q9,,Yes,9. Let us assume that the above party of your choice doesn't contest elections in your assembly constituency which party would you choose? (PROBE BUT DO NOT PROMPT) (Options from party_2019.csv),consent == 1,
+Section 4: Party Preferences,string,q9_oth,,Yes,Other (Please specify),q9 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,string,q9_ind,,Yes,Independent (Please specify),q9 == 12,Min: 1 | Max: 150
+Section 4: Party Preferences,select,q10,,Yes,"10. Could you tell us the reason for choosing the above party as your second choice? (Options: 1=Party works for my caste/community, 2=Party makes good arguments, 3=Party supports my first choice, 4=Leaders work for Bengal, 5=Do not wish to vote for any other, 44=Others, 99=Don't know)",consent == 1,
+,,q10_1,,,,,
+,,q10_2,,,,,
+,,q10_3,,,,,
+,,q10_4,,,,,
+,,q10_5,,,,,
+,,q10_44,,,,,
+,,q10_99,,,,,
+Section 4: Party Preferences,string,q10_oth,,Yes,Other (Please specify),q10 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,select,q11,,Yes,"11. In your opinion what are the top 3 reasons for voting for AITC? (DO NOT READ OPTIONS - SPONTANEOUS) (Options: 1-15 various reasons, 44=Others, 99=Don't know)",consent == 1,
+,,q11_1,,,,,
+,,q11_2,,,,,
+,,q11_3,,,,,
+,,q11_4,,,,,
+,,q11_5,,,,,
+,,q11_6,,,,,
+,,q11_7,,,,,
+,,q11_8,,,,,
+,,q11_9,,,,,
+,,q11_10,,,,,
+,,q11_11,,,,,
+,,q11_13,,,,,
+,,q11_14,,,,,
+,,q11_15,,,,,
+,,q11_44,,,,,
+,,q11_99,,,,,
+Section 4: Party Preferences,string,q11_oth,,Yes,Other (Please specify),q11 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,select,q12,,Yes,"12. In your opinion what are the top 3 reasons for voting for BJP? (DO NOT READ OPTIONS - SPONTANEOUS) (Options: 1-14 various reasons, 44=Others, 99=Don't know)",consent == 1,
+,,q12_1,,,,,
+,,q12_2,,,,,
+,,q12_3,,,,,
+,,q12_5,,,,,
+,,q12_6,,,,,
+,,q12_7,,,,,
+,,q12_8,,,,,
+,,q12_9,,,,,
+,,q12_11,,,,,
+,,q12_12,,,,,
+,,q12_14,,,,,
+,,q12_44,,,,,
+,,q12_99,,,,,
+Section 4: Party Preferences,string,q12_oth,,Yes,Other (Please specify),q12 == 44,Min: 1 | Max: 150
+Section 4: Party Preferences,select,q13,,Yes,"13. According to you what are the three most pressing issues of your assembly constituency? (DO NOT READ OPTIONS - SPONTANEOUS) (Options: 2-13 various issues, 44=Others)",consent == 1,
+,,q13_2,,,,,
+,,q13_3,,,,,
+,,q13_4,,,,,
+,,q13_5,,,,,
+,,q13_6,,,,,
+,,q13_7,,,,,
+,,q13_8,,,,,
+,,q13_9,,,,,
+,,q13_10,,,,,
+,,q13_11,,,,,
+,,q13_12,,,,,
+,,q13_13,,,,,
+,,q13_44,,,,,
+Section 4: Party Preferences,string,q13_oth,,Yes,Other (Please specify),q13 == 44,Min: 1 | Max: 150
+Section 5: Satisfaction Ratings,select1,q14,,Yes,"14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee? (READ OPTIONS) (Options: 1=Fully satisfied, 2=Somewhat satisfied, 3=Neutral/Don't know, 4=Somewhat dissatisfied, 5=Fully dissatisfied)",resp_registered_voter == 1 && consent == 1,
+Section 5: Satisfaction Ratings,select1,q15,,Yes,"15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state? (READ OPTIONS) (Options: 1=Fully satisfied, 2=Somewhat satisfied, 3=Neutral/Don't know, 4=Somewhat dissatisfied, 5=Fully dissatisfied)",consent == 1 && resp_registered_voter == 1,
+Section 5: Satisfaction Ratings,info,q16,,Yes,16. How satisfied or dissatisfied are you with the work done by the following. (READ OPTIONS),consent == 1 && resp_registered_voter == 1,
+Section 5: Satisfaction Ratings,select1,q16_a,,Yes,"A. Lok Sabha MP/[MP Name] from your parliament constituency (Options: 1=Fully satisfied, 2=Somewhat satisfied, 3=Neutral/Don't know, 4=Somewhat dissatisfied, 5=Fully dissatisfied)",,
+Section 5: Satisfaction Ratings,select1,q16_b,,Yes,"B. Your current MLA/[MLA Name] (Options: 1=Fully satisfied, 2=Somewhat satisfied, 3=Neutral/Don't know, 4=Somewhat dissatisfied, 5=Fully dissatisfied)",,
+Section 5: Satisfaction Ratings,select1,q17,,Yes,"17. Who do you think is the best leader to be the Chief Minister of West Bengal? (Options: 1-12 various leaders, 44=Others)",consent == 1 && resp_registered_voter == 1,
+Section 5: Satisfaction Ratings,string,q17_oth,,Yes,Others (specify),q17 == 44,Min: 1 | Max: 150
+Section 5: Satisfaction Ratings,select1,q19,,Yes,19. In your opinion which party would win the next elections in your constituency when you would elect your MLA? (Options from party_2020.csv),consent == 1 && resp_registered_voter == 1,
+Section 5: Satisfaction Ratings,string,q19_oth,,Yes,Other (Please Specify),q19 == 44,Min: 1 | Max: 150
+Section 6: Demographics,select1,resp_religion,,Yes,"20. Could you please tell me the religion that you belong to? (Options: 1=Hindu, 2=Muslim, 3=Christian, 4=Sikh, 5=Jain, 6=Buddhist, 7=No response, 44=Others)",consent == 1 && resp_registered_voter == 1,
+Section 6: Demographics,string,resp_religion_oth,,Yes,Others (Please specify),resp_religion == 44,Min: 1 | Max: 150
+Section 6: Demographics,select1,resp_social_cat,,Yes,"21. Which social category do you belong to? (Options: 1=General/OC, 2=Schedule Castes, 3=Schedule Tribes, 4=Other Backward Caste, 5=No response)",consent == 1 && resp_registered_voter == 1,
+Section 6: Demographics,string,resp_caste_jati_oth,,Yes,Other (Please specify),resp_caste_jati == 44,Min: 1 | Max: 150
+Section 6: Demographics,select1,resp_female_edu,,Yes,"23. Could you please tell me the highest educational level of the most educated female of the household? (Options: 1=No female adult, 2=No formal education, 3=Upto class 5, 4=Class 6-9, 5=Class 10-14, 6=Degree regular, 7=Professional Degree)",consent == 1 && resp_registered_voter == 1,
+Section 6: Demographics,select1,resp_male_edu,,Yes,"24. Could you please tell me the highest educational level of the most educated male of the household? (Options: 1=No male adult, 2=No formal education, 3=Upto class 5, 4=Class 6-9, 5=Class 10-14, 6=Degree regular, 7=Professional Degree)",consent == 1 && resp_registered_voter == 1,
+Section 6: Demographics,select1,resp_occupation,,Yes,"25. What is the occupation of the chief wage earner? (Options: 2=Labour, 3=Farmer, 4=Worker, 5=Trader, 6=Clerical Sales/Supervisor, 7=Managerial/Professional)",consent == 1 && resp_registered_voter == 1,
+Section 6: Demographics,select1,thanks_future,,Yes,"28. Thank you for your excellent responses can we contact you in future for similar surveys? (Options: 1=Yes you can, 2=No please)",consent == 1 && resp_registered_voter == 1,
+Call Drop Group,info,q_call_drop,,Yes,Respondent Cut the Call (Button),,
+,,status,,,"0-New, 1-Initiated, 2-Complete, 3-Incomplete, 4-Draft",,
+,,response,,,,,
+,,qc_audio_status,,,,,
+,,qc_q2,,,,,
+,,qc_q3,,,,,
+,,qc_q4,,,,,
+,,qc_q5,,,,,
+,,qc_q6,,,,,
+,,qc_q7,,,,,
+,,qc_q8,,,,,
