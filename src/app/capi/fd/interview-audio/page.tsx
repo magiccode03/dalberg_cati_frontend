@@ -163,7 +163,7 @@ export default function CAPIInterviewAudioPage() {
       )}
 
       {/* Search Form */}
-      <form id="interviewsearch-form" onSubmit={handleSearch}>
+      {/* <form id="interviewsearch-form" onSubmit={handleSearch}>
         <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -199,7 +199,7 @@ export default function CAPIInterviewAudioPage() {
             </div>
           </div>
         </Card>
-      </form>
+      </form> */}
 
       {/* Interview List */}
       <Card>
@@ -251,12 +251,12 @@ export default function CAPIInterviewAudioPage() {
                     <td colSpan={6} className="text-center py-8 text-gray-500">
                       <div className="text-lg text-gray-600">No interview data found</div>
                       <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
-                      <button 
+                      {/* <button 
                         onClick={fetchData}
                         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                       >
                         Refresh
-                      </button>
+                      </button> */}
                     </td>
                   </tr>
                 ) : (

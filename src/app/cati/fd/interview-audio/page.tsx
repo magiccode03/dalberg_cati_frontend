@@ -195,7 +195,7 @@ export default function CATIInterviewAudioPage() {
       )}
 
       {/* Search Form */}
-      <form id="interviewsearch-form" onSubmit={handleSearch}>
+      {/* <form id="interviewsearch-form" onSubmit={handleSearch}>
         <Card className=" mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -231,7 +231,7 @@ export default function CATIInterviewAudioPage() {
             </div>
           </div>
         </Card>
-      </form>
+      </form> */}
 
       {/* Interview List */}
       <Card className="">

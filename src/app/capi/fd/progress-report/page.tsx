@@ -352,7 +352,7 @@ export default function CAPIFDProgressReportPage() {
                     <th>% Of Interviews Under The Age Of (50+)</th>
                   </tr>
                 </thead>
-                <tbody>
+                {/* <tbody>
                   {currentData.map((item) => (
                     <tr 
                       key={item.id} 
@@ -398,7 +398,7 @@ export default function CAPIFDProgressReportPage() {
                       </td>
                     </tr>
                   ))}
-                </tbody>
+                </tbody> */}
               </Table>
             </div>
           )}
