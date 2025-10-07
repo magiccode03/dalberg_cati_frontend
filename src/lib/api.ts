@@ -194,6 +194,14 @@ export interface ApiResponse<T = any> {
   data: T;
   message: string;
   timestamp: string;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 }
 
 export interface LoginRequest {
@@ -1673,13 +1681,23 @@ class ApiService {
     return this.request(`${API_ENDPOINTS.FD.INTERNAL_DASHBOARD}${queryString}`);
   }
 
-  async getInterviewAudio(params?: { page?: number; limit?: number; ac_code?: string; interview_date?: string }): Promise<ApiResponse<Array<{
-    id: number;
-    ac_code: number;
-    ac_name: string;
-    audio: string;
-    interview_date: string;
-  }>>> {
+  async getInterviewAudio(params?: { page?: number; limit?: number; ac_code?: string; interview_date?: string }): Promise<ApiResponse<{
+    data: Array<{
+      id: number;
+      ac_code: number;
+      ac_name: string;
+      audio: string;
+      interview_date: string;
+    }>;
+    pagination?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`/cati/interviews/ac-audio${queryString}`);
   }

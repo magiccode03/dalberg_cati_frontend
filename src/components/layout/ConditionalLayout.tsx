@@ -7,7 +7,6 @@ import { useSidebar } from '@/contexts/SidebarContext';
 import Header from './Header';
 import HorizontalNav from './HorizontalNav';
 import Sidebar from './Sidebar';
-import FDSidebar from './FDSidebar';
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -16,7 +15,7 @@ interface ConditionalLayoutProps {
 export default function ConditionalLayout({ children }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const { isAuthenticated, isLoading, user } = useAuth();
-  const { isCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed } = useSidebar();
 
   // Public routes that don't need authentication
   const publicRoutes = ['/login', '/unauthorized'];
@@ -26,35 +25,17 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
   const noMenuRoutes = ['/home'];
   const isNoMenuRoute = noMenuRoutes.includes(pathname);
   
-  // FD routes that should show FD sidebar and NO header
-  const fdRoutes = [
-    // CAPI FD routes
-    '/capi/fd/fieldwork-progress',
-    '/capi/fd/progress-report',
-    '/capi/fd/demographics/basic-demographics',
-    '/capi/fd/demographics/caste',
-    '/capi/fd/interview-audio',
-    '/capi/fd/findings/vote-share-estimate',
-    '/capi/fd/findings/gain-and-losses',
-    '/capi/fd/findings/second-choice',
-    '/capi/fd/client-comparison',
-    // CATI FD routes
-    '/cati/fd/progress',
-    '/cati/fd/download',
-    '/cati/fd/tracking-dashboard',
-    '/cati/fd/data-analysis',
-    '/cati/fd/telecaller-progress',
-    '/cati/fd/telecaller-daily-call-details',
-    '/cati/fd/interview-audio',
-  ];
-  const isFDRoute = fdRoutes.some(route => pathname.startsWith(route));
-  
   // Routes that should show sidebar instead of horizontal menu
   const sidebarRoutes = [
     '/capi/fd/demographics/basic-demographics',
     '/capi/fd/demographics/caste',
   ];
   const isSidebarRoute = sidebarRoutes.includes(pathname);
+  
+  // Check if user has 'fd' role - show sidebar for all FD pages
+  const isFDRole = user?.role === 'fd';
+  const isFDPage = pathname.startsWith('/capi/fd/') || pathname.startsWith('/cati/fd/');
+  const shouldShowSidebar = isFDRole && isFDPage;
 
   // Don't render header and nav for public routes or when loading
   if (isPublicRoute || isLoading) {
@@ -63,22 +44,6 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
 
   // Only render header and nav for authenticated users
   if (isAuthenticated) {
-    // FD routes: show header + FD sidebar, NO horizontal menu
-    if (isFDRoute && user?.role === 'fd') {
-      return (
-        <>
-          <Header />
-          <FDSidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
-          <main 
-            className="transition-all duration-300 ease-in-out min-h-screen bg-gray-50 dark:bg-gray-900 pt-16"
-            style={{ marginLeft: isCollapsed ? '4rem' : '16rem' }}
-          >
-            {children}
-          </main>
-        </>
-      );
-    }
-    
     // Home page: show header but no horizontal menu
     if (isNoMenuRoute) {
       return (
@@ -92,7 +57,7 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
     }
     
     // Sidebar pages: show header and sidebar, but NO horizontal menu
-    if (isSidebarRoute) {
+    if (isSidebarRoute || shouldShowSidebar) {
       return (
         <>
           <Header />

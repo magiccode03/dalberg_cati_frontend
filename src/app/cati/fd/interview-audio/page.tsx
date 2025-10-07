@@ -81,6 +81,7 @@ export default function CATIInterviewAudioPage() {
       setError(null);
       
       const params: any = {
+        page: currentPage,
         limit: itemsPerPage
       };
       
@@ -90,39 +91,57 @@ export default function CATIInterviewAudioPage() {
       // Use the existing getInterviewAudio method from apiService
       const response = await apiService.getInterviewAudio(params);
       
+      console.log('API Response:', response); // Debug log
+      
       if (response.success && response.data) {
-        setInterviewData(response.data);
-        setTotalItems(response.data.length);
-        setTotalPages(Math.ceil(response.data.length / itemsPerPage));
+        const interviewData = response.data.data || [];
         
-        // Extract unique AC codes for filter
-        const uniqueACs = Array.from(new Set(response.data.map(item => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
-          .map(str => JSON.parse(str));
-        const acOptionsData = [
-          { value: '', label: 'Select AC' },
-          ...uniqueACs.map(ac => ({
-            value: ac.ac_code.toString(),
-            label: `${ac.ac_name} (${ac.ac_code})`
-          }))
-        ];
-        setAcOptions(acOptionsData);
+        setInterviewData(interviewData);
         
-        // Extract unique dates for filter
-        const uniqueDates = Array.from(new Set(response.data.map(item => item.interview_date.split('T')[0])));
-        const dateOptionsData = [
-          { value: '', label: 'Interview Date' },
-          ...uniqueDates.map(date => ({
-            value: date,
-            label: new Date(date).toLocaleDateString()
-          }))
-        ];
-        setInterviewDateOptions(dateOptionsData);
+        // Handle pagination from API response
+        if (response.data.pagination) {
+          setTotalItems(response.data.pagination.total);
+          setTotalPages(response.data.pagination.totalPages);
+        } else {
+          // Fallback to client-side calculation if no pagination info
+          setTotalItems(interviewData.length);
+          setTotalPages(Math.ceil(interviewData.length / itemsPerPage));
+        }
+        
+        // Extract unique AC codes for filter (only on first load)
+        if (currentPage === 1 && interviewData.length > 0) {
+          const uniqueACs = Array.from(new Set(interviewData.map(item => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
+            .map(str => JSON.parse(str));
+          const acOptionsData = [
+            { value: '', label: 'Select AC' },
+            ...uniqueACs.map(ac => ({
+              value: ac.ac_code.toString(),
+              label: `${ac.ac_name} (${ac.ac_code})`
+            }))
+          ];
+          setAcOptions(acOptionsData);
+          
+          // Extract unique dates for filter
+          const uniqueDates = Array.from(new Set(interviewData.map(item => item.interview_date.split('T')[0])));
+          const dateOptionsData = [
+            { value: '', label: 'Interview Date' },
+            ...uniqueDates.map(date => ({
+              value: date,
+              label: new Date(date).toLocaleDateString()
+            }))
+          ];
+          setInterviewDateOptions(dateOptionsData);
+        }
       } else {
         setError('Failed to fetch interview audio data');
       }
     } catch (err) {
       console.error('Error fetching data:', err);
-      setError('Error fetching data. Please try again.');
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined
+      });
+      setError(`Error fetching data: ${err instanceof Error ? err.message : 'Please try again.'}`);
     } finally {
       setLoading(false);
     }
@@ -169,13 +188,12 @@ export default function CATIInterviewAudioPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Get paginated data
-  const paginatedData = interviewData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // Use interviewData directly since pagination is handled by the API
+  const paginatedData = interviewData;
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -265,6 +283,20 @@ export default function CATIInterviewAudioPage() {
           ) : error ? (
             <div className="text-center py-8">
               <div className="text-lg text-red-600">Error: {error}</div>
+              <div className="mt-4 text-sm text-gray-600">
+                <details className="cursor-pointer">
+                  <summary className="font-semibold">Debug Info (Click to expand)</summary>
+                  <div className="mt-2 p-4 bg-gray-100 rounded text-left">
+                    <p><strong>Current Page:</strong> {currentPage}</p>
+                    <p><strong>Items Per Page:</strong> {itemsPerPage}</p>
+                    <p><strong>Total Items:</strong> {totalItems}</p>
+                    <p><strong>Total Pages:</strong> {totalPages}</p>
+                    <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
+                    <p><strong>AC Code Filter:</strong> {acCode || 'None'}</p>
+                    <p><strong>Date Filter:</strong> {interviewDate || 'None'}</p>
+                  </div>
+                </details>
+              </div>
               <button 
                 onClick={fetchData}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -320,16 +352,23 @@ export default function CATIInterviewAudioPage() {
           </div>
           )}
 
-          {/* Pagination */}
+          {/* Pagination Info and Controls */}
           {!loading && !error && interviewData.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-200">
-              <PaginationStandard
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-              />
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
+                </div>
+                {totalPages > 1 && (
+                  <PaginationStandard
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </div>
             </div>
           )}
         </div>

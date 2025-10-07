@@ -26,7 +26,7 @@ const roleRouteMap: Record<string, { capi: string; cati: string }> = {
   },
   fd: {
     capi: '/capi/fd/fieldwork-progress',
-    cati: '/cati/fd/telecaller-progress',
+    cati: '/cati/fd/fieldwork-progress',
   },
   start_qc: {
     capi: '/capi/start_qc/start-gps-qc',
@@ -68,19 +68,15 @@ export default function HomePage() {
   const handleSystemSelect = (system: 'capi' | 'cati') => {
     if (!user) return;
 
-    // For FD users, keep their role as 'fd' but update system
-    if (user.role === 'fd') {
-      updateUser({ system });
-      // Navigate to FD-specific routes
-      const targetRoute = system === 'capi' ? '/capi/fd/fieldwork-progress' : '/cati/fd/telecaller-progress';
-      router.push(targetRoute);
-    } else {
-      // For other users, update both role and system
-      const newRole = system === 'capi' ? 'capi_user' : 'cati_user';
-      updateUser({ system, role: newRole });
+    // Get the route for this role and system
+    const routes = roleRouteMap[user.role];
+    if (routes) {
+      const targetRoute = routes[system];
       
-      // Navigate to the appropriate page based on system
-      const targetRoute = system === 'capi' ? '/capi/fieldwork-progress' : '/cati/telecaller-progress';
+      // Update user system in both context and localStorage
+      updateUser({ system });
+      
+      // Navigate to the appropriate page
       router.push(targetRoute);
     }
   };
@@ -122,7 +118,6 @@ export default function HomePage() {
   };
 
   const isResearchRole = user?.role === 'research' || user?.role === 'research_admin';
-  const isFDRole = user?.role === 'fd';
 
   return (
     <div className="min-h-screen bg-blue-50 dark:bg-gray-900 p-4">
@@ -236,15 +231,13 @@ export default function HomePage() {
                         <span className="text-base font-bold text-gray-800 dark:text-white">CATI</span>
                       </button>
 
-                      {/* CAPI + CATI Button - Hidden for FD users */}
-                      {!isFDRole && (
-                        <button
-                          className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
-                        >
-                          <Database className="h-5 w-5 text-gray-800 dark:text-white" />
-                          <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
-                        </button>
-                      )}
+                      {/* CAPI + CATI Button */}
+                      <button
+                        className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+                      >
+                        <Database className="h-5 w-5 text-gray-800 dark:text-white" />
+                        <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -300,15 +293,13 @@ export default function HomePage() {
               <span className="text-base font-bold text-gray-800 dark:text-white">CATI</span>
             </button>
 
-            {/* CAPI + CATI Button - Hidden for FD users */}
-            {!isFDRole && (
-              <button
-                className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
-              >
-                <Database className="h-5 w-5 text-gray-800 dark:text-white" />
-                <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
-              </button>
-            )}
+            {/* CAPI + CATI Button */}
+            <button
+              className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+            >
+              <Database className="h-5 w-5 text-gray-800 dark:text-white" />
+              <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
+            </button>
           </div>
         )}
       </div>
