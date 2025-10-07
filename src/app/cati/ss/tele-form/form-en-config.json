@@ -1903,37 +1903,37 @@
     "required": true,
     "options": [
       {
-        "label": "No female adult",
+        "label": "Illiterate",
         "value": "1",
         "tag": "opt_no_female_adult"
       },
       {
-        "label": "No formal education",
+        "label": "Primary Education (Class 1–5)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "Upto class 5",
+        "label": "Secondary Education (Class 6–10)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "Class 6-9",
+        "label": "Higher Secondary Education (Class 11–12)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "Class 10-14",
+        "label": "Graduate",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "Degree(regular)",
+        "label": "Postgraduate",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "Professional Degree",
+        "label": "Technical / Vocational Education",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1947,37 +1947,37 @@
     "required": true,
     "options": [
       {
-        "label": "No male adult",
+        "label": "Illiterate",
         "value": "1",
         "tag": "opt_no_male_adult"
       },
       {
-        "label": "No formal education",
+        "label": "Primary Education (Class 1–5)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "Upto class 5",
+        "label": "Secondary Education (Class 6–10)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "Class 6-9",
+        "label": "Higher Secondary Education (Class 11–12)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "Class 10-14",
+        "label": "Graduate",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "Degree(regular)",
+        "label": "Postgraduate",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "Professional Degree",
+        "label": "Technical / Vocational Education",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1986,7 +1986,7 @@
   },
   {
     "type": "radio",
-    "label": "What is the occupation of the chief wage earner?",
+    "label": "What work does the main earner in your household do?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [

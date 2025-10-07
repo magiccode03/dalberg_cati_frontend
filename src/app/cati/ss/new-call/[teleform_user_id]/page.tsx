@@ -189,7 +189,7 @@ export default function NewCallPage() {
       if (callData.success) {
         console.log('Call initiated successfully:', callData);
         
-        // Update interview status to 1
+        // Update interview status to 1 and include callId from click-to-call response
         const updateResponse = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
           method: 'PUT',
           headers: {
@@ -198,7 +198,8 @@ export default function NewCallPage() {
           },
           body: JSON.stringify({
             status: 1,
-            call_attempt: 1
+            call_attempt: 1,
+            callid: callData.data.callId // Include callid from click-to-call response
           })
         });
         

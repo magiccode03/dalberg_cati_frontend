@@ -63,6 +63,7 @@ export default function TeleFormV2Page() {
   const [teleformUserName, setTeleformUserName] = useState<string>('');
   const [teleformUserId, setTeleformUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
@@ -181,6 +182,15 @@ export default function TeleFormV2Page() {
     setFormData(prev => {
       const newData = { ...prev, [fieldTag]: value };
       
+      // Clear validation error for this field when user starts typing
+      if (value && value !== '') {
+        setValidationErrors(prev => {
+          const newErrors = new Set(prev);
+          newErrors.delete(fieldTag);
+          return newErrors;
+        });
+      }
+      
       // Apply clearing rules
       if (field.rules?.clearFields) {
         const clearRules = field.rules.clearFields;
@@ -231,6 +241,15 @@ export default function TeleFormV2Page() {
       
       const newData = { ...prev, [fieldTag]: newValues };
       
+      // Clear validation error for this field when user selects an option
+      if (newValues.length > 0) {
+        setValidationErrors(prev => {
+          const newErrors = new Set(prev);
+          newErrors.delete(fieldTag);
+          return newErrors;
+        });
+      }
+      
       // Handle clearing of "Others" text fields
       if (field.rules?.showFields) {
         Object.entries(field.rules.showFields).forEach(([optTag, fieldsToShow]) => {
@@ -247,6 +266,28 @@ export default function TeleFormV2Page() {
     });
   };
 
+  // Transform checkbox data to individual fields
+  const transformFormDataForSubmission = (data: Record<string, any>) => {
+    const transformed: Record<string, any> = {};
+    
+    currentFormConfig.forEach((field) => {
+      const fieldValue = data[field.tag];
+      
+      if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
+        // For checkbox fields, create individual fields for each option
+        field.options?.forEach((option) => {
+          const fieldName = `${field.tag}_${option.value}`;
+          transformed[fieldName] = fieldValue.includes(option.value) ? 1 : null;
+        });
+      } else if (field.type !== 'checkbox') {
+        // For non-checkbox fields, keep as is
+        transformed[field.tag] = fieldValue || null;
+      }
+    });
+    
+    return transformed;
+  };
+
   // Auto-save function
   const autoSaveForm = async () => {
     try {
@@ -255,6 +296,9 @@ export default function TeleFormV2Page() {
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
+      // Transform form data to match backend expectations
+      const transformedData = transformFormDataForSubmission(formData);
+      
       await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
         method: 'PUT',
         headers: {
@@ -262,7 +306,8 @@ export default function TeleFormV2Page() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          ...formData,
+          ...transformedData,
+          status: 4, // Draft status
           form_duration_seconds: timer,
           language_used: language,
         })
@@ -306,8 +351,18 @@ export default function TeleFormV2Page() {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const currentTime = new Date().toLocaleString();
       
+      // Determine status based on submission type
+      // 1 = Call initiated, 2 = Successful submit, 3 = Partial submit, 4 = Draft
+      let status = 4; // Default to draft
+      if (finalSubmit === 1) {
+        status = 2; // Successful submit
+      } else if (finalSubmit === 0) {
+        status = 3; // Partial submit (call dropped)
+      }
+      
       const submissionData = {
         ...formData,
+        status: status,
         form_duration_seconds: timer,
         final_submit: finalSubmit,
         language_used: language,
@@ -341,8 +396,77 @@ export default function TeleFormV2Page() {
     }
   };
 
+  // Validate all required fields
+  const validateForm = (): { isValid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+    
+    // Get all visible fields that are required
+    currentFormConfig.forEach((field) => {
+      if (field.required && isFieldVisible(field)) {
+        const fieldValue = formData[field.tag];
+        
+        // Check if field is empty
+        if (field.type === 'checkbox') {
+          if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
+            errors.push(field.label);
+          }
+        } else {
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            errors.push(field.label);
+          }
+        }
+      }
+    });
+    
+    return {
+      isValid: errors.length === 0,
+      errors
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    const validation = validateForm();
+    
+    if (!validation.isValid) {
+      // Set validation errors for highlighting
+      const errorFields = new Set<string>();
+      currentFormConfig.forEach((field) => {
+        if (field.required && isFieldVisible(field)) {
+          const fieldValue = formData[field.tag];
+          const isEmpty = field.type === 'checkbox' 
+            ? !Array.isArray(fieldValue) || fieldValue.length === 0
+            : fieldValue === undefined || fieldValue === null || fieldValue === '';
+          
+          if (isEmpty) {
+            errorFields.add(field.tag);
+          }
+        }
+      });
+      setValidationErrors(errorFields);
+      
+      showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
+      
+      // Scroll to first error
+      const firstErrorField = currentFormConfig.find(
+        field => field.required && isFieldVisible(field) && 
+        (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
+      );
+      
+      if (firstErrorField) {
+        const element = document.getElementById(`${firstErrorField.tag}_container`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      
+      return;
+    }
+    
+    // Clear validation errors if form is valid
+    setValidationErrors(new Set());
     
     showToast('Saving form data...', 'info');
     
@@ -376,14 +500,38 @@ export default function TeleFormV2Page() {
     if (!isFieldVisible(field)) return null;
 
     const fieldValue = formData[field.tag] || (field.type === 'checkbox' ? [] : '');
+    const isEmpty = field.type === 'checkbox' 
+      ? !Array.isArray(fieldValue) || fieldValue.length === 0
+      : fieldValue === undefined || fieldValue === null || fieldValue === '';
+    
+    const hasError = validationErrors.has(field.tag);
 
     switch (field.type) {
       case 'radio':
         return (
-          <div key={index} className="mb-6">
-            <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+          <div 
+            key={index} 
+            id={`${field.tag}_container`} 
+            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+              hasError 
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+                : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+            }`}
+          >
+            <Text className={`text-base font-medium mb-3 ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
               {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
+            {hasError && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                This field is required
+              </div>
+            )}
             <div className="space-y-3">
               {field.options?.map(option => (
                 <Radio
@@ -402,10 +550,29 @@ export default function TeleFormV2Page() {
 
       case 'checkbox':
         return (
-          <div key={index} className="mb-6">
-            <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-3">
+          <div 
+            key={index} 
+            id={`${field.tag}_container`} 
+            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+              hasError 
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+                : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+            }`}
+          >
+            <Text className={`text-base font-medium mb-3 ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
               {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
+            {hasError && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                This field is required
+              </div>
+            )}
             <div className="space-y-3">
               {field.options?.map(option => (
                 <Checkbox
@@ -422,7 +589,21 @@ export default function TeleFormV2Page() {
 
       case 'text':
         return (
-          <div key={index} className="mb-6">
+          <div 
+            key={index} 
+            id={`${field.tag}_container`} 
+            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+              hasError 
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+                : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+            }`}
+          >
+            {hasError && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                This field is required
+              </div>
+            )}
             <Input
               label={field.label}
               value={fieldValue}
@@ -430,13 +611,28 @@ export default function TeleFormV2Page() {
               required={field.required}
               placeholder={field.placeholder}
               maxLength={field.maxLength}
+              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
             />
           </div>
         );
 
       case 'number':
         return (
-          <div key={index} className="mb-6">
+          <div 
+            key={index} 
+            id={`${field.tag}_container`} 
+            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+              hasError 
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+                : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+            }`}
+          >
+            {hasError && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                This field is required
+              </div>
+            )}
             <Input
               type="number"
               label={field.label}
@@ -446,19 +642,35 @@ export default function TeleFormV2Page() {
               min={field.min}
               max={field.max}
               placeholder={field.placeholder}
+              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
             />
           </div>
         );
 
       case 'datetime-local':
         return (
-          <div key={index} className="mb-6">
+          <div 
+            key={index} 
+            id={`${field.tag}_container`} 
+            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+              hasError 
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+                : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+            }`}
+          >
+            {hasError && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                This field is required
+              </div>
+            )}
             <Input
               type="datetime-local"
               label={field.label}
               value={fieldValue}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               placeholder={field.placeholder}
+              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
             />
           </div>
         );

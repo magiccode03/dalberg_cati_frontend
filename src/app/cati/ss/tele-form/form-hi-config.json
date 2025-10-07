@@ -193,17 +193,17 @@
   },
   {
     "type": "radio",
-    "label": "क्या मैं आगे बढ़ूँ?",
+    "label": "Should I continue?",
     "conditional": "q_call_status === '1'",
     "required": true,
     "options": [
       {
-        "label": "हाँ",
+        "label": "Yes",
         "value": "1",
         "tag": "opt_yes"
       },
       {
-        "label": "नहीं",
+        "label": "No",
         "value": "2",
         "tag": "opt_no"
       }
@@ -253,7 +253,7 @@
     "required": true,
     "min": 10,
     "max": 99,
-    "placeholder": "उम्र लिखें",
+    "placeholder": "Please write your age",
     "rules": {
       "clearFields": {
         "age_validation": {
@@ -304,12 +304,12 @@
     "required": true,
     "options": [
       {
-        "label": "हाँ",
+        "label": "Yes",
         "value": "1",
         "tag": "opt_yes"
       },
       {
-        "label": "नहीं",
+        "label": "No",
         "value": "2",
         "tag": "opt_no"
       }
@@ -503,7 +503,7 @@
     "label": "Others (specify)",
     "conditional": "q5 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q5_oth"
   },
@@ -512,7 +512,7 @@
     "label": "Independent (specify)",
     "conditional": "q5 === '12'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q5_ind"
   },
@@ -598,7 +598,7 @@
     "label": "Others (specify)",
     "conditional": "q6 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q6_oth"
   },
@@ -607,7 +607,7 @@
     "label": "Independent (specify)",
     "conditional": "q6 === '12'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q6_ind"
   },
@@ -693,7 +693,7 @@
     "label": "Others (specify)",
     "conditional": "q7 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q7_oth"
   },
@@ -702,7 +702,7 @@
     "label": "Independent (specify)",
     "conditional": "q7 === '12'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q7_ind"
   },
@@ -788,7 +788,7 @@
     "label": "Others (specify)",
     "conditional": "q8 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q8_oth"
   },
@@ -797,7 +797,7 @@
     "label": "Independent (specify)",
     "conditional": "q8 === '12'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q8_ind"
   },
@@ -879,7 +879,7 @@
     "label": "Others (specify)",
     "conditional": "q9 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q9_oth"
   },
@@ -888,7 +888,7 @@
     "label": "Independent (specify)",
     "conditional": "q9 === '12'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q9_ind"
   },
@@ -953,7 +953,7 @@
     "label": "Others (specify)",
     "conditional": "q10.includes('44')",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q10_oth"
   },
@@ -1057,7 +1057,7 @@
     "label": "Others (specify)",
     "conditional": "q11.includes('44')",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q11_oth"
   },
@@ -1151,7 +1151,7 @@
     "label": "Others (specify)",
     "conditional": "q12.includes('44')",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q12_oth"
   },
@@ -1247,7 +1247,7 @@
     "label": "Others (specify)",
     "conditional": "q13.includes('44')",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q13_oth"
   },
@@ -1258,27 +1258,27 @@
     "required": true,
     "options": [
       {
-        "label": "पूरी तरह संतुष्ट",
+        "label": "Fully satisfied",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "कुछ हद तक संतुष्ट",
+        "label": "Somewhat satisfied",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "तटस्थ/पता नहीं",
+        "label": "Neutral/Don’t know/Can’t say ",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "कुछ हद तक असंतुष्ट",
+        "label": "Somewhat dissatisfied",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "पूरी तरह असंतुष्ट",
+        "label": "Fully dissatisfied",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -1292,27 +1292,27 @@
     "required": true,
     "options": [
       {
-        "label": "पूरी तरह संतुष्ट",
+        "label": "Fully satisfied",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "कुछ हद तक संतुष्ट",
+        "label": "Somewhat satisfied",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "तटस्थ/पता नहीं",
+        "label": "Neutral/Don’t know/Can’t say ",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "कुछ हद तक असंतुष्ट",
+        "label": "Somewhat dissatisfied",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "पूरी तरह असंतुष्ट",
+        "label": "Fully dissatisfied",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -1326,27 +1326,27 @@
     "required": true,
     "options": [
       {
-        "label": "पूरी तरह संतुष्ट",
+        "label": "Fully satisfied",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "कुछ हद तक संतुष्ट",
+        "label": "Somewhat satisfied",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "तटस्थ/पता नहीं",
+        "label": "Neutral/Don’t know/Can’t say ",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "कुछ हद तक असंतुष्ट",
+        "label": "Somewhat dissatisfied",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "पूरी तरह असंतुष्ट",
+        "label": "Fully dissatisfied",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -1360,27 +1360,27 @@
     "required": true,
     "options": [
       {
-        "label": "पूरी तरह संतुष्ट",
+        "label": "Fully satisfied",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "कुछ हद तक संतुष्ट",
+        "label": "Somewhat satisfied",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "तटस्थ/पता नहीं",
+        "label": "Neutral/Don’t know/Can’t say ",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "कुछ हद तक असंतुष्ट",
+        "label": "Somewhat dissatisfied",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "पूरी तरह असंतुष्ट",
+        "label": "Fully dissatisfied",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -1473,7 +1473,7 @@
     "label": "Others (specify)",
     "conditional": "q17 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q17_oth"
   },
@@ -1528,7 +1528,7 @@
     "label": "Others (specify)",
     "conditional": "q19 === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q19_oth"
   },
@@ -1593,7 +1593,7 @@
     "label": "Others (specify)",
     "conditional": "resp_religion === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "resp_religion_oth"
   },
@@ -1892,7 +1892,7 @@
     "label": "Others (specify)",
     "conditional": "resp_caste_jati === '44'",
     "required": true,
-    "placeholder": "कृपया बताएं",
+    "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "resp_caste_jati_oth"
   },
@@ -1903,37 +1903,37 @@
     "required": true,
     "options": [
       {
-        "label": "No female adult",
+        "label": "निरक्षर",
         "value": "1",
         "tag": "opt_no_female_adult"
       },
       {
-        "label": "No formal education",
+        "label": "प्राथमिक शिक्षा (कक्षा 1 से 5)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "Upto class 5",
+        "label": "माध्यमिक शिक्षा (कक्षा 6 से 10)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "Class 6-9",
+        "label": "उच्च माध्यमिक शिक्षा (कक्षा 11–12)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "Class 10-14",
+        "label": "स्नातक",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "Degree(regular)",
+        "label": "स्नातकोत्तर",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "Professional Degree",
+        "label": "तकनीकी / व्यावसायिक शिक्षा",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1947,37 +1947,37 @@
     "required": true,
     "options": [
       {
-        "label": "No male adult",
+        "label": "निरक्षर",
         "value": "1",
         "tag": "opt_no_male_adult"
       },
       {
-        "label": "No formal education",
+        "label": "प्राथमिक शिक्षा (कक्षा 1 से 5)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "Upto class 5",
+        "label": "माध्यमिक शिक्षा (कक्षा 6 से 10)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "Class 6-9",
+        "label": "उच्च माध्यमिक शिक्षा (कक्षा 11–12)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "Class 10-14",
+        "label": "स्नातक",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "Degree(regular)",
+        "label": "स्नातकोत्तर",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "Professional Degree",
+        "label": "तकनीकी / व्यावसायिक शिक्षा",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1986,7 +1986,7 @@
   },
   {
     "type": "radio",
-    "label": "आपके घर में जो सबसे ज़्यादा कमाते हैं, उनका काम क्या है?",
+    "label": "आपके घर में जो मुख्य कमाने वाले हैं, वे क्या काम करते हैं?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -2030,12 +2030,12 @@
     "required": true,
     "options": [
       {
-        "label": "हाँ",
+        "label": "Yes",
         "value": "1",
         "tag": "opt_yes"
       },
       {
-        "label": "नहीं",
+        "label": "No",
         "value": "2",
         "tag": "opt_no"
       }

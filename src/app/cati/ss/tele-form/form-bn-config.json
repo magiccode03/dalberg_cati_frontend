@@ -1903,37 +1903,37 @@
     "required": true,
     "options": [
       {
-        "label": "কোনও প্রাপ্তবয়স্ক মহিলা নেই",
+        "label": "নিরক্ষর",
         "value": "1",
         "tag": "opt_no_female_adult"
       },
       {
-        "label": "কোনও আনুষ্ঠানিক শিক্ষা নেই",
+        "label": "প্রাথমিক শিক্ষা (শ্রেণী ১–৫)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "৫ম শ্রেণী পর্যন্ত",
+        "label": "মাধ্যমিক শিক্ষা (শ্রেণী ৬–১০)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "৬ম-৯ম শ্রেণী",
+        "label": "উচ্চ মাধ্যমিক শিক্ষা (শ্রেণী ১১–১২)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "১০ম-১৪ম শ্রেণী",
+        "label": "স্নাতক",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "ডিগ্রি (নিয়মিত)",
+        "label": "স্নাতকোত্তর",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "পেশাদার ডিগ্রি",
+        "label": "কারিগরি / বৃত্তিমূলক শিক্ষা",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1947,37 +1947,37 @@
     "required": true,
     "options": [
       {
-        "label": "কোনও প্রাপ্তবয়স্ক পুরুষ নেই",
+        "label": "নিরক্ষর",
         "value": "1",
         "tag": "opt_no_male_adult"
       },
       {
-        "label": "কোনও আনুষ্ঠানিক শিক্ষা নেই",
+        "label": "প্রাথমিক শিক্ষা (শ্রেণী ১–৫)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "৫ম শ্রেণী পর্যন্ত",
+        "label": "মাধ্যমিক শিক্ষা (শ্রেণী ৬–১০)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "৬ম-৯ম শ্রেণী",
+        "label": "উচ্চ মাধ্যমিক শিক্ষা (শ্রেণী ১১–১২)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "১০ম-১৪ম শ্রেণী",
+        "label": "স্নাতক",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "ডিগ্রি (নিয়মিত)",
+        "label": "স্নাতকোত্তর",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "পেশাদার ডিগ্রি",
+        "label": "কারিগরি / বৃত্তিমূলক শিক্ষা",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1986,7 +1986,7 @@
   },
   {
     "type": "radio",
-    "label": "২৫. প্রধান উপার্জনকারীর পেশা কী?",
+    "label": "২৫. আপনার পরিবারের প্রধান উপার্জনকারী কী কাজ করেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
