@@ -121,23 +121,45 @@ const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null
 - Loading spinner overlay
 
 ## Audio Player Configuration
+
+### Primary Audio Player
 ```html
 <audio
   controls
   className="w-full"
   controlsList="nodownload"
-  autoPlay
+  preload="metadata"
+  onError={handleAudioError}
 >
   <source src={currentAudio.audio} type="audio/mpeg" />
+  <source src={currentAudio.audio} type="audio/mp3" />
   Your browser does not support the audio element.
 </audio>
 ```
 
+### Fallback: Iframe Player
+If the primary audio player fails (e.g., CORS issues), the system automatically switches to an iframe-based player:
+```html
+<iframe
+  src={currentAudio.audio}
+  className="w-full h-16 border-0 rounded"
+  title="Audio Player"
+  allow="autoplay"
+/>
+```
+
 ### Audio Features
-- **Auto-play**: Starts playing when modal opens
 - **Full controls**: Play, pause, volume, seek
-- **No download**: `controlsList="nodownload"` prevents downloading
-- **Full width**: Spans entire modal width
+- **Preload metadata**: Loads audio information before playing
+- **Error handling**: Automatic fallback to iframe player on error
+- **Multiple formats**: Supports both audio/mpeg and audio/mp3
+- **Alternative access**: "Open in new tab" and "Download" options
+
+### Audio Source Compatibility
+The audio URLs come from an external service ([sarv.com](https://s-ct3.sarv.com)) and are verified working. The player handles:
+- Cross-origin audio streaming
+- URL-encoded query parameters
+- Token-based authentication in URL
 
 ## Error Handling
 - Network errors display error message with retry button

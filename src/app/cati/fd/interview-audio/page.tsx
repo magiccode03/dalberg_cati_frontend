@@ -24,6 +24,36 @@ interface APIResponse {
   data: InterviewAudioData[];
 }
 
+// Utility function to fix audio URL encoding
+const fixAudioUrl = (url: string): string => {
+  if (!url) return url;
+  
+  // Check if URL contains unencoded JSON in query parameter
+  if (url.includes('data={')) {
+    try {
+      // Extract base URL and JSON part
+      const parts = url.split('data=');
+      if (parts.length === 2) {
+        const baseUrl = parts[0] + 'data=';
+        const jsonStr = parts[1];
+        
+        // URL encode the JSON part
+        const encoded = encodeURIComponent(jsonStr);
+        const fixedUrl = baseUrl + encoded;
+        
+        console.log('Original URL:', url);
+        console.log('Fixed URL:', fixedUrl);
+        
+        return fixedUrl;
+      }
+    } catch (e) {
+      console.error('Error fixing audio URL:', e);
+    }
+  }
+  
+  return url;
+};
+
 export default function CATIInterviewAudioPage() {
   const [acCode, setAcCode] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
@@ -105,7 +135,15 @@ export default function CATIInterviewAudioPage() {
   };
 
   const handlePlayAudio = (audioData: InterviewAudioData) => {
-    setCurrentAudio(audioData);
+    // Fix the audio URL encoding
+    const processedAudioData = {
+      ...audioData,
+      audio: fixAudioUrl(audioData.audio)
+    };
+    
+    console.log('Playing audio:', processedAudioData);
+    
+    setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
     setAudioError(false);
     setUseIframe(false);
@@ -122,6 +160,11 @@ export default function CATIInterviewAudioPage() {
     console.error('Audio playback failed, switching to iframe mode');
     setAudioError(true);
     setUseIframe(true);
+  };
+
+  const handleIframeError = () => {
+    console.error('Iframe audio playback also failed');
+    setAudioError(true);
   };
 
   const handlePageChange = (page: number) => {
@@ -365,14 +408,50 @@ export default function CATIInterviewAudioPage() {
                     <source src={currentAudio.audio} type="audio/mp3" />
                     Your browser does not support the audio element.
                   </audio>
-                ) : (
-                  <div className="w-full">
-                    <iframe
-                      src={currentAudio.audio}
-                      className="w-full h-16 border-0 rounded"
-                      title="Audio Player"
-                      allow="autoplay"
-                    />
+        ) : (
+          <div className="w-full">
+            <iframe
+              src={currentAudio.audio}
+              className="w-full h-16 border-0 rounded"
+              title="Audio Player"
+              allow="autoplay"
+              onError={handleIframeError}
+              onLoad={() => {
+                // Check if iframe content is just text (not audio player)
+                setTimeout(() => {
+                  try {
+                    const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                    if (iframe && iframe.contentDocument) {
+                      const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                      if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                        console.warn('Iframe returned text instead of audio player');
+                        setAudioError(true);
+                      }
+                    }
+                  } catch (e) {
+                    // Cross-origin restrictions, can't access iframe content
+                    console.log('Cannot access iframe content due to CORS');
+                  }
+                }, 1000);
+              }}
+            />
+          </div>
+        )}
+
+                {/* Error Message for Failed Audio */}
+                {audioError && (
+                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                    <div className="text-center">
+                      <div className="text-red-600 dark:text-red-400 mb-2">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold">Audio Playback Failed</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
                 
@@ -386,14 +465,14 @@ export default function CATIInterviewAudioPage() {
                       Try Alternative Player
                     </button>
                   )}
-                  <a
+                  {/* <a
                     href={currentAudio.audio}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
                   >
                     Open in new tab
-                  </a>
+                  </a> */}
                   <a
                     href={currentAudio.audio}
                     download
@@ -401,14 +480,44 @@ export default function CATIInterviewAudioPage() {
                   >
                     Download audio
                   </a>
+                  {/* <button
+                    onClick={() => {
+                      // Test direct audio URL
+                      const testAudio = new Audio();
+                      testAudio.src = currentAudio.audio;
+                      testAudio.onloadstart = () => console.log('Direct audio test: loading started');
+                      testAudio.oncanplay = () => console.log('Direct audio test: can play');
+                      testAudio.onerror = (e) => console.error('Direct audio test failed:', e);
+                      testAudio.load();
+                    }}
+                    className="text-sm bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
+                  >
+                    Test Direct URL
+                  </button> */}
                 </div>
               </div>
 
               {/* Audio URL (for debugging/reference) */}
-              <div className="text-xs text-gray-500 dark:text-gray-400 break-all">
-                <p className="font-semibold mb-1">Audio URL:</p>
-                <p className="bg-gray-100 dark:bg-gray-900 p-2 rounded">{currentAudio.audio}</p>
-              </div>
+              {/* <div className="text-xs text-gray-500 dark:text-gray-400 break-all">
+                <details className="cursor-pointer">
+                  <summary className="font-semibold mb-1 hover:text-gray-700 dark:hover:text-gray-300">
+                    🔍 Debug Info (Click to expand)
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    <div>
+                      <p className="font-semibold mb-1">Processed Audio URL:</p>
+                      <p className="bg-gray-100 dark:bg-gray-900 p-2 rounded font-mono text-[10px]">
+                        {currentAudio.audio}
+                      </p>
+                    </div>
+                    <div className="pt-2 border-t border-gray-300 dark:border-gray-600">
+                      <p className="text-[10px] text-gray-400">
+                        The URL has been automatically encoded for proper playback.
+                      </p>
+                    </div>
+                  </div>
+                </details>
+              </div> */}
             </div>
 
             {/* Modal Footer */}
