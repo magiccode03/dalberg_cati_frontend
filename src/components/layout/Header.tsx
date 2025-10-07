@@ -13,7 +13,7 @@ export default function Header() {
   const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
-  const { getAgencies, data: agenciesData, loading: agenciesLoading, error: agenciesError } = useGetAgencies();
+  const { getAgencies } = useGetAgencies();
 
   // Helper function to get role display name
   const getRoleDisplayName = (role: string | undefined): string => {
@@ -54,13 +54,7 @@ export default function Header() {
   };
 
   // Dynamic agency options from API
-  const agencyOptions = agenciesData ? [
-    { value: 'all', label: 'All Agencies' },
-    ...Object.entries(agenciesData).map(([key, value]) => ({
-      value: key,
-      label: value
-    }))
-  ] : [
+  const agencyOptions = [
     { value: 'all', label: 'All Agencies' },
     { value: 'agency_001', label: 'Agency 001' },
     { value: 'agency_002', label: 'Agency 002' },
@@ -161,8 +155,9 @@ export default function Header() {
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-40">
       {/* Desktop Layout */}
-      <div className="hidden md:flex items-center justify-between px-6 py-2">
-        {/* Left side - Logo */}
+      <div className="hidden md:block">
+        <div className="flex items-center justify-between px-6 py-2">
+          {/* Left side - Logo */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-3">
             <div 
@@ -182,7 +177,7 @@ export default function Header() {
                   }
                 }}
               />
-              <div className="w-full h-full bg-blue-600 rounded-lg flex items-center justify-center hidden">
+              <div className="w-full h-full bg-blue-600 rounded-lg items-center justify-center hidden">
                 <span className="text-white font-bold text-lg">BE</span>
               </div>
             </div>
@@ -205,14 +200,8 @@ export default function Header() {
                 options={agencyOptions}
                 value={selectedAgency}
                 onChange={(value) => setSelectedAgency(value as string)}
-                placeholder={agenciesLoading ? "Loading..." : "Select Agency"}
-                disabled={agenciesLoading}
+                placeholder="Select Agency"
               />
-              {agenciesError && (
-                <div className="text-xs text-red-500 mt-1">
-                  Failed to load agencies
-                </div>
-              )}
             </div>
           )}
 
@@ -273,6 +262,7 @@ export default function Header() {
             </button>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Mobile Layout */}
@@ -297,7 +287,7 @@ export default function Header() {
                 }
               }}
             />
-            <div className="w-full h-full bg-blue-600 rounded-lg flex items-center justify-center hidden">
+            <div className="w-full h-full bg-blue-600 rounded-lg items-center justify-center hidden">
               <span className="text-white font-bold text-sm">BE</span>
             </div>
           </div>

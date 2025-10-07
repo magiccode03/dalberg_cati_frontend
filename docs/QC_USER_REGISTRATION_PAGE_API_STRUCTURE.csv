@@ -1,0 +1,20 @@
+Section,Type,Label/Column Name,Attribute/Field Name
+,,,
+,,,
+QC User Data,Table Column,#,qc_users.id
+QC User Data,Table Column,QC ID,qc_users.qc_id
+QC User Data,Table Column,Name,qc_users.name
+QC User Data,Table Column,Mobile Number,qc_users.mobile_number
+QC User Data,Table Column,GPS,qc_users.gps
+QC User Data,Table Column,Audio,qc_users.audio
+QC User Data,Table Column,Re-Checking,qc_users.clientaudiocheck
+QC User Data,Table Column,Status,qc_users.status
+QC User Data,Table Column,Actions,No Attribute
+QC User Data,Table Column,Assign AC,No Attribute
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalCount
+Pagination,Data Field,Total Pages,totalPages
+Pagination,Data Field,Items Per Page,pageSize
