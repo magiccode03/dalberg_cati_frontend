@@ -1683,7 +1683,7 @@ class ApiService {
   }
 
   // Interview Assigned Methods
-  async getAssignedInterviewers(): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[] }> }>> {
+  async getAssignedInterviewers(): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[]; agency_name: string }> }>> {
     return this.request(`${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list`);
   }
 

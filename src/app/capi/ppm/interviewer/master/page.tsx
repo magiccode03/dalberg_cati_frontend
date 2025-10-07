@@ -57,9 +57,6 @@ const MasterInterviewerContent = () => {
     setCurrentPage(page);
   };
 
-  const handleRefresh = () => {
-    fetchInterviewerData();
-  };
 
   const handleViewACs = async (userId: string) => {
     try {
@@ -115,7 +112,7 @@ const MasterInterviewerContent = () => {
                 <Text className="text-gray-600">{error}</Text>
               </div>
               <Button
-                onClick={handleRefresh}
+                onClick={fetchInterviewerData}
                 variant="outline"
                 size="sm"
               >
@@ -133,21 +130,6 @@ const MasterInterviewerContent = () => {
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
             <Heading level={4}>Master Interviewers List</Heading>
           </div>
-          <Button
-            onClick={handleRefresh}
-            variant="outline"
-            size="sm"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Loading...
-              </>
-            ) : (
-              'Refresh'
-            )}
-          </Button>
         </div>
 
         {/* Data Summary */}

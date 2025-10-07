@@ -17,6 +17,7 @@ interface AssignedInterviewerData {
   fullname: string;
   login_id: string;
   assigned_ac: number[];
+  agency_name: string;
 }
 
 interface AssignedInterviewersResponse {
@@ -125,6 +126,7 @@ const AssignedInterviewerContent = () => {
                 <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">ID</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
+                <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">Assigned ACS</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
               </tr>
@@ -141,6 +143,11 @@ const AssignedInterviewerContent = () => {
                   <td className="px-4 py-3 border-b border-gray-200">
                     <span className="text-gray-800">
                       {item.fullname}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 border-b border-gray-200">
+                    <span className="text-gray-700">
+                      {item.agency_name}
                     </span>
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200">
