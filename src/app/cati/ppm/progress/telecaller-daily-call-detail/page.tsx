@@ -205,9 +205,9 @@ const TelecallerDailyCallDetailPage = () => {
       </div>
 
       {/* Search Filters */}
-      <Card className="p-6 mb-5">
+      {/* <Card className="p-6 mb-5">
         <div className="flex flex-wrap items-end gap-4">
-          {/* Report Days */}
+      
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Report Days
@@ -220,7 +220,6 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
-          {/* Custom Date Start */}
           {filters.reportDays === 'custom' && (
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -235,7 +234,7 @@ const TelecallerDailyCallDetailPage = () => {
             </div>
           )}
 
-          {/* Custom Date End */}
+    
           {filters.reportDays === 'custom' && (
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -250,7 +249,7 @@ const TelecallerDailyCallDetailPage = () => {
             </div>
           )}
 
-          {/* Telecaller */}
+    
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Telecaller
@@ -263,7 +262,7 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
-          {/* Caller Response */}
+       
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Caller Response
@@ -276,7 +275,7 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
-          {/* API Response */}
+       
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               API Response
@@ -289,7 +288,7 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
-          {/* Call Received */}
+      
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Call Received
@@ -302,7 +301,7 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
-          {/* Talk Duration Checkbox */}
+      
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Talk Duration (&gt;=2 Min)
@@ -316,7 +315,7 @@ const TelecallerDailyCallDetailPage = () => {
             </div>
           </div>
 
-          {/* View Button */}
+     
           <div className="flex-shrink-0">
             <Button 
               variant="primary" 
@@ -328,7 +327,7 @@ const TelecallerDailyCallDetailPage = () => {
             </Button>
           </div>
         </div>
-      </Card>
+      </Card> */}
 
       {/* Performance Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
@@ -337,7 +336,7 @@ const TelecallerDailyCallDetailPage = () => {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Caller Performance
+              Caller Performance (coming soon)
             </Heading>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -385,7 +384,7 @@ const TelecallerDailyCallDetailPage = () => {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
             <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Call Outcome
+              Call Outcome (coming soon)
             </Heading>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -435,7 +434,7 @@ const TelecallerDailyCallDetailPage = () => {
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={2} className="text-xl font-semibold text-gray-900">
-              Call Detail
+              Call Detail (coming soon)
             </Heading>
           </div>
         </div>
