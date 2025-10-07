@@ -409,7 +409,7 @@ const TelecallerProgressPage: React.FC = () => {
       </div>
 
       {/* Call Dial: Not Ringing Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : NOT RINGING" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -441,10 +441,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Call Dial: Ringing Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard
@@ -454,13 +454,13 @@ const TelecallerProgressPage: React.FC = () => {
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          {/* <MetricCard
+          <MetricCard
             title="Did not picked"
             value={data.did_not_picked}
             icon={<Phone className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
-          /> */}
+          />
           <MetricCard
             title="No Response"
             value={data.ringing_no_response}
@@ -469,10 +469,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-green-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Call Dial: Ringing (Picked) Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING (PICKED)" icon={<BarChart3 className="h-6 w-6 text-green-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -504,10 +504,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-green-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* General Metrics Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -539,7 +539,7 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           />
         </div>
-      </div>
+      </div> */}
     </>
   );
 

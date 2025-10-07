@@ -11,7 +11,8 @@ import {
   GitCompare,
   ChevronLeft,
   ChevronRight,
-  Menu
+  Menu,
+  Home
 } from 'lucide-react';
 
 interface FDSidebarProps {
@@ -35,6 +36,7 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
 
   // CAPI FD menu items
   const capiMenuItems = [
+  
     {
       id: 'fieldwork-progress',
       label: 'Fieldwork Progress',
@@ -56,10 +58,18 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/capi/fd/interview-audio',
       hasSubmenu: false,
     },
+    {
+      id: 'back',
+      label: 'Back To Main',
+      icon: Home,
+      href: '/home',
+      hasSubmenu: false,
+    },
   ];
 
   // CATI FD menu items
   const catiMenuItems = [
+   
     {
       id: 'telecaller-progress',
       label: 'Telecaller Progress',
@@ -79,6 +89,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       label: 'Interview Audios',
       icon: Mic,
       href: '/cati/fd/interview-audio',
+      hasSubmenu: false,
+    },
+    {
+      id: 'back',
+      label: 'Back To Main',
+      icon: Home,
+      href: '/home',
       hasSubmenu: false,
     },
   ];
