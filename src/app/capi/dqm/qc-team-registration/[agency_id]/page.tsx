@@ -133,14 +133,60 @@ const QCUpdatePage = () => {
     }
 
     try {
-      const apiData = {
-        agency_name: formData.agency_name.trim(),
-        status: parseInt(formData.status),
-        unique_id: formData.username.trim(),
-        password: formData.password.trim() || 'dummy_password' // Provide default if blank
+      // Validate and prepare data
+      const agencyName = formData.agency_name.trim();
+      const status = parseInt(formData.status);
+      const uniqueId = formData.username.trim();
+      
+      // Validate required fields
+      if (!agencyName) {
+        showError('Agency name is required');
+        return;
+      }
+      if (!uniqueId) {
+        showError('Username is required');
+        return;
+      }
+      if (isNaN(status)) {
+        showError('Invalid status value');
+        return;
+      }
+
+      // Include all required fields as per server validation
+      const apiData: any = {
+        agency_name: agencyName,
+        status: status,
+        unique_id: uniqueId,
+        qc_agency_id: 1, // Required number field
+        show_second_level_column: 1, // Required number field
+        qa_id: 1, // Required number field
+        first_name: uniqueId, // Required string field
+        last_name: uniqueId, // Required string field
+        email: `${uniqueId}@example.com` // Required valid email field
       };
 
+      // Only add password if it's not empty
+      if (formData.password.trim()) {
+        apiData.password = formData.password.trim();
+      }
+
       console.log('🔄 Updating QC team registration with data:', apiData);
+      console.log('🔄 API endpoint:', `/qc-team-registration/update/${agencyId}`);
+      console.log('🔄 Agency ID type:', typeof agencyId, 'Value:', agencyId);
+      console.log('🔄 Form data before processing:', formData);
+      console.log('🔄 Final API data structure:', JSON.stringify(apiData, null, 2));
+      
+      // Validate required fields
+      if (!apiData.agency_name || !apiData.unique_id || apiData.status === undefined) {
+        showError('Missing required fields: agency_name, unique_id, or status');
+        return;
+      }
+      
+      // Validate agency ID
+      if (!agencyId || isNaN(parseInt(agencyId))) {
+        showError('Invalid agency ID');
+        return;
+      }
       
       const result = await updateQCTeamRegistration(agencyId!, apiData);
       
@@ -156,9 +202,30 @@ const QCUpdatePage = () => {
         console.error('❌ Update failed');
         showError('Failed to update QC team registration. Please try again.');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Error updating QC team registration:', err);
-      showError('Failed to update QC team registration. Please try again.');
+      console.error('❌ Error response:', err.response?.data);
+      console.error('❌ Error status:', err.response?.status);
+      
+      let errorMessage = 'Failed to update QC team registration. Please try again.';
+      
+      if (err.response?.status === 500) {
+        errorMessage = 'Server error occurred. Please check the data and try again, or contact support if the issue persists.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'QC team registration not found. Please check if the agency exists.';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Authentication required. Please log in again.';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Access forbidden. You do not have permission to update this QC team registration.';
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      showError(errorMessage);
     }
   };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -13,6 +14,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Plus, Edit, Check, Eye } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import QCUserViewModal from '@/components/modals/QCUserViewModal';
 
 interface QCUserData {
   id: number;
@@ -23,6 +25,12 @@ interface QCUserData {
   audio: boolean;
   reChecking: boolean;
   status: string;
+}
+
+interface QCUserAssignment {
+  acCode: string;
+  acName: string;
+  interviewerId: string;
 }
 
 interface APIResponse {
@@ -44,6 +52,7 @@ interface APIResponse {
 }
 
 export default function QCUserRegistrationPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState({
     qcId: '',
     name: '',
@@ -59,6 +68,11 @@ export default function QCUserRegistrationPage() {
   const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<QCUserData | null>(null);
+  const [userAssignments, setUserAssignments] = useState<QCUserAssignment[]>([]);
 
   // Fetch data from API
   useEffect(() => {
@@ -220,23 +234,38 @@ export default function QCUserRegistrationPage() {
   };
 
   const handleAddNewUser = () => {
-    // Implement add new user logic here
-    console.log('Add new user');
+    // Navigate to the new user form page
+    router.push('/capi/dqm/qc-user-registration/user');
   };
 
   const handleEditUser = (userId: number) => {
-    // Implement edit user logic here
-    console.log('Edit user:', userId);
+    // Navigate to the update user form page
+    router.push(`/capi/dqm/qc-user-registration/${userId}`);
   };
 
   const handleAssignAC = (userId: number) => {
-    // Implement assign AC logic here
-    console.log('Assign AC for user:', userId);
+    // Navigate to the assign AC/Interviewer page
+    router.push(`/capi/dqm/qc-user-registration/${userId}/assign`);
   };
 
   const handleViewAssignedAC = (userId: number) => {
-    // Implement view assigned AC logic here
-    console.log('View assigned AC for user:', userId);
+    // Find the user data
+    const user = qcUserData.find(u => u.id === userId);
+    if (!user) {
+      console.error('User not found:', userId);
+      return;
+    }
+
+    // Mock assignment data - replace with actual API call
+    const mockAssignments: QCUserAssignment[] = [
+      { acCode: '1', acName: 'Valmiki Nagar', interviewerId: '101' },
+      { acCode: '1', acName: 'Valmiki Nagar', interviewerId: '102' },
+      { acCode: '1', acName: 'Valmiki Nagar', interviewerId: '104' }
+    ];
+
+    setSelectedUser(user);
+    setUserAssignments(mockAssignments);
+    setIsModalOpen(true);
   };
 
   const renderIcon = (value: boolean) => {
@@ -458,14 +487,14 @@ export default function QCUserRegistrationPage() {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div className="flex gap-1">
                               <Button
-                                variant="outline"
+                                variant="primary"
                                 size="sm"
                                 onClick={() => handleAssignAC(user.id)}
                               >
                                 <Check className="w-4 h-4" />
                               </Button>
                               <Button
-                                variant="outline"
+                                variant="primary"
                                 size="sm"
                                 onClick={() => handleViewAssignedAC(user.id)}
                               >
@@ -498,6 +527,14 @@ export default function QCUserRegistrationPage() {
           </Card>
         </div>
       </Container>
+
+      {/* QC User View Modal */}
+      <QCUserViewModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        qcUserName={selectedUser?.name || ''}
+        assignments={userAssignments}
+      />
     </div>
   );
 }
