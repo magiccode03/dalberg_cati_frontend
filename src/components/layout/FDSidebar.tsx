@@ -101,7 +101,7 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
   return (
     <aside className={`fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 overflow-y-auto transition-all duration-300 ease-in-out flex flex-col ${
       isCollapsed ? 'w-16' : 'w-64'
-    }`}>
+    }`} style={{ height: '100vh' }}>
       {/* Header Section */}
       <div className="px-4 md:px-6 py-2 border-b border-gray-200 dark:border-gray-700">
         {isCollapsed ? (
@@ -117,7 +117,7 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
             </button>
             
             {/* Navigation Icons */}
-            <nav className="flex flex-col space-y-3">
+            <nav className="flex flex-col space-y-3 w-full">
               {menuItems.map((item) => {
                 const IconComponent = item.icon;
                 const active = isActive(item.href);
@@ -126,14 +126,14 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
                   <button
                     key={item.id}
                     onClick={() => handleNavigation(item.href)}
-                    className={`p-2 rounded-md transition-colors ${
+                    className={`p-2 rounded-md transition-colors w-full flex justify-center ${
                       active
                         ? 'bg-blue-600 text-white'
                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                     title={item.label}
                   >
-                    <IconComponent className="w-5 h-5" />
+                    <IconComponent className="w-10 h-5" />
                   </button>
                 );
               })}
@@ -174,13 +174,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       {/* Navigation - Only show in expanded state */}
       {!isCollapsed && (
         <nav className="mt-6 px-4 flex-1 overflow-y-auto sidebar-scrollbar">
-          <ul className="space-y-2">
+          <ul className="space-y-2 flex flex-col">
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               const active = isActive(item.href);
               
               return (
-                <li key={item.id}>
+                <li key={item.id} className="w-full">
                   <button
                     onClick={() => handleNavigation(item.href)}
                     className={`flex items-center w-full p-3 rounded-lg transition-colors touch-manipulation ${
@@ -189,10 +189,10 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
-                    <IconComponent className="h-5 w-5" />
+                    <IconComponent className="h-5 w-5 flex-shrink-0" />
                     <span className="ml-3 flex-grow text-left font-medium">{item.label}</span>
                     {item.hasSubmenu && (
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="h-4 w-4 flex-shrink-0" />
                     )}
                   </button>
                 </li>

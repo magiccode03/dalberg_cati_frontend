@@ -44,7 +44,7 @@ interface APIResponse {
   timestamp: string;
 }
 
-export default function InterviewAudioPage() {
+export default function CAPIInterviewAudioPage() {
   const [acCode, setAcCode] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function InterviewAudioPage() {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching interview audio data...');
+      console.log('Fetching CAPI interview audio data...');
       console.log('Current page:', currentPage);
       console.log('AC Code:', acCode);
       console.log('Interview Date:', interviewDate);
@@ -129,7 +129,7 @@ export default function InterviewAudioPage() {
 
   const handleCheckAudio = (serverToken: string) => {
     // Handle audio check functionality
-    console.log('Checking audio for token:', serverToken);
+    console.log('Checking CAPI audio for token:', serverToken);
     // This would typically open a modal or navigate to audio player
   };
 
@@ -143,7 +143,7 @@ export default function InterviewAudioPage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
           <Heading level={1} className="text-2xl font-semibold text-gray-900">
-            Interview Audio
+            Interview Audio (CAPI)
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -164,7 +164,7 @@ export default function InterviewAudioPage() {
 
       {/* Search Form */}
       <form id="interviewsearch-form" onSubmit={handleSearch}>
-        <Card className="p-6 mb-6">
+        <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -202,13 +202,13 @@ export default function InterviewAudioPage() {
       </form>
 
       {/* Interview List */}
-      <Card className="p-6">
+      <Card>
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <div className="w-1 h-6 bg-purple-500 mr-3"></div>
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
               <Heading level={4} className="card-title mg-b-0">
-                Interview List
+                Interview List (CAPI)
               </Heading>
             </div>
             <span className="text-end">
@@ -232,17 +232,6 @@ export default function InterviewAudioPage() {
                 Retry
               </button>
             </div>
-          ) : interviewData.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-gray-600">No interview data found</div>
-              <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
-              <button 
-                onClick={fetchData}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Refresh
-              </button>
-            </div>
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
@@ -257,23 +246,38 @@ export default function InterviewAudioPage() {
                 </tr>
               </thead>
               <tbody>
-                {interviewData.map((row, index) => (
+                {interviewData.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8 text-gray-500">
+                      <div className="text-lg text-gray-600">No interview data found</div>
+                      <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
+                      <button 
+                        onClick={fetchData}
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Refresh
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  interviewData.map((row, index) => (
                     <tr key={row.server_token} data-key={row.server_token}>
-                    <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td>{row.server_token}</td>
                       <td className="text-center">{row.ac_code}</td>
                       <td>{row.ac_name}</td>
                       <td>{row.interview_date.split('T')[0]}</td>
-                    <td className="text-center">
-                      <Button
+                      <td className="text-center">
+                        <Button
                           onClick={() => handleCheckAudio(row.server_token)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1"
-                      >
-                        Check Audio
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                          className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1"
+                        >
+                          Check Audio
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </Table>
           </div>

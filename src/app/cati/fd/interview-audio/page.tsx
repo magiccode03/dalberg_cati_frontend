@@ -196,7 +196,7 @@ export default function CATIInterviewAudioPage() {
 
       {/* Search Form */}
       <form id="interviewsearch-form" onSubmit={handleSearch}>
-        <Card className="p-6 mb-6">
+        <Card className=" mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -234,11 +234,11 @@ export default function CATIInterviewAudioPage() {
       </form>
 
       {/* Interview List */}
-      <Card className="p-6">
+      <Card className="">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <div className="w-1 h-6 bg-purple-500 mr-3"></div>
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
               <Heading level={4} className="card-title mg-b-0">
                 Interview List (CATI)
               </Heading>
