@@ -143,7 +143,15 @@ const AssignedUpdateContent = () => {
         return;
       }
       
+      console.log('Saving assigned ACs:', {
+        userId,
+        selectedACs,
+        selectedACsLength: selectedACs.length
+      });
+      
       const response = await apiService.updateInterviewerAssignedACs(userId, selectedACs);
+      
+      console.log('Save response:', response);
       
       if (response.success) {
         setSuccess('Assigned ACs updated successfully!');
@@ -152,11 +160,12 @@ const AssignedUpdateContent = () => {
           router.push('/capi/ppmt/interviewer/assigned');
         }, 2000);
       } else {
-        setError('Failed to update assigned ACs');
+        console.error('Save failed:', response);
+        setError(`Failed to update assigned ACs: ${response.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error saving assigned ACs:', err);
-      setError('Error saving assigned ACs');
+      setError(`Error saving assigned ACs: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }

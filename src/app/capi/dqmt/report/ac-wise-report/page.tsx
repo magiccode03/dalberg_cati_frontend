@@ -1,11 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Loader2 } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface ACWiseReportData {
   id: number;
@@ -22,33 +26,167 @@ interface ACWiseReportData {
   underQc: number;
 }
 
+interface APIResponse {
+  success: boolean;
+  data?: {
+    data: Array<{
+      ac_code: number;
+      ac_name: string;
+      district_code: number;
+      district_name: string;
+      pc_code: number;
+      pc_name: string;
+      agency_id: number | null;
+      agency: {
+        id: number;
+        agency_name: string;
+      };
+      acsample: number;
+      QcCount: number;
+      complete: number;
+      achieved: number;
+      reject: number;
+      underqc: number;
+      checker: string;
+    }>;
+    pagination?: {
+      page: number;
+      pageSize: number;
+      totalCount: number;
+      pageCount: number;
+    };
+  };
+  error?: string;
+  message?: string;
+  timestamp: string;
+}
+
 export default function ACWiseReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
+  const [acWiseReportData, setAcWiseReportData] = useState<ACWiseReportData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-  // Sample data based on the provided HTML
-  const acWiseReportData: ACWiseReportData[] = [
-    { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
-    { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
-    { id: 3, sNo: 3, acCode: 2, name: 'Ramnagar (SC)', agencyName: 'Parbhat', sample: 300, checker: '101, 127, 139', alloted: 395, completed: 0, accepted: 346, rejected: 30, underQc: 0 },
-    { id: 4, sNo: 4, acCode: 3, name: 'Narkatiaganj', agencyName: 'Parbhat', sample: 300, checker: '110, 103, 120, 140', alloted: 400, completed: 0, accepted: 315, rejected: 73, underQc: 0 },
-    { id: 5, sNo: 5, acCode: 4, name: 'Bagaha', agencyName: 'Parbhat', sample: 300, checker: '116, 127, 128', alloted: 345, completed: 0, accepted: 306, rejected: 27, underQc: 0 },
-    { id: 6, sNo: 6, acCode: 5, name: 'Lauriya', agencyName: 'Parbhat', sample: 300, checker: '103, 102, 108, 106, 136', alloted: 462, completed: 0, accepted: 391, rejected: 41, underQc: 0 },
-    { id: 7, sNo: 7, acCode: 6, name: 'Nautan', agencyName: 'Parbhat', sample: 300, checker: '105, 109, 136', alloted: 408, completed: 0, accepted: 332, rejected: 65, underQc: 0 },
-    { id: 8, sNo: 8, acCode: 7, name: 'Chanpatia', agencyName: 'Parbhat', sample: 300, checker: '109, 114, 119, 137', alloted: 388, completed: 0, accepted: 320, rejected: 46, underQc: 0 },
-    { id: 9, sNo: 9, acCode: 8, name: 'Bettiah', agencyName: 'Parbhat', sample: 300, checker: '105, 106, 101, 121, 109, 116', alloted: 738, completed: 0, accepted: 356, rejected: 57, underQc: 0 },
-    { id: 10, sNo: 10, acCode: 9, name: 'Sikta', agencyName: 'Parbhat', sample: 300, checker: '120, 117', alloted: 393, completed: 0, accepted: 349, rejected: 13, underQc: 0 },
-    { id: 11, sNo: 11, acCode: 10, name: 'Raxaul', agencyName: 'Parbhat', sample: 300, checker: '109, 129, 138, 121', alloted: 447, completed: 0, accepted: 336, rejected: 92, underQc: 0 },
-    { id: 12, sNo: 12, acCode: 11, name: 'Sugauli', agencyName: 'Parbhat', sample: 300, checker: '101, 109, 105, 122, 116, 136', alloted: 466, completed: 0, accepted: 243, rejected: 177, underQc: 0 },
-    { id: 13, sNo: 13, acCode: 12, name: 'Narkatia', agencyName: 'Parbhat', sample: 300, checker: '130, 119', alloted: 325, completed: 0, accepted: 303, rejected: 8, underQc: 0 },
-    { id: 14, sNo: 14, acCode: 13, name: 'Harsidhi (SC)', agencyName: 'Inhouse', sample: 300, checker: '1002, 119, 1011, 1007', alloted: 361, completed: 0, accepted: 169, rejected: 99, underQc: 0 },
-    { id: 15, sNo: 15, acCode: 14, name: 'Govindganj', agencyName: 'Inhouse', sample: 300, checker: '1001, 137, 1004, 121', alloted: 352, completed: 0, accepted: 145, rejected: 141, underQc: 0 },
-    { id: 16, sNo: 16, acCode: 15, name: 'Kesaria', agencyName: 'Kadence', sample: 300, checker: '2003, 2006, 1001, 2016, 1010', alloted: 575, completed: 0, accepted: 309, rejected: 194, underQc: 0 },
-    { id: 17, sNo: 17, acCode: 16, name: 'Kalyanpur', agencyName: 'Inhouse', sample: 300, checker: '140, 117, 136, 122, 130', alloted: 518, completed: 0, accepted: 191, rejected: 268, underQc: 0 },
-    { id: 18, sNo: 18, acCode: 17, name: 'Pipra', agencyName: 'Inhouse', sample: 300, checker: '138, 127, 119, 130', alloted: 573, completed: 0, accepted: 188, rejected: 232, underQc: 0 },
-    { id: 19, sNo: 19, acCode: 18, name: 'Madhuban', agencyName: 'Navin', sample: 300, checker: '121', alloted: 313, completed: 0, accepted: 196, rejected: 115, underQc: 0 },
-    { id: 20, sNo: 20, acCode: 19, name: 'Motihari', agencyName: 'Inhouse', sample: 300, checker: '122, 1001, 1002, 1010', alloted: 356, completed: 0, accepted: 111, rejected: 201, underQc: 0 },
-  ];
+  // Helper function to transform API data to UI format
+  const transformAPIData = (apiData: any[]): ACWiseReportData[] => {
+    return apiData.map((item, index) => ({
+      id: index + 1,
+      sNo: index + 1,
+      acCode: item.ac_code,
+      name: item.ac_name,
+      agencyName: item.agency?.agency_name || '',
+      sample: item.acsample,
+      checker: item.checker || '',
+      alloted: item.QcCount,
+      completed: item.complete,
+      accepted: item.achieved,
+      rejected: item.reject,
+      underQc: item.underqc
+    }));
+  };
+
+  // Fetch data from API
+  const fetchACWiseReportData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Making API request to: /report/acwisereport');
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('pageSize', pageSize.toString());
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/report/acwisereport${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('API endpoint:', endpoint);
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+      });
+      
+      // Race between API call and timeout
+      const response = await Promise.race([
+        apiClient.get(endpoint),
+        timeoutPromise
+      ]) as any;
+      
+      const data: APIResponse = response.data;
+      
+      console.log('API Response:', data);
+      console.log('Response success:', data.success);
+      
+      if (data.success && data.data && Array.isArray(data.data.data)) {
+        const transformedData = transformAPIData(data.data.data);
+        setAcWiseReportData(transformedData);
+        setTotalCount(data.data.pagination?.totalCount || transformedData.length);
+        console.log('Transformed data:', transformedData);
+      } else {
+        console.error('Invalid API response structure or API error:', data.error);
+        setError(data.error || 'Invalid response format from server');
+        // Use fallback data
+        const fallbackData: ACWiseReportData[] = [
+          { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
+          { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
+        ];
+        setAcWiseReportData(fallbackData);
+        setTotalCount(fallbackData.length);
+      }
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      
+      // Better error handling for different error types
+      if (err.message === 'Request timeout after 10 seconds') {
+        console.error('Request timed out');
+        setError('Request timed out. The server may be slow or unavailable.');
+      } else if (err.code === 'ECONNABORTED') {
+        console.error('Connection aborted');
+        setError('Connection was aborted. Please check your network connection.');
+      } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+        console.error('Network error or no response');
+        setError('Network error. Please check your internet connection and try again.');
+      } else if (err.response?.status === 401) {
+        console.error('Authentication error');
+        setError('Authentication required. Please log in again.');
+      } else if (err.response?.status === 403) {
+        console.error('Forbidden error');
+        setError('Access forbidden. You do not have permission to view this data.');
+      } else if (err.response?.data?.error) {
+        console.error('API error:', err.response.data.error);
+        setError(err.response.data.error);
+      } else if (err.response?.data?.message) {
+        console.error('API message:', err.response.data.message);
+        setError(err.response.data.message);
+      } else {
+        console.error('Unknown error:', err.message);
+        setError(err.message || 'An error occurred while fetching data');
+      }
+      
+      // Use fallback data on error
+      console.log('API request failed, using fallback sample data...');
+      const fallbackData: ACWiseReportData[] = [
+        { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
+        { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
+        { id: 3, sNo: 3, acCode: 2, name: 'Ramnagar (SC)', agencyName: 'Parbhat', sample: 300, checker: '101, 127, 139', alloted: 395, completed: 0, accepted: 346, rejected: 30, underQc: 0 },
+        { id: 4, sNo: 4, acCode: 3, name: 'Narkatiaganj', agencyName: 'Parbhat', sample: 300, checker: '110, 103, 120, 140', alloted: 400, completed: 0, accepted: 315, rejected: 73, underQc: 0 },
+        { id: 5, sNo: 5, acCode: 4, name: 'Bagaha', agencyName: 'Parbhat', sample: 300, checker: '116, 127, 128', alloted: 345, completed: 0, accepted: 306, rejected: 27, underQc: 0 },
+      ];
+      setAcWiseReportData(fallbackData);
+      setTotalCount(fallbackData.length);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and when page changes
+  useEffect(() => {
+    fetchACWiseReportData();
+  }, [currentPage]);
 
 
   const getAgencyBadge = (agencyName: string) => {
@@ -59,6 +197,7 @@ export default function ACWiseReportPage() {
       'Inhouse': 'bg-green-100 text-green-800',
       'Kadence': 'bg-purple-100 text-purple-800',
       'Navin': 'bg-orange-100 text-orange-800',
+      'Ajit Barman': 'bg-indigo-100 text-indigo-800',
     };
     
     const colorClass = agencyColors[agencyName] || 'bg-gray-100 text-gray-800';
@@ -70,10 +209,10 @@ export default function ACWiseReportPage() {
     );
   };
 
-  const totalPages = Math.ceil(acWiseReportData.length / pageSize);
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const currentData = acWiseReportData.slice(startIndex, endIndex);
+  const currentData = acWiseReportData;
 
   return (
     <div className="main-content horizontal-content">
@@ -90,6 +229,37 @@ export default function ACWiseReportPage() {
             <span></span>
           </div>
         </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <Text className="ml-2 text-gray-600">Loading AC wise report...</Text>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Card className="mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
+                    Error Loading Data
+                  </Heading>
+                  <Text className="text-gray-600">{error}</Text>
+                </div>
+                <Button
+                  onClick={fetchACWiseReportData}
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
 
         {/* AC Wise Report Table */}
@@ -127,9 +297,9 @@ export default function ACWiseReportPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
+                    {currentData.map((data, index) => (
                       <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.sNo}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.acCode}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{data.name}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -151,13 +321,13 @@ export default function ACWiseReportPage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, acWiseReportData.length)}</span> of <span className="font-semibold">{acWiseReportData.length}</span> items
+                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
                 </div>
                 <div>
                   <PaginationStandard
                     currentPage={currentPage}
                     totalPages={totalPages}
-                    totalItems={acWiseReportData.length}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={setCurrentPage}
                   />

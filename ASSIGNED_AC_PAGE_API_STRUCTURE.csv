@@ -1,6 +1,10 @@
 Section,Type,Label/Column Name,API Field Name
 Assigned AC,Table Column,QC ID,qc_id
 Assigned AC,Table Column,QC User Name,qc_user_name
-Assigned AC,Table Column,AC Code,ac_code
-Assigned AC,Table Column,AC Name,ac_name
-Assigned AC,Table Column,Interviewer ID,interviewer_id
+Assigned AC,Table Column,AC Code,assignments.ac_code
+Assigned AC,Table Column,AC Name,assignments.ac_name
+Assigned AC,Table Column,Interviewer ID,assignments.interviewer_id
+Assigned AC,Pagination,Current Page,page
+Assigned AC,Pagination,Page Size,pageSize
+Assigned AC,Pagination,Total Count,totalCount
+Assigned AC,Pagination,Total Pages,pageCount

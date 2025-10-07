@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,15 +8,26 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
-import { Search, Download, ExternalLink } from 'lucide-react';
+import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Search, Download, ExternalLink, Loader2 } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 interface QCUserProgressData {
-  id: number;
-  callerName: string;
-  qcId: number;
-  audioQcCompleted: number;
-  audioQcPass: number;
-  audioQcFail: number;
+  qc_id: number;
+  name: string;
+  mobile_number: string;
+  audio: number;
+  gps: number;
+  tele: number;
+  agency_id: number;
+  status: string;
+  statistics: {
+    audio_qc_completed: number;
+    audio_qc_pass: number;
+    audio_qc_fail: number;
+    audio_qc_fail_blank_audio: number;
+    audio_qc_fail_irrelevant: number;
+  };
 }
 
 export default function QCUserProgressPage() {
@@ -27,6 +38,15 @@ export default function QCUserProgressPage() {
     telecallerStatus: '1', // Default to Active
     reportType: 'summary', // Default to Summary
   });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [qcUserProgressData, setQcUserProgressData] = useState<QCUserProgressData[]>([]);
+  const [qcUsersList, setQcUsersList] = useState<QCUserProgressData[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [summary, setSummary] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
 
   // Generate date options for the last 6 months
   const generateDateOptions = () => {
@@ -43,124 +63,84 @@ export default function QCUserProgressPage() {
     return options;
   };
 
-  // Generate QC User options
+  // Generate QC User options from API data
   const generateQCUserOptions = () => {
-    return [
-      { value: '', label: 'Select User' },
-      { value: '101', label: 'Komal (101)' },
-      { value: '102', label: 'Priyanshi (102)' },
-      { value: '103', label: 'Sonu Kumari (103)' },
-      { value: '104', label: 'Varsha (104)' },
-      { value: '105', label: 'Simran (105)' },
-      { value: '106', label: 'Swati (106)' },
-      { value: '108', label: 'Seema (108)' },
-      { value: '109', label: 'Kundan (109)' },
-      { value: '110', label: 'Nishant (110)' },
-      { value: '111', label: 'Shilpa (111)' },
-      { value: '112', label: 'Priya (112)' },
-      { value: '113', label: 'Kajal Jha (113)' },
-      { value: '114', label: 'Khushbu (114)' },
-      { value: '115', label: 'Sanjivani Rai (115)' },
-      { value: '116', label: 'Sabha Hijab (116)' },
-      { value: '117', label: 'Riya (117)' },
-      { value: '118', label: 'Sanjivani Rai (118)' },
-      { value: '119', label: 'Mohd Usman (119)' },
-      { value: '120', label: 'Supriya (120)' },
-      { value: '121', label: 'Ashifa (121)' },
-      { value: '122', label: 'Rama (122)' },
-      { value: '123', label: 'Preeti (123)' },
-      { value: '124', label: 'Priya (124)' },
-      { value: '125', label: 'Sanjivani Rai (125)' },
-      { value: '126', label: 'Radha Rani (126)' },
-      { value: '127', label: 'Faizal Saifi (127)' },
-      { value: '128', label: 'Kumudmessey (128)' },
-      { value: '129', label: 'Ananya (129)' },
-      { value: '130', label: 'Himanshi (130)' },
-      { value: '135', label: 'Parveen Sharma (135)' },
-      { value: '136', label: 'Muskan (136)' },
-      { value: '137', label: 'Muskan Siddiqui (137)' },
-      { value: '138', label: 'Aman Kumar (138)' },
-      { value: '139', label: 'Himanshi-2 (139)' },
-      { value: '140', label: 'Priyanka (140)' },
-      { value: '201', label: 'Pinky (201)' },
-      { value: '202', label: 'Renu (202)' },
-      { value: '203', label: 'Sangeeta (203)' },
-      { value: '204', label: 'Sanju (204)' },
-      { value: '205', label: 'Khelan (205)' },
-      { value: '206', label: 'Manish (206)' },
-      { value: '999', label: 'Test User (999)' },
-      { value: '1001', label: 'KARTICK (1001)' },
-      { value: '1002', label: 'RUSHA DUTTA (1002)' },
-      { value: '1003', label: 'APARNA MAJIMDER (1003)' },
-      { value: '1004', label: 'DISHA NATH (1004)' },
-      { value: '1005', label: 'PRITHIJIT (1005)' },
-      { value: '1006', label: 'SHREYA MONDAL (1006)' },
-      { value: '1007', label: 'DEBARATI AICH (1007)' },
-      { value: '1008', label: 'SUSMITA HALDER (1008)' },
-      { value: '1009', label: 'NANDITA GHOSH (1009)' },
-      { value: '1010', label: 'RINKI ROY (1010)' },
-      { value: '1011', label: 'RUKHSAR BEGUM (1011)' },
-      { value: '1012', label: 'SHAMMA KHATOON (1012)' },
-      { value: '1020', label: 'APARNA SINGH (1020)' },
-      { value: '1021', label: 'PRIYANKA MONDAL (1021)' },
-      { value: '1022', label: 'Priyanak Mondal (1022)' },
-      { value: '2001', label: 'Vijay Sharma (2001)' },
-      { value: '2002', label: 'Mehul Kapoor (2002)' },
-      { value: '2003', label: 'Nishi (2003)' },
-      { value: '2004', label: 'Asha Chaurasiya (2004)' },
-      { value: '2005', label: 'Meenu Trivedi (2005)' },
-      { value: '2006', label: 'Deepanjali Trivedi (2006)' },
-      { value: '2007', label: 'Puja Pandey (2007)' },
-      { value: '2008', label: 'Archana Singh (2008)' },
-      { value: '2009', label: 'Seema (2009)' },
-      { value: '2010', label: 'Shashi Tiwari (2010)' },
-      { value: '2011', label: 'Sucharita Das (2011)' },
-      { value: '2012', label: 'Srabani Mondal (2012)' },
-      { value: '2013', label: 'Kiran Naskar (2013)' },
-      { value: '2014', label: 'Mousimi Parida (2014)' },
-      { value: '2015', label: 'Rohini Das (2015)' },
-      { value: '2016', label: 'Dwipannita Sanyanal (2016)' },
-      { value: '2017', label: 'Rupa Mondal (2017)' },
-      { value: '2020', label: 'Pratishtha Mishra (2020)' },
-    ];
+    const options = [{ value: '', label: 'Select User' }];
+    
+    qcUsersList.forEach(user => {
+      options.push({
+        value: user.qc_id.toString(),
+        label: `${user.name} (${user.qc_id})`
+      });
+    });
+    
+    return options;
   };
 
-  // Sample data based on the provided HTML
-  const qcUserProgressData: QCUserProgressData[] = [
-    { id: 1, callerName: 'Kundan', qcId: 109, audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088 },
-    { id: 2, callerName: 'Riya', qcId: 117, audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910 },
-    { id: 3, callerName: 'Mohd Usman', qcId: 119, audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037 },
-    { id: 4, callerName: 'Supriya', qcId: 120, audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666 },
-    { id: 5, callerName: 'Ashifa', qcId: 121, audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994 },
-    { id: 6, callerName: 'Rama', qcId: 122, audioQcCompleted: 2932, audioQcPass: 1608, audioQcFail: 1324 },
-    { id: 7, callerName: 'Faizal Saifi', qcId: 127, audioQcCompleted: 4109, audioQcPass: 2068, audioQcFail: 2041 },
-    { id: 8, callerName: 'Kumudmessey', qcId: 128, audioQcCompleted: 3597, audioQcPass: 1636, audioQcFail: 1961 },
-    { id: 9, callerName: 'Himanshi', qcId: 130, audioQcCompleted: 3076, audioQcPass: 884, audioQcFail: 2192 },
-    { id: 10, callerName: 'Parveen Sharma', qcId: 135, audioQcCompleted: 0, audioQcPass: 0, audioQcFail: 0 },
-    { id: 11, callerName: 'Muskan', qcId: 136, audioQcCompleted: 3250, audioQcPass: 1550, audioQcFail: 1700 },
-    { id: 12, callerName: 'Muskan Siddiqui', qcId: 137, audioQcCompleted: 3583, audioQcPass: 1866, audioQcFail: 1717 },
-    { id: 13, callerName: 'Himanshi-2', qcId: 139, audioQcCompleted: 3160, audioQcPass: 1627, audioQcFail: 1533 },
-    { id: 14, callerName: 'Priyanka', qcId: 140, audioQcCompleted: 3030, audioQcPass: 1918, audioQcFail: 1112 },
-    { id: 15, callerName: 'Priyanak Mondal', qcId: 1022, audioQcCompleted: 21, audioQcPass: 21, audioQcFail: 0 },
-    { id: 16, callerName: 'Vijay Sharma', qcId: 2001, audioQcCompleted: 16, audioQcPass: 15, audioQcFail: 1 },
-    { id: 17, callerName: 'Mehul Kapoor', qcId: 2002, audioQcCompleted: 280, audioQcPass: 222, audioQcFail: 58 },
-    { id: 18, callerName: 'Nishi', qcId: 2003, audioQcCompleted: 1049, audioQcPass: 949, audioQcFail: 100 },
-    { id: 19, callerName: 'Asha Chaurasiya', qcId: 2004, audioQcCompleted: 1056, audioQcPass: 944, audioQcFail: 112 },
-    { id: 20, callerName: 'Meenu Trivedi', qcId: 2005, audioQcCompleted: 693, audioQcPass: 478, audioQcFail: 215 },
-    { id: 21, callerName: 'Deepanjali Trivedi', qcId: 2006, audioQcCompleted: 179, audioQcPass: 136, audioQcFail: 43 },
-    { id: 22, callerName: 'Puja Pandey', qcId: 2007, audioQcCompleted: 387, audioQcPass: 376, audioQcFail: 11 },
-    { id: 23, callerName: 'Archana Singh', qcId: 2008, audioQcCompleted: 208, audioQcPass: 194, audioQcFail: 14 },
-    { id: 24, callerName: 'Seema', qcId: 2009, audioQcCompleted: 164, audioQcPass: 144, audioQcFail: 20 },
-    { id: 25, callerName: 'Shashi Tiwari', qcId: 2010, audioQcCompleted: 751, audioQcPass: 660, audioQcFail: 91 },
-    { id: 26, callerName: 'Sucharita Das', qcId: 2011, audioQcCompleted: 956, audioQcPass: 745, audioQcFail: 211 },
-    { id: 27, callerName: 'Srabani Mondal', qcId: 2012, audioQcCompleted: 685, audioQcPass: 439, audioQcFail: 246 },
-    { id: 28, callerName: 'Kiran Naskar', qcId: 2013, audioQcCompleted: 589, audioQcPass: 381, audioQcFail: 208 },
-    { id: 29, callerName: 'Mousimi Parida', qcId: 2014, audioQcCompleted: 919, audioQcPass: 545, audioQcFail: 374 },
-    { id: 30, callerName: 'Rohini Das', qcId: 2015, audioQcCompleted: 956, audioQcPass: 674, audioQcFail: 282 },
-    { id: 31, callerName: 'Dwipannita Sanyanal', qcId: 2016, audioQcCompleted: 854, audioQcPass: 407, audioQcFail: 447 },
-    { id: 32, callerName: 'Rupa Mondal', qcId: 2017, audioQcCompleted: 700, audioQcPass: 614, audioQcFail: 86 },
-    { id: 33, callerName: 'Pratishtha Mishra', qcId: 2020, audioQcCompleted: 584, audioQcPass: 547, audioQcFail: 37 },
-  ];
+  // Fetch QC Users list for dropdown
+  const fetchQCUsersList = async () => {
+    try {
+      const params = {
+        telecaller_status: '1', // Get active users
+        report_type: 'summary',
+      };
+      
+      const response = await apiService.getQCUserProgress(params);
+      
+      if (response.success && response.data) {
+        setQcUsersList(response.data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching QC users list:', err);
+    }
+  };
+
+  // Fetch QC User Progress data from API
+  const fetchQCUserProgress = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Extract name from selected QC user option using API data
+      const selectedUser = qcUsersList.find(user => user.qc_id.toString() === filters.qcId);
+      const selectedUserName = selectedUser ? selectedUser.name : undefined;
+      
+      const params = {
+        qc_id: filters.qcId || undefined,
+        name: selectedUserName || undefined,
+        telecaller_status: filters.telecallerStatus || undefined,
+        report_type: filters.reportType || undefined,
+        custom_date: filters.startDate || undefined,
+        custom_date_end: filters.endDate || undefined,
+        qc_complete_date: undefined, // Not used in current UI
+      };
+      
+      const response = await apiService.getQCUserProgress(params);
+      
+      if (response.success && response.data) {
+        setQcUserProgressData(response.data.data);
+        setTotalCount(response.data.pagination.totalCount);
+        setSummary(response.data.summary);
+      } else {
+        setError('Failed to fetch QC user progress data');
+      }
+    } catch (err) {
+      console.error('Error fetching QC user progress data:', err);
+      setError('Error fetching QC user progress data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Load QC users list first, then load progress data
+    const loadData = async () => {
+      await fetchQCUsersList();
+      await fetchQCUserProgress();
+    };
+    
+    loadData();
+  }, []);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
@@ -170,9 +150,18 @@ export default function QCUserProgressPage() {
   };
 
   const handleSearch = () => {
-    // Implement search logic here
-    console.log('Searching with filters:', filters);
+    fetchQCUserProgress();
   };
+
+  const handleRefresh = () => {
+    fetchQCUserProgress();
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentData = qcUserProgressData.slice(startIndex, endIndex);
 
   const handleDownload = () => {
     // Implement download logic here
@@ -183,6 +172,38 @@ export default function QCUserProgressPage() {
     // Implement view detail logic here
     console.log('Viewing detail for QC ID:', qcId);
   };
+
+  if (loading) {
+    return (
+      <div className="main-content horizontal-content">
+        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <Text>Loading QC user progress data...</Text>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="main-content horizontal-content">
+        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Card className="p-6 text-center">
+              <Text className="text-red-600 mb-4">{error}</Text>
+              <Button onClick={handleRefresh} variant="primary">
+                Try Again
+              </Button>
+            </Card>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div className="main-content horizontal-content">
@@ -196,7 +217,9 @@ export default function QCUserProgressPage() {
           </div>
           <div className="flex-1"></div>
           <div className="flex-1">
-            <span></span>
+            <Button onClick={handleRefresh} variant="outline" size="sm">
+              Refresh
+            </Button>
           </div>
         </div>
         {/* /breadcrumb */}
@@ -317,21 +340,21 @@ export default function QCUserProgressPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {qcUserProgressData.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.callerName}</td>
+                    {currentData.map((user, index) => (
+                      <tr key={user.qc_id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                           <button
-                            onClick={() => handleViewDetail(user.qcId)}
+                            onClick={() => handleViewDetail(user.qc_id)}
                             className="text-blue-600 hover:text-blue-800 hover:underline"
                           >
-                            {user.qcId}
+                            {user.qc_id}
                             <ExternalLink className="w-3 h-3 ml-1 inline" />
                           </button>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.audioQcCompleted.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.audioQcPass.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.audioQcFail.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_completed.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_pass.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_fail.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -341,7 +364,16 @@ export default function QCUserProgressPage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{qcUserProgressData.length}</span> items.
+                  Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items.
+                </div>
+                <div>
+                  <PaginationStandard
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalCount}
+                    itemsPerPage={pageSize}
+                    onPageChange={setCurrentPage}
+                  />
                 </div>
               </div>
             </div>
