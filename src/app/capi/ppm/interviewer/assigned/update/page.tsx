@@ -277,7 +277,7 @@ const AssignedUpdateContent = () => {
                     </div>
 
                     {/* AC Options */}
-                    <div className="max-h-40 overflow-y-auto">
+                    <div className="max-h-20 overflow-y-auto">
                       {filteredACs.map((ac) => (
                         <label
                           key={ac.value}

@@ -50,15 +50,36 @@ export default function MasterACCastePage() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, acCode, casteName, casteCode]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getMasterACCasteList({
+      
+      // Build parameters object, only including non-empty values
+      const params: any = {
         page: currentPage,
         limit: pageSize
-      });
+      };
+      
+      // Only add ac_code if it's not empty
+      if (acCode.trim()) {
+        params.ac_code = acCode.trim();
+      }
+      
+      // Only add caste_name if it's not empty
+      if (casteName.trim()) {
+        params.caste_name = casteName.trim();
+      }
+      
+      // Only add caste_code if it's not empty
+      if (casteCode.trim()) {
+        params.caste_code = casteCode.trim();
+      }
+      
+      console.log('API Parameters:', params);
+      
+      const response = await apiService.getMasterACCasteList(params);
       
       if (response.success) {
         setData(response.data);
@@ -76,10 +97,6 @@ export default function MasterACCastePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search logic here
-    console.log('Search AC Code:', acCode);
-    console.log('Search Caste Name:', casteName);
-    console.log('Search Caste Code:', casteCode);
     // Reset to first page when searching
     setCurrentPage(1);
     fetchData();

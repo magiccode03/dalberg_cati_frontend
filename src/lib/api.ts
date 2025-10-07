@@ -1270,17 +1270,34 @@ class ApiService {
     return this.request(API_ENDPOINTS.DASHBOARD.SAMPLE_STATISTICS);
   }
 
-  async getMasterACList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+  async getMasterACList(params?: { 
+    page?: number; 
+    limit?: number; 
+    ac_name?: string; 
+    ac_code?: string; 
+  }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_LIST}${queryString}`);
   }
 
-  async getMasterACCasteList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+  async getMasterACCasteList(params?: { 
+    page?: number; 
+    limit?: number; 
+    caste_name?: string; 
+    ac_code?: string; 
+    caste_code?: string; 
+  }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_CASTE_LIST}${queryString}`);
   }
 
-  async getMasterPollingStationList(params?: { page?: number; limit?: number }): Promise<ApiResponse<any>> {
+  async getMasterPollingStationList(params?: { 
+    page?: number; 
+    limit?: number; 
+    polling_station_name?: string; 
+    ac_code?: string; 
+    polling_station_no?: string; 
+  }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
   }
@@ -1738,7 +1755,7 @@ class ApiService {
   }
 
   // Interview Assigned Methods
-  async getAssignedInterviewers(): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[] }> }>> {
+  async getAssignedInterviewers(): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[]; agency_name: string }> }>> {
     return this.request(`${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list`);
   }
 

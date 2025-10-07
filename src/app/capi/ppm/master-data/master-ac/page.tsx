@@ -58,10 +58,26 @@ export default function MasterACPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getMasterACList({
+      
+      // Build parameters object, only including non-empty values
+      const params: any = {
         page: currentPage,
         limit: pageSize
-      });
+      };
+      
+      // Only add ac_name if it's not empty
+      if (acName.trim()) {
+        params.ac_name = acName.trim();
+      }
+      
+      // Only add ac_code if it's not empty
+      if (acCode.trim()) {
+        params.ac_code = acCode.trim();
+      }
+      
+      console.log('API Parameters:', params);
+      
+      const response = await apiService.getMasterACList(params);
       
       if (response.success) {
         setData(response.data);
@@ -83,6 +99,7 @@ export default function MasterACPage() {
     setCurrentPage(1);
     fetchData();
   };
+
 
   const handleDownloadAC = () => {
     // Handle download AC list logic here

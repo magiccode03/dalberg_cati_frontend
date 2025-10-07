@@ -55,15 +55,36 @@ export default function MasterPSPage() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, pollingStationName, pollingStationNo, acCode]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getMasterPollingStationList({
+      
+      // Build parameters object, only including non-empty values
+      const params: any = {
         page: currentPage,
         limit: pageSize
-      });
+      };
+      
+      // Only add polling_station_name if it's not empty
+      if (pollingStationName.trim()) {
+        params.polling_station_name = pollingStationName.trim();
+      }
+      
+      // Only add polling_station_no if it's not empty
+      if (pollingStationNo.trim()) {
+        params.polling_station_no = pollingStationNo.trim();
+      }
+      
+      // Only add ac_code if it's not empty
+      if (acCode.trim()) {
+        params.ac_code = acCode.trim();
+      }
+      
+      console.log('API Parameters:', params);
+      
+      const response = await apiService.getMasterPollingStationList(params);
       
       if (response.success) {
         setData(response.data);
@@ -81,10 +102,6 @@ export default function MasterPSPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle search logic here
-    console.log('Search Polling Station Name:', pollingStationName);
-    console.log('Search Polling Station No:', pollingStationNo);
-    console.log('Search AC Code:', acCode);
     // Reset to first page when searching
     setCurrentPage(1);
     fetchData();

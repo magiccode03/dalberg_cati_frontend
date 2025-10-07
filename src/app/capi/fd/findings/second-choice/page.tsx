@@ -135,8 +135,8 @@ export default function SecondChoicePage() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <th rowSpan={12} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
+                     <tr>
+                       <th rowSpan={12} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
                 <th className="bg-blue-100 border border-gray-300 font-semibold">Party Name</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#92d050' }}>JDU</th>
