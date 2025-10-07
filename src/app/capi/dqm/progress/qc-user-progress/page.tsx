@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -8,35 +9,65 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, ExternalLink } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 interface QCUserProgressData {
   id: number;
-  callerName: string;
   qcId: number;
+  name: string;
+  mobileNumber: string;
+  audio: number;
+  gps: number;
+  tele: number;
+  agencyId: number;
+  status: string;
   audioQcCompleted: number;
   audioQcPass: number;
   audioQcFail: number;
+  audioQcFailBlankAudio: number;
+  audioQcFailIrrelevant: number;
 }
 
 interface APIResponse {
   success: boolean;
   data?: {
-    qc_user_progress: Array<{
-      id: number;
-      name: string;
+    data: Array<{
       qc_id: number;
-      audio_qc_completed: number;
-      audio_qc_pass: number;
-      audio_qc_fail: number;
+      name: string;
+      mobile_number: string;
+      audio: number;
+      gps: number;
+      tele: number;
+      agency_id: number;
+      status: string;
+      statistics: {
+        audio_qc_completed: number;
+        audio_qc_pass: number;
+        audio_qc_fail: number;
+        audio_qc_fail_blank_audio: number;
+        audio_qc_fail_irrelevant: number;
+      };
     }>;
+    pagination: {
+      totalCount: number;
+      pageCount: number;
+      currentPage: number;
+      perPage: boolean;
+    };
+    summary: string;
+    report_type: string;
+    filters_applied: Record<string, any>;
   };
+  message: string;
+  timestamp: string;
   error?: string;
-  timestamp?: string;
 }
 
 export default function QCUserProgressPage() {
+  const router = useRouter();
+  
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -48,6 +79,10 @@ export default function QCUserProgressPage() {
   const [qcUserProgressData, setQcUserProgressData] = useState<QCUserProgressData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Fetch data from API
   useEffect(() => {
@@ -69,6 +104,10 @@ export default function QCUserProgressPage() {
         if (filters.startDate) queryParams.append('custom_date', filters.startDate);
         if (filters.endDate) queryParams.append('custom_date_end', filters.endDate);
         if (filters.startDate) queryParams.append('qc_complete_date', filters.startDate);
+        
+        // Add pagination parameters
+        queryParams.append('page', currentPage.toString());
+        queryParams.append('pageSize', pageSize.toString());
         
         const queryString = queryParams.toString();
         const endpoint = queryString ? `/progress/qc-user-progress?${queryString}` : '/progress/qc-user-progress';
@@ -94,29 +133,45 @@ export default function QCUserProgressPage() {
         
         // Handle different response structures
         if (data.success && data.data) {
-          // Check if qc_user_progress exists in the response
-          if (data.data.qc_user_progress && Array.isArray(data.data.qc_user_progress)) {
+          // Check if data exists in the response
+          if (data.data.data && Array.isArray(data.data.data)) {
             // Transform QC user progress data
-            const progressData: QCUserProgressData[] = data.data.qc_user_progress.map(user => ({
-              id: user.id,
-              callerName: user.name,
+            const progressData: QCUserProgressData[] = data.data.data.map((user, index) => ({
+              id: (currentPage - 1) * pageSize + index + 1,
               qcId: user.qc_id,
-              audioQcCompleted: user.audio_qc_completed,
-              audioQcPass: user.audio_qc_pass,
-              audioQcFail: user.audio_qc_fail
+              name: user.name,
+              mobileNumber: user.mobile_number,
+              audio: user.audio,
+              gps: user.gps,
+              tele: user.tele,
+              agencyId: user.agency_id,
+              status: user.status,
+              audioQcCompleted: user.statistics.audio_qc_completed,
+              audioQcPass: user.statistics.audio_qc_pass,
+              audioQcFail: user.statistics.audio_qc_fail,
+              audioQcFailBlankAudio: user.statistics.audio_qc_fail_blank_audio,
+              audioQcFailIrrelevant: user.statistics.audio_qc_fail_irrelevant
             }));
             setQcUserProgressData(progressData);
+            
+            // Set pagination data
+            if (data.data.pagination) {
+              setTotalCount(data.data.pagination.totalCount);
+              setTotalPages(data.data.pagination.pageCount);
+            }
           } else {
-            // If qc_user_progress doesn't exist, use fallback data
-            console.log('qc_user_progress not found in response, using fallback data...');
+            // If data doesn't exist, use fallback data
+            console.log('data not found in response, using fallback data...');
             const fallbackData: QCUserProgressData[] = [
-              { id: 1, callerName: 'Kundan', qcId: 109, audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088 },
-              { id: 2, callerName: 'Riya', qcId: 117, audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910 },
-              { id: 3, callerName: 'Mohd Usman', qcId: 119, audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037 },
-              { id: 4, callerName: 'Supriya', qcId: 120, audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666 },
-              { id: 5, callerName: 'Ashifa', qcId: 121, audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994 }
+              { id: 1, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088, audioQcFailBlankAudio: 2000, audioQcFailIrrelevant: 2088 },
+              { id: 2, qcId: 117, name: 'Riya', mobileNumber: '8287465958', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910, audioQcFailBlankAudio: 400, audioQcFailIrrelevant: 510 },
+              { id: 3, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037, audioQcFailBlankAudio: 1000, audioQcFailIrrelevant: 1037 },
+              { id: 4, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', audio: 1, gps: 1, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666, audioQcFailBlankAudio: 300, audioQcFailIrrelevant: 366 },
+              { id: 5, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994, audioQcFailBlankAudio: 400, audioQcFailIrrelevant: 594 }
             ];
             setQcUserProgressData(fallbackData);
+            setTotalCount(fallbackData.length);
+            setTotalPages(Math.ceil(fallbackData.length / pageSize));
           }
         } else if (data.error) {
           setError(data.error);
@@ -124,13 +179,15 @@ export default function QCUserProgressPage() {
           // Fallback to sample data if API fails
           console.log('API returned no data, using fallback sample data...');
           const fallbackData: QCUserProgressData[] = [
-            { id: 1, callerName: 'Kundan', qcId: 109, audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088 },
-            { id: 2, callerName: 'Riya', qcId: 117, audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910 },
-            { id: 3, callerName: 'Mohd Usman', qcId: 119, audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037 },
-            { id: 4, callerName: 'Supriya', qcId: 120, audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666 },
-            { id: 5, callerName: 'Ashifa', qcId: 121, audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994 }
+            { id: 1, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088, audioQcFailBlankAudio: 2000, audioQcFailIrrelevant: 2088 },
+            { id: 2, qcId: 117, name: 'Riya', mobileNumber: '8287465958', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910, audioQcFailBlankAudio: 400, audioQcFailIrrelevant: 510 },
+            { id: 3, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037, audioQcFailBlankAudio: 1000, audioQcFailIrrelevant: 1037 },
+            { id: 4, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', audio: 1, gps: 1, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666, audioQcFailBlankAudio: 300, audioQcFailIrrelevant: 366 },
+            { id: 5, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994, audioQcFailBlankAudio: 400, audioQcFailIrrelevant: 594 }
           ];
           setQcUserProgressData(fallbackData);
+          setTotalCount(fallbackData.length);
+          setTotalPages(Math.ceil(fallbackData.length / pageSize));
         }
       } catch (err: any) {
         console.error('Error fetching data:', err);
@@ -165,20 +222,22 @@ export default function QCUserProgressPage() {
         // Use fallback data on error (always show sample data even if API fails)
         console.log('API request failed, using fallback sample data...');
         const fallbackData: QCUserProgressData[] = [
-          { id: 1, callerName: 'Kundan', qcId: 109, audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088 },
-          { id: 2, callerName: 'Riya', qcId: 117, audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910 },
-          { id: 3, callerName: 'Mohd Usman', qcId: 119, audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037 },
-          { id: 4, callerName: 'Supriya', qcId: 120, audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666 },
-          { id: 5, callerName: 'Ashifa', qcId: 121, audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994 }
+          { id: 1, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 7252, audioQcPass: 3164, audioQcFail: 4088, audioQcFailBlankAudio: 2000, audioQcFailIrrelevant: 2088 },
+          { id: 2, qcId: 117, name: 'Riya', mobileNumber: '8287465958', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2426, audioQcPass: 1516, audioQcFail: 910, audioQcFailBlankAudio: 400, audioQcFailIrrelevant: 510 },
+          { id: 3, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2969, audioQcPass: 932, audioQcFail: 2037, audioQcFailBlankAudio: 1000, audioQcFailIrrelevant: 1037 },
+          { id: 4, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', audio: 1, gps: 1, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 2121, audioQcPass: 1455, audioQcFail: 666, audioQcFailBlankAudio: 300, audioQcFailIrrelevant: 366 },
+          { id: 5, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', audio: 1, gps: 0, tele: 0, agencyId: 1, status: 'Active', audioQcCompleted: 3426, audioQcPass: 2432, audioQcFail: 994, audioQcFailBlankAudio: 400, audioQcFailIrrelevant: 594 }
         ];
         setQcUserProgressData(fallbackData);
+        setTotalCount(fallbackData.length);
+        setTotalPages(Math.ceil(fallbackData.length / pageSize));
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [filters]);
+  }, [filters, currentPage]);
 
   // Generate date options for the last 6 months
   const generateDateOptions = () => {
@@ -283,6 +342,12 @@ export default function QCUserProgressPage() {
       ...prev,
       [field]: value
     }));
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const handleSearch = () => {
@@ -296,8 +361,8 @@ export default function QCUserProgressPage() {
   };
 
   const handleViewDetail = (qcId: number) => {
-    // Implement view detail logic here
-    console.log('Viewing detail for QC ID:', qcId);
+    // Navigate to the interview-list page
+    router.push('/capi/dqm/progress/interview-list');
   };
 
   if (loading) {
@@ -433,19 +498,23 @@ export default function QCUserProgressPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                <Heading level={2} className="text-xl font-semibold text-gray-900">
-                  Telecaller Progress Summary
-                </Heading>
-                <Button
-                  variant="outline"
-                  onClick={handleDownload}
-                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+                  <Heading level={2} className="text-xl font-semibold text-gray-900">
+                    Telecaller Progress Summary
+                  </Heading>
+                </div>
+                <div className="flex items-center">
+                  <Button
+                    variant="primary"
+                    onClick={handleDownload}
+                    className="text-white border-blue-600 hover:bg-blue-500"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="p-6">
@@ -458,23 +527,23 @@ export default function QCUserProgressPage() {
                 >
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Caller Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : <br />Completed
+                        Audio QC : Completed
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : <br />Pass
+                        Audio QC : Pass
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : <br />Fail
+                        Audio QC : Fail
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {qcUserProgressData.map((user) => (
                       <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.callerName}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                           <button
                             onClick={() => handleViewDetail(user.qcId)}
@@ -496,7 +565,17 @@ export default function QCUserProgressPage() {
               {/* Table Footer */}
               <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{qcUserProgressData.length}</span> items.
+                  Showing <span className="font-semibold">{Math.min((currentPage - 1) * pageSize + 1, totalCount)}-{Math.min(currentPage * pageSize, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items.
+                </div>
+                <div>
+                  <PaginationStandard
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalCount}
+                    itemsPerPage={pageSize}
+                    onPageChange={handlePageChange}
+                    className="justify-center"
+                  />
                 </div>
               </div>
             </div>

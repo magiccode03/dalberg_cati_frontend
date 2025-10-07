@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Key, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useUpdateTeamRegistration, useGetTeamRegistrationById, useGetTeamRegistrationDropdownOptions } from '@/hooks/useApi';
+import { useUpdateTeamRegistration, useGetTeamRegistrationById, useGetTeamRegistrationDropdownOptions, useGetQCAgencies } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 import SuccessBanner from '@/components/ui/SuccessBanner';
 
@@ -35,10 +35,18 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
   const { updateTeamRegistration, loading: updateLoading, error: updateError } = useUpdateTeamRegistration();
   const { getTeamRegistrationById, loading: fetchLoading, error: fetchError } = useGetTeamRegistrationById();
   const { getDropdownOptions, data: dropdownData, loading: dropdownLoading, error: dropdownError } = useGetTeamRegistrationDropdownOptions();
+  const { getQCAgencies, data: qcAgenciesData, loading: qcAgenciesLoading, error: qcAgenciesError } = useGetQCAgencies();
   const { success, error: showError } = useToast();
 
-  const qcAgencyOptions = [
-    { value: '', label: 'Status QC Team' },
+  // Dynamic QC agency options from API
+  const qcAgencyOptions = qcAgenciesData ? [
+    { value: '', label: 'Select QC Team' },
+    ...qcAgenciesData.map(agency => ({
+      value: agency.id.toString(),
+      label: `${agency.agency_name} (${agency.username})`
+    }))
+  ] : [
+    { value: '', label: 'Select QC Team' },
     { value: '1', label: 'Internal (bhr2internalqc)' },
     { value: '2', label: 'Kadence (bhr2kadenceqc)' }
   ];
@@ -75,7 +83,8 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
   // Fetch dropdown options on component mount
   useEffect(() => {
     getDropdownOptions();
-  }, [getDropdownOptions]);
+    getQCAgencies();
+  }, [getDropdownOptions, getQCAgencies]);
 
   const fetchAgencyData = async () => {
     if (!agencyId) {
@@ -283,7 +292,15 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                   value={formData.qc_agency_id}
                   onChange={(value) => handleInputChange('qc_agency_id', Array.isArray(value) ? value[0] : value)}
                   options={qcAgencyOptions}
+                  disabled={qcAgenciesLoading}
+                  placeholder={qcAgenciesLoading ? "Loading QC teams..." : "Select QC Team"}
                 />
+                {qcAgenciesLoading && (
+                  <Text className="text-sm text-gray-500 mt-1">Loading QC teams...</Text>
+                )}
+                {qcAgenciesError && (
+                  <Text className="text-sm text-red-500 mt-1">Failed to load QC teams</Text>
+                )}
               </div>
             </div>
 
@@ -424,6 +441,18 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                 <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
                 <Text className="text-yellow-700">
                   Warning: Could not load dropdown options. Using default values. ({dropdownError})
+                </Text>
+              </div>
+            </div>
+          )}
+
+          {/* QC Agencies Error Display */}
+          {qcAgenciesError && (
+            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center">
+                <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                <Text className="text-yellow-700">
+                  Warning: Could not load QC teams. Using default values. ({qcAgenciesError})
                 </Text>
               </div>
             </div>

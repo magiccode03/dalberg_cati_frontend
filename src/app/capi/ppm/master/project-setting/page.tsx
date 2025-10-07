@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -18,35 +18,41 @@ import {
   ToggleLeft, 
   File 
 } from 'lucide-react';
+import { apiService } from '@/lib/api';
 
 const ProjectSettingPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
-    projectName: 'Bihar 2025 Baseline',
-    formId: '33',
+    projectName: '',
+    formId: '',
     voiceBroadcastAnnouncementId: '',
-    pmIds: '1390,1392,1393',
-    audioQcFormId: '54',
-    audioReQcFormId: '55',
+    pmIds: '',
+    audioQcFormId: '',
+    audioReQcFormId: '',
   });
 
   const [instanceData, setInstanceData] = useState({
-    instanceLoi: '180',
-    instanceAudio1: 'consent',
+    instanceLoi: '',
+    instanceAudio1: '',
     instanceAudio2: '',
     instanceAudio3: '',
   });
 
   const [sampleData, setSampleData] = useState({
-    totalSample: '72900',
-    acSample: '300',
-    pollingStationSample: '13',
-    enumeratorSample: '30',
-    femaleQuota: '12',
-    psCircleRadius: '3000',
+    totalSample: '',
+    acSample: '',
+    pollingStationSample: '',
+    enumeratorSample: '',
+    femaleQuota: '',
+    psCircleRadius: '',
   });
 
   const [surveyDatesData, setSurveyDatesData] = useState({
-    surveyStartDate: '2025-04-05',
+    surveyStartDate: '',
     surveyEndDate: '',
   });
 
@@ -323,6 +329,70 @@ const ProjectSettingPage = () => {
 
   const [activeTab, setActiveTab] = useState('project-info');
 
+  // Fetch project settings data on component mount
+  useEffect(() => {
+    const fetchProjectSettings = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await apiService.getProjectSettings();
+        
+        if (response.success && response.data) {
+          const data = response.data;
+          
+          // Update form data
+          setFormData({
+            projectName: data.project_name || '',
+            formId: data.form_id?.toString() || '',
+            voiceBroadcastAnnouncementId: data.voice_broadcast_announcement_id?.toString() || '',
+            pmIds: data.pm_ids || '',
+            audioQcFormId: data.audio_qc_form_id?.toString() || '',
+            audioReQcFormId: data.audio_re_qc_form_id?.toString() || '',
+          });
+
+          // Update instance data
+          setInstanceData({
+            instanceLoi: data.instance_loi?.toString() || '',
+            instanceAudio1: data.instance_audio1 || '',
+            instanceAudio2: data.instance_audio2 || '',
+            instanceAudio3: data.instance_audio3 || '',
+          });
+
+          // Update sample data
+          setSampleData({
+            totalSample: data.total_sample?.toString() || '',
+            acSample: data.ac_sample?.toString() || '',
+            pollingStationSample: data.pollingstation_sample?.toString() || '',
+            enumeratorSample: data.enumerator_sample?.toString() || '',
+            femaleQuota: data.female_quota?.toString() || '',
+            psCircleRadius: data.ps_cricle_radius?.toString() || '',
+          });
+
+          // Update survey dates data
+          setSurveyDatesData({
+            surveyStartDate: data.survey_start_date ? new Date(data.survey_start_date).toISOString().split('T')[0] : '',
+            surveyEndDate: data.survey_end_date ? new Date(data.survey_end_date).toISOString().split('T')[0] : '',
+          });
+
+          // Update project themes data
+          setProjectThemesData({
+            qcTheme: data.qc_theme?.toString() || '1',
+            clientTheme: data.client_theme?.toString() || '1',
+            pmtTheme: data.pmt_theme?.toString() || '1',
+            qualityTheme: data.quality_theme?.toString() || '1',
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching project settings:', err);
+        setError('Failed to load project settings');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectSettings();
+  }, []);
+
   const settingsMenu = [
     {
       id: 'project-info',
@@ -404,34 +474,149 @@ const ProjectSettingPage = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission logic here
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const response = await apiService.updateProjectSettings({
+        form_id: parseInt(formData.formId),
+        project_name: formData.projectName,
+        pm_ids: formData.pmIds,
+        audio_qc_form_id: parseInt(formData.audioQcFormId),
+        audio_re_qc_form_id: parseInt(formData.audioReQcFormId),
+        voice_broadcast_announcement_id: parseInt(formData.voiceBroadcastAnnouncementId),
+      });
+
+      if (response.success) {
+        setSuccessMessage('Project settings updated successfully');
+      } else {
+        setError('Failed to update project settings');
+      }
+    } catch (err) {
+      console.error('Error updating project settings:', err);
+      setError('Failed to update project settings');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleInstanceSubmit = (e: React.FormEvent) => {
+  const handleInstanceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Instance form submitted:', instanceData);
-    // Handle instance form submission logic here
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const response = await apiService.updateProjectInstanceSettings({
+        instance_loi: parseInt(instanceData.instanceLoi),
+        instance_audio1: instanceData.instanceAudio1,
+        instance_audio2: instanceData.instanceAudio2,
+        instance_audio3: instanceData.instanceAudio3,
+        quality_check_type: 1, // Default value
+      });
+
+      if (response.success) {
+        setSuccessMessage('Instance settings updated successfully');
+      } else {
+        setError('Failed to update instance settings');
+      }
+    } catch (err) {
+      console.error('Error updating instance settings:', err);
+      setError('Failed to update instance settings');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSampleSubmit = (e: React.FormEvent) => {
+  const handleSampleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Sample form submitted:', sampleData);
-    // Handle sample form submission logic here
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const response = await apiService.updateProjectSampleSettings({
+        total_sample: parseInt(sampleData.totalSample),
+        ac_sample: parseInt(sampleData.acSample),
+        pollingstation_sample: parseInt(sampleData.pollingStationSample),
+        enumerator_sample: parseInt(sampleData.enumeratorSample),
+        female_quota: parseInt(sampleData.femaleQuota),
+        ps_cricle_radius: parseInt(sampleData.psCircleRadius),
+      });
+
+      if (response.success) {
+        setSuccessMessage('Sample settings updated successfully');
+      } else {
+        setError('Failed to update sample settings');
+      }
+    } catch (err) {
+      console.error('Error updating sample settings:', err);
+      setError('Failed to update sample settings');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleSurveyDatesSubmit = (e: React.FormEvent) => {
+  const handleSurveyDatesSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Survey dates form submitted:', surveyDatesData);
-    // Handle survey dates form submission logic here
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      // Format dates as DD/MM/YYYY for the API
+      const formatDate = (dateStr: string) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+      };
+
+      const response = await apiService.updateProjectDatesSettings({
+        survey_start_date: formatDate(surveyDatesData.surveyStartDate),
+        survey_end_date: formatDate(surveyDatesData.surveyEndDate),
+      });
+
+      if (response.success) {
+        setSuccessMessage('Survey dates updated successfully');
+      } else {
+        setError('Failed to update survey dates');
+      }
+    } catch (err) {
+      console.error('Error updating survey dates:', err);
+      setError('Failed to update survey dates');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleProjectThemesSubmit = (e: React.FormEvent) => {
+  const handleProjectThemesSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Project themes form submitted:', projectThemesData);
-    // Handle project themes form submission logic here
+    try {
+      setSubmitting(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const response = await apiService.updateProjectThemesSettings({
+        qc_theme: parseInt(projectThemesData.qcTheme),
+        client_theme: parseInt(projectThemesData.clientTheme),
+        pmt_theme: parseInt(projectThemesData.pmtTheme),
+        quality_theme: parseInt(projectThemesData.qualityTheme),
+      });
+
+      if (response.success) {
+        setSuccessMessage('Project themes updated successfully');
+      } else {
+        setError('Failed to update project themes');
+      }
+    } catch (err) {
+      console.error('Error updating project themes:', err);
+      setError('Failed to update project themes');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleQuestionTypeSubmit = (e: React.FormEvent) => {
@@ -450,7 +635,35 @@ const ProjectSettingPage = () => {
         Project Settings
       </Heading>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Loading State */}
+      {loading && (
+        <Card>
+          <div className="flex items-center justify-center py-8">
+            <Text>Loading project settings...</Text>
+          </div>
+        </Card>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <Card className="mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <Text className="text-red-700">{error}</Text>
+          </div>
+        </Card>
+      )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <Card className="mb-6">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <Text className="text-green-700">{successMessage}</Text>
+          </div>
+        </Card>
+      )}
+
+      {!loading && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Settings Sidebar */}
         <div className="lg:col-span-3">
           <Card>
@@ -589,13 +802,18 @@ const ProjectSettingPage = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
-                    <Button type="submit" variant="primary">
-                      Update
+                    <Button 
+                      type="submit" 
+                      variant="primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Updating...' : 'Update'}
                     </Button>
                     <Button 
                       type="button" 
                       variant="destructive"
                       onClick={() => window.history.back()}
+                      disabled={submitting}
                     >
                       Back
                     </Button>
@@ -672,13 +890,18 @@ const ProjectSettingPage = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
-                    <Button type="submit" variant="primary">
-                      Update
+                    <Button 
+                      type="submit" 
+                      variant="primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Updating...' : 'Update'}
                     </Button>
                     <Button 
                       type="button" 
                       variant="destructive"
                       onClick={() => window.history.back()}
+                      disabled={submitting}
                     >
                       Back
                     </Button>
@@ -780,13 +1003,18 @@ const ProjectSettingPage = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
-                    <Button type="submit" variant="primary">
-                      Update
+                    <Button 
+                      type="submit" 
+                      variant="primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Updating...' : 'Update'}
                     </Button>
                     <Button 
                       type="button" 
                       variant="destructive"
                       onClick={() => window.history.back()}
+                      disabled={submitting}
                     >
                       Back
                     </Button>
@@ -834,13 +1062,18 @@ const ProjectSettingPage = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
-                    <Button type="submit" variant="primary">
-                      Update
+                    <Button 
+                      type="submit" 
+                      variant="primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Updating...' : 'Update'}
                     </Button>
                     <Button 
                       type="button" 
                       variant="destructive"
                       onClick={() => window.history.back()}
+                      disabled={submitting}
                     >
                       Back
                     </Button>
@@ -956,13 +1189,18 @@ const ProjectSettingPage = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-3 pt-4">
-                    <Button type="submit" variant="primary">
-                      Update
+                    <Button 
+                      type="submit" 
+                      variant="primary"
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Updating...' : 'Update'}
                     </Button>
                     <Button 
                       type="button" 
                       variant="destructive"
                       onClick={() => window.history.back()}
+                      disabled={submitting}
                     >
                       Back
                     </Button>
@@ -1014,6 +1252,7 @@ const ProjectSettingPage = () => {
           </Card>
         </div>
       </div>
+      )}
     </Container>
   );
 };

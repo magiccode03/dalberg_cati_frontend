@@ -84,19 +84,19 @@ interface APIResponse {
 
 const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
-    agencyId: '',
-    serverId: '',
-    interviewDate: '',
-    acCode: '',
-    psCode: '',
-    userId: '',
-    interviewerId: '',
-    deviceId: '',
-    mobileNo: '',
-    audioQc: [] as string[],
-    audioQcStatus: [] as string[],
-    audio1Status: [] as string[],
-    qcRecheckStatusAudio: [] as string[],
+    agency_id: '',
+    server_id: '',
+    interview_date: '',
+    ac_code: '',
+    ps_code: '',
+    user_id: '',
+    interviewer_id: '',
+    device_id: '',
+    mobile_no: '',
+    audio_qc: [] as string[],
+    audio_qc_status: [] as string[],
+    audio_qc_status_detailed: [] as string[],
+    audio_re_qc_status: [] as string[],
     status: [] as string[],
   });
 
@@ -105,10 +105,95 @@ const InterviewLogPage = () => {
 
   // API state management
   const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
-  const [totalCount, setTotalCount] = useState(108333);
-  const [totalPages, setTotalPages] = useState(25);
-  const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  // API state management
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  // Fetch interview logs from API
+  const fetchInterviewLogs = async () => {
+    try {
+      setLoading(true);
+      setApiError(null);
+
+      // Debug: Check API configuration
+      const token = localStorage.getItem('accessToken');
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      console.log('🔧 API Configuration:', {
+        baseUrl: apiBaseUrl,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'No token'
+      });
+
+      // Build query parameters based on filters
+      const queryParams = new URLSearchParams();
+      
+      if (filters.agency_id) queryParams.append('agency_id', filters.agency_id);
+      if (filters.server_id) queryParams.append('server_id', filters.server_id);
+      if (filters.interview_date) queryParams.append('interview_date', filters.interview_date);
+      if (filters.ac_code) queryParams.append('ac_code', filters.ac_code);
+      if (filters.ps_code) queryParams.append('ps_code', filters.ps_code);
+      if (filters.user_id) queryParams.append('user_id', filters.user_id);
+      if (filters.interviewer_id) queryParams.append('interviewer_id', filters.interviewer_id);
+      if (filters.device_id) queryParams.append('device_id', filters.device_id);
+      if (filters.mobile_no) queryParams.append('mobile_no', filters.mobile_no);
+      if (filters.audio_qc.length > 0) queryParams.append('audio_qc', filters.audio_qc.join(','));
+      if (filters.audio_qc_status.length > 0) queryParams.append('audio_qc_status', filters.audio_qc_status.join(','));
+      if (filters.audio_qc_status_detailed.length > 0) queryParams.append('audio_qc_status_detailed', filters.audio_qc_status_detailed.join(','));
+      if (filters.audio_re_qc_status.length > 0) queryParams.append('audio_re_qc_status', filters.audio_re_qc_status.join(','));
+      if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
+      
+      // Add pagination
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('per_page', pageSize.toString());
+
+      console.log('🔍 Making API request to:', `/overview/interview-log?${queryParams.toString()}`);
+      
+      const response = await apiClient.get(`/overview/interview-log?${queryParams.toString()}`);
+      console.log('📊 API Response:', response);
+      
+      const data: APIResponse = response.data;
+      
+      if (data.success && data.data.interviews) {
+        setInterviewData(transformAPIData(data.data.interviews));
+        setTotalCount(data.data.pagination.total_count);
+        setTotalPages(data.data.pagination.total_pages);
+        setError(null);
+      } else {
+        console.error('API did not return interview data:', data);
+        setInterviewData(transformAPIData(sampleInterviewData));
+        setError('No data received from API, using sample data');
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching interview logs:', err);
+      
+      // Check if it's a JSON parsing error
+      if (err.message?.includes('Unexpected token') || err.message?.includes('<!DOCTYPE')) {
+        console.error('🚨 JSON Parsing Error - Server returned HTML instead of JSON');
+        console.error('Response data:', err.response?.data);
+        setApiError('Server returned HTML instead of JSON. Please check authentication and API endpoint.');
+      } else if (err.response?.status === 401) {
+        console.error('🔐 Authentication Error - Token may be expired');
+        setApiError('Authentication failed. Please log in again.');
+      } else if (err.response?.status === 404) {
+        console.error('🔍 Not Found Error - API endpoint not found');
+        setApiError('API endpoint not found. Please check the server configuration.');
+      } else {
+        console.error('🌐 Network/API Error:', err.response?.data || err.message);
+        setApiError(`Failed to load interview data: ${err.response?.data?.message || err.message}`);
+      }
+      
+      // Use sample data as fallback
+      setInterviewData(transformAPIData(sampleInterviewData));
+      setTotalCount(108333);
+      setTotalPages(25);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Sample data for dropdowns
   const agencyOptions = [
@@ -264,69 +349,7 @@ const InterviewLogPage = () => {
     }));
   };
 
-  // Fetch interview logs from API
-  const fetchInterviewLogs = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Build query parameters based on filters
-      const queryParams = new URLSearchParams();
-      
-      if (filters.agencyId) queryParams.append('agency_id', filters.agencyId);
-      if (filters.serverId) queryParams.append('server_id', filters.serverId);
-      if (filters.interviewDate) queryParams.append('interview_date', filters.interviewDate);
-      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
-      if (filters.psCode) queryParams.append('ps_code', filters.psCode);
-      if (filters.userId) queryParams.append('user_id', filters.userId);
-      if (filters.interviewerId) queryParams.append('interviewer_id', filters.interviewerId);
-      if (filters.deviceId) queryParams.append('device_id', filters.deviceId);
-      if (filters.mobileNo) queryParams.append('mobile_no', filters.mobileNo);
-      if (filters.audioQc.length > 0) queryParams.append('audio_qc', filters.audioQc.join(','));
-      if (filters.audioQcStatus.length > 0) queryParams.append('audio_qc_status', filters.audioQcStatus.join(','));
-      if (filters.audio1Status.length > 0) queryParams.append('audio_qc_status_detailed', filters.audio1Status.join(','));
-      if (filters.qcRecheckStatusAudio.length > 0) queryParams.append('audio_re_qc_status', filters.qcRecheckStatusAudio.join(','));
-      if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
-      
-      // Add pagination
-      queryParams.append('page', currentPage.toString());
-      queryParams.append('per_page', pageSize.toString());
-
-      const response = await apiClient.get(`/overview/interview-log?${queryParams.toString()}`, {
-        timeout: 10000
-      });
-
-      const data: APIResponse = response.data;
-      
-      if (data.success && data.data.interviews) {
-        setInterviewData(transformAPIData(data.data.interviews));
-        setTotalCount(data.data.pagination.total_count);
-        setTotalPages(data.data.pagination.total_pages);
-      } else {
-        console.error('API did not return interview data:', data);
-        setInterviewData(transformAPIData(sampleInterviewData));
-        setError('No data received from API, using sample data');
-      }
-    } catch (err: any) {
-      console.error('Error fetching interview logs:', err);
-      
-      if (err.message?.includes('timeout') || err.code === 'ECONNABORTED') {
-        console.log('API request timed out after 10 seconds');
-      } else {
-        console.error('API Error:', err.response?.data || err.message);
-      }
-      
-      setError('Failed to load interview data');
-      // Use sample data as fallback
-      setInterviewData(transformAPIData(sampleInterviewData));
-      setTotalCount(108333);
-      setTotalPages(25);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load data on component mount and when filters change
+  // Load data on component mount and when pagination changes
   useEffect(() => {
     fetchInterviewLogs();
   }, [currentPage, pageSize]);
@@ -358,6 +381,8 @@ const InterviewLogPage = () => {
       ...prev,
       [field]: value,
     }));
+    // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
@@ -367,6 +392,12 @@ const InterviewLogPage = () => {
         ? [...(prev[field as keyof typeof prev] as string[]), value]
         : (prev[field as keyof typeof prev] as string[]).filter(item => item !== value),
     }));
+    // Reset to first page when filters change
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -389,8 +420,8 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">State Teams</Text>
                 <SelectDropdown
                   options={agencyOptions}
-                  value={filters.agencyId}
-                  onChange={(value) => handleFilterChange('agencyId', value)}
+                  value={filters.agency_id}
+                  onChange={(value) => handleFilterChange('agency_id', value)}
                   placeholder="Select State Teams"
                 />
               </div>
@@ -401,8 +432,8 @@ const InterviewLogPage = () => {
                 <Input
                   type="text"
                   placeholder="Search by Server ID"
-                  value={filters.serverId}
-                  onChange={(e) => handleFilterChange('serverId', e.target.value)}
+                  value={filters.server_id}
+                  onChange={(e) => handleFilterChange('server_id', e.target.value)}
                 />
               </div>
 
@@ -418,8 +449,8 @@ const InterviewLogPage = () => {
                     { value: '2025-06-13', label: '2025-06-13' },
                     { value: '2025-06-12', label: '2025-06-12' },
                   ]}
-                  value={filters.interviewDate}
-                  onChange={(value) => handleFilterChange('interviewDate', value)}
+                  value={filters.interview_date}
+                  onChange={(value) => handleFilterChange('interview_date', value)}
                   placeholder="Select Interview Date"
                 />
               </div>
@@ -429,8 +460,8 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">AC Code</Text>
                 <SelectDropdown
                   options={acOptions}
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', value)}
+                  value={filters.ac_code}
+                  onChange={(value) => handleFilterChange('ac_code', value)}
                   placeholder="Select AC"
                 />
               </div>
@@ -440,8 +471,8 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">Poling Station</Text>
                 <SelectDropdown
                   options={[{ value: '', label: 'Select Poling Station' }]}
-                  value={filters.psCode}
-                  onChange={(value) => handleFilterChange('psCode', value)}
+                  value={filters.ps_code}
+                  onChange={(value) => handleFilterChange('ps_code', value)}
                   placeholder="Select Poling Station"
                 />
               </div>
@@ -458,8 +489,8 @@ const InterviewLogPage = () => {
                     { value: '1149', label: '1149' },
                     { value: '1150', label: '1150' },
                   ]}
-                  value={filters.userId}
-                  onChange={(value) => handleFilterChange('userId', value)}
+                  value={filters.user_id}
+                  onChange={(value) => handleFilterChange('user_id', value)}
                   placeholder="Select Enumerator ID"
                 />
               </div>
@@ -476,8 +507,8 @@ const InterviewLogPage = () => {
                     { value: '1004', label: '1004' },
                     { value: '101', label: '101' },
                   ]}
-                  value={filters.interviewerId}
-                  onChange={(value) => handleFilterChange('interviewerId', value)}
+                  value={filters.interviewer_id}
+                  onChange={(value) => handleFilterChange('interviewer_id', value)}
                   placeholder="Select Interviewer ID"
                 />
               </div>
@@ -488,8 +519,8 @@ const InterviewLogPage = () => {
                 <Input
                   type="text"
                   placeholder="Search by Device ID"
-                  value={filters.deviceId}
-                  onChange={(e) => handleFilterChange('deviceId', e.target.value)}
+                  value={filters.device_id}
+                  onChange={(e) => handleFilterChange('device_id', e.target.value)}
                 />
               </div>
 
@@ -499,8 +530,8 @@ const InterviewLogPage = () => {
                 <Input
                   type="text"
                   placeholder="Search by Respondent Mobile"
-                  value={filters.mobileNo}
-                  onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
+                  value={filters.mobile_no}
+                  onChange={(e) => handleFilterChange('mobile_no', e.target.value)}
                 />
               </div>
 
@@ -515,9 +546,9 @@ const InterviewLogPage = () => {
                   ].map(option => (
                     <Checkbox
                       key={option.value}
-                      checked={filters.audioQc.includes(option.value)}
+                      checked={filters.audio_qc.includes(option.value)}
                       onCheckedChange={(checked) => 
-                        handleCheckboxChange('audioQc', option.value, checked as boolean)
+                        handleCheckboxChange('audio_qc', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -537,9 +568,9 @@ const InterviewLogPage = () => {
                   ].map(option => (
                     <Checkbox
                       key={option.value}
-                      checked={filters.audioQcStatus.includes(option.value)}
+                      checked={filters.audio_qc_status.includes(option.value)}
                       onCheckedChange={(checked) => 
-                        handleCheckboxChange('audioQcStatus', option.value, checked as boolean)
+                        handleCheckboxChange('audio_qc_status', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -561,9 +592,9 @@ const InterviewLogPage = () => {
                   ].map(option => (
                     <Checkbox
                       key={option.value}
-                      checked={filters.audio1Status.includes(option.value)}
+                      checked={filters.audio_qc_status_detailed.includes(option.value)}
                       onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio1Status', option.value, checked as boolean)
+                        handleCheckboxChange('audio_qc_status_detailed', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -583,9 +614,9 @@ const InterviewLogPage = () => {
                   ].map(option => (
                     <Checkbox
                       key={option.value}
-                      checked={filters.qcRecheckStatusAudio.includes(option.value)}
+                      checked={filters.audio_re_qc_status.includes(option.value)}
                       onCheckedChange={(checked) => 
-                        handleCheckboxChange('qcRecheckStatusAudio', option.value, checked as boolean)
+                        handleCheckboxChange('audio_re_qc_status', option.value, checked as boolean)
                       }
                       label={option.label}
                     />
@@ -646,14 +677,14 @@ const InterviewLogPage = () => {
             )}
 
             {/* Error State */}
-            {error && !loading && (
+            {(error || apiError) && !loading && (
               <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
                 <svg className="w-12 h-12 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.822-.833-2.592 0L4.27 15.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
                 <Text className="text-red-700 font-medium mb-2">Error Loading Data</Text>
                 <Text className="text-red-600 text-sm mb-4 text-center">
-                  {error}
+                  {error || apiError}
                 </Text>
                 <Button 
                   variant="outline" 
@@ -791,7 +822,7 @@ const InterviewLogPage = () => {
                       totalPages={totalPages}
                       totalItems={totalCount}
                     itemsPerPage={pageSize}
-                    onPageChange={(page) => setCurrentPage(page)}
+                    onPageChange={handlePageChange}
                     className="justify-center"
                   />
                 </div>

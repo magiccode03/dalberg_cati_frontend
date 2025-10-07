@@ -36,6 +36,21 @@ export default function Header() {
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
 
+  const checkTeleformUserData = () => {
+    const savedData = localStorage.getItem('teleform_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setTeleformUserData(userData);
+      } catch (err) {
+        console.error('Error parsing teleform user data:', err);
+        setTeleformUserData(null);
+      }
+    } else {
+      setTeleformUserData(null);
+    }
+  };
+
   // Dynamic agency options from API
   const agencyOptions = [
     { value: 'all', label: 'All Agencies' },
@@ -91,22 +106,6 @@ export default function Header() {
       window.removeEventListener('teleformUserUpdated', handleStorageChange);
     };
   }, []);
-
-  // Check for teleform user data in localStorage
-  const checkTeleformUserData = () => {
-    try {
-      const teleformData = localStorage.getItem('teleformUserData');
-      if (teleformData) {
-        const parsedData = JSON.parse(teleformData);
-        setTeleformUserData(parsedData);
-      } else {
-        setTeleformUserData(null);
-      }
-    } catch (error) {
-      console.error('Error parsing teleform user data:', error);
-      setTeleformUserData(null);
-    }
-  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';

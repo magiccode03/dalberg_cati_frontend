@@ -662,6 +662,41 @@ export function useGetTeamRegistrationDropdownOptions() {
   return { getDropdownOptions, data, loading, error };
 }
 
+// Get QC Agencies Hook
+export function useGetQCAgencies() {
+  const [data, setData] = useState<Array<{
+    id: number;
+    agency_name: string;
+    username: string;
+  }> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getQCAgencies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getQCAgencies();
+      if (response.success) {
+        setData(response.data);
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch QC agencies');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getQCAgencies, data, loading, error };
+}
+
 // Get Agencies Hook
 export function useGetAgencies() {
   const [data, setData] = useState<{ [key: string]: string } | null>(null);

@@ -106,6 +106,7 @@ export const API_ENDPOINTS = {
     MASTER_AC_LIST: '/dashboard/master-ac/list',
     MASTER_AC_UPDATE: '/dashboard/master-ac/update',
     MASTER_AC_INDEX_UPDATE: '/dashboard/master-ac-index/acupdate',
+    INTERVIEW_LOG: '/overview/interview-log',
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
@@ -113,6 +114,17 @@ export const API_ENDPOINTS = {
     TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
     TEAM_REGISTRATION_DROPDOWN_OPTIONS: '/dashboard/team-registration/newregistration/dropdown-options',
+    QC_AGENCIES: '/dashboard/team-registration/qc-agencies',
+  },
+
+  // Project Settings
+  PROJECT_SETTINGS: {
+    GET: '/project-setting',
+    UPDATE: '/project-setting/update',
+    UPDATE_INSTANCE: '/project-setting/update/instance',
+    UPDATE_SAMPLE: '/project-setting/update/sample',
+    UPDATE_DATES: '/project-setting/update/dates',
+    UPDATE_THEMES: '/project-setting/update/themes',
   },
 
   // Analysis
@@ -1067,6 +1079,14 @@ class ApiService {
     return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_DROPDOWN_OPTIONS);
   }
 
+  async getQCAgencies(): Promise<ApiResponse<Array<{
+    id: number;
+    agency_name: string;
+    username: string;
+  }>>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.QC_AGENCIES);
+  }
+
   // Rejection Report Methods
   async getRejectionReport(params?: {
     report_days?: string;
@@ -1170,6 +1190,58 @@ class ApiService {
 
   async getDashboardOverview(): Promise<ApiResponse<any>> {
     return this.request(API_ENDPOINTS.DASHBOARD.OVERVIEW);
+  }
+
+  async getInterviewLog(params?: {
+    server_id?: string;
+    interview_date?: string;
+    ac_code?: string;
+    interviewer_id?: string;
+    qc_date?: string;
+    qc_id?: string;
+    audio_qc_status?: string;
+    audio1_status?: string;
+    qc_scenario_color?: string;
+    page?: number;
+    per_page?: number;
+    sort_field?: string;
+    sort_direction?: 'ASC' | 'DESC';
+  }): Promise<ApiResponse<{
+    interviews: Array<{
+      server_id: number;
+      interview_date: string;
+      sample_type: string;
+      ac_code: number;
+      ac_name: string;
+      ps_name: string;
+      device_id: string;
+      interviewer_id: string;
+      audio_qc_label: string;
+      audio_qc_id: string;
+      audio1_status_label: string;
+      qc_outcome: string;
+      status_label: string;
+      gender_label: string;
+      gps_available: boolean;
+      ps_image_available: boolean;
+      selfie_image_available: boolean;
+      audio_playback_available: boolean;
+    }>;
+    pagination: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+    filters_applied: Record<string, any>;
+    sorting: {
+      field: string;
+      direction: string;
+    };
+    message: string;
+  }>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.DASHBOARD.INTERVIEW_LOG}${queryString}`);
   }
 
   async getRecentActivities(): Promise<ApiResponse<any[]>> {
@@ -1381,10 +1453,10 @@ class ApiService {
       'Authorization': 'Bearer [token]'
     });
     
-    // Try the dashboard endpoint instead of QC endpoint
-    const dashboardEndpoint = API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_UPDATE(id);
-    console.log('🔄 API Service: Trying dashboard endpoint:', dashboardEndpoint);
-    console.log('🔄 API Service: Dashboard URL:', `${this.baseURL}${dashboardEndpoint}`);
+    // Use the QC endpoint for QC team registration updates
+    const qcEndpoint = API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id);
+    console.log('🔄 API Service: Using QC endpoint:', qcEndpoint);
+    console.log('🔄 API Service: QC URL:', `${this.baseURL}${qcEndpoint}`);
     
     try {
       const response = await this.request<{
@@ -1393,7 +1465,7 @@ class ApiService {
         agency_name: string;
         status: number;
         unique_id: string;
-      }>(dashboardEndpoint, {
+      }>(qcEndpoint, {
         method: 'PUT',
         body: JSON.stringify(data)
       });
@@ -1848,6 +1920,195 @@ class ApiService {
   // Gain and Losses Methods
   async getGainAndLosses(): Promise<ApiResponse<GainLossResponse['data']>> {
     return this.request(API_ENDPOINTS.FINDINGS.GAIN_AND_LOSSES);
+  }
+
+  // Project Settings APIs
+  async getProjectSettings(): Promise<ApiResponse<{
+    id: number;
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+    instance_loi: number;
+    instance_audio1: string;
+    instance_audio2: string;
+    instance_audio3: string;
+    quality_check_type: number;
+    total_sample: number;
+    ac_sample: number;
+    pollingstation_sample: number;
+    enumerator_sample: number;
+    female_quota: number;
+    ps_cricle_radius: number;
+    survey_start_date: string;
+    survey_end_date: string | null;
+    qc_theme: number;
+    client_theme: number;
+    pmt_theme: number;
+    quality_theme: number;
+  }>> {
+    return this.request(`${API_ENDPOINTS.PROJECT_SETTINGS.GET}`);
+  }
+
+  async updateProjectSettings(data: {
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+  }): Promise<ApiResponse<{
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+    message: string;
+  }>> {
+    return this.request(`${API_ENDPOINTS.PROJECT_SETTINGS.UPDATE}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProjectInstanceSettings(data: {
+    instance_loi: number;
+    instance_audio1: string;
+    instance_audio2: string;
+    instance_audio3: string;
+    quality_check_type: number;
+  }): Promise<ApiResponse<{
+    id: number;
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+    instance_loi: number;
+    instance_audio1: string;
+    instance_audio2: string;
+    instance_audio3: string;
+    quality_check_type: number;
+  }>> {
+    return this.request(`${API_ENDPOINTS.PROJECT_SETTINGS.UPDATE_INSTANCE}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProjectSampleSettings(data: {
+    total_sample: number;
+    ac_sample: number;
+    pollingstation_sample: number;
+    enumerator_sample: number;
+    female_quota: number;
+    ps_cricle_radius: number;
+  }): Promise<ApiResponse<{
+    id: number;
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+    instance_loi: number;
+    instance_audio1: string;
+    instance_audio2: string;
+    instance_audio3: string;
+    quality_check_type: number;
+    total_sample: number;
+    ac_sample: number;
+    pollingstation_sample: number;
+    enumerator_sample: number;
+    female_quota: number;
+    ps_cricle_radius: number;
+    survey_start_date: string;
+    survey_end_date: string | null;
+    qc_theme: number;
+    client_theme: number;
+    pmt_theme: number;
+    quality_theme: number;
+  }>> {
+    return this.request(`${API_ENDPOINTS.PROJECT_SETTINGS.UPDATE_SAMPLE}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProjectDatesSettings(data: {
+    survey_start_date: string;
+    survey_end_date: string;
+  }): Promise<ApiResponse<{
+    id: number;
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+    instance_loi: number;
+    instance_audio1: string;
+    instance_audio2: string;
+    instance_audio3: string;
+    quality_check_type: number;
+    total_sample: number;
+    ac_sample: number;
+    pollingstation_sample: number;
+    enumerator_sample: number;
+    female_quota: number;
+    ps_cricle_radius: number;
+    survey_start_date: string;
+    survey_end_date: string | null;
+    qc_theme: number;
+    client_theme: number;
+    pmt_theme: number;
+    quality_theme: number;
+  }>> {
+    return this.request(`${API_ENDPOINTS.PROJECT_SETTINGS.UPDATE_DATES}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProjectThemesSettings(data: {
+    qc_theme: number;
+    client_theme: number;
+    pmt_theme: number;
+    quality_theme: number;
+  }): Promise<ApiResponse<{
+    id: number;
+    form_id: number;
+    project_name: string;
+    pm_ids: string;
+    audio_qc_form_id: number;
+    audio_re_qc_form_id: number;
+    voice_broadcast_announcement_id: number;
+    instance_loi: number;
+    instance_audio1: string;
+    instance_audio2: string;
+    instance_audio3: string;
+    quality_check_type: number;
+    total_sample: number;
+    ac_sample: number;
+    pollingstation_sample: number;
+    enumerator_sample: number;
+    female_quota: number;
+    ps_cricle_radius: number;
+    survey_start_date: string;
+    survey_end_date: string | null;
+    qc_theme: number;
+    client_theme: number;
+    pmt_theme: number;
+    quality_theme: number;
+  }>> {
+    return this.request(`${API_ENDPOINTS.PROJECT_SETTINGS.UPDATE_THEMES}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   }
 
   // Utility Methods

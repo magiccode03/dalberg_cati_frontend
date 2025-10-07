@@ -44,7 +44,7 @@ interface APIResponse {
   timestamp: string;
 }
 
-export default function CAPIInterviewAudioPage() {
+export default function CATIInterviewAudioPage() {
   const [acCode, setAcCode] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function CAPIInterviewAudioPage() {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching CAPI interview audio data...');
+      console.log('Fetching CATI interview audio data...');
       console.log('Current page:', currentPage);
       console.log('AC Code:', acCode);
       console.log('Interview Date:', interviewDate);
@@ -81,19 +81,52 @@ export default function CAPIInterviewAudioPage() {
       
       console.log('API params:', params);
       
-      const response = await apiService.getInterviewAudio(params) as APIResponse;
-      console.log('API Response:', response);
+      // For now, use mock data since CATI API might be different
+      // TODO: Replace with actual CATI API call when available
+      const mockData: APIResponse = {
+        success: true,
+        data: {
+          success: true,
+          data: [
+            {
+              server_token: 'CATI001',
+              ac_code: 101,
+              ac_name: 'Sample AC',
+              interview_date: '2024-01-15T10:30:00Z',
+              interview_audio: 'audio_file_1.mp3'
+            }
+          ],
+          pagination: {
+            page: 1,
+            limit: 50,
+            total: 1,
+            total_pages: 1
+          },
+          filters: {
+            ac_codes: [
+              { ac_code: 101, ac_name: 'Sample AC' }
+            ],
+            interview_dates: ['2024-01-15T10:30:00Z']
+          },
+          message: 'CATI interview audio data retrieved successfully',
+          timestamp: new Date().toISOString()
+        },
+        message: 'Success',
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Mock API Response:', mockData);
 
-      if (response.success && response.data.success) {
-        console.log('Setting interview data:', response.data.data);
-        setInterviewData(response.data.data);
-        setTotalItems(response.data.pagination.total);
-        setTotalPages(response.data.pagination.total_pages);
+      if (mockData.success && mockData.data.success) {
+        console.log('Setting interview data:', mockData.data.data);
+        setInterviewData(mockData.data.data);
+        setTotalItems(mockData.data.pagination.total);
+        setTotalPages(mockData.data.pagination.total_pages);
         
         // Set filter options from API
         const acOptionsData = [
           { value: '', label: 'Select AC' },
-          ...response.data.filters.ac_codes.map(ac => ({
+          ...mockData.data.filters.ac_codes.map(ac => ({
             value: ac.ac_code.toString(),
             label: `${ac.ac_name} (${ac.ac_code})`
           }))
@@ -102,14 +135,14 @@ export default function CAPIInterviewAudioPage() {
         
         const dateOptionsData = [
           { value: '', label: 'Interview Date' },
-          ...response.data.filters.interview_dates.map(date => ({
+          ...mockData.data.filters.interview_dates.map(date => ({
             value: date.split('T')[0],
             label: date.split('T')[0]
           }))
         ];
         setInterviewDateOptions(dateOptionsData);
       } else {
-        console.error('API response not successful:', response);
+        console.error('API response not successful:', mockData);
         setError('Failed to fetch interview audio data');
       }
     } catch (err) {
@@ -120,7 +153,6 @@ export default function CAPIInterviewAudioPage() {
     }
   };
 
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1); // Reset to first page when searching
@@ -129,7 +161,7 @@ export default function CAPIInterviewAudioPage() {
 
   const handleCheckAudio = (serverToken: string) => {
     // Handle audio check functionality
-    console.log('Checking CAPI audio for token:', serverToken);
+    console.log('Checking CATI audio for token:', serverToken);
     // This would typically open a modal or navigate to audio player
   };
 
@@ -143,7 +175,7 @@ export default function CAPIInterviewAudioPage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
           <Heading level={1} className="text-2xl font-semibold text-gray-900">
-            Interview Audio (CAPI)
+            Interview Audio (CATI)
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -164,7 +196,7 @@ export default function CAPIInterviewAudioPage() {
 
       {/* Search Form */}
       <form id="interviewsearch-form" onSubmit={handleSearch}>
-        <Card className="mb-6">
+        <Card className=" mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -202,13 +234,13 @@ export default function CAPIInterviewAudioPage() {
       </form>
 
       {/* Interview List */}
-      <Card>
+      <Card className="">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>
               <Heading level={4} className="card-title mg-b-0">
-                Interview List (CAPI)
+                Interview List (CATI)
               </Heading>
             </div>
             <span className="text-end">
@@ -232,6 +264,17 @@ export default function CAPIInterviewAudioPage() {
                 Retry
               </button>
             </div>
+          ) : interviewData.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-lg text-gray-600">No interview data found</div>
+              <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
+              <button 
+                onClick={fetchData}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Refresh
+              </button>
+            </div>
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
@@ -246,38 +289,23 @@ export default function CAPIInterviewAudioPage() {
                 </tr>
               </thead>
               <tbody>
-                {interviewData.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-gray-500">
-                      <div className="text-lg text-gray-600">No interview data found</div>
-                      <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
-                      <button 
-                        onClick={fetchData}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                      >
-                        Refresh
-                      </button>
-                    </td>
-                  </tr>
-                ) : (
-                  interviewData.map((row, index) => (
+                {interviewData.map((row, index) => (
                     <tr key={row.server_token} data-key={row.server_token}>
-                      <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                    <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td>{row.server_token}</td>
                       <td className="text-center">{row.ac_code}</td>
                       <td>{row.ac_name}</td>
                       <td>{row.interview_date.split('T')[0]}</td>
-                      <td className="text-center">
-                        <Button
+                    <td className="text-center">
+                      <Button
                           onClick={() => handleCheckAudio(row.server_token)}
-                          className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1"
-                        >
-                          Check Audio
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1"
+                      >
+                        Check Audio
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </Table>
           </div>
