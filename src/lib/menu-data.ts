@@ -1088,6 +1088,62 @@ export const menuData: MenuItem[] = [
   },
 
   // ============================================
+  // SIMPLIFIED SYSTEM-SPECIFIC MENUS
+  // ============================================
+
+  // CAPI Simplified Menu (for system selection)
+  {
+    id: 'capi-fieldwork-progress',
+    label: 'Fieldwork Progress',
+    href: '/capi/fd/fieldwork-progress',
+    icon: 'BarChart3',
+    roles: ['capi_user'],
+    system: 'capi',
+  },
+  {
+    id: 'capi-progress-report',
+    label: 'Progress Report',
+    href: '/capi/fd/progress-report',
+    icon: 'FileText',
+    roles: ['capi_user'],
+    system: 'capi',
+  },
+  {
+    id: 'capi-interview-audios',
+    label: 'Interview Audios',
+    href: '/capi/fd/interview-audio',
+    icon: 'Mic',
+    roles: ['capi_user'],
+    system: 'capi',
+  },
+
+  // CATI Simplified Menu (for system selection)
+  {
+    id: 'cati-telecaller-progress',
+    label: 'Telecaller Progress',
+    href: '/cati/fd/telecaller-progress',
+    icon: 'BarChart3',
+    roles: ['cati_user'],
+    system: 'cati',
+  },
+  {
+    id: 'cati-telecaller-daily-call-details',
+    label: 'Telecaller Daily Call Details',
+    href: '/cati/fd/telecaller-daily-call-details',
+    icon: 'FileText',
+    roles: ['cati_user'],
+    system: 'cati',
+  },
+  {
+    id: 'cati-interview-audios',
+    label: 'Interview Audios',
+    href: '/cati/fd/interview-audio',
+    icon: 'Mic',
+    roles: ['cati_user'],
+    system: 'cati',
+  },
+
+  // ============================================
   // CATI SYSTEM MENUS
   // ============================================
 

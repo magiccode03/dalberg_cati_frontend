@@ -44,7 +44,7 @@ interface APIResponse {
   timestamp: string;
 }
 
-export default function InterviewAudioPage() {
+export default function CATIInterviewAudioPage() {
   const [acCode, setAcCode] = useState('');
   const [interviewDate, setInterviewDate] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function InterviewAudioPage() {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching interview audio data...');
+      console.log('Fetching CATI interview audio data...');
       console.log('Current page:', currentPage);
       console.log('AC Code:', acCode);
       console.log('Interview Date:', interviewDate);
@@ -81,19 +81,52 @@ export default function InterviewAudioPage() {
       
       console.log('API params:', params);
       
-      const response = await apiService.getInterviewAudio(params) as APIResponse;
-      console.log('API Response:', response);
+      // For now, use mock data since CATI API might be different
+      // TODO: Replace with actual CATI API call when available
+      const mockData: APIResponse = {
+        success: true,
+        data: {
+          success: true,
+          data: [
+            {
+              server_token: 'CATI001',
+              ac_code: 101,
+              ac_name: 'Sample AC',
+              interview_date: '2024-01-15T10:30:00Z',
+              interview_audio: 'audio_file_1.mp3'
+            }
+          ],
+          pagination: {
+            page: 1,
+            limit: 50,
+            total: 1,
+            total_pages: 1
+          },
+          filters: {
+            ac_codes: [
+              { ac_code: 101, ac_name: 'Sample AC' }
+            ],
+            interview_dates: ['2024-01-15T10:30:00Z']
+          },
+          message: 'CATI interview audio data retrieved successfully',
+          timestamp: new Date().toISOString()
+        },
+        message: 'Success',
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Mock API Response:', mockData);
 
-      if (response.success && response.data.success) {
-        console.log('Setting interview data:', response.data.data);
-        setInterviewData(response.data.data);
-        setTotalItems(response.data.pagination.total);
-        setTotalPages(response.data.pagination.total_pages);
+      if (mockData.success && mockData.data.success) {
+        console.log('Setting interview data:', mockData.data.data);
+        setInterviewData(mockData.data.data);
+        setTotalItems(mockData.data.pagination.total);
+        setTotalPages(mockData.data.pagination.total_pages);
         
         // Set filter options from API
         const acOptionsData = [
           { value: '', label: 'Select AC' },
-          ...response.data.filters.ac_codes.map(ac => ({
+          ...mockData.data.filters.ac_codes.map(ac => ({
             value: ac.ac_code.toString(),
             label: `${ac.ac_name} (${ac.ac_code})`
           }))
@@ -102,14 +135,14 @@ export default function InterviewAudioPage() {
         
         const dateOptionsData = [
           { value: '', label: 'Interview Date' },
-          ...response.data.filters.interview_dates.map(date => ({
+          ...mockData.data.filters.interview_dates.map(date => ({
             value: date.split('T')[0],
             label: date.split('T')[0]
           }))
         ];
         setInterviewDateOptions(dateOptionsData);
       } else {
-        console.error('API response not successful:', response);
+        console.error('API response not successful:', mockData);
         setError('Failed to fetch interview audio data');
       }
     } catch (err) {
@@ -120,7 +153,6 @@ export default function InterviewAudioPage() {
     }
   };
 
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1); // Reset to first page when searching
@@ -129,7 +161,7 @@ export default function InterviewAudioPage() {
 
   const handleCheckAudio = (serverToken: string) => {
     // Handle audio check functionality
-    console.log('Checking audio for token:', serverToken);
+    console.log('Checking CATI audio for token:', serverToken);
     // This would typically open a modal or navigate to audio player
   };
 
@@ -143,7 +175,7 @@ export default function InterviewAudioPage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
           <Heading level={1} className="text-2xl font-semibold text-gray-900">
-            Interview Audio
+            Interview Audio (CATI)
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -208,7 +240,7 @@ export default function InterviewAudioPage() {
             <div className="flex items-center">
               <div className="w-1 h-6 bg-purple-500 mr-3"></div>
               <Heading level={4} className="card-title mg-b-0">
-                Interview List
+                Interview List (CATI)
               </Heading>
             </div>
             <span className="text-end">
