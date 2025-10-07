@@ -327,7 +327,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Caller Performance Section */}
       <div className="mb-8">
         <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
             title="Total Callers"
             value={data.total_callers}
@@ -342,13 +342,13 @@ const TelecallerProgressPage: React.FC = () => {
             color="border-orange-500"
             bgColor="bg-orange-500"
           />
-          <MetricCard
+          {/* <MetricCard
             title="Caller did not pick"
             value={data.caller_did_not_pick}
             icon={<TrendingDown className="h-6 w-6 text-red-600" />}
             color="border-red-500"
             bgColor="bg-red-500"
-          />
+          /> */}
           <MetricCard
             title="Days till now"
             value={data.days_till_now}
@@ -356,13 +356,13 @@ const TelecallerProgressPage: React.FC = () => {
             color="border-indigo-500"
             bgColor="bg-indigo-500"
           />
-          <MetricCard
+          {/* <MetricCard
             title="Total IVR Duration"
             value={formatDuration(data.total_ivr_duration)}
             icon={<Clock className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
-          />
+          /> */}
           <MetricCard
             title="Total Talk Duration"
             value={formatDuration(data.total_talk_duration)}
@@ -376,14 +376,14 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Call Dial Status Section */}
       <div className="mb-8">
         <SectionHeader title="CALL DIAL STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {/* <MetricCard
             title="Call not Received"
             value={data.call_not_received}
             icon={<Phone className="h-6 w-6 text-amber-600" />}
             color="border-amber-500"
             bgColor="bg-amber-500"
-          />
+          /> */}
           <MetricCard
             title="Ringing"
             value={data.ringing}
@@ -446,7 +446,7 @@ const TelecallerProgressPage: React.FC = () => {
       {/* Call Dial: Ringing Section */}
       <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard
             title="Picked"
             value={data.picked}
@@ -454,13 +454,13 @@ const TelecallerProgressPage: React.FC = () => {
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          <MetricCard
+          {/* <MetricCard
             title="Did not picked"
             value={data.did_not_picked}
             icon={<Phone className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
-          />
+          /> */}
           <MetricCard
             title="No Response"
             value={data.ringing_no_response}
