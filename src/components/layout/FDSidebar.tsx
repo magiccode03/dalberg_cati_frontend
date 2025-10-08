@@ -77,13 +77,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/cati/fd/telecaller-progress',
       hasSubmenu: false,
     },
-    {
-      id: 'telecaller-daily-call-details',
-      label: 'Telecaller Daily Call Details',
-      icon: TrendingUp,
-      href: '/cati/fd/telecaller-daily-call-details',
-      hasSubmenu: false,
-    },
+    // {
+    //   id: 'telecaller-daily-call-details',
+    //   label: 'Telecaller Daily Call Details',
+    //   icon: TrendingUp,
+    //   href: '/cati/fd/telecaller-daily-call-details',
+    //   hasSubmenu: false,
+    // },
     {
       id: 'interview-audios',
       label: 'Interview Audios',
