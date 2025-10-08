@@ -58,13 +58,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/capi/fd/interview-audio',
       hasSubmenu: false,
     },
-    // {
-    //   id: 'back',
-    //   label: 'Back To Main',
-    //   icon: Home,
-    //   href: '/home',
-    //   hasSubmenu: false,
-    // },
+    {
+      id: 'back',
+      label: 'Back To Menu',
+      icon: Home,
+      href: '/home',
+      hasSubmenu: false,
+    },
   ];
 
   // CATI FD menu items
