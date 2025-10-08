@@ -228,8 +228,7 @@ export default function FieldworkProgressPage() {
                 {progressSummaryData.map((item, index) => (
                   <tr key={index}>
                     <td>{item.details}</td>
-                    {/* <td>{item.measure}</td> */}
-                    <td>0</td>
+                    <td>{item.measure}</td>
                   </tr>
                 ))}
               </tbody>

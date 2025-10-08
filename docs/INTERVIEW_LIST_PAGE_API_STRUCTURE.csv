@@ -1,15 +1,35 @@
-Section,Type,Label/Column Name,API Field Name
-Interview List,Table Column,#,
-Interview List,Table Column,Server ID,server_id
-Interview List,Table Column,Interview Date,interview_date
-Interview List,Table Column,AC Name,ac_name
-Interview List,Table Column,Interviewer ID,interviewer_id
-Interview List,Table Column,Respondent Name,respondent_name
-Interview List,Table Column,Gender,gender
-Interview List,Table Column,Audio QC Date,audio_qc_complete_date
-Interview List,Table Column,Audio QC,audio_qc
-Interview List,Table Column,Audio QC ID,audio_qc_id
-Interview List,Table Column,Audio Fail Reason,
-Interview List,Table Column,Audio,
-Interview List,Table Column,QC Outcome,
-Interview List,Table Column,Edit,
+Section,Type,Label/Column Name,Attribute/Field Name
+,,,
+,,,
+Interview Data,Table Column,#,interviews.id
+Interview Data,Table Column,Server ID,interviews.server_id
+Interview Data,Table Column,Interview Date,interviews.interview_date
+Interview Data,Table Column,AC Name,interviews.ac_name
+Interview Data,Table Column,Interviewer ID,interviews.interviewer_id
+Interview Data,Table Column,Respondent Name,interviews.respondent_name
+Interview Data,Table Column,Gender,interviews.gender
+Interview Data,Table Column,Audio QC Date,interviews.audio_qc_date
+Interview Data,Table Column,Audio QC,interviews.audio_qc
+Interview Data,Table Column,Audio QC ID,interviews.audio_qc_id
+Interview Data,Table Column,Audio Fail Reason,interviews.audio_fail_reason
+Interview Data,Table Column,Audio,No Attribute
+Interview Data,Table Column,QC Outcome,interviews.qc_outcome
+Interview Data,Table Column,Edit,No Attribute
+,,,
+,,,
+Search Filters,Filter Field,Server ID,server_id
+Search Filters,Filter Field,Interview Date,interview_date
+Search Filters,Filter Field,AC Code,ac_code
+Search Filters,Filter Field,Interviewer ID,interviewer_id
+Search Filters,Filter Field,QC Date,qc_date
+Search Filters,Filter Field,QC ID,qc_id
+Search Filters,Filter Field,Audio QC Status,audio_qc_status
+Search Filters,Filter Field,Audio QC Status Details,audio_qc_status_details
+Search Filters,Filter Field,QC Outcome,qc_outcome
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalCount
+Pagination,Data Field,Total Pages,totalPages
+Pagination,Data Field,Items Per Page,pageSize

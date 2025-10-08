@@ -1,6 +1,15 @@
-Section,Type,Label/Column Name,API Field Name
-QC User Progress,Table Column,Caller Name,name
-QC User Progress,Table Column,QC ID,qc_id
-QC User Progress,Table Column,Audio QC Completed,audio_qc_completed
-QC User Progress,Table Column,Audio QC Pass,audio_qc_pass
-QC User Progress,Table Column,Audio QC Fail,audio_qc_fail
+Section,Type,Label/Column Name,Attribute/Field Name
+,,,
+,,,
+QC User Progress Data,Table Column,Caller Name,name
+QC User Progress Data,Table Column,QC ID,qc_id
+QC User Progress Data,Table Column,Audio QC Completed,statistics.audio_qc_completed
+QC User Progress Data,Table Column,Audio QC Pass,statistics.audio_qc_pass
+QC User Progress Data,Table Column,Audio QC Fail,statistics.audio_qc_fail
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalCount
+Pagination,Data Field,Total Pages,totalPages
+Pagination,Data Field,Items Per Page,pageSize
