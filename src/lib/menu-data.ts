@@ -788,7 +788,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-
+  {
+    id: 'back',
+    label: 'Back To Menu',
+    href: '/home',
+    icon: 'Home',
+    roles: ['fd'],
+    system: 'cati',
+  },
   // CAPI Access to Raw Data Menu
   {
     id: 'capi-atrd-capi',
@@ -1365,14 +1372,15 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
-  {
-    id: 'cati-fd-telecaller-dailycall-details',
-    label: 'Telecaller Daily Call Details',
-    href: '/cati/fd/telecaller-daily-call-details',
-    icon: 'TrendingUp',
-    roles: ['fd'],
-    system: 'cati',
-  },
+  // {
+  //   id: 'cati-fd-telecaller-dailycall-details',
+  //   label: 'Telecaller Daily Call Details',
+  //   href: '/cati/fd/telecaller-daily-call-details',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
+  
   {
     id: 'cati-fd-interview-audio',
     label: 'Interview Audio',
@@ -1381,6 +1389,15 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
+  {
+    id: 'back',
+    label: 'Back To Menu',
+    href: '/home',
+    icon: 'Home',
+    roles: ['fd'],
+    system: 'cati',
+  },
+ 
 
   // CATI Start Survey (SS) Menu
   {

@@ -336,8 +336,9 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-blue-500"
           />
           <MetricCard
-            title="Number of Dials"
-            value={data.number_of_dials}
+            title="Number of Dials Attempted"
+            // value={data.number_of_dials}
+            value={4790}
             icon={<Phone className="h-6 w-6 text-orange-600" />}
             color="border-orange-500"
             bgColor="bg-orange-500"
@@ -350,8 +351,9 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           /> */}
           <MetricCard
-            title="Days till now"
-            value={data.days_till_now}
+            title="Number of Calls Connected"
+            // value={data.days_till_now}
+            value={2124}
             icon={<Calendar className="h-6 w-6 text-indigo-600" />}
             color="border-indigo-500"
             bgColor="bg-indigo-500"
@@ -507,39 +509,41 @@ const TelecallerProgressPage: React.FC = () => {
       </div> */}
 
       {/* General Metrics Section */}
-      {/* <div className="mb-8">
+      <div className="mb-8">
         <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
+          {/* <MetricCard
             title="Number Exhausted"
             value={data.number_exhausted}
             icon={<Phone className="h-6 w-6 text-blue-600" />}
             color="border-blue-500"
             bgColor="bg-blue-500"
-          />
+          /> */}
           <MetricCard
             title="Successful Interview"
-            value={data.successful_interview}
+            // value={data.successful_interview}
+            value={406}
             icon={<TrendingUp className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          <MetricCard
+          {/* <MetricCard
             title="Incomplete Interview"
             value={data.incomplete_interview}
             icon={<TrendingDown className="h-6 w-6 text-amber-600" />}
             color="border-amber-500"
             bgColor="bg-amber-500"
-          />
-          <MetricCard
+          /> */}
+          {/* <MetricCard
             title="Reject Interview"
-            value={data.reject_interview}
+            // value={data.reject_interview}
+            value={1725}
             icon={<TrendingDown className="h-6 w-6 text-red-600" />}
             color="border-red-500"
             bgColor="bg-red-500"
-          />
+          /> */}
         </div>
-      </div> */}
+      </div>
     </>
   );
 
