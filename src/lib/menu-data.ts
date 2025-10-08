@@ -1389,14 +1389,6 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
-  {
-    id: 'back',
-    label: 'Back To Menu',
-    href: '/home',
-    icon: 'Home',
-    roles: ['fd'],
-    system: 'cati',
-  },
  
 
   // CATI Start Survey (SS) Menu

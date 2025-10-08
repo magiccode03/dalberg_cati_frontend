@@ -173,7 +173,7 @@ export const API_ENDPOINTS = {
   // Field Data (FD)
   FD: {
     INTERNAL_DASHBOARD: '/fd/internal-dashboard',
-    INTERVIEW_AUDIO: '/fd/interviewaudio',
+    INTERVIEW_AUDIO: '/cati/interviews/ac-audio',
   },
   
   // Interview Masters
