@@ -794,8 +794,16 @@ export const menuData: MenuItem[] = [
     href: '/home',
     icon: 'Home',
     roles: ['fd'],
-    system: 'cati',
+    system: 'capi',
   },
+  // {
+  //   id: 'back',
+  //   label: 'Back To Menu',
+  //   href: '/home',
+  //   icon: 'Home',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
   // CAPI Access to Raw Data Menu
   {
     id: 'capi-atrd-capi',
@@ -1389,7 +1397,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
- 
+  {
+    id: 'back',
+    label: 'Back To Menu',
+    href: '/home',
+    icon: 'Home',
+    roles: ['fd'],
+    system: 'cati',
+  },
 
   // CATI Start Survey (SS) Menu
   {

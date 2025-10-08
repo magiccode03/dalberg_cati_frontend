@@ -60,10 +60,11 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
     },
     {
       id: 'back',
-      label: 'Back To Main',
-      icon: Home,
+      label: 'Back To Menu',
       href: '/home',
-      hasSubmenu: false,
+      icon: 'Home',
+      roles: ['fd'],
+      system: 'capi',
     },
   ];
 
@@ -91,13 +92,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/cati/fd/interview-audio',
       hasSubmenu: false,
     },
-    {
-      id: 'back',
-      label: 'Back To Main',
-      icon: Home,
-      href: '/home',
-      hasSubmenu: false,
-    },
+    // {
+    //   id: 'back',
+    //   label: 'Back To Main',
+    //   icon: Home,
+    //   href: '/home',
+    //   hasSubmenu: false,
+    // },
   ];
 
   // Select the appropriate menu items based on current system
