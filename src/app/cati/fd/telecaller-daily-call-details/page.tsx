@@ -197,7 +197,7 @@ const TelecallerDailyCallDetailPage = () => {
       {/* Page Header */}
       <div className="mb-6">
         <Heading level={1} className="text-2xl font-bold text-gray-900">
-          Daily Call Detail
+          Daily Call Detail <span className='text-5xl'>(comingsoon)</span>
         </Heading>
         <div className="text-sm text-gray-500">
           {/* Additional header content if needed */}
