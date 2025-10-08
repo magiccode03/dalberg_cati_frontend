@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -12,23 +12,72 @@ import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download } from 'lucide-react';
+import { apiService } from '@/lib/api';
+import type { PerformanceReportData, PerformanceReportParams } from '@/lib/api';
 
 export default function ProgressReportPage() {
   const [searchForm, setSearchForm] = useState({
-    reportDays: 'All',
-    typeOfReport: 'Progress Report',
-    level: 'AC Level'
+    reportDays: 'all',
+    typeOfReport: 'performance',
+    level: 'ac',
+    acCode: '',
+    customDate: '',
+    customDateEnd: ''
   });
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [progressData, setProgressData] = useState<PerformanceReportData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Empty data array - no sample data
-  const progressData: any[] = [];
+  // Load data on component mount
+  useEffect(() => {
+    fetchProgressReport();
+  }, []);
+
+  const fetchProgressReport = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const params: PerformanceReportParams = {
+        report_days: searchForm.reportDays as any,
+        type: searchForm.typeOfReport as 'performance' | 'quality',
+        level: searchForm.level as 'ac' | 'pc' | 'polingstation' | 'interviewer',
+        ac_code: searchForm.acCode || undefined,
+        custom_date: searchForm.customDate || undefined,
+        custom_date_end: searchForm.customDateEnd || undefined
+      };
+
+      const response = await apiService.getPerformanceReport(params);
+      
+      if (response.success) {
+        setProgressData(response.data.data);
+      } else {
+        setError('Failed to fetch progress report data');
+      }
+    } catch (err) {
+      console.error('Error fetching progress report:', err);
+      setError('An error occurred while fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = () => {
-    // Handle search logic here
-    console.log('Searching with:', searchForm);
+    // Validate required fields
+    if (['polingstation', 'interviewer'].includes(searchForm.level) && !searchForm.acCode.trim()) {
+      setError('AC Code is required for Polling Station and Interviewer levels');
+      return;
+    }
+    
+    if (searchForm.reportDays === 'custom' && (!searchForm.customDate || !searchForm.customDateEnd)) {
+      setError('Start Date and End Date are required for custom period');
+      return;
+    }
+    
+    fetchProgressReport();
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -45,20 +94,23 @@ export default function ProgressReportPage() {
 
   // Helper function to determine if a value should be highlighted in red
   const shouldHighlightRed = (value: number, column: string) => {
-    if (column === 'femaleInterviewsPercent') {
+    if (column === 'female_per') {
       return value > 50 || value < 25;
     }
-    if (column === 'mentionedScPercent') {
+    if (column === 'sc_category_per') {
       return value < 3.5;
     }
-    if (column === 'mentionedMuslimPercent') {
+    if (column === 'muslim_category_per') {
       return value < 15;
     }
-    if (column === 'age18to24Percent') {
+    if (column === 'age_18_24_per') {
       return value < 10;
     }
-    if (column === 'age50PlusPercent') {
+    if (column === 'age_50_above_per') {
       return value < 15;
+    }
+    if (column === 'without_phone_per') {
+      return value > 20; // Highlight if more than 20% without phone
     }
     return false;
   };
@@ -71,15 +123,20 @@ export default function ProgressReportPage() {
 
       {/* Filter Section */}
       <Card className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className={`grid grid-cols-1 gap-4 ${['polingstation', 'interviewer'].includes(searchForm.level) ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
           <div>
             <Text className="text-sm font-medium mb-2">Report Days</Text>
             <SelectDropdown
               options={[
-                { value: 'All', label: 'All' },
-                { value: '7', label: 'Last 7 Days' },
-                { value: '30', label: 'Last 30 Days' },
-                { value: '90', label: 'Last 90 Days' },
+                { value: 'all', label: 'All' },
+                { value: 'today', label: 'Today' },
+                { value: 'yesterday', label: 'Yesterday' },
+                { value: 'dby', label: 'Day Before Yesterday' },
+                { value: 'l3', label: 'Last 3 Days' },
+                { value: 'l7', label: 'Last 7 Days' },
+                { value: 'l15', label: 'Last 15 Days' },
+                { value: 'currentmonth', label: 'Current Month' },
+                { value: 'custom', label: 'Custom' },
               ]}
               value={searchForm.reportDays}
               onChange={(value) => handleInputChange('reportDays', value as string)}
@@ -91,9 +148,8 @@ export default function ProgressReportPage() {
             <Text className="text-sm font-medium mb-2">Type of Report</Text>
             <SelectDropdown
               options={[
-                { value: 'Progress Report', label: 'Progress Report' },
-                { value: 'Rejection Report', label: 'Rejection Report' },
-                { value: 'Demographic Report', label: 'Demographic Report' },
+                { value: 'performance', label: 'Progress Report' },
+                { value: 'quality', label: 'Quality Report' },
               ]}
               value={searchForm.typeOfReport}
               onChange={(value) => handleInputChange('typeOfReport', value as string)}
@@ -105,16 +161,34 @@ export default function ProgressReportPage() {
             <Text className="text-sm font-medium mb-2">Level</Text>
             <SelectDropdown
               options={[
-                { value: 'AC Level', label: 'AC Level' },
-                { value: 'PC Level', label: 'PC Level' },
-                { value: 'State Level', label: 'State Level' },
+                { value: 'ac', label: 'AC' },
+                { value: 'pc', label: 'PC' },
+                { value: 'polingstation', label: 'Polling Station' },
+                { value: 'interviewer', label: 'Interviewer' },
               ]}
               value={searchForm.level}
               onChange={(value) => handleInputChange('level', value as string)}
-              placeholder="AC Level"
+              placeholder="AC"
               className="w-full"
             />
           </div>
+          {/* AC Code Field - Only show when polingstation or interviewer is selected */}
+          {['polingstation', 'interviewer'].includes(searchForm.level) && (
+            <div>
+              <Text className="text-sm font-medium mb-2">
+                AC Code
+                <span className="text-red-500 ml-1">*</span>
+              </Text>
+              <Input
+                type="text"
+                value={searchForm.acCode}
+                onChange={(e) => handleInputChange('acCode', e.target.value)}
+                placeholder="Enter AC Code"
+                className="w-full"
+                required
+              />
+            </div>
+          )}
           <div className="flex items-end">
             <Button onClick={handleSearch} className="w-full">
               <Search className="w-4 h-4 mr-2" />
@@ -122,6 +196,38 @@ export default function ProgressReportPage() {
             </Button>
           </div>
         </div>
+
+        {/* Custom Date Fields - Only show when custom is selected */}
+        {searchForm.reportDays === 'custom' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <Text className="text-sm font-medium mb-2">
+                Start Date
+                <span className="text-red-500 ml-1">*</span>
+              </Text>
+              <Input
+                type="date"
+                value={searchForm.customDate}
+                onChange={(e) => handleInputChange('customDate', e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+            <div>
+              <Text className="text-sm font-medium mb-2">
+                End Date
+                <span className="text-red-500 ml-1">*</span>
+              </Text>
+              <Input
+                type="date"
+                value={searchForm.customDateEnd}
+                onChange={(e) => handleInputChange('customDateEnd', e.target.value)}
+                className="w-full"
+                required
+              />
+            </div>
+          </div>
+        )}
       </Card>
 
 
@@ -139,85 +245,92 @@ export default function ProgressReportPage() {
         </div>
 
         <div className="table-responsive">
-          <Table className="table table-centered table-striped dt-responsive nowrap w-100">
+          <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
             <thead className="table-light">
               <tr>
-                <th>Sr.No.</th>
-                <th>AC Code</th>
-                <th>AC Name</th>
-                <th>Pc Name</th>
-                <th>Target Sample</th>
-                <th>No Of Interviewers Worked</th>
-                <th>PS Covered</th>
-                <th>Completed Interviews</th>
-                <th>Terminated Interviews</th>
-                <th>System Rejections</th>
-                <th>Counts After Terminated And System Rejection</th>
-                <th>GPS Pending</th>
-                <th>GPS Fail</th>
-                <th className="bg-green-500 text-white">Passed</th>
-                <th className="bg-red-500 text-white">Failed</th>
-                <th className="bg-blue-500 text-white">Under QC</th>
-                <th>% Of Female Interviews</th>
-                <th>% Of Interviews Without Phone Number</th>
-                <th>Actual % Of SC</th>
-                <th>% Of Interviews Mentioned As SC</th>
-                <th>Actual % Of Muslims</th>
-                <th>% Of Interviews Mentioned As Muslims</th>
-                <th>% Of Interviews Under The Age Of (18-24)</th>
-                <th>% Of Interviews Under The Age Of (50+)</th>
+                <th className="border border-gray-300 w-16">Sr.No.</th>
+                <th className="border border-gray-300 w-20">AC Code</th>
+                <th className="border border-gray-300 w-32">AC Name</th>
+                <th className="border border-gray-300 w-32">Pc Name</th>
+                <th className="border border-gray-300 w-24">Target Sample</th>
+                <th className="border border-gray-300 w-32">No Of Interviewers Worked</th>
+                <th className="border border-gray-300 w-24">PS Covered</th>
+                <th className="border border-gray-300 w-32">Completed Interviews</th>
+                <th className="border border-gray-300 w-32">Terminated Interviews</th>
+                <th className="border border-gray-300 w-32">System Rejections</th>
+                <th className="border border-gray-300 w-40">Counts After Terminated And System Rejection</th>
+                <th className="border border-gray-300 w-24">GPS Pending</th>
+                <th className="border border-gray-300 w-20">GPS Fail</th>
+                <th className="bg-green-500 text-white border border-gray-300 w-20">Passed</th>
+                <th className="bg-red-500 text-white border border-gray-300 w-20">Failed</th>
+                <th className="bg-blue-500 text-white border border-gray-300 w-24">Under QC</th>
+                <th className="border border-gray-300 w-32">% Of Female Interviews</th>
+                <th className="border border-gray-300 w-40">% Of Interviews Without Phone Number</th>
+                <th className="border border-gray-300 w-24">Actual % Of SC</th>
+                <th className="border border-gray-300 w-36">% Of Interviews Mentioned As SC</th>
+                <th className="border border-gray-300 w-28">Actual % Of Muslims</th>
+                <th className="border border-gray-300 w-40">% Of Interviews Mentioned As Muslims</th>
+                <th className="border border-gray-300 w-40">% Of Interviews Under The Age Of (18-24)</th>
+                <th className="border border-gray-300 w-40">% Of Interviews Under The Age Of (50+)</th>
               </tr>
             </thead>
             <tbody>
-              {progressData.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={24} className="text-center py-8 text-gray-500">
+                  <td colSpan={24} className="text-center py-8 text-gray-500 border border-gray-300">
+                    Loading...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={24} className="text-center py-8 text-red-500 border border-gray-300">
+                    {error}
+                  </td>
+                </tr>
+              ) : progressData.length === 0 ? (
+                <tr>
+                  <td colSpan={24} className="text-center py-8 text-gray-500 border border-gray-300">
                     Progress Data Not Found
                   </td>
                 </tr>
               ) : (
-                currentData.map((item) => (
-                  <tr 
-                    key={item.id} 
-                    className={item.isSummary ? 'bg-gray-100 font-bold' : ''}
-                  >
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.srNo}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.acCode}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.acName}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.pcName}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.targetSample}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.interviewersWorked}</td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} text-blue-600`}>
-                      {item.psCovered}
+                currentData.map((item, index) => (
+                  <tr key={item.ac_code}>
+                    <td className="border border-gray-300">{startIndex + index + 1}</td>
+                    <td className="border border-gray-300">{item.ac_code}</td>
+                    <td className="border border-gray-300">{item.ac_name}</td>
+                    <td className="border border-gray-300">{item.pc_name}</td>
+                    <td className="border border-gray-300">{item.target_sample}</td>
+                    <td className="border border-gray-300">{item.interviewer}</td>
+                    <td className="text-blue-600 border border-gray-300">{item.pscovered}</td>
+                    <td className="border border-gray-300">{item.total_interview}</td>
+                    <td className="border border-gray-300">{item.invalid}</td>
+                    <td className="border border-gray-300">{item.reject_auto}</td>
+                    <td className="border border-gray-300">{item.count_after_termination_and_rejection}</td>
+                    <td className="border border-gray-300">{item.interview_gps_pending}</td>
+                    <td className="border border-gray-300">{item.interview_gps_reject}</td>
+                    <td className="border border-gray-300">{item.valid}</td>
+                    <td className="border border-gray-300">{item.reject - item.reject_auto}</td>
+                    <td className="border border-gray-300">{item.interview_in_qc + item.interview_in_qc_complete + item.interview_in_reqc + item.interview_in_reqc_complete}</td>
+                    <td className={`border border-gray-300 ${shouldHighlightRed(item.female_per, 'female_per') ? 'text-red-600 font-bold' : ''}`}>
+                      {item.female_per}
                     </td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.completedInterviews}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.terminatedInterviews}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.systemRejections}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.countsAfterTerminated}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.gpsPending}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.gpsFail}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.passed}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.failed}</td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.underQc}</td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.femaleInterviewsPercent, 'femaleInterviewsPercent') ? 'text-red-600' : ''}`}>
-                      {item.femaleInterviewsPercent}
+                    <td className={`border border-gray-300 ${shouldHighlightRed(item.without_phone_per, 'without_phone_per') ? 'text-red-600 font-bold' : ''}`}>
+                      {item.without_phone_per}
                     </td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.withoutPhonePercent, 'withoutPhonePercent') ? 'text-red-600' : ''}`}>
-                      {item.withoutPhonePercent}
+                    <td className="border border-gray-300">{item.sc}</td>
+                    <td className={`border border-gray-300 ${shouldHighlightRed(item.sc_category_per, 'sc_category_per') ? 'text-red-600 font-bold' : ''}`}>
+                      {item.sc_category_per}
                     </td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.actualScPercent}</td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedScPercent, 'mentionedScPercent') ? 'text-red-600' : ''}`}>
-                      {item.mentionedScPercent}
+                    <td className="border border-gray-300">{item.muslim}</td>
+                    <td className={`border border-gray-300 ${shouldHighlightRed(item.muslim_category_per, 'muslim_category_per') ? 'text-red-600 font-bold' : ''}`}>
+                      {item.muslim_category_per}
                     </td>
-                    <td className={item.isSummary ? 'font-bold' : ''}>{item.actualMuslimPercent}</td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedMuslimPercent, 'mentionedMuslimPercent') ? 'text-red-600' : ''}`}>
-                      {item.mentionedMuslimPercent}
+                    <td className={`border border-gray-300 ${shouldHighlightRed(item.age_18_24_per, 'age_18_24_per') ? 'text-red-600 font-bold' : ''}`}>
+                      {item.age_18_24_per}
                     </td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age18to24Percent, 'age18to24Percent') ? 'text-red-600' : ''}`}>
-                      {item.age18to24Percent}
-                    </td>
-                    <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age50PlusPercent, 'age50PlusPercent') ? 'text-red-600' : ''}`}>
-                      {item.age50PlusPercent}
+                    <td className={`border border-gray-300 ${shouldHighlightRed(item.age_50_above_per, 'age_50_above_per') ? 'text-red-600 font-bold' : ''}`}>
+                      {item.age_50_above_per}
                     </td>
                   </tr>
                 ))

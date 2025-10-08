@@ -186,6 +186,9 @@ export const API_ENDPOINTS = {
   FINDINGS: {
     GAIN_AND_LOSSES: '/dashboard/findings/gain-and-losses',
   },
+
+  // Performance Report
+  PERFORMANCE_REPORT: '/performance-report',
 } as const;
 
 // API Response Types
@@ -553,6 +556,148 @@ export interface GainLossResponse {
   };
   message: string;
   timestamp: string;
+}
+
+// Performance Report Interfaces
+export interface PerformanceReportSummary {
+  sc: string;
+  muslim: string;
+  ac: number;
+  district: number;
+  supervisor: number;
+  interviewer: number;
+  pscovered: number;
+  no_of_day: number;
+  no_of_ac: number;
+  total_interview: number;
+  invalid: number;
+  reject_auto: number;
+  interview_gps_pending: number;
+  interview_gps_completed: number;
+  interview_in_qc: number;
+  interview_in_qc_complete: number;
+  interview_in_reqc: number;
+  interview_in_reqc_complete: number;
+  red: number;
+  blue: number;
+  amber: number;
+  green: number;
+  qc_valid: number;
+  valid: number;
+  valid_with_qc: number;
+  assign_to_qc: number;
+  assign_to_teleqc: number;
+  assign_to_audioqc: number;
+  qc_reject: number;
+  interview_gps_reject: number;
+  reject_without_system: number;
+  reject: number;
+  interview_male: number;
+  interview_female: number;
+  without_phone: number;
+  sc_category: number;
+  muslim_category: number;
+  age_18_24: number;
+  age_50_above: number;
+  target_sample_ac: number;
+  target_sample_district: number;
+  target_sample_interviewer: number;
+  target_sample_supervisor: number;
+  target_sample_pollingstation: number;
+  avg_loi: number;
+  average_per_day: number;
+  average_per_day_valid: number;
+  valid_after_qc: number;
+  without_phone_per: number;
+  sc_category_per: number;
+  muslim_category_per: number;
+  age_18_24_per: number;
+  age_50_above_per: number;
+  rejection_per: number;
+  min_achivement: number;
+  max_achivement: number;
+  sent_for_1st_level: number;
+  sent_for_1st_level_passed: number;
+  "1st_level_passed_without_checking": number;
+  sent_for_1st_level_failed: number;
+  sent_for_1st_level_pending: number;
+  sent_for_2nd_level: number;
+  sent_for_2nd_level_passed: number;
+  sent_for_2nd_level_failed: number;
+  sent_for_2nd_level_pending: number;
+  reject_short: number;
+  reject_duplicatephone: number;
+  reject_rta: number;
+  reject_qc: number;
+  reject_qc_audio_blank: number;
+  reject_qc_audio_gender: number;
+  reject_qc_audio_irrelevant: number;
+  reject_qc_audio_interviewer_more: number;
+  reject_qc_audio_mechanical: number;
+  reject_qc_audio_respondent: number;
+  reject_qc_gps: number;
+  without_audio: number;
+  without_audio_valid: number;
+  valid_without_phone: number;
+  valid_without_phone_per: number;
+  male_per: number;
+  female_per: number;
+}
+
+export interface PerformanceReportData {
+  // Basic Info
+  ac_code: number;
+  ac_name: string;
+  pc_name: string;
+  target_sample: number;
+  interviewer: number;
+  pscovered: number;
+  
+  // Interview Counts
+  total_interview: number;
+  invalid: number;
+  reject_auto: number;
+  count_after_termination_and_rejection: number;
+  
+  // GPS Status
+  interview_gps_pending: number;
+  interview_gps_reject: number;
+  
+  // QC Status
+  interview_in_qc: number;
+  interview_in_qc_complete: number;
+  interview_in_reqc: number;
+  interview_in_reqc_complete: number;
+  
+  // Final Results
+  valid: number;
+  reject: number;
+  
+  // Demographics - Actual Percentages
+  sc: string;
+  muslim: string;
+  
+  // Demographics - Interview Percentages
+  female_per: number;
+  without_phone_per: number;
+  sc_category_per: number;
+  muslim_category_per: number;
+  age_18_24_per: number;
+  age_50_above_per: number;
+}
+
+export interface PerformanceReportResponse {
+  summary: PerformanceReportSummary;
+  data: PerformanceReportData[];
+}
+
+export interface PerformanceReportParams {
+  report_days?: 'all' | 'today' | 'yesterday' | 'dby' | 'l3' | 'l7' | 'l15' | 'currentmonth' | 'custom';
+  type?: 'performance' | 'quality';
+  level?: 'ac' | 'pc' | 'polingstation' | 'interviewer';
+  ac_code?: string;
+  custom_date?: string; // YYYY-MM-DD format
+  custom_date_end?: string; // YYYY-MM-DD format
 }
 
 // Report Endpoints
@@ -2133,6 +2278,35 @@ class ApiService {
       method: 'PUT',
       body: JSON.stringify(data),
     });
+  }
+
+  // Performance Report Methods
+  async getPerformanceReport(params?: PerformanceReportParams): Promise<ApiResponse<PerformanceReportResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    if (params?.report_days) {
+      queryParams.append('report_days', params.report_days);
+    }
+    if (params?.type) {
+      queryParams.append('type', params.type);
+    }
+    if (params?.level) {
+      queryParams.append('level', params.level);
+    }
+    if (params?.ac_code) {
+      queryParams.append('ac_code', params.ac_code);
+    }
+    if (params?.custom_date) {
+      queryParams.append('custom_date', params.custom_date);
+    }
+    if (params?.custom_date_end) {
+      queryParams.append('custom_date_end', params.custom_date_end);
+    }
+    
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `${API_ENDPOINTS.PERFORMANCE_REPORT}?${queryString}` : API_ENDPOINTS.PERFORMANCE_REPORT;
+    
+    return this.request<PerformanceReportResponse>(endpoint);
   }
 
   // Utility Methods
