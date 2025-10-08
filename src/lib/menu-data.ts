@@ -794,7 +794,7 @@ export const menuData: MenuItem[] = [
     href: '/home',
     icon: 'Home',
     roles: ['fd'],
-    system: 'cati',
+    system: 'capi',
   },
   // CAPI Access to Raw Data Menu
   {
