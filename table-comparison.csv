@@ -1,0 +1,296 @@
+Old Column,New Column,Type,Difference
+id,call_id,int,Column renamed from id to call_id
+timer_section,,,New column in new table - not present in old
+ac_code,ac_code,int,Same column exists in both
+ac_name,ac_name,varchar,Same column exists in both
+pc_name,pc_name,varchar,New column in new table - not present in old
+pc_code,pc_code,varchar,New column in new table - not present in old
+district_name,district_name,varchar,New column in new table - not present in old
+district_code,district_code,varchar,New column in new table - not present in old
+region_name,region_name,varchar,New column in new table - not present in old
+region_code,region_code,varchar,New column in new table - not present in old
+mla_name,mla_name,varchar,New column in new table - not present in old
+mp_name,mp_name,varchar,New column in new table - not present in old
+number_status,number_status,tinyint,Same column exists in both
+call_not_ring,call_not_ring,tinyint,Same column exists in both
+call_ring_status,call_ring_status,tinyint,Same column exists in both
+q_call_status,q_call_status,int,Same column exists in both
+call_reschedule,call_reschedule,datetime,New column in new table - not present in old
+telecaller_id,telecaller_id,int,New column in new table - not present in old
+telecaller_name,telecaller_name,varchar,New column in new table - not present in old
+callid,callid,varchar,Same column exists in both
+consent,consent,int,New column in new table - not present in old
+resp_age,resp_age,int,New column in new table - not present in old
+resp_registered_voter,resp_registered_voter,int,New column in new table - not present in old
+resp_gender,resp_gender,int,New column in new table - not present in old
+q5,q5,int,Same column exists in both
+q5_oth,q5_oth,varchar,New column in new table - not present in old
+q5_ind,q5_ind,varchar,New column in new table - not present in old
+q6,q6,int,Same column exists in both
+q6_oth,q6_oth,varchar,New column in new table - not present in old
+q6_ind,q6_ind,varchar,New column in new table - not present in old
+q7,q7,int,New column in new table - not present in old
+q7_oth,q7_oth,varchar,New column in new table - not present in old
+q7_ind,q7_ind,varchar,New column in new table - not present in old
+q8,q8,int,New column in new table - not present in old
+q8_oth,q8_oth,varchar,New column in new table - not present in old
+q8_ind,q8_ind,varchar,New column in new table - not present in old
+q9,q9,int,New column in new table - not present in old
+q9_oth,q9_oth,varchar,New column in new table - not present in old
+q9_ind,q9_ind,varchar,New column in new table - not present in old
+q10,q10,int,New column in new table - not present in old
+q10_1,q10_1,int,Same column exists in both
+q10_2,q10_2,int,Same column exists in both
+q10_3,q10_3,int,Same column exists in both
+q10_4,q10_4,int,Same column exists in both
+q10_5,q10_5,int,Same column exists in both
+q10_44,q10_44,int,Same column exists in both
+q10_99,q10_99,int,Same column exists in both
+q10_oth,q10_oth,varchar,New column in new table - not present in old
+q11,q11,int,Same column exists in both
+q11_1,q11_1,int,New column in new table - not present in old
+q11_2,q11_2,int,New column in new table - not present in old
+q11_3,q11_3,int,New column in new table - not present in old
+q11_4,q11_4,int,New column in new table - not present in old
+q11_5,q11_5,int,New column in new table - not present in old
+q11_6,q11_6,int,New column in new table - not present in old
+q11_7,q11_7,int,New column in new table - not present in old
+q11_8,q11_8,int,New column in new table - not present in old
+q11_9,q11_9,int,New column in new table - not present in old
+q11_10,q11_10,int,New column in new table - not present in old
+q11_11,q11_11,int,New column in new table - not present in old
+q11_13,q11_13,int,New column in new table - not present in old
+q11_14,q11_14,int,New column in new table - not present in old
+q11_15,q11_15,int,New column in new table - not present in old
+q11_44,q11_44,int,New column in new table - not present in old
+q11_99,q11_99,int,New column in new table - not present in old
+q11_oth,q11_oth,varchar,New column in new table - not present in old
+q12,q12,int,Same column exists in both
+q12_1,q12_1,int,New column in new table - not present in old
+q12_2,q12_2,int,New column in new table - not present in old
+q12_3,q12_3,int,New column in new table - not present in old
+q12_5,q12_5,int,New column in new table - not present in old
+q12_6,q12_6,int,New column in new table - not present in old
+q12_7,q12_7,int,New column in new table - not present in old
+q12_8,q12_8,int,New column in new table - not present in old
+q12_9,q12_9,int,New column in new table - not present in old
+q12_11,q12_11,int,New column in new table - not present in old
+q12_12,q12_12,int,New column in new table - not present in old
+q12_14,q12_14,int,New column in new table - not present in old
+q12_44,q12_44,int,New column in new table - not present in old
+q12_99,q12_99,int,New column in new table - not present in old
+q12_oth,q12_oth,varchar,New column in new table - not present in old
+q13,q13,int,Same column exists in both
+q13_2,q13_2,int,New column in new table - not present in old
+q13_3,q13_3,int,New column in new table - not present in old
+q13_4,q13_4,int,New column in new table - not present in old
+q13_5,q13_5,int,New column in new table - not present in old
+q13_6,q13_6,int,New column in new table - not present in old
+q13_7,q13_7,int,New column in new table - not present in old
+q13_8,q13_8,int,New column in new table - not present in old
+q13_9,q13_9,int,New column in new table - not present in old
+q13_10,q13_10,int,New column in new table - not present in old
+q13_11,q13_11,int,New column in new table - not present in old
+q13_12,q13_12,int,New column in new table - not present in old
+q13_13,q13_13,int,New column in new table - not present in old
+q13_44,q13_44,int,New column in new table - not present in old
+q13_oth,q13_oth,varchar,New column in new table - not present in old
+q14,q14,int,Same column exists in both
+q15,q15,int,Same column exists in both
+q16,q16,int,New column in new table - not present in old
+q16_a,q16_a,int,New column in new table - not present in old
+q16_b,q16_b,int,New column in new table - not present in old
+q17,q17,int,New column in new table - not present in old
+q17_oth,q17_oth,varchar,New column in new table - not present in old
+q19,q19,int,New column in new table - not present in old
+q19_oth,q19_oth,varchar,New column in new table - not present in old
+resp_religion,resp_religion,int,New column in new table - not present in old
+resp_religion_oth,resp_religion_oth,varchar,New column in new table - not present in old
+resp_social_cat,resp_social_cat,int,New column in new table - not present in old
+resp_female_edu,resp_female_edu,int,New column in new table - not present in old
+resp_male_edu,resp_male_edu,int,New column in new table - not present in old
+resp_occupation,resp_occupation,int,New column in new table - not present in old
+thanks_future,thanks_future,int,New column in new table - not present in old
+q_call_drop,q_call_drop,int,New column in new table - not present in old
+status,status,tinyint,Same column exists in both
+response,response,int,Same column exists in both
+qc_audio_status,qc_audio_status,int,New column in new table - not present in old
+qc_q2,qc_q2,int,New column in new table - not present in old
+qc_q3,qc_q3,int,New column in new table - not present in old
+qc_q4,qc_q4,int,New column in new table - not present in old
+qc_q5,qc_q5,int,New column in new table - not present in old
+qc_q6,qc_q6,int,New column in new table - not present in old
+qc_q7,qc_q7,int,New column in new table - not present in old
+qc_q8,qc_q8,int,New column in new table - not present in old
+survey_data_id,,,Column exists in old table but not in new
+agency_id,,,Column exists in old table but not in new
+supervisor_id,,,Column exists in old table but not in new
+teleform_user_id,,,Column exists in old table but not in new
+generate_date,,,Column exists in old table but not in new
+track,,,Column exists in old table but not in new
+calling_group,,,Column exists in old table but not in new
+priority,,,Column exists in old table but not in new
+part_no,,,Column exists in old table but not in new
+phone,,,Column exists in old table but not in new
+name,,,Column exists in old table but not in new
+q_name,,,Column exists in old table but not in new
+call_attempt,,,Column exists in old table but not in new
+call_received,,,Column exists in old table but not in new
+call_date,,,Column exists in old table but not in new
+starttime,,,Column exists in old table but not in new
+endtime,,,Column exists in old table but not in new
+survey_complete_date,,,Column exists in old table but not in new
+q_consent,,,Column exists in old table but not in new
+q_age,,,Column exists in old table but not in new
+q_locality,,,Column exists in old table but not in new
+q_register_voter,,,Column exists in old table but not in new
+q_gender,,,Column exists in old table but not in new
+q1_1,,,Column exists in old table but not in new
+q1_2,,,Column exists in old table but not in new
+q1_3,,,Column exists in old table but not in new
+q1_4,,,Column exists in old table but not in new
+q1_5,,,Column exists in old table but not in new
+q1_44,,,Column exists in old table but not in new
+q1_other,,,Column exists in old table but not in new
+q2,,,Column exists in old table but not in new
+q2_other,,,Column exists in old table but not in new
+q3,,,Column exists in old table but not in new
+q3_other,,,Column exists in old table but not in new
+q4,,,Column exists in old table but not in new
+q7_3,,,Column exists in old table but not in new
+q7_4,,,Column exists in old table but not in new
+q7_5,,,Column exists in old table but not in new
+q7_6,,,Column exists in old table but not in new
+q7_7,,,Column exists in old table but not in new
+q7_8,,,Column exists in old table but not in new
+q7_10,,,Column exists in old table but not in new
+q7_11,,,Column exists in old table but not in new
+q7_12,,,Column exists in old table but not in new
+q7_13,,,Column exists in old table but not in new
+q7_55,,,Column exists in old table but not in new
+q7_44,,,Column exists in old table but not in new
+q7_99,,,Column exists in old table but not in new
+q7_other,,,Column exists in old table but not in new
+q8_3,,,Column exists in old table but not in new
+q8_4,,,Column exists in old table but not in new
+q8_5,,,Column exists in old table but not in new
+q8_7,,,Column exists in old table but not in new
+q8_9,,,Column exists in old table but not in new
+q8_10,,,Column exists in old table but not in new
+q8_11,,,Column exists in old table but not in new
+q8_12,,,Column exists in old table but not in new
+q8_13,,,Column exists in old table but not in new
+q8_14,,,Column exists in old table but not in new
+q8_2,,,Column exists in old table but not in new
+q8_44,,,Column exists in old table but not in new
+q8_99,,,Column exists in old table but not in new
+q8_other,,,Column exists in old table but not in new
+q9_1,,,Column exists in old table but not in new
+q9_2,,,Column exists in old table but not in new
+q9_3,,,Column exists in old table but not in new
+q9_4,,,Column exists in old table but not in new
+q9_5,,,Column exists in old table but not in new
+q9_6,,,Column exists in old table but not in new
+q9_7,,,Column exists in old table but not in new
+q9_8,,,Column exists in old table but not in new
+q9_9,,,Column exists in old table but not in new
+q9_10,,,Column exists in old table but not in new
+q9_11,,,Column exists in old table but not in new
+q9_12,,,Column exists in old table but not in new
+q9_13,,,Column exists in old table but not in new
+q9_44,,,Column exists in old table but not in new
+q9_99,,,Column exists in old table but not in new
+q9_other,,,Column exists in old table but not in new
+q6,,,Column exists in old table but not in new
+q8a,,,Column exists in old table but not in new
+q8b,,,Column exists in old table but not in new
+q8c,,,Column exists in old table but not in new
+q30a_1_1,,,Column exists in old table but not in new
+q30a_1_2,,,Column exists in old table but not in new
+q30a_1_3,,,Column exists in old table but not in new
+q30a_1_4,,,Column exists in old table but not in new
+q30a_1_5,,,Column exists in old table but not in new
+q30a_1_other,,,Column exists in old table but not in new
+q30a_2_1,,,Column exists in old table but not in new
+q30a_2_2,,,Column exists in old table but not in new
+q30a_2_3,,,Column exists in old table but not in new
+q30a_2_4,,,Column exists in old table but not in new
+q30a_2_5,,,Column exists in old table but not in new
+q30a_2_other,,,Column exists in old table but not in new
+q30a_3_1,,,Column exists in old table but not in new
+q30a_3_2,,,Column exists in old table but not in new
+q30a_3_3,,,Column exists in old table but not in new
+q30a_3_4,,,Column exists in old table but not in new
+q30a_3_5,,,Column exists in old table but not in new
+q30a_3_other,,,Column exists in old table but not in new
+q30a_4_1,,,Column exists in old table but not in new
+q30a_4_2,,,Column exists in old table but not in new
+q30a_4_3,,,Column exists in old table but not in new
+q30a_4_4,,,Column exists in old table but not in new
+q30a_4_5,,,Column exists in old table but not in new
+q30a_4_other,,,Column exists in old table but not in new
+q11_other,,,Column exists in old table but not in new
+q12_other,,,Column exists in old table but not in new
+q13_other,,,Column exists in old table but not in new
+q13_a,,,Column exists in old table but not in new
+q13_a_other,,,Column exists in old table but not in new
+q14_other,,,Column exists in old table but not in new
+q15_other,,,Column exists in old table but not in new
+q_religion,,,Column exists in old table but not in new
+q_religion_other,,,Column exists in old table but not in new
+q_social_category,,,Column exists in old table but not in new
+q_caste_jati,,,Column exists in old table but not in new
+q_caste_jati_other,,,Column exists in old table but not in new
+q_female_education,,,Column exists in old table but not in new
+resp_education,,,Column exists in old table but not in new
+q_occupation,,,Column exists in old table but not in new
+q_future_contact,,,Column exists in old table but not in new
+q_interview_status,,,Column exists in old table but not in new
+cloud_api_id,,,Column exists in old table but not in new
+calling_request_id,,,Column exists in old table but not in new
+invalid_phone,,,Column exists in old table but not in new
+invalid_phone_verify_by,,,Column exists in old table but not in new
+invalid_phone_verify_date,,,Column exists in old table but not in new
+reject_reason,,,Column exists in old table but not in new
+reject_date,,,Column exists in old table but not in new
+recomplete,,,Column exists in old table but not in new
+recomplete_date,,,Column exists in old table but not in new
+recomplete_by,,,Column exists in old table but not in new
+pre_survey_calling_id,,,Column exists in old table but not in new
+re_sent_for_calling,,,Column exists in old table but not in new
+qc_teleform_user_id,,,Column exists in old table but not in new
+qc,,,Column exists in old table but not in new
+qc_assign_date,,,Column exists in old table but not in new
+qc_q_intro,,,Column exists in old table but not in new
+qc_q12,,,Column exists in old table but not in new
+qc_q11,,,Column exists in old table but not in new
+qc_q16,,,Column exists in old table but not in new
+qc_q14,,,Column exists in old table but not in new
+qc_q28,,,Column exists in old table but not in new
+qc_remark,,,Column exists in old table but not in new
+qc_complete_date,,,Column exists in old table but not in new
+qc_status,,,Column exists in old table but not in new
+re_qc_teleform_user_id,,,Column exists in old table but not in new
+re_qc,,,Column exists in old table but not in new
+re_qc_assign_date,,,Column exists in old table but not in new
+re_qc_q_intro,,,Column exists in old table but not in new
+re_qc_q12,,,Column exists in old table but not in new
+re_qc_q11,,,Column exists in old table but not in new
+re_qc_q16,,,Column exists in old table but not in new
+re_qc_q14,,,Column exists in old table but not in new
+re_qc_q28,,,Column exists in old table but not in new
+re_qc_remark,,,Column exists in old table but not in new
+re_qc_complete_date,,,Column exists in old table but not in new
+re_qc_status,,,Column exists in old table but not in new
+weight,,,Column exists in old table but not in new
+non_weight,,,Column exists in old table but not in new
+created_at,,,Column exists in old table but not in new
+created_by,,,Column exists in old table but not in new
+updated_at,,,Column exists in old table but not in new
+updated_by,,,Column exists in old table but not in new
+form_duration_seconds,,,Column exists in old table but not in new
+language_used,,,Column exists in old table but not in new
+user_timezone,,,Column exists in old table but not in new
+user_localdatetime,,,Column exists in old table but not in new
+final_submit,,,Column exists in old table but not in new
+call_reschedule_datetime,,,Column exists in old table but not in new

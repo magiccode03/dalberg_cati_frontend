@@ -68,15 +68,6 @@ export default function NewCallPage() {
     }
   }, [teleformUserId]);
 
-  // Cleanup scroll timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
   const fetchInterviews = async (userData?: any, page: number = 1, append: boolean = false) => {
     try {
       if (append) {
@@ -198,7 +189,7 @@ export default function NewCallPage() {
       if (callData.success) {
         console.log('Call initiated successfully:', callData);
         
-        // Update interview status to 1
+        // Update interview status to 1 and include callId from click-to-call response
         const updateResponse = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
           method: 'PUT',
           headers: {
@@ -207,7 +198,8 @@ export default function NewCallPage() {
           },
           body: JSON.stringify({
             status: 1,
-            call_attempt: 1
+            call_attempt: 1,
+            callid: callData.data.callId // Include callid from click-to-call response
           })
         });
         
@@ -279,11 +271,6 @@ export default function NewCallPage() {
               </Heading>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Teleform User ID: <span className="font-mono font-semibold">{teleformUserId}</span>
-                {interviews.length > 0 && (
-                  <span className="ml-2 text-blue-600 dark:text-blue-400">
-                    ({interviews.length}/{totalItems} interviews loaded)
-                  </span>
-                )}
               </p>
             </div>
           </div>
@@ -324,10 +311,7 @@ export default function NewCallPage() {
 
         {/* New Call Table */}
         <Card className="md:p-4">
-          <div 
-            className="overflow-x-auto max-h-[70vh] overflow-y-auto"
-            onScroll={handleScroll}
-          >
+          <div className="overflow-x-auto">
             <Table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">

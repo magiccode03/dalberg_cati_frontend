@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useGetAgencies } from '@/hooks/useApi';
 import { User, LogOut, Sun, Moon, ChevronDown, UserCheck } from 'lucide-react';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 
@@ -12,6 +13,7 @@ export default function Header() {
   const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
+  const { getAgencies } = useGetAgencies();
 
   // Helper function to get role display name
   const getRoleDisplayName = (role: string | undefined): string => {
@@ -106,6 +108,13 @@ export default function Header() {
       window.removeEventListener('teleformUserUpdated', handleStorageChange);
     };
   }, []);
+
+  // Fetch agencies when component mounts and when user role changes
+  useEffect(() => {
+    if (showAgencySelector) {
+      getAgencies();
+    }
+  }, [showAgencySelector, getAgencies]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';

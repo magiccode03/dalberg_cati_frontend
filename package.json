@@ -6,7 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:report": "playwright test && playwright show-report",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project=\"Mobile Chrome\"",
+    "test:validation": "playwright test tests/cati-form/01-form-validation.spec.ts",
+    "test:conditional": "playwright test tests/cati-form/02-conditional-logic.spec.ts",
+    "test:submission": "playwright test tests/cati-form/03-submission-status.spec.ts",
+    "test:autosave": "playwright test tests/cati-form/04-auto-save.spec.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -44,6 +57,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.56.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

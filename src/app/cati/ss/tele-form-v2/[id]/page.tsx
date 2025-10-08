@@ -369,11 +369,8 @@ export default function TeleFormV2Page() {
         status = 3; // Partial submit (call dropped)
       }
       
-      // Transform form data to match backend expectations
-      const transformedData = transformFormDataForSubmission(formData);
-      
       const submissionData = {
-        ...transformedData,
+        ...formData,
         status: status,
         form_duration_seconds: timer,
         final_submit: finalSubmit,
