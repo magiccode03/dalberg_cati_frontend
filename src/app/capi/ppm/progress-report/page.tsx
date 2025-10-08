@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -16,6 +17,7 @@ import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams } from '@/lib/api';
 
 export default function ProgressReportPage() {
+  const router = useRouter();
   const [searchForm, setSearchForm] = useState({
     reportDays: 'all',
     typeOfReport: 'performance',
@@ -77,7 +79,23 @@ export default function ProgressReportPage() {
       return;
     }
     
-    fetchProgressReport();
+    // If it's the default AC performance report, fetch data directly
+    if (searchForm.typeOfReport === 'performance' && searchForm.level === 'ac') {
+      fetchProgressReport();
+    } else {
+      // For other combinations, navigate to the specific page
+      const params = new URLSearchParams({
+        report_days: searchForm.reportDays,
+        type: searchForm.typeOfReport,
+        level: searchForm.level,
+        ...(searchForm.acCode && { ac_code: searchForm.acCode }),
+        ...(searchForm.customDate && { custom_date: searchForm.customDate }),
+        ...(searchForm.customDateEnd && { custom_date_end: searchForm.customDateEnd })
+      });
+
+      const path = `/capi/ppm/progress-report/${searchForm.typeOfReport}/${searchForm.level}`;
+      router.push(`${path}?${params.toString()}`);
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
