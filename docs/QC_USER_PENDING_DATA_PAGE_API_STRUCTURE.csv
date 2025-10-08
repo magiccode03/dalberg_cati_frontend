@@ -1,13 +1,4 @@
-Section,Type,Label/Column Name,Attribute/Field Name
-,,,
-,,,
-QC User Pending Data,Table Column,QC ID,qc_id
-QC User Pending Data,Table Column,Name,name
-QC User Pending Data,Table Column,Pending Interview,pending_interview
-,,,
-,,,
-Pagination,Data Field,Current Page,currentPage
-Pagination,Data Field,Page Size,pageSize
-Pagination,Data Field,Total Items,totalCount
-Pagination,Data Field,Total Pages,totalPages
-Pagination,Data Field,Items Per Page,pageSize
+Section,Type,Label/Column Name,API Field Name
+Pending QC Data,Table Column,QC ID,qc_id
+Pending QC Data,Table Column,Name,name
+Pending QC Data,Table Column,Pending Interview,pending_interview

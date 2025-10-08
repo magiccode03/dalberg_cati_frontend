@@ -266,7 +266,7 @@ export default function TeleFormV2Page() {
     });
   };
 
-  // Transform checkbox data to individual fields
+  // Transform checkbox data to individual fields and convert string values to integers
   const transformFormDataForSubmission = (data: Record<string, any>) => {
     const transformed: Record<string, any> = {};
     
@@ -280,8 +280,17 @@ export default function TeleFormV2Page() {
           transformed[fieldName] = fieldValue.includes(option.value) ? 1 : null;
         });
       } else if (field.type !== 'checkbox') {
-        // For non-checkbox fields, keep as is
-        transformed[field.tag] = fieldValue || null;
+        // For non-checkbox fields, convert to appropriate type
+        if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+          transformed[field.tag] = null;
+        } else if (field.type === 'radio' || field.type === 'number') {
+          // Convert radio button values and number inputs to integers
+          const numValue = parseInt(fieldValue);
+          transformed[field.tag] = isNaN(numValue) ? null : numValue;
+        } else {
+          // Keep text and other types as strings
+          transformed[field.tag] = fieldValue;
+        }
       }
     });
     
@@ -512,13 +521,13 @@ export default function TeleFormV2Page() {
           <div 
             key={index} 
             id={`${field.tag}_container`} 
-            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
                 ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
-            <Text className={`text-base font-medium mb-3 ${
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
               hasError 
                 ? 'text-red-700 dark:text-red-300' 
                 : 'text-blue-600 dark:text-blue-400'
@@ -527,12 +536,12 @@ export default function TeleFormV2Page() {
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
             {hasError && (
-              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+              <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
               </div>
             )}
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {field.options?.map(option => (
                 <Radio
                   key={option.tag}
@@ -553,13 +562,13 @@ export default function TeleFormV2Page() {
           <div 
             key={index} 
             id={`${field.tag}_container`} 
-            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
                 ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
-            <Text className={`text-base font-medium mb-3 ${
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
               hasError 
                 ? 'text-red-700 dark:text-red-300' 
                 : 'text-blue-600 dark:text-blue-400'
@@ -568,12 +577,12 @@ export default function TeleFormV2Page() {
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
             {hasError && (
-              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+              <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
               </div>
             )}
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {field.options?.map(option => (
                 <Checkbox
                   key={option.tag}
@@ -592,14 +601,14 @@ export default function TeleFormV2Page() {
           <div 
             key={index} 
             id={`${field.tag}_container`} 
-            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
                 ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
             {hasError && (
-              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+              <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
               </div>
@@ -621,14 +630,14 @@ export default function TeleFormV2Page() {
           <div 
             key={index} 
             id={`${field.tag}_container`} 
-            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
                 ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
             {hasError && (
-              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+              <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
               </div>
@@ -652,14 +661,14 @@ export default function TeleFormV2Page() {
           <div 
             key={index} 
             id={`${field.tag}_container`} 
-            className={`mb-6 p-4 rounded-lg border-2 transition-all duration-300 ${
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
                 ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
             {hasError && (
-              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+              <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
               </div>
@@ -720,24 +729,24 @@ export default function TeleFormV2Page() {
   const showFinalDemographicsSection = formData.resp_registered_voter === '1';
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-6">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
       {/* Timer and Language Selector */}
-      <div className="mb-6">
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <Heading level={4}>WB Opinion Poll CATI 2025</Heading>
-            <div className="flex items-center gap-6">
+      <div className="mb-3 sm:mb-4 md:mb-6">
+        <Card className="p-3 sm:p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl">WB Opinion Poll CATI 2025</Heading>
+            <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
               {/* Timer */}
               <div>
-                <Text className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                <Text className="text-sm sm:text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300">
                   Time: <span className="text-blue-600 dark:text-blue-400">{timer}s</span>
                 </Text>
               </div>
               
               {/* Language Selector */}
-              <div className="flex items-center gap-3">
-                <Text className="font-medium text-gray-700 dark:text-gray-300">Language:</Text>
-                <div className="w-48">
+              <div className="flex items-center gap-2 w-full xs:w-auto">
+                <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
+                <div className="w-full xs:w-40 sm:w-48">
                   <SelectDropdown
                     options={[
                       { value: 'english', label: 'English (English)' },
@@ -757,8 +766,8 @@ export default function TeleFormV2Page() {
 
       <form onSubmit={handleSubmit}>
         {/* Call Status Section */}
-        <Card className="p-6 mb-6">
-          <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+        <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+          <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
             Call Status
           </Heading>
           {sections.callStatus.map((field, index) => renderField(field, index))}
@@ -766,12 +775,12 @@ export default function TeleFormV2Page() {
 
         {/* Consent Section */}
         {showConsentSection && sections.consent.length > 0 && (
-          <Card className="p-6 mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
               Section 2: Interviewer Introduction and Statement of Informed Consent
             </Heading>
-            <div className="mb-4">
-              <Text className="text-base font-medium text-blue-600 dark:text-blue-400 mb-4">
+            <div className="mb-3 sm:mb-4">
+              <Text className="text-sm sm:text-base leading-relaxed font-medium text-blue-600 dark:text-blue-400 mb-3 sm:mb-4">
                 {language === 'hindi' 
                   ? `नमस्ते, मेरा नाम ${teleformUserName || '[enumerator name]'} है। हम कन्वर्जेंट नाम की एक संस्था से बात कर रहे हैं। हम पश्चिम बंगाल में लोगों से सरकार और राजनीति के बारे में उनकी राय जानने के लिए एक सर्वे कर रहे हैं। मैं आपसे कुछ सवाल पूछूँगा/पूछूँगी। आपके जवाब पूरी तरह गोपनीय रखे जाएंगे — किसी को भी आपकी जानकारी नहीं बताई जाएगी। ये सर्वे लगभग 5 से 10 मिनट का है, और आपकी सच्ची राय हमारे लिए बहुत ज़रूरी है।`
                   : language === 'bengali'
@@ -786,8 +795,8 @@ export default function TeleFormV2Page() {
 
         {/* Demographics Section */}
         {showDemographicsSection && sections.demographics.length > 0 && (
-          <Card className="p-6 mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
               Section 3: Basic Demographic
             </Heading>
             {sections.demographics.map((field, index) => renderField(field, index))}
@@ -796,8 +805,8 @@ export default function TeleFormV2Page() {
 
         {/* Party Preferences Section */}
         {showPartyPreferencesSection && sections.partyPreferences.length > 0 && (
-          <Card className="p-6 mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
               Section 4: Party Preferences
             </Heading>
             {sections.partyPreferences.map((field, index) => renderField(field, index))}
@@ -806,8 +815,8 @@ export default function TeleFormV2Page() {
 
         {/* Satisfaction Section */}
         {showSatisfactionSection && sections.satisfaction.length > 0 && (
-          <Card className="p-6 mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
               Section 5: Satisfaction and Approval Ratings
             </Heading>
             {sections.satisfaction.map((field, index) => renderField(field, index))}
@@ -816,8 +825,8 @@ export default function TeleFormV2Page() {
 
         {/* Final Demographics Section */}
         {showFinalDemographicsSection && sections.finalDemographics.length > 0 && (
-          <Card className="p-6 mb-6">
-            <Heading level={4} className="text-gray-900 dark:text-white mb-6">
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
               Section 6: Basic Demographic
             </Heading>
             {sections.finalDemographics.map((field, index) => renderField(field, index))}
@@ -825,13 +834,13 @@ export default function TeleFormV2Page() {
         )}
 
         {/* Submit Buttons */}
-        <Card className="p-6">
-          <div className="flex gap-4">
+        <Card className="p-3 sm:p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button 
               type="submit" 
               size="lg"
               disabled={isSubmitting}
-              className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white"
+              className="w-full sm:w-auto sm:min-w-[150px] bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base"
             >
               <i className="fa fa-save mr-2"></i>
               {isSubmitting ? 'Submitting...' : 'Submit'}
@@ -841,7 +850,7 @@ export default function TeleFormV2Page() {
               onClick={handleCallDropped}
               size="lg"
               disabled={isSubmitting}
-              className="min-w-[150px] bg-red-600 hover:bg-red-700 text-white"
+              className="w-full sm:w-auto sm:min-w-[150px] bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base"
             >
               <i className="fa fa-phone-slash mr-2"></i>
               {isSubmitting ? 'Saving...' : 'Call Dropped'}

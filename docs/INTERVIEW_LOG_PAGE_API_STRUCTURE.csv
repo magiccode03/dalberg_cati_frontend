@@ -1,20 +1,33 @@
-Section,Type,Label/Column Name,
-,,,
-Interview Data,Table Column,#,index
-Interview Data,Table Column,Server ID,server_id
-Interview Data,Table Column,Interview Date,interview_date
-Interview Data,Table Column,Sample Type,sampleType
-Interview Data,Table Column,AC Name,ac_name
-Interview Data,Table Column,PS Name,ps_name
-Interview Data,Table Column,Device ID,device_id
-Interview Data,Table Column,Interviewer ID,interviewer_id
-Interview Data,Table Column,Audio QC,audioQc
-Interview Data,Table Column,Audio QC ID,audioQcId
-Interview Data,Table Column,Audio Fail Reason,audioFailReason
-Interview Data,Table Column,QC Outcome,qcOutcome
-Interview Data,Table Column,Status,status
-Interview Data,Table Column,PS Image,Right now no attribut
-Interview Data,Table Column,Selfie Image,Right now no attribut
-Interview Data,Table Column,Gender,gender
-Interview Data,Table Column,Play Audio,audio1
-Interview Data,Table Column,GPS Map,gps
+Section,Type,Label/Column Name,API Field Name
+Interview Log,Filters,State Teams,agency_id
+Interview Log,Filters,Server ID,server_id
+Interview Log,Filters,Interview Date,interview_date
+Interview Log,Filters,AC Code,ac_code
+Interview Log,Filters,Poling Station,ps_code
+Interview Log,Filters,Enumerator ID,user_id
+Interview Log,Filters,Interviewer ID,interviewer_id
+Interview Log,Filters,Device ID,device_id
+Interview Log,Filters,Mobile Number,mobile_no
+Interview Log,Filters,Audio QC,audio_qc
+Interview Log,Filters,Audio QC Status,audio_qc_status
+Interview Log,Filters,Audio QC Status (Detailed),
+Interview Log,Filters,Audio Re-QC,qc_recheck_status_audio
+Interview Log,Filters,Status,status
+Interview Log,Table Column,ID,id
+Interview Log,Table Column,Server ID,server_id
+Interview Log,Table Column,Interview Date,interview_date
+Interview Log,Table Column,Sample Type,sample_type
+Interview Log,Table Column,AC Name,ac_name
+Interview Log,Table Column,PS Name,ps_name
+Interview Log,Table Column,Device ID,device_id
+Interview Log,Table Column,Interviewer ID,interviewer_id
+Interview Log,Table Column,Audio QC,audio_qc
+Interview Log,Table Column,Audio QC ID,audio_qc_id
+Interview Log,Table Column,Audio Fail Reason,
+Interview Log,Table Column,QC Outcome,qc_outcome
+Interview Log,Table Column,Status,status
+Interview Log,Table Column,PS Image,ps_image_available
+Interview Log,Table Column,Selfie Image,selfie_image_available
+Interview Log,Table Column,Gender,gender_label
+Interview Log,Table Column,Play Audio,audio_playback_available
+Interview Log,Table Column,GPS Map,gps_available

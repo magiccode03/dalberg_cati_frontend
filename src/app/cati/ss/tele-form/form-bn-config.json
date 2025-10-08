@@ -1,23 +1,23 @@
 [
   {
     "type": "radio",
-    "label": "নম্বর স্ট্যাটাস",
+    "label": "Number Status",
     "required": true,
     "options": [
       {
-        "label": "রিং হচ্ছে (উত্তরদাতার কল)",
+        "label": "Call Not Received to Telecaller",
+        "value": "3",
+        "tag": "opt_call_not_received"
+      },
+      {
+        "label": "Ringing (Respondent Call))",
         "value": "1",
         "tag": "opt_ringing"
       },
       {
-        "label": "রিং হচ্ছে না (উত্তরদাতার কল)",
+        "label": "Not Ringing (Respondent Call)",
         "value": "2",
         "tag": "opt_not_ringing"
-      },
-      {
-        "label": "টেলিকলারের কাছে কল আসেনি",
-        "value": "3",
-        "tag": "opt_wrong_number"
       }
     ],
     "rules": {
@@ -41,7 +41,7 @@
           "resp_registered_voter",
           "resp_gender"
         ],
-        "opt_wrong_number": [
+        "opt_call_not_received": [
           "call_not_ring",
           "call_ring_status",
           "q_call_status",
@@ -65,39 +65,39 @@
   },
   {
     "type": "radio",
-    "label": "কল রিং না হওয়ার স্ট্যাটাস",
+    "label": "Call Not Ring Status",
     "conditional": "number_status === '2'",
     "options": [
       {
-        "label": "সুইচ অফ",
+        "label": "Switched Off",
         "value": "1",
         "tag": "opt_switched_off"
       },
       {
-        "label": "নম্বর পৌঁছানো যাচ্ছে না",
+        "label": "Number Not Reachable",
         "value": "2",
-        "tag": "opt_out_of_reach"
+        "tag": "opt_number_not_reachable"
       },
       {
-        "label": "নম্বর বিদ্যমান নেই",
+        "label": "Number Does not exist",
         "value": "3",
-        "tag": "opt_busy"
+        "tag": "opt_number_does_not_exist"
       }
     ],
     "tag": "call_not_ring"
   },
   {
     "type": "radio",
-    "label": "কল রিং স্ট্যাটাস",
+    "label": "Call Ring Status",
     "conditional": "number_status === '1'",
     "options": [
       {
-        "label": "তুলেছেন",
+        "label": "Picked Up",
         "value": "1",
         "tag": "opt_picked_up"
       },
       {
-        "label": "তোলেননি",
+        "label": "Did not picked",
         "value": "2",
         "tag": "opt_not_picked_up"
       }
@@ -112,7 +112,7 @@
           "resp_registered_voter",
           "resp_gender"
         ],
-        "opt_not_picked_up": [
+        "opt_did_not_picked": [
           "q_call_status",
           "call_reschedule",
           "consent",
@@ -131,28 +131,30 @@
   },
   {
     "type": "radio",
-    "label": "কল স্ট্যাটাস",
+    "label": "Call Status",
     "conditional": "call_ring_status === '1'",
     "options": [
       {
-        "label": "চালিয়ে যান",
+        "label": "Continue",
         "value": "1",
-        "tag": "opt_respondent_available"
+        "tag": "opt_continue"
       },
       {
-        "label": "ভুল নম্বর",
+        "label": "Wrong Number",
         "value": "2",
-        "tag": "opt_respondent_not_available"
-      },
-      {
-        "label": "উত্তরদাতা উপলব্ধ নেই/সাক্ষাৎকার পুনঃনির্ধারণ করুন",
-        "value": "5",
-        "tag": "opt_reschedule"
+        "tag": "opt_wrong_number"
       }
     ],
     "rules": {
       "clearFields": {
-        "opt_respondent_available": [
+        "opt_continue": [
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_wrong_number": [
           "call_reschedule",
           "consent",
           "resp_age",
@@ -160,13 +162,6 @@
           "resp_gender"
         ],
         "opt_respondent_not_available": [
-          "call_reschedule",
-          "consent",
-          "resp_age",
-          "resp_registered_voter",
-          "resp_gender"
-        ],
-        "opt_reschedule": [
           "consent",
           "resp_age",
           "resp_registered_voter",
@@ -174,22 +169,15 @@
         ]
       },
       "showFields": {
-        "opt_respondent_available": [
+        "opt_continue": [
           "consent"
         ],
-        "opt_reschedule": [
+        "opt_respondent_not_available": [
           "call_reschedule"
         ]
       }
     },
     "tag": "q_call_status"
-  },
-  {
-    "type": "datetime-local",
-    "label": "সাক্ষাৎকার পুনঃনির্ধারণ করুন",
-    "conditional": "q_call_status === '5'",
-    "placeholder": "তারিখ এবং সময় নির্বাচন করুন",
-    "tag": "call_reschedule"
   },
   {
     "type": "radio",
@@ -897,7 +885,7 @@
     "label": "১০. আপনি কি আমাদের বলতে পারেন কেন আপনি দ্বিতীয় পছন্দ হিসাবে উপরোক্ত দল বেছে নিয়েছেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
-    "maxSelections": 1,
+    "maxSelections": 6,
     "options": [
       {
         "label": "দলটি আমার জাতি ও সম্প্রদায়ের জন্য কাজ করে",
@@ -1162,11 +1150,6 @@
     "required": true,
     "maxSelections": 3,
     "options": [
-      {
-        "label": "পেশাদার ডিগ্রি",
-        "value": "1",
-        "tag": "opt_professional_degree"
-      },
       {
         "label": "মূল্য বৃদ্ধি / মুদ্রাস্ফীতি",
         "value": "2",
@@ -1630,271 +1613,6 @@
       }
     ],
     "tag": "resp_social_cat"
-  },
-  {
-    "type": "radio",
-    "label": "২২. আপনি কি আমাকে আপনার জাতি বলতে পারেন?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "আগুরি",
-        "value": "1",
-        "tag": "opt_aguri"
-      },
-      {
-        "label": "কাঁসা বানিক",
-        "value": "2",
-        "tag": "opt_kansabanik"
-      },
-      {
-        "label": "সাদগোপ",
-        "value": "3",
-        "tag": "opt_sadgop"
-      },
-      {
-        "label": "শুনরি",
-        "value": "4",
-        "tag": "opt_shunri"
-      },
-      {
-        "label": "যাদব",
-        "value": "5",
-        "tag": "opt_yadav"
-      },
-      {
-        "label": "সাঁওতাল",
-        "value": "6",
-        "tag": "opt_santal"
-      },
-      {
-        "label": "পোদ",
-        "value": "7",
-        "tag": "opt_pod"
-      },
-      {
-        "label": "তাঁতি",
-        "value": "8",
-        "tag": "opt_tanti"
-      },
-      {
-        "label": "নমশূদ্র",
-        "value": "9",
-        "tag": "opt_namaseej"
-      },
-      {
-        "label": "ব্রাহ্মণ",
-        "value": "10",
-        "tag": "opt_brahmins"
-      },
-      {
-        "label": "কায়স্থ",
-        "value": "11",
-        "tag": "opt_kayasthas"
-      },
-      {
-        "label": "বৈদ্য",
-        "value": "12",
-        "tag": "opt_baidyas"
-      },
-      {
-        "label": "রাজপুত",
-        "value": "13",
-        "tag": "opt_rajputs"
-      },
-      {
-        "label": "ক্ষত্রিয়",
-        "value": "14",
-        "tag": "opt_kshatriyas"
-      },
-      {
-        "label": "বারুই",
-        "value": "15",
-        "tag": "opt_barui"
-      },
-      {
-        "label": "গন্ধবানিক",
-        "value": "16",
-        "tag": "opt_gandha_banik"
-      },
-      {
-        "label": "কুলীন কায়স্থ",
-        "value": "17",
-        "tag": "opt_kulin_kayasthas"
-      },
-      {
-        "label": "মাহিষ্য",
-        "value": "18",
-        "tag": "opt_mahishya"
-      },
-      {
-        "label": "নমশূদ্র",
-        "value": "19",
-        "tag": "opt_namasudra"
-      },
-      {
-        "label": "রাজবংশী",
-        "value": "20",
-        "tag": "opt_rajbanshi"
-      },
-      {
-        "label": "পৌন্ড্র",
-        "value": "21",
-        "tag": "opt_poundra"
-      },
-      {
-        "label": "ডোম",
-        "value": "22",
-        "tag": "opt_dom"
-      },
-      {
-        "label": "বাগদি",
-        "value": "23",
-        "tag": "opt_bagdi"
-      },
-      {
-        "label": "চামার",
-        "value": "24",
-        "tag": "opt_chamar"
-      },
-      {
-        "label": "মুচি",
-        "value": "25",
-        "tag": "opt_muchi"
-      },
-      {
-        "label": "কোরি",
-        "value": "26",
-        "tag": "opt_kori"
-      },
-      {
-        "label": "হালদার",
-        "value": "27",
-        "tag": "opt_haldar"
-      },
-      {
-        "label": "সাঁওতাল",
-        "value": "28",
-        "tag": "opt_santhal"
-      },
-      {
-        "label": "মুন্ডা",
-        "value": "29",
-        "tag": "opt_munda"
-      },
-      {
-        "label": "ওরাঁও",
-        "value": "30",
-        "tag": "opt_oraon"
-      },
-      {
-        "label": "ভূমিজ",
-        "value": "31",
-        "tag": "opt_bhumij"
-      },
-      {
-        "label": "হো",
-        "value": "32",
-        "tag": "opt_ho"
-      },
-      {
-        "label": "লোধা",
-        "value": "33",
-        "tag": "opt_lodha"
-      },
-      {
-        "label": "ভিল",
-        "value": "34",
-        "tag": "opt_bhil"
-      },
-      {
-        "label": "বিরহোর",
-        "value": "35",
-        "tag": "opt_birhor"
-      },
-      {
-        "label": "মাহালি",
-        "value": "36",
-        "tag": "opt_mahali"
-      },
-      {
-        "label": "তেলি/তেলি সাহু",
-        "value": "37",
-        "tag": "opt_teli"
-      },
-      {
-        "label": "নাপিত",
-        "value": "38",
-        "tag": "opt_napit"
-      },
-      {
-        "label": "কর্মকার",
-        "value": "39",
-        "tag": "opt_karmakar"
-      },
-      {
-        "label": "রাজাক",
-        "value": "40",
-        "tag": "opt_rajak"
-      },
-      {
-        "label": "ধোপা",
-        "value": "41",
-        "tag": "opt_dhoba"
-      },
-      {
-        "label": "হেলা",
-        "value": "42",
-        "tag": "opt_hela"
-      },
-      {
-        "label": "কাহার",
-        "value": "43",
-        "tag": "opt_kahar"
-      },
-      {
-        "label": "কেওট",
-        "value": "47",
-        "tag": "opt_keot"
-      },
-      {
-        "label": "কুর্মি",
-        "value": "45",
-        "tag": "opt_kurmi"
-      },
-      {
-        "label": "পাসি",
-        "value": "46",
-        "tag": "opt_pasi"
-      },
-      {
-        "label": "অন্যান্য (উল্লেখ করুন)",
-        "value": "44",
-        "tag": "opt_others"
-      },
-      {
-        "label": "উত্তর দিতে অস্বীকার",
-        "value": "88",
-        "tag": "opt_refused"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "resp_caste_jati_oth"
-        ]
-      }
-    },
-    "tag": "resp_caste_jati"
-  },
-  {
-    "type": "text",
-    "label": "অন্যান্য (দয়া করে উল্লেখ করুন)",
-    "conditional": "resp_caste_jati === '44'",
-    "required": true,
-    "placeholder": "দয়া করে উল্লেখ করুন",
-    "maxLength": 150,
-    "tag": "resp_caste_jati_oth"
   },
   {
     "type": "radio",

@@ -5,19 +5,19 @@
     "required": true,
     "options": [
       {
-        "label": "Number Ringing",
+        "label": "Call Not Received to Telecaller",
+        "value": "3",
+        "tag": "opt_call_not_received"
+      },
+      {
+        "label": "Ringing (Respondent Call)",
         "value": "1",
         "tag": "opt_ringing"
       },
       {
-        "label": "Number Not Ringing",
+        "label": "Not Ringing (Respondent Call)",
         "value": "2",
         "tag": "opt_not_ringing"
-      },
-      {
-        "label": "Wrong Number",
-        "value": "3",
-        "tag": "opt_wrong_number"
       }
     ],
     "rules": {
@@ -74,14 +74,14 @@
         "tag": "opt_switched_off"
       },
       {
-        "label": "Out of Reach",
+        "label": "Number Not Reachable",
         "value": "2",
-        "tag": "opt_out_of_reach"
+        "tag": "opt_number_not_reachable"
       },
       {
-        "label": "Busy",
+        "label": "Number Does not exist",
         "value": "3",
-        "tag": "opt_busy"
+        "tag": "opt_number_does_not_exist"
       }
     ],
     "tag": "call_not_ring"
@@ -97,9 +97,9 @@
         "tag": "opt_picked_up"
       },
       {
-        "label": "Not Picked Up",
+        "label": "Did not picked",
         "value": "2",
-        "tag": "opt_not_picked_up"
+        "tag": "opt_did_not_picked"
       }
     ],
     "rules": {
@@ -112,7 +112,7 @@
           "resp_registered_voter",
           "resp_gender"
         ],
-        "opt_not_picked_up": [
+        "opt_did_not_picked": [
           "q_call_status",
           "call_reschedule",
           "consent",
@@ -135,24 +135,26 @@
     "conditional": "call_ring_status === '1'",
     "options": [
       {
-        "label": "Respondent Available",
+        "label": "Continue",
         "value": "1",
-        "tag": "opt_respondent_available"
+        "tag": "opt_continue"
       },
       {
-        "label": "Respondent Not Available",
+        "label": "Wrong Number",
         "value": "2",
-        "tag": "opt_respondent_not_available"
-      },
-      {
-        "label": "Reschedule",
-        "value": "5",
-        "tag": "opt_reschedule"
+        "tag": "opt_wrong_number"
       }
     ],
     "rules": {
       "clearFields": {
-        "opt_respondent_available": [
+        "opt_continue": [
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_wrong_number": [
           "call_reschedule",
           "consent",
           "resp_age",
@@ -160,13 +162,6 @@
           "resp_gender"
         ],
         "opt_respondent_not_available": [
-          "call_reschedule",
-          "consent",
-          "resp_age",
-          "resp_registered_voter",
-          "resp_gender"
-        ],
-        "opt_reschedule": [
           "consent",
           "resp_age",
           "resp_registered_voter",
@@ -183,13 +178,6 @@
       }
     },
     "tag": "q_call_status"
-  },
-  {
-    "type": "datetime-local",
-    "label": "Reschedule Interview",
-    "conditional": "q_call_status === '5'",
-    "placeholder": "Select date and time",
-    "tag": "call_reschedule"
   },
   {
     "type": "radio",
@@ -423,7 +411,7 @@
   },
   {
     "type": "radio",
-    "label": "Which party did you vote for in the last assembly elections (MLA) in 2021?",
+    "label": "5. Which party did you vote for in the last assembly elections (MLA) in 2021?",
     "conditional": "resp_age >= 22 && resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -518,7 +506,7 @@
   },
   {
     "type": "radio",
-    "label": "Which party did you vote for in the last Lok Sabha elections (MP) in 2024?",
+    "label": "6. Which party did you vote for in the last Lok Sabha elections (MP) in 2024?",
     "conditional": "resp_age >= 19 && resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -613,7 +601,7 @@
   },
   {
     "type": "radio",
-    "label": "Which party did you vote for in the by-elections held in your assembly constituency (MLA) after 2021?",
+    "label": "7. Which party did you vote for in the by-elections held in your assembly constituency (MLA) after 2021?",
     "conditional": "resp_age >= 20 && resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -708,7 +696,7 @@
   },
   {
     "type": "radio",
-    "label": "If assembly elections (MLA) were to be held tomorrow, then which party would you vote for?",
+    "label": "8. If assembly elections (MLA) were to be held tomorrow, then which party would you vote for?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -803,7 +791,7 @@
   },
   {
     "type": "radio",
-    "label": "Let us assume that the above party of your choice doesn't contest elections in your assembly constituency, which party would you choose?",
+    "label": "9. Let us assume that the above party of your choice doesn't contest elections in your assembly constituency, which party would you choose?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -894,10 +882,10 @@
   },
   {
     "type": "checkbox",
-    "label": "Could you tell us the reason for choosing the above party as your second choice?",
+    "label": "10. Could you tell us the reason for choosing the above party as your second choice?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
-    "maxSelections": 1,
+    "maxSelections": 6,
     "options": [
       {
         "label": "The party works for my caste and community",
@@ -959,7 +947,7 @@
   },
   {
     "type": "checkbox",
-    "label": "In your opinion what are the top 3 reasons for voting for AITC?",
+    "label": "11. In your opinion what are the top 3 reasons for voting for AITC?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
@@ -1063,7 +1051,7 @@
   },
   {
     "type": "checkbox",
-    "label": "In your opinion what are the top 3 reasons for voting for BJP?",
+    "label": "12. In your opinion what are the top 3 reasons for voting for BJP?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
@@ -1157,16 +1145,11 @@
   },
   {
     "type": "checkbox",
-    "label": "According to you, what are the three most pressing issues of your assembly constituency?",
+    "label": "13. According to you, what are the three most pressing issues of your assembly constituency?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
-      {
-        "label": "Professional Degree",
-        "value": "1",
-        "tag": "opt_professional_degree"
-      },
       {
         "label": "Price rise / inflation",
         "value": "2",
@@ -1253,7 +1236,7 @@
   },
   {
     "type": "radio",
-    "label": "How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?",
+    "label": "14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1287,7 +1270,7 @@
   },
   {
     "type": "radio",
-    "label": "How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?",
+    "label": "15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1321,7 +1304,7 @@
   },
   {
     "type": "radio",
-    "label": "How satisfied or dissatisfied are you with the work done by Lok Sabha MP from your parliament constituency?",
+    "label": "16 A. How satisfied or dissatisfied are you with the work done by Lok Sabha MP from your parliament constituency?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1355,7 +1338,7 @@
   },
   {
     "type": "radio",
-    "label": "How satisfied or dissatisfied are you with the work done by your current MLA?",
+    "label": "16 B. How satisfied or dissatisfied are you with the work done by your current MLA?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1389,7 +1372,7 @@
   },
   {
     "type": "radio",
-    "label": "Who do you think is the best leader to be the Chief Minister of West Bengal?",
+    "label": "17. Who do you think is the best leader to be the Chief Minister of West Bengal?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1479,7 +1462,7 @@
   },
   {
     "type": "radio",
-    "label": "In your opinion, which party would win the next elections in your constituency, when you would elect your MLA?",
+    "label": "19. In your opinion, which party would win the next elections in your constituency, when you would elect your MLA?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1534,7 +1517,7 @@
   },
   {
     "type": "radio",
-    "label": "Could you please tell me the religion that you belong to?",
+    "label": "20. Could you please tell me the religion that you belong to?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1599,7 +1582,7 @@
   },
   {
     "type": "radio",
-    "label": "Which social category do you belong to?",
+    "label": "21. Which social category do you belong to?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1633,272 +1616,7 @@
   },
   {
     "type": "radio",
-    "label": "Could you please tell me your caste?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Aguri",
-        "value": "1",
-        "tag": "opt_aguri"
-      },
-      {
-        "label": "Kansabanik",
-        "value": "2",
-        "tag": "opt_kansabanik"
-      },
-      {
-        "label": "Sadgop",
-        "value": "3",
-        "tag": "opt_sadgop"
-      },
-      {
-        "label": "Shunri",
-        "value": "4",
-        "tag": "opt_shunri"
-      },
-      {
-        "label": "Yadav",
-        "value": "5",
-        "tag": "opt_yadav"
-      },
-      {
-        "label": "Santal",
-        "value": "6",
-        "tag": "opt_santal"
-      },
-      {
-        "label": "Pod",
-        "value": "7",
-        "tag": "opt_pod"
-      },
-      {
-        "label": "Tanti",
-        "value": "8",
-        "tag": "opt_tanti"
-      },
-      {
-        "label": "Namaseej",
-        "value": "9",
-        "tag": "opt_namaseej"
-      },
-      {
-        "label": "Brahmins",
-        "value": "10",
-        "tag": "opt_brahmins"
-      },
-      {
-        "label": "Kayasthas",
-        "value": "11",
-        "tag": "opt_kayasthas"
-      },
-      {
-        "label": "Baidyas",
-        "value": "12",
-        "tag": "opt_baidyas"
-      },
-      {
-        "label": "Rajputs",
-        "value": "13",
-        "tag": "opt_rajputs"
-      },
-      {
-        "label": "Kshatriyas",
-        "value": "14",
-        "tag": "opt_kshatriyas"
-      },
-      {
-        "label": "Barui",
-        "value": "15",
-        "tag": "opt_barui"
-      },
-      {
-        "label": "Gandha Banik",
-        "value": "16",
-        "tag": "opt_gandha_banik"
-      },
-      {
-        "label": "Kulin Kayasthas",
-        "value": "17",
-        "tag": "opt_kulin_kayasthas"
-      },
-      {
-        "label": "Mahishya",
-        "value": "18",
-        "tag": "opt_mahishya"
-      },
-      {
-        "label": "Namasudra",
-        "value": "19",
-        "tag": "opt_namasudra"
-      },
-      {
-        "label": "Rajbanshi",
-        "value": "20",
-        "tag": "opt_rajbanshi"
-      },
-      {
-        "label": "Poundra",
-        "value": "21",
-        "tag": "opt_poundra"
-      },
-      {
-        "label": "Dom",
-        "value": "22",
-        "tag": "opt_dom"
-      },
-      {
-        "label": "Bagdi",
-        "value": "23",
-        "tag": "opt_bagdi"
-      },
-      {
-        "label": "Chamar",
-        "value": "24",
-        "tag": "opt_chamar"
-      },
-      {
-        "label": "Muchi",
-        "value": "25",
-        "tag": "opt_muchi"
-      },
-      {
-        "label": "Kori",
-        "value": "26",
-        "tag": "opt_kori"
-      },
-      {
-        "label": "Haldar",
-        "value": "27",
-        "tag": "opt_haldar"
-      },
-      {
-        "label": "Santhal",
-        "value": "28",
-        "tag": "opt_santhal"
-      },
-      {
-        "label": "Munda",
-        "value": "29",
-        "tag": "opt_munda"
-      },
-      {
-        "label": "Oraon",
-        "value": "30",
-        "tag": "opt_oraon"
-      },
-      {
-        "label": "Bhumij",
-        "value": "31",
-        "tag": "opt_bhumij"
-      },
-      {
-        "label": "Ho",
-        "value": "32",
-        "tag": "opt_ho"
-      },
-      {
-        "label": "Lodha",
-        "value": "33",
-        "tag": "opt_lodha"
-      },
-      {
-        "label": "Bhil",
-        "value": "34",
-        "tag": "opt_bhil"
-      },
-      {
-        "label": "Birhor",
-        "value": "35",
-        "tag": "opt_birhor"
-      },
-      {
-        "label": "Mahali",
-        "value": "36",
-        "tag": "opt_mahali"
-      },
-      {
-        "label": "Teli/Teli Sahu",
-        "value": "37",
-        "tag": "opt_teli"
-      },
-      {
-        "label": "Napit",
-        "value": "38",
-        "tag": "opt_napit"
-      },
-      {
-        "label": "Karmakar",
-        "value": "39",
-        "tag": "opt_karmakar"
-      },
-      {
-        "label": "Rajak",
-        "value": "40",
-        "tag": "opt_rajak"
-      },
-      {
-        "label": "Dhoba",
-        "value": "41",
-        "tag": "opt_dhoba"
-      },
-      {
-        "label": "Hela",
-        "value": "42",
-        "tag": "opt_hela"
-      },
-      {
-        "label": "Kahar",
-        "value": "43",
-        "tag": "opt_kahar"
-      },
-      {
-        "label": "Keot",
-        "value": "47",
-        "tag": "opt_keot"
-      },
-      {
-        "label": "Kurmi",
-        "value": "45",
-        "tag": "opt_kurmi"
-      },
-      {
-        "label": "Pasi",
-        "value": "46",
-        "tag": "opt_pasi"
-      },
-      {
-        "label": "Others (Specify)",
-        "value": "44",
-        "tag": "opt_others"
-      },
-      {
-        "label": "Refused to respond",
-        "value": "88",
-        "tag": "opt_refused"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "resp_caste_jati_oth"
-        ]
-      }
-    },
-    "tag": "resp_caste_jati"
-  },
-  {
-    "type": "text",
-    "label": "Others (specify)",
-    "conditional": "resp_caste_jati === '44'",
-    "required": true,
-    "placeholder": "Please specify",
-    "maxLength": 150,
-    "tag": "resp_caste_jati_oth"
-  },
-  {
-    "type": "radio",
-    "label": "Could you please tell me the highest educational level of the most educated female of the household?",
+    "label": "23. Could you please tell me the highest educational level of the most educated female of the household?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1942,7 +1660,7 @@
   },
   {
     "type": "radio",
-    "label": "Could you please tell me the highest educational level of the most educated male of the household?",
+    "label": "24. Could you please tell me the highest educational level of the most educated male of the household?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1986,7 +1704,7 @@
   },
   {
     "type": "radio",
-    "label": "What work does the main earner in your household do?",
+    "label": "25. What work does the main earner in your household do?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -2025,7 +1743,7 @@
   },
   {
     "type": "radio",
-    "label": "Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?",
+    "label": "26. Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
