@@ -174,6 +174,7 @@ export const API_ENDPOINTS = {
   FD: {
     INTERNAL_DASHBOARD: '/fd/internal-dashboard',
     INTERVIEW_AUDIO: '/cati/interviews/ac-audio',
+    AC_WISE_DATA: '/cati/ac-progress-report',
   },
   
   // Interview Masters
@@ -521,6 +522,23 @@ export interface GainLossZoneData {
   zone_code: number;
   zone_name: string;
   data: GainLossData[];
+}
+
+// CATI AC Progress Report Types
+export interface CATIACData {
+  ac_code: number;
+  ac_name: string;
+  call_attempt: number;
+  call_connected: number;
+  success: number;
+  total_records: number;
+}
+
+export interface CATIACResponse {
+  success: boolean;
+  data: CATIACData[];
+  message: string;
+  timestamp: string;
 }
 
 export interface GainLossResponse {
@@ -2235,6 +2253,11 @@ class ApiService {
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token);
     }
+  }
+
+  // CATI AC Progress Report
+  async getCATIACData(): Promise<ApiResponse<CATIACData[]>> {
+    return this.request(`${API_ENDPOINTS.FD.AC_WISE_DATA}/all`);
   }
 }
 

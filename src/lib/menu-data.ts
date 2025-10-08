@@ -1372,6 +1372,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
+  {
+    id: 'ac-report',
+    label: 'AC Report',
+    href: '/cati/fd/ac-wise-data',
+    icon: 'BarChart3',
+    roles: ['fd'],
+    system: 'cati',
+  },
   // {
   //   id: 'cati-fd-telecaller-dailycall-details',
   //   label: 'Telecaller Daily Call Details',
