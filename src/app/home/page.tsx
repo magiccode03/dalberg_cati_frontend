@@ -294,12 +294,12 @@ export default function HomePage() {
             </button>
 
             {/* CAPI + CATI Button */}
-            <button
+            {/* <button
               className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
               <Database className="h-5 w-5 text-gray-800 dark:text-white" />
               <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
-            </button>
+            </button> */}
           </div>
         )}
       </div>
