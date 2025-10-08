@@ -772,14 +772,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-  {
-    id: 'capi-fd-progress-report',
-    label: 'Progress Report',
-    href: '/capi/fd/progress-report',
-    icon: 'TrendingUp',
-    roles: ['fd'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-fd-progress-report',
+  //   label: 'Progress Report',
+  //   href: '/capi/fd/progress-report',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'capi',
+  // },
   {
     id: 'capi-fd-interview-audio',
     label: 'Interview Audio',
@@ -1400,6 +1400,7 @@ export const menuData: MenuItem[] = [
     roles: ['ss'],
     system: 'cati',
   },
+
 ];
 
 export const getMenuByRole = (role: string, userSystem?: 'capi' | 'cati'): MenuItem[] => {

@@ -44,13 +44,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/capi/fd/fieldwork-progress',
       hasSubmenu: false,
     },
-    {
-      id: 'progress-report',
-      label: 'Progress Report',
-      icon: TrendingUp,
-      href: '/capi/fd/progress-report',
-      hasSubmenu: false,
-    },
+    // {
+    //   id: 'progress-report',
+    //   label: 'Progress Report',
+    //   icon: TrendingUp,
+    //   href: '/capi/fd/progress-report',
+    //   hasSubmenu: false,
+    // },
     {
       id: 'interview-audios',
       label: 'Interview Audios',
@@ -58,13 +58,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/capi/fd/interview-audio',
       hasSubmenu: false,
     },
-    {
-      id: 'back',
-      label: 'Back To Main',
-      icon: Home,
-      href: '/home',
-      hasSubmenu: false,
-    },
+    // {
+    //   id: 'back',
+    //   label: 'Back To Main',
+    //   icon: Home,
+    //   href: '/home',
+    //   hasSubmenu: false,
+    // },
   ];
 
   // CATI FD menu items
@@ -91,13 +91,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/cati/fd/interview-audio',
       hasSubmenu: false,
     },
-    {
-      id: 'back',
-      label: 'Back To Main',
-      icon: Home,
-      href: '/home',
-      hasSubmenu: false,
-    },
+    // {
+    //   id: 'back',
+    //   label: 'Back To Main',
+    //   icon: Home,
+    //   href: '/home',
+    //   hasSubmenu: false,
+    // },
   ];
 
   // Select the appropriate menu items based on current system
