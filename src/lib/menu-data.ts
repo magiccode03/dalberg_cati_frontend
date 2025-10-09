@@ -1031,32 +1031,32 @@ export const menuData: MenuItem[] = [
   // ============================================
 
   // CATI Project Progress Monitoring (PPM) Menu
-  // {
-  //   id: 'cati-ppm-manage-calling',
-  //   label: 'Manage Calling',
-  //   href: '/cati/ppm/manage-calling/tele-caller',
-  //   icon: 'Phone',
-  //   roles: ['ppm'],
-  //   system: 'cati',
-  //   children: [
-  //     {
-  //       id: 'cati-ppm-tele-caller',
-  //       label: 'Tele Caller',
-  //       href: '/cati/ppm/manage-calling/tele-caller',
-  //       icon: 'Phone',
-  //       roles: ['ppm'],
-  //       system: 'cati',
-  //     },
-  //     {
-  //       id: 'cati-ppm-calling-group',
-  //       label: 'Calling Group',
-  //       href: '/cati/ppm/manage-calling/calling-group',
-  //       icon: 'Users',
-  //       roles: ['ppm'],
-  //       system: 'cati',
-  //     },
-  //   ],
-  // },
+  {
+    id: 'cati-ppm-manage-calling',
+    label: 'Manage Calling',
+    href: '/cati/ppm/manage-calling/tele-caller',
+    icon: 'Phone',
+    roles: ['ppm'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppm-tele-caller',
+        label: 'Tele Caller',
+        href: '/cati/ppm/manage-calling/tele-caller',
+        icon: 'Phone',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      // {
+      //   id: 'cati-ppm-calling-group',
+      //   label: 'Calling Group',
+      //   href: '/cati/ppm/manage-calling/calling-group',
+      //   icon: 'Users',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+    ],
+  },
   {
     id: 'cati-ppm-progress',
     label: 'Progress',
