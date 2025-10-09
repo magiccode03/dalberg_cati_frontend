@@ -190,6 +190,7 @@ export const API_ENDPOINTS = {
 
   // Performance Report
   PERFORMANCE_REPORT: '/performance-report',
+  PERFORMANCE_REPORT_AC_LIST: '/performance-report/aclist',
 } as const;
 
 // API Response Types
@@ -709,6 +710,15 @@ export interface PerformanceReportParams {
   custom_date?: string; // YYYY-MM-DD format
   custom_date_end?: string; // YYYY-MM-DD format
 }
+
+// AC List interfaces
+export interface ACListItem {
+  ac_code: number;
+  ac_name: string;
+  acnameandcode: string;
+}
+
+export type ACListResponse = ACListItem[];
 
 // Report Endpoints
 export const REPORT_ENDPOINTS = {
@@ -2301,6 +2311,10 @@ class ApiService {
     const endpoint = queryString ? `${API_ENDPOINTS.PERFORMANCE_REPORT}?${queryString}` : API_ENDPOINTS.PERFORMANCE_REPORT;
     
     return this.request<PerformanceReportResponse>(endpoint);
+  }
+
+  async getPerformanceReportACList(): Promise<ApiResponse<ACListResponse>> {
+    return this.request<ACListResponse>(API_ENDPOINTS.PERFORMANCE_REPORT_AC_LIST);
   }
 
   // Utility Methods
