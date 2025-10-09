@@ -140,9 +140,14 @@
         "tag": "opt_continue"
       },
       {
-        "label": "Wrong Number",
-        "value": "2",
-        "tag": "opt_wrong_number"
+        "label": "Refuse to Respond",
+        "value": "3",
+        "tag": "opt_refuse_to_respond"
+      },
+      {
+        "label": "Call Back Later",
+        "value": "4",
+        "tag": "opt_call_back_later"
       }
     ],
     "rules": {

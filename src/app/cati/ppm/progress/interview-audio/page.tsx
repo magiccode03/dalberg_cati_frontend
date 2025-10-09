@@ -70,70 +70,106 @@ export default function CATIInterviewAudioPage() {
   const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
+  const [loadingAC, setLoadingAC] = useState(false);
 
+  // Fetch AC list on mount
+  useEffect(() => {
+    fetchACList();
+  }, []);
+
+  // Fetch data initially
   useEffect(() => {
     fetchData();
-  }, [currentPage, acCode, interviewDate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage]);
+
+  // Fetch AC list from API
+  const fetchACList = async () => {
+    setLoadingAC(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/cati/ac-details?limit=1000`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success) {
+          const acData = Array.isArray(result.data?.data) ? result.data.data : [];
+          const acOptionsData = [
+            { value: '', label: 'All AC' },
+            ...acData.map((ac: any) => ({
+              value: ac.ac_code.toString(),
+              label: `${ac.ac_code} - ${ac.ac_name}`,
+            })),
+          ];
+          setAcOptions(acOptionsData);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching AC list:', err);
+    } finally {
+      setLoadingAC(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params: any = {
-        page: currentPage,
-        limit: itemsPerPage
-      };
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('Authentication required');
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString(),
+      });
       
-      if (acCode) params.ac_code = acCode;
-      if (interviewDate) params.interview_date = interviewDate;
+      if (acCode) params.append('ac_code', acCode);
+      if (interviewDate) params.append('date', interviewDate);
       
-      // Use the existing getInterviewAudio method from apiService
-      const response = await apiService.getInterviewAudio(params);
+      const url = `${apiBaseUrl}/api/cati/interviews/ac-audio?${params.toString()}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
       
       console.log('API Response:', response); // Debug log
       
-      if (response.success && response.data) {
-        const interviewData = response.data.data || [];
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        const interviewData = result.data?.data || [];
         
         setInterviewData(interviewData);
         
         // Handle pagination from API response
-        if (response.data.pagination) {
-          setTotalItems(response.data.pagination.total);
-          setTotalPages(response.data.pagination.totalPages);
+        if (result.data?.pagination) {
+          setTotalItems(result.data.pagination.total);
+          setTotalPages(result.data.pagination.totalPages);
         } else {
-          // Fallback to client-side calculation if no pagination info
           setTotalItems(interviewData.length);
           setTotalPages(Math.ceil(interviewData.length / itemsPerPage));
         }
-        
-        // Extract unique AC codes for filter (only on first load)
-        if (currentPage === 1 && interviewData.length > 0) {
-          const uniqueACs = Array.from(new Set(interviewData.map(item => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
-            .map(str => JSON.parse(str));
-          const acOptionsData = [
-            { value: '', label: 'Select AC' },
-            ...uniqueACs.map(ac => ({
-              value: ac.ac_code.toString(),
-              label: `${ac.ac_name} (${ac.ac_code})`
-            }))
-          ];
-          setAcOptions(acOptionsData);
-          
-          // Extract unique dates for filter
-          const uniqueDates = Array.from(new Set(interviewData.map(item => item.interview_date.split('T')[0])));
-          const dateOptionsData = [
-            { value: '', label: 'Interview Date' },
-            ...uniqueDates.map(date => ({
-              value: date,
-              label: new Date(date).toLocaleDateString()
-            }))
-          ];
-          setInterviewDateOptions(dateOptionsData);
-        }
       } else {
-        setError('Failed to fetch interview audio data');
+        setError(result.message || 'Failed to fetch interview audio data');
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -221,17 +257,21 @@ export default function CATIInterviewAudioPage() {
       )}
 
       {/* Search Form */}
-      {/* <form id="interviewsearch-form" onSubmit={handleSearch}>
-        <Card className=" mb-6">
+      <form id="interviewsearch-form" onSubmit={handleSearch}>
+        <Card className="mb-6 p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                AC Code
+                AC Name
               </label>
               <SelectDropdown
                 value={acCode}
                 onChange={(value) => setAcCode(Array.isArray(value) ? value[0] : value)}
                 options={acOptions}
+                placeholder="Select AC"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
                 className="w-full"
               />
             </div>
@@ -239,25 +279,26 @@ export default function CATIInterviewAudioPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Interview Date
               </label>
-              <SelectDropdown
+              <input
+                type="date"
                 value={interviewDate}
-                onChange={(value) => setInterviewDate(Array.isArray(value) ? value[0] : value)}
-                options={interviewDateOptions}
-                className="w-full"
+                onChange={(e) => setInterviewDate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div className="flex items-end">
               <Button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
               >
                 <Search className="h-4 w-4" />
-                <span>Search</span>
+                <span>{loading ? 'Searching...' : 'View'}</span>
               </Button>
             </div>
           </div>
         </Card>
-      </form> */}
+      </form>
 
       {/* Interview List */}
       <Card className="">
