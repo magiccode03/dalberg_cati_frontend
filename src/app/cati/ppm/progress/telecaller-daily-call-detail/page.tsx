@@ -5,6 +5,7 @@ import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
+import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
@@ -65,6 +66,23 @@ interface CallOutcomeMetrics {
   pickedAndCallContinue: number;
 }
 
+interface Telecaller {
+  teleform_user_id: number;
+  name: string;
+  mobile_number: string;
+}
+
+interface ACData {
+  ac_code: number;
+  ac_name: string;
+}
+
+interface DashboardFilters {
+  telecaller: string;
+  acCode: string;
+  date: string;
+}
+
 const TelecallerDailyCallDetailPage = () => {
   // State for search filters
   const [filters, setFilters] = useState<SearchFilters>({
@@ -99,6 +117,19 @@ const TelecallerDailyCallDetailPage = () => {
 
   const [metricsLoading, setMetricsLoading] = useState(true);
 
+  // Dashboard filters state
+  const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({
+    telecaller: '',
+    acCode: '',
+    date: '',
+  });
+
+  // Telecaller and AC list states
+  const [telecallers, setTelecallers] = useState<Telecaller[]>([]);
+  const [acList, setAcList] = useState<ACData[]>([]);
+  const [loadingTelecallers, setLoadingTelecallers] = useState(false);
+  const [loadingACs, setLoadingACs] = useState(false);
+
   // API state for call details
   const [callDetailData, setCallDetailData] = useState<CallDetailData[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -127,13 +158,6 @@ const TelecallerDailyCallDetailPage = () => {
     { value: 'l15', label: 'Last 15 Days' },
     { value: 'currentmonth', label: 'Current Month' },
     { value: 'custom', label: 'Custom Date' },
-  ];
-
-  const telecallerOptions = [
-    { value: '', label: 'Select Telecaller' },
-    { value: 'tc001', label: 'John Doe' },
-    { value: 'tc002', label: 'Jane Smith' },
-    { value: 'tc003', label: 'Mike Johnson' },
   ];
 
   const callerResponseOptions = [
@@ -176,6 +200,23 @@ const TelecallerDailyCallDetailPage = () => {
 
   const dateOptions = generateDateOptions();
 
+  // Dashboard filter dropdown options
+  const telecallerOptions = [
+    { value: '', label: 'All Telecallers' },
+    ...telecallers.map((tc) => ({
+      value: tc.teleform_user_id.toString(),
+      label: `${tc.name} (${tc.mobile_number})`,
+    })),
+  ];
+
+  const acCodeOptions = [
+    { value: '', label: 'All AC' },
+    ...acList.map((ac) => ({
+      value: ac.ac_code.toString(),
+      label: `${ac.ac_code} - ${ac.ac_name}`,
+    })),
+  ];
+
   // Handlers
   const handleFilterChange = (field: keyof SearchFilters, value: string | boolean) => {
     setFilters(prev => ({
@@ -184,9 +225,23 @@ const TelecallerDailyCallDetailPage = () => {
     }));
   };
 
+  const handleDashboardFilterChange = (field: keyof DashboardFilters, value: string | string[]) => {
+    const newValue = Array.isArray(value) ? value[0] || '' : value;
+    setDashboardFilters(prev => ({
+      ...prev,
+      [field]: newValue,
+    }));
+  };
+
   const handleSearch = () => {
     console.log('Search filters:', filters);
     fetchCallDetails(1);
+  };
+
+  const handleDashboardSearch = () => {
+    console.log('Dashboard filters:', dashboardFilters);
+    fetchDashboardMetrics();
+    fetchCallDetails(1); // Also refresh call details table with filters
   };
 
   // Fetch dashboard metrics from API
@@ -202,15 +257,30 @@ const TelecallerDailyCallDetailPage = () => {
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(
-        `${apiBaseUrl}/api/cati/dashboard`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        }
-      );
+      
+      // Build URL with filters
+      const params = new URLSearchParams();
+      
+      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== '') {
+        params.append('teleform_user_id', dashboardFilters.telecaller);
+      }
+      
+      if (dashboardFilters.acCode && dashboardFilters.acCode !== '') {
+        params.append('ac_code', dashboardFilters.acCode);
+      }
+      
+      if (dashboardFilters.date && dashboardFilters.date !== '') {
+        params.append('date', dashboardFilters.date);
+      }
+      
+      const url = `${apiBaseUrl}/api/cati/dashboard${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -262,15 +332,39 @@ const TelecallerDailyCallDetailPage = () => {
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(
-        `${apiBaseUrl}/api/cati/interviews/call-details?page=${page}&limit=${pagination.limit}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        }
-      );
+      
+      // Build URL with filters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pagination.limit.toString(),
+      });
+      
+      // Apply filters from dashboardFilters
+      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== '') {
+        params.append('teleform_user_id', dashboardFilters.telecaller);
+      }
+      
+      if (dashboardFilters.acCode && dashboardFilters.acCode !== '') {
+        params.append('ac_code', dashboardFilters.acCode);
+      }
+      
+      if (dashboardFilters.date && dashboardFilters.date !== '') {
+        params.append('date', dashboardFilters.date);
+      }
+      
+      // Apply additional filters from the search form (if uncommented later)
+      if (filters.callReceived && filters.callReceived !== '') {
+        params.append('call_received', filters.callReceived);
+      }
+      
+      const url = `${apiBaseUrl}/api/cati/interviews/call-details?${params.toString()}`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -338,9 +432,73 @@ const TelecallerDailyCallDetailPage = () => {
     }
   };
 
+  // Fetch telecallers list
+  const fetchTelecallers = async () => {
+    setLoadingTelecallers(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiUrl}/api/teleform-users?status=1&limit=1000`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setTelecallers(result.data || []);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching telecallers:', err);
+    } finally {
+      setLoadingTelecallers(false);
+    }
+  };
+
+  // Fetch AC list
+  const fetchACList = async () => {
+    setLoadingACs(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiUrl}/api/cati/ac-details?limit=1000`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success) {
+          const acData = Array.isArray(result.data?.data) ? result.data.data : [];
+          setAcList(acData);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching AC list:', err);
+    } finally {
+      setLoadingACs(false);
+    }
+  };
+
   useEffect(() => {
+    fetchTelecallers();
+    fetchACList();
     fetchDashboardMetrics();
     fetchCallDetails(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const MetricCard = ({ 
@@ -384,6 +542,69 @@ const TelecallerDailyCallDetailPage = () => {
           {/* Additional header content if needed */}
         </div>
       </div>
+
+      {/* Dashboard Filters */}
+      <Card className="p-4 mb-5">
+        <div className="flex flex-wrap items-end gap-4">
+          {/* Telecaller Filter */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Telecaller
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.telecaller}
+              onChange={(value) => handleDashboardFilterChange('telecaller', value)}
+              options={telecallerOptions}
+              placeholder="Select Telecaller"
+              searchable={true}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
+          {/* AC Code Filter */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              AC Name
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.acCode}
+              onChange={(value) => handleDashboardFilterChange('acCode', value)}
+              options={acCodeOptions}
+              placeholder="Select AC"
+              searchable={true}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
+          {/* Date Filter */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Date
+            </label>
+            <Input
+              type="date"
+              value={dashboardFilters.date}
+              onChange={(e) => handleDashboardFilterChange('date', e.target.value)}
+              placeholder="Select Date"
+            />
+          </div>
+
+          {/* View Button */}
+          <div className="flex-shrink-0">
+            <Button 
+              variant="primary" 
+              onClick={handleDashboardSearch}
+              className="flex items-center"
+              disabled={metricsLoading}
+            >
+              <Search className="w-4 h-4 mr-2" />
+              {metricsLoading ? 'Loading...' : 'View'}
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       {/* Search Filters */}
       {/* <Card className="p-6 mb-5">

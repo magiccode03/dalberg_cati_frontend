@@ -16,13 +16,26 @@ interface InterviewAudioData {
   ac_code: number;
   ac_name: string;
   audio: string;
-  interview_date: string;
+  interview_date: number | string;
 }
 
 interface APIResponse {
   success: boolean;
   data: InterviewAudioData[];
 }
+
+// Utility function to format interview date
+const formatInterviewDate = (date: number | string): string => {
+  if (typeof date === 'number') {
+    // Unix timestamp in seconds, convert to milliseconds
+    return new Date(date * 1000).toLocaleDateString();
+  } else if (typeof date === 'string') {
+    // Try to parse as date string
+    const parsedDate = new Date(date);
+    return isNaN(parsedDate.getTime()) ? 'Invalid Date' : parsedDate.toLocaleDateString();
+  }
+  return 'Invalid Date';
+};
 
 // Utility function to fix audio URL encoding
 const fixAudioUrl = (url: string): string => {
@@ -376,7 +389,7 @@ export default function CATIInterviewAudioPage() {
                     <td>{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
-                    <td>{new Date(row.interview_date).toLocaleDateString()}</td>
+                    <td>{formatInterviewDate(row.interview_date)}</td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
@@ -447,7 +460,7 @@ export default function CATIInterviewAudioPage() {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">
-                      {new Date(currentAudio.interview_date).toLocaleDateString()}
+                      {formatInterviewDate(currentAudio.interview_date)}
                     </p>
                   </div>
                   <div>
