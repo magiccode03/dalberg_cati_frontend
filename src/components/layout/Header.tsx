@@ -194,7 +194,7 @@ export default function Header() {
         {/* Right side - Actions */}
         <div className="flex items-center space-x-4">
           {/* Agency Selector */}
-          {showAgencySelector && (
+          {/* {showAgencySelector && (
             <div className="w-40">
               <SelectDropdown
                 options={agencyOptions}
@@ -203,7 +203,7 @@ export default function Header() {
                 placeholder="Select Agency"
               />
             </div>
-          )}
+          )} */}
 
           {/* Teleform User Button */}
           {mounted && teleformUserData && user?.role === 'ss' && (
