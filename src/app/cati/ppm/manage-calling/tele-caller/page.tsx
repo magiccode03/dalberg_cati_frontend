@@ -287,7 +287,7 @@ const TeleUserInfoPage: React.FC = () => {
               <div className="lg:col-span-1">
                 <Input
                   type="text"
-                  placeholder="Teleform User ID"
+                  placeholder="Telecaller User ID"
                   value={searchFilters.teleform_user_id}
                   onChange={(e) => handleInputChange('teleform_user_id', e.target.value)}
                   className="w-full"
@@ -296,7 +296,7 @@ const TeleUserInfoPage: React.FC = () => {
               <div className="lg:col-span-1">
                 <Input
                   type="text"
-                  placeholder="Name"
+                  placeholder=" Telecaller Name"
                   value={searchFilters.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className="w-full"
@@ -305,7 +305,7 @@ const TeleUserInfoPage: React.FC = () => {
               <div className="lg:col-span-1">
                 <Input
                   type="text"
-                  placeholder="Mobile Number"
+                  placeholder="Telecaller Mobile Number"
                   value={searchFilters.mobile_number}
                   onChange={(e) => handleInputChange('mobile_number', e.target.value)}
                   className="w-full"
@@ -317,6 +317,7 @@ const TeleUserInfoPage: React.FC = () => {
                   value={searchFilters.status}
                   onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value as string)}
                   className="w-full"
+                  placeholder="Telecaller Status"
                 />
               </div>
               <div className="lg:col-span-1">
@@ -346,24 +347,24 @@ const TeleUserInfoPage: React.FC = () => {
                 className="w-full lg:w-auto"
               >
                 <Plus className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Add New User</span>
-                <span className="sm:hidden">Add User</span>
+                <span className="hidden sm:inline">Add New Telecaller</span>
+                <span className="sm:hidden">Add New Telecaller</span>
               </Button>
-              <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
+              {/* <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
                 <Search className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Calling User Check</span>
                 <span className="sm:hidden">User Check</span>
-              </Button>
-              <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white w-full lg:w-auto">
+              </Button> */}
+              {/* <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white w-full lg:w-auto">
                 <Edit className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Redistribute Pending Data</span>
                 <span className="sm:hidden">Redistribute</span>
-              </Button>
-              <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white w-full lg:w-auto">
+              </Button> */}
+              {/* <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white w-full lg:w-auto">
                 <Plus className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Refresh Progress Data</span>
                 <span className="sm:hidden">Refresh</span>
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -417,19 +418,19 @@ const TeleUserInfoPage: React.FC = () => {
                           {stats ? (
                             <>
                               <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Allotded</p>
                                 <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
                                   {stats.total_assigned_count}
                                 </p>
                               </div>
                               <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Done</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Exhausted</p>
                                 <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
                                   {stats.total_call_attempted}
                                 </p>
                               </div>
                               <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending Numbers</p>
                                 <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
                                   {stats.total_call_pending}
                                 </p>
@@ -446,18 +447,18 @@ const TeleUserInfoPage: React.FC = () => {
                             variant="outline" 
                             size="sm"
                             onClick={() => toggleRowExpansion(user.teleform_user_id)}
-                            title={isExpanded ? "Hide details" : "View details"}
+                            title={isExpanded ? "Hide assigned AC details" : "View assigned AC details"}
                             className="text-xs md:text-sm px-2 md:px-3"
                           >
                             {isExpanded ? (
                               <>
                                 <ChevronDown className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                                <span className="hidden sm:inline">Hide</span>
+                                <span className="hidden sm:inline">Assigned AC</span>
                               </>
                             ) : (
                               <>
                                 <ChevronRight className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                                <span className="hidden sm:inline">View</span>
+                                <span className="hidden sm:inline">Assigned AC</span>
                               </>
                             )}
                           </Button>
