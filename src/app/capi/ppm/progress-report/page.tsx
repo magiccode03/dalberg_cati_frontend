@@ -33,9 +33,11 @@ export default function ProgressReportPage() {
   const [acList, setAcList] = useState<ACListItem[]>([]);
   const [acListLoading, setAcListLoading] = useState(false);
 
-  // Load AC list on component mount, but don't fetch progress report data
+  // Load AC list and fetch progress report data on component mount
   useEffect(() => {
     fetchACList();
+    // Auto-fetch progress report data with default values
+    fetchProgressReport();
   }, []);
 
   // Clear AC code when switching to levels that don't require it
@@ -62,7 +64,7 @@ export default function ProgressReportPage() {
     }
   };
 
-  const fetchProgressReport = async () => {
+  const fetchProgressReport = async (skipValidation = false) => {
     setLoading(true);
     setError(null);
     setProgressData([]); // Clear previous data immediately
@@ -112,7 +114,7 @@ export default function ProgressReportPage() {
       return;
     }
     
-    fetchProgressReport();
+    fetchProgressReport(false);
   };
 
   const handleInputChange = (field: string, value: string) => {
