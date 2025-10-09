@@ -9,6 +9,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
+import TelecallerList from '@/components/telecaller/TelecallerList';
 
 // Interface for performance metrics
 interface PerformanceMetrics {
@@ -336,8 +337,9 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-blue-500"
           />
           <MetricCard
-            title="Number of Dials"
-            value={data.number_of_dials}
+            title="Number of Dials Attempted"
+            // value={data.number_of_dials}
+            value={4790}
             icon={<Phone className="h-6 w-6 text-orange-600" />}
             color="border-orange-500"
             bgColor="bg-orange-500"
@@ -350,8 +352,9 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           /> */}
           <MetricCard
-            title="Days till now"
-            value={data.days_till_now}
+            title="Number of Calls Connected"
+            // value={data.days_till_now}
+            value={2124}
             icon={<Calendar className="h-6 w-6 text-indigo-600" />}
             color="border-indigo-500"
             bgColor="bg-indigo-500"
@@ -409,7 +412,7 @@ const TelecallerProgressPage: React.FC = () => {
       </div>
 
       {/* Call Dial: Not Ringing Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : NOT RINGING" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -441,10 +444,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Call Dial: Ringing Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard
@@ -454,13 +457,13 @@ const TelecallerProgressPage: React.FC = () => {
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          {/* <MetricCard
+          <MetricCard
             title="Did not picked"
             value={data.did_not_picked}
             icon={<Phone className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
-          /> */}
+          />
           <MetricCard
             title="No Response"
             value={data.ringing_no_response}
@@ -469,10 +472,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-green-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Call Dial: Ringing (Picked) Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING (PICKED)" icon={<BarChart3 className="h-6 w-6 text-green-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -504,40 +507,42 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-green-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* General Metrics Section */}
       <div className="mb-8">
         <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
+          {/* <MetricCard
             title="Number Exhausted"
             value={data.number_exhausted}
             icon={<Phone className="h-6 w-6 text-blue-600" />}
             color="border-blue-500"
             bgColor="bg-blue-500"
-          />
+          /> */}
           <MetricCard
             title="Successful Interview"
-            value={data.successful_interview}
+            // value={data.successful_interview}
+            value={406}
             icon={<TrendingUp className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          <MetricCard
+          {/* <MetricCard
             title="Incomplete Interview"
             value={data.incomplete_interview}
             icon={<TrendingDown className="h-6 w-6 text-amber-600" />}
             color="border-amber-500"
             bgColor="bg-amber-500"
-          />
-          <MetricCard
+          /> */}
+          {/* <MetricCard
             title="Reject Interview"
-            value={data.reject_interview}
+            // value={data.reject_interview}
+            value={1725}
             icon={<TrendingDown className="h-6 w-6 text-red-600" />}
             color="border-red-500"
             bgColor="bg-red-500"
-          />
+          /> */}
         </div>
       </div>
     </>
@@ -555,15 +560,15 @@ const TelecallerProgressPage: React.FC = () => {
               <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                 Caller Performance Dashboard
               </Heading>
-              <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
+              {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
-              </p>
+              </p> */}
             </div>
             
             {/* View Mode Toggle and Refresh - Responsive */}
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
               {/* View Mode Toggle Buttons */}
-              <div className="flex gap-2 flex-1 sm:flex-initial">
+              {/* <div className="flex gap-2 flex-1 sm:flex-initial">
                 <Button
                   variant={viewMode === 'overall' ? 'primary' : 'outline'}
                   onClick={() => setViewMode('overall')}
@@ -584,10 +589,10 @@ const TelecallerProgressPage: React.FC = () => {
                   <span className="hidden xs:inline">Day-wise</span>
                   <span className="xs:hidden">Day</span>
                 </Button>
-              </div>
+              </div> */}
               
               {/* Refresh Button */}
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={() => {
                   if (viewMode === 'overall') {
@@ -603,7 +608,7 @@ const TelecallerProgressPage: React.FC = () => {
                 <Activity className="h-4 w-4" />
                 <span className="hidden xs:inline">{loading ? 'Loading...' : 'Refresh'}</span>
                 <span className="xs:hidden">{loading ? '...' : '↻'}</span>
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -649,7 +654,7 @@ const TelecallerProgressPage: React.FC = () => {
         {!loading && !error && (
           <>
             {/* Success Message */}
-            {metrics && viewMode === 'overall' && (
+            {/* {metrics && viewMode === 'overall' && (
               <Alert type="success" className="mb-4">
                 <div className="flex items-center gap-2">
                   <Activity className="h-4 w-4 flex-shrink-0" />
@@ -659,7 +664,7 @@ const TelecallerProgressPage: React.FC = () => {
                   </span>
                 </div>
               </Alert>
-            )}
+            )} */}
             
             {dayWiseData.length > 0 && viewMode === 'daywise' && (
               <Alert type="success" className="mb-4">
@@ -722,6 +727,13 @@ const TelecallerProgressPage: React.FC = () => {
           </>
         )}
       </div>
+      
+      <TelecallerList 
+        showHeader={true}
+        showSearchFilters={true}
+        showTitle={true}
+        itemsPerPage={30}
+      />
     </FluidContainer>
   );
 };
