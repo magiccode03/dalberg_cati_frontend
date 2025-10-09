@@ -76,7 +76,7 @@ export default function CATIACWiseDataPage() {
       </Heading>
 
       {/* Search Filter */}
-      <Card className="p-4 md:p-6 mb-6">
+      <Card className="mb-6">
         <div className="grid grid-cols-12 gap-3 md:gap-4">
           <div className="col-span-4">
             <div className="space-y-2">
