@@ -69,6 +69,40 @@ export default function CATIACWiseDataPage() {
     }))
   ];
 
+  const handleDownload = () => {
+    if (filteredData.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Sr.No.', 'AC Name', 'Call Attempted', 'Call Connected', 'Success'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredData.map((item, index) => [
+        index + 1,
+        `"${item.ac_name}"`,
+        item.call_attempt,
+        item.call_connected,
+        item.success
+      ].join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    const selectedAc = selectedAcCode ? acData.find(ac => ac.ac_code.toString() === selectedAcCode)?.ac_name : 'All';
+    const filename = `AC-Wise-Report-${selectedAc}-${currentDate}.csv`;
+    
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <Heading level={4} className="mb-6">
@@ -117,6 +151,18 @@ export default function CATIACWiseDataPage() {
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={4}>AC-Wise Call Progress Report</Heading>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDownload}
+              disabled={loading || filteredData.length === 0}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600"
+            >
+              <Download className="w-4 h-4" />
+              Download
+            </Button>
           </div>
         </div>
 
