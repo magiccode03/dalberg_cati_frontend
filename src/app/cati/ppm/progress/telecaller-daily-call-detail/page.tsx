@@ -1021,15 +1021,6 @@ const TelecallerDailyCallDetailPage = () => {
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <a
                       href={currentAudio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-external-link mr-2"></i>
-                      Open in New Tab
-                    </a>
-                    <a
-                      href={currentAudio}
                       download
                       className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
                     >
@@ -1055,15 +1046,6 @@ const TelecallerDailyCallDetailPage = () => {
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     <a
                       href={currentAudio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-external-link mr-2"></i>
-                      Open in New Tab
-                    </a>
-                    <a
-                      href={currentAudio}
                       download
                       className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
                     >
@@ -1074,10 +1056,6 @@ const TelecallerDailyCallDetailPage = () => {
                 </div>
               )}
 
-              {/* Audio URL Info */}
-              <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-xs break-all">
-                <strong>Audio URL:</strong> {currentAudio}
-              </div>
             </div>
           </div>
         </div>
