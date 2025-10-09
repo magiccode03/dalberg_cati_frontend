@@ -13,7 +13,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download } from 'lucide-react';
 import { apiService } from '@/lib/api';
-import type { PerformanceReportData, PerformanceReportParams } from '@/lib/api';
+import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
 
 export default function ProgressReportPage() {
   const [searchForm, setSearchForm] = useState({
@@ -30,29 +30,66 @@ export default function ProgressReportPage() {
   const [progressData, setProgressData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [acList, setAcList] = useState<ACListItem[]>([]);
+  const [acListLoading, setAcListLoading] = useState(false);
 
-  // Load data on component mount
+  // Load AC list and fetch progress report data on component mount
   useEffect(() => {
+    fetchACList();
+    // Auto-fetch progress report data with default values
     fetchProgressReport();
   }, []);
 
-  const fetchProgressReport = async () => {
+  // Clear AC code when switching to levels that don't require it
+  useEffect(() => {
+    if (!['polingstation', 'interviewer'].includes(searchForm.level) && searchForm.acCode) {
+      setSearchForm(prev => ({
+        ...prev,
+        acCode: ''
+      }));
+    }
+  }, [searchForm.level]);
+
+  const fetchACList = async () => {
+    setAcListLoading(true);
+    try {
+      const response = await apiService.getPerformanceReportACList();
+      if (response.success) {
+        setAcList(response.data);
+      }
+    } catch (err) {
+      console.error('Error fetching AC list:', err);
+    } finally {
+      setAcListLoading(false);
+    }
+  };
+
+  const fetchProgressReport = async (skipValidation = false) => {
     setLoading(true);
     setError(null);
+    setProgressData([]); // Clear previous data immediately
+    setCurrentPage(1); // Reset to first page
+    
+    // Add a small delay to ensure data is cleared
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     try {
       const params: PerformanceReportParams = {
         report_days: searchForm.reportDays as any,
         type: searchForm.typeOfReport as 'performance' | 'quality',
         level: searchForm.level as 'ac' | 'pc' | 'polingstation' | 'interviewer',
-        ac_code: searchForm.acCode || undefined,
+        // Only include ac_code for polingstation and interviewer levels
+        ...(['polingstation', 'interviewer'].includes(searchForm.level) && searchForm.acCode && { ac_code: searchForm.acCode }),
         custom_date: searchForm.customDate || undefined,
         custom_date_end: searchForm.customDateEnd || undefined
       };
 
+      console.log('API Parameters:', params);
+
       const response = await apiService.getPerformanceReport(params);
       
       if (response.success) {
+        console.log('API Response Data:', response.data.data);
         setProgressData(response.data.data);
       } else {
         setError('Failed to fetch progress report data');
@@ -77,7 +114,7 @@ export default function ProgressReportPage() {
       return;
     }
     
-    fetchProgressReport();
+    fetchProgressReport(false);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -152,48 +189,48 @@ export default function ProgressReportPage() {
           return [
             { key: 'sr', label: 'Sr.No.', width: 'w-16' },
             { key: 'interviewer_id', label: 'Interviewer ID', width: 'w-32' },
-            { key: 'ac_covered', label: 'No of AC covered', width: 'w-32' },
-            { key: 'ps_covered', label: 'PS Covered', width: 'w-24' },
-            { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-32' },
-            { key: 'terminated_interviews', label: 'Terminated Interviews', width: 'w-32' },
-            { key: 'system_rejections', label: 'System rejections', width: 'w-32' },
-            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-40' },
-            { key: 'passed', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white' },
-            { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white' },
-            { key: 'under_qc', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white' },
+            { key: 'no_of_ac', label: 'No of AC covered', width: 'w-32' },
+            { key: 'pscovered', label: 'PS Covered', width: 'w-24' },
+            { key: 'total_interview', label: 'Completed Interviews', width: 'w-32' },
+            { key: 'invalid', label: 'Terminated Interviews', width: 'w-32' },
+            { key: 'reject_auto', label: 'System rejections', width: 'w-32' },
+            { key: 'count_after_termination_and_rejection', label: 'Counts after Terminated and System Rejection', width: 'w-40' },
+            { key: 'valid', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white' },
+            { key: 'reject', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white' },
+            { key: 'interview_in_qc_total', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white' },
             { key: 'female_per', label: '% Of Female Interviews', width: 'w-32' },
-            { key: 'days_worked', label: 'No of days worked', width: 'w-32' },
+            { key: 'no_of_day', label: 'No of days worked', width: 'w-32' },
             { key: 'without_audio', label: 'No of Interviews without audio', width: 'w-40' },
             { key: 'average_per_day', label: 'Average per day', width: 'w-32' },
-            { key: 'lowest_achievement', label: 'Lowest achievement', width: 'w-32' },
-            { key: 'highest_achievement', label: 'Highest achievement', width: 'w-32' },
+            { key: 'min_achivement', label: 'Lowest achievement', width: 'w-32' },
+            { key: 'max_achivement', label: 'Highest achievement', width: 'w-32' },
             { key: 'without_phone_per', label: '% of interviews without Phone Number', width: 'w-40' },
-            { key: 'mentioned_sc', label: '% of Interviews mentioned as SC', width: 'w-36' },
-            { key: 'mentioned_muslim', label: '% of Interviews mentioned as Muslims', width: 'w-40' },
-            { key: 'age_18_24', label: '% of Interviews under the age of (18-24)', width: 'w-40' },
-            { key: 'age_50_plus', label: '% of Interviews under the age of (50+)', width: 'w-40' },
+            { key: 'sc_category_per', label: '% of Interviews mentioned as SC', width: 'w-36' },
+            { key: 'muslim_category_per', label: '% of Interviews mentioned as Muslims', width: 'w-40' },
+            { key: 'age_18_24_per', label: '% of Interviews under the age of (18-24)', width: 'w-40' },
+            { key: 'age_50_above_per', label: '% of Interviews under the age of (50+)', width: 'w-40' },
             { key: 'rejection_per', label: '% of Rejection', width: 'w-32' }
           ];
         case 'polingstation':
           return [
             { key: 'sr', label: 'Sr.No.', width: 'w-16' },
-            { key: 'ps_name', label: 'Polling Station Name', width: 'w-40' },
+            { key: 'polling_station_name', label: 'Polling Station Name', width: 'w-40' },
             { key: 'ac_name', label: 'AC Name', width: 'w-32' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24' },
             { key: 'interviewer', label: 'No of Interviewers Worked', width: 'w-32' },
-            { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-32' },
-            { key: 'terminated_interviews', label: 'Terminated Interviews', width: 'w-32' },
-            { key: 'system_rejections', label: 'System Rejections', width: 'w-32' },
-            { key: 'counts_after_terminated', label: 'Counts After Terminated And System Rejection', width: 'w-40' },
-            { key: 'passed', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white' },
-            { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white' },
-            { key: 'under_qc', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white' },
+            { key: 'total_interview', label: 'Completed Interviews', width: 'w-32' },
+            { key: 'invalid', label: 'Terminated Interviews', width: 'w-32' },
+            { key: 'reject_auto', label: 'System Rejections', width: 'w-32' },
+            { key: 'count_after_termination_and_rejection', label: 'Counts After Terminated And System Rejection', width: 'w-40' },
+            { key: 'valid', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white' },
+            { key: 'reject', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white' },
+            { key: 'interview_in_qc_total', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white' },
             { key: 'female_per', label: '% Of Female Interviews', width: 'w-32' },
             { key: 'without_phone_per', label: '% of interviews without Phone Number', width: 'w-40' },
-            { key: 'mentioned_sc', label: '% of Interviews mentioned as SC', width: 'w-36' },
-            { key: 'mentioned_muslim', label: '% of Interviews mentioned as Muslims', width: 'w-40' },
-            { key: 'age_18_24', label: '% of Interviews under the age of (18-24)', width: 'w-40' },
-            { key: 'age_50_plus', label: '% of Interviews under the age of (50+)', width: 'w-40' }
+            { key: 'sc_category_per', label: '% of Interviews mentioned as SC', width: 'w-36' },
+            { key: 'muslim_category_per', label: '% of Interviews mentioned as Muslims', width: 'w-40' },
+            { key: 'age_18_24_per', label: '% of Interviews under the age of (18-24)', width: 'w-40' },
+            { key: 'age_50_above_per', label: '% of Interviews under the age of (50+)', width: 'w-40' }
           ];
         default:
           return [];
@@ -208,23 +245,23 @@ export default function ProgressReportPage() {
             { key: 'pc_name', label: 'Pc Name', width: 'w-32' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24' },
             { key: 'interviewer', label: 'No of Interviewers Worked', width: 'w-32' },
-            { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-32' },
-            { key: 'passed', label: 'Pass interviews', width: 'w-32' },
+            { key: 'total_interview', label: 'Completed Interviews', width: 'w-32' },
+            { key: 'valid', label: 'Pass interviews', width: 'w-32' },
             { key: 'valid_without_phone_per', label: '% of pass interviews without Phone Number', width: 'w-40' },
-            { key: 'assigned_to_audio', label: 'Assigned to Audio', width: 'w-32' },
-            { key: 'under_qc', label: 'Under QC Interviews', width: 'w-32' },
-            { key: 'failed', label: 'Fail Interviews', width: 'w-32' },
-            { key: 'system_fail', label: 'System Fail', width: 'w-24' },
-            { key: 'short_interviews_fail', label: 'Short Interviews Fail', width: 'w-32' },
-            { key: 'duplicate_mobile', label: 'Duplicate Mobile Number', width: 'w-32' },
-            { key: 'audio_fail', label: 'Audio Fail', width: 'w-24' },
+            { key: 'assign_to_audioqc', label: 'Assigned to Audio', width: 'w-32' },
+            { key: 'interview_in_qc_total', label: 'Under QC Interviews', width: 'w-32' },
+            { key: 'reject', label: 'Fail Interviews', width: 'w-32' },
+            { key: 'reject_auto', label: 'System Fail', width: 'w-24' },
+            { key: 'reject_short', label: 'Short Interviews Fail', width: 'w-32' },
+            { key: 'reject_duplicatephone', label: 'Duplicate Mobile Number', width: 'w-32' },
+            { key: 'reject_qc_audio', label: 'Audio Fail', width: 'w-24' },
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-40' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-40' },
             { key: 'reject_qc_audio_respondent', label: 'Interviewer acting as respondent', width: 'w-48' },
             { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-56' },
             { key: 'reject_qc_audio_mechanical', label: 'The interviewer is asking questions mechanically', width: 'w-56' },
-            { key: 'nwrta_fail', label: 'N+W+RTA Fail', width: 'w-24' }
+            { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24' }
           ];
         case 'pc':
           return [
@@ -233,59 +270,59 @@ export default function ProgressReportPage() {
             { key: 'pc_name', label: 'PC Name', width: 'w-32' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24' },
             { key: 'interviewer', label: 'No of Interviewers Worked', width: 'w-32' },
-            { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-32' },
-            { key: 'passed', label: 'Pass interviews', width: 'w-32' },
+            { key: 'total_interview', label: 'Completed Interviews', width: 'w-32' },
+            { key: 'valid', label: 'Pass interviews', width: 'w-32' },
             { key: 'valid_without_phone_per', label: '% of Valid interviews without Phone Number', width: 'w-40' },
-            { key: 'assigned_to_audio', label: 'Assigned to Audio', width: 'w-32' },
-            { key: 'under_qc', label: 'Under QC Interviews', width: 'w-32' },
-            { key: 'failed', label: 'Fail Interviews', width: 'w-32' },
-            { key: 'system_fail', label: 'System Fail', width: 'w-24' },
-            { key: 'short_interviews_fail', label: 'Short Interviews Fail', width: 'w-32' },
-            { key: 'duplicate_mobile', label: 'Duplicate Mobile Number', width: 'w-32' },
-            { key: 'audio_fail', label: 'Audio Fail', width: 'w-24' },
-            { key: 'nwrta_fail', label: 'N+W+RTA Fail', width: 'w-24' }
+            { key: 'assign_to_qc', label: 'Assigned to Audio', width: 'w-32' },
+            { key: 'interview_in_qc_total', label: 'Under QC Interviews', width: 'w-32' },
+            { key: 'reject', label: 'Fail Interviews', width: 'w-32' },
+            { key: 'reject_auto', label: 'System Fail', width: 'w-24' },
+            { key: 'reject_short', label: 'Short Interviews Fail', width: 'w-32' },
+            { key: 'reject_duplicatephone', label: 'Duplicate Mobile Number', width: 'w-32' },
+            { key: 'reject_qc_audio', label: 'Audio Fail', width: 'w-24' },
+            { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24' }
           ];
         case 'interviewer':
           return [
             { key: 'sr', label: 'Sr.No.', width: 'w-16' },
             { key: 'interviewer_id', label: 'Interviewer ID', width: 'w-32' },
-            { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-32' },
-            { key: 'passed', label: 'Pass interviews', width: 'w-32' },
+            { key: 'total_interview', label: 'Completed Interviews', width: 'w-32' },
+            { key: 'valid', label: 'Pass interviews', width: 'w-32' },
             { key: 'valid_without_phone_per', label: '% of Pass interviews without Phone Number', width: 'w-40' },
-            { key: 'assigned_to_audio', label: 'Assigned to Audio', width: 'w-32' },
-            { key: 'under_qc', label: 'Under QC Interviews', width: 'w-32' },
-            { key: 'failed', label: 'Fail Interviews', width: 'w-32' },
-            { key: 'system_fail', label: 'System Fail', width: 'w-24' },
-            { key: 'short_interviews_fail', label: 'Short Interviews Fail', width: 'w-32' },
-            { key: 'duplicate_mobile', label: 'Duplicate Mobile Number', width: 'w-32' },
-            { key: 'audio_fail', label: 'Audio Fail', width: 'w-24' },
+            { key: 'assign_to_audioqc', label: 'Assigned to Audio', width: 'w-32' },
+            { key: 'interview_in_qc_total', label: 'Under QC Interviews', width: 'w-32' },
+            { key: 'reject', label: 'Fail Interviews', width: 'w-32' },
+            { key: 'reject_auto', label: 'System Fail', width: 'w-24' },
+            { key: 'reject_short', label: 'Short Interviews Fail', width: 'w-32' },
+            { key: 'reject_duplicatephone', label: 'Duplicate Mobile Number', width: 'w-32' },
+            { key: 'reject_qc_audio', label: 'Audio Fail', width: 'w-24' },
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-40' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-40' },
             { key: 'reject_qc_audio_respondent', label: 'Interviewer acting as respondent', width: 'w-48' },
             { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-56' },
             { key: 'reject_qc_audio_mechanical', label: 'The interviewer is asking questions mechanically', width: 'w-56' },
-            { key: 'nwrta_fail', label: 'N+W+RTA Fail', width: 'w-24' },
+            { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24' },
             { key: 'rejection_per', label: 'Rejection %', width: 'w-24' }
           ];
         case 'polingstation':
           return [
             { key: 'sr', label: 'Sr.No.', width: 'w-16' },
-            { key: 'ps_name', label: 'Polling Station Name', width: 'w-40' },
+            { key: 'polling_station_name', label: 'Polling Station Name', width: 'w-40' },
             { key: 'ac_name', label: 'Ac Name', width: 'w-32' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24' },
             { key: 'interviewer', label: 'No of Interviewers Worked', width: 'w-32' },
-            { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-32' },
-            { key: 'passed', label: 'Pass interviews', width: 'w-32' },
+            { key: 'total_interview', label: 'Completed Interviews', width: 'w-32' },
+            { key: 'valid', label: 'Pass interviews', width: 'w-32' },
             { key: 'valid_without_phone_per', label: '% of Pass interviews without Phone Number', width: 'w-40' },
-            { key: 'assigned_to_audio', label: 'Assigned to Audio', width: 'w-32' },
-            { key: 'under_qc', label: 'Under QC Interview', width: 'w-32' },
-            { key: 'failed', label: 'Fail Interviews', width: 'w-32' },
-            { key: 'system_fail', label: 'System Fail', width: 'w-24' },
-            { key: 'short_interviews_fail', label: 'Short Interviews', width: 'w-32' },
-            { key: 'duplicate_mobile', label: 'Duplicate Mobile Number', width: 'w-32' },
-            { key: 'audio_fail', label: 'Audio Fail', width: 'w-24' },
-            { key: 'nwrta_fail', label: 'N+W+RTA Fail', width: 'w-24' }
+            { key: 'assign_to_audioqc', label: 'Assigned to Audio', width: 'w-32' },
+            { key: 'interview_in_qc_total', label: 'Under QC Interview', width: 'w-32' },
+            { key: 'reject', label: 'Fail Interviews', width: 'w-32' },
+            { key: 'reject_auto', label: 'System Fail', width: 'w-24' },
+            { key: 'reject_short', label: 'Short Interviews', width: 'w-32' },
+            { key: 'reject_duplicatephone', label: 'Duplicate Mobile Number', width: 'w-32' },
+            { key: 'reject_qc_audio', label: 'Audio Fail', width: 'w-24' },
+            { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24' }
           ];
         default:
           return [];
@@ -295,24 +332,26 @@ export default function ProgressReportPage() {
   };
 
   // Helper function to get data value based on header key and API response structure
-  const getDataValue = (item: any, key: string) => {
+  const getDataValue = (item: any, key: string, itemIndex?: number) => {
     switch (key) {
       case 'sr':
-        return ''; // Will be handled by index
+        return startIndex + (itemIndex || 0) + 1; // Calculate correct serial number based on pagination
       
-      // Common fields across all levels
-      case 'ac_code':
-        return item.ac_code || '-';
-      case 'ac_name':
-        return item.ac_name || '-';
-      case 'pc_code':
-        return item.pc_code !== undefined ? item.pc_code : '-';
-      case 'pc_name':
-        return item.pc_name || '-';
-      case 'ps_name':
-        return item.polling_station_name || item.ps_name || '-';
-      case 'interviewer_id':
-        return item.interviewer_id || '-';
+        // Common fields across all levels
+        case 'ac_code':
+          return item.ac_code ?? '-';
+        case 'ac_name':
+          return item.ac_name ?? '-';
+        case 'pc_code':
+          return item.pc_code !== undefined ? item.pc_code : '-';
+        case 'pc_name':
+          return item.pc_name ?? '-';
+        case 'ps_name':
+          return item.polling_station_name ?? item.ps_name ?? '-';
+        case 'polling_station_name':
+          return item.polling_station_name ?? '-';
+        case 'interviewer_id':
+          return item.interviewer_id ?? '-';
       case 'target_sample':
         return item.target_sample ?? '-';
       case 'interviewer':
@@ -321,6 +360,10 @@ export default function ProgressReportPage() {
         return item.no_of_ac ?? item.ac_covered ?? '-';
       case 'ps_covered':
         return item.pscovered ?? item.ps_covered ?? '-';
+      case 'no_of_ac':
+        return item.no_of_ac ?? '-';
+      case 'pscovered':
+        return item.pscovered ?? '-';
       case 'completed_interviews':
         return item.total_interview ?? item.completed_interviews ?? '-';
       case 'terminated_interviews':
@@ -329,6 +372,22 @@ export default function ProgressReportPage() {
         return item.reject_auto ?? item.system_rejections ?? '-';
       case 'counts_after_terminated':
         return item.count_after_termination_and_rejection ?? item.counts_after_terminated ?? '-';
+      case 'count_after_termination_and_rejection':
+        return item.count_after_termination_and_rejection ?? '-';
+      case 'total_interview':
+        return item.total_interview ?? '-';
+      case 'invalid':
+        return item.invalid ?? '-';
+      case 'reject_auto':
+        return item.reject_auto ?? '-';
+      case 'valid':
+        return item.valid ?? '-';
+      case 'reject':
+        return item.reject ?? '-';
+      case 'interview_in_qc_total':
+        // Calculate the sum of all QC fields and display 0 if the sum is 0
+        const qcTotal = (item.interview_in_qc ?? 0) + (item.interview_in_qc_complete ?? 0) + (item.interview_in_reqc ?? 0) + (item.interview_in_reqc_complete ?? 0);
+        return qcTotal ?? '-';
       
       // GPS fields (only for AC level)
       case 'gps_pending':
@@ -371,34 +430,60 @@ export default function ProgressReportPage() {
         return item.age_18_24_per ?? item.age_18_24 ?? '-';
       case 'age_50_plus':
         return item.age_50_above_per ?? item.age_50_plus ?? '-';
+      case 'sc_category_per':
+        return item.sc_category_per ?? '-';
+      case 'muslim_category_per':
+        return item.muslim_category_per ?? '-';
+      case 'age_18_24_per':
+        return item.age_18_24_per ?? '-';
+      case 'age_50_above_per':
+        return item.age_50_above_per ?? '-';
       
       // Interviewer specific fields
       case 'days_worked':
         return item.no_of_day ?? item.days_worked ?? '-';
+      case 'no_of_day':
+        return item.no_of_day ?? '-';
       case 'without_audio':
         return item.without_audio ?? '-';
       case 'average_per_day':
         return item.average_per_day ?? '-';
+      case 'min_achivement':
+        return item.min_achivement ?? '-';
+      case 'max_achivement':
+        return item.max_achivement ?? '-';
+      case 'rejection_per':
+        return item.rejection_per ?? '-';
       case 'lowest_achievement':
         return item.min_achivement ?? item.lowest_achievement ?? '-';
       case 'highest_achievement':
         return item.max_achivement ?? item.highest_achievement ?? '-';
-      case 'rejection_per':
-        return item.rejection_per ?? '-';
       
       // Quality specific fields
       case 'assigned_to_audio':
         return item.assign_to_audioqc ?? item.assigned_to_audio ?? '-';
+      case 'assign_to_audioqc':
+        return item.assign_to_audioqc ?? '-';
+      case 'assign_to_qc':
+        return item.assign_to_qc ?? '-';
       case 'system_fail':
         return item.reject_auto ?? item.system_fail ?? '-';
       case 'short_interviews_fail':
         return item.reject_short ?? item.short_interviews_fail ?? '-';
+      case 'reject_short':
+        return item.reject_short ?? '-';
       case 'short_interviews':
         return item.reject_short ?? item.short_interviews ?? '-';
       case 'duplicate_mobile':
         return item.reject_duplicatephone ?? item.duplicate_mobile ?? '-';
+      case 'reject_duplicatephone':
+        return item.reject_duplicatephone ?? '-';
       case 'audio_fail':
         return item.reject_qc_audio ?? item.audio_fail ?? '-';
+      case 'reject_qc_audio':
+        return item.reject_qc_audio ?? '-';
+      case 'reject_rta':
+        return item.reject_rta ?? '-';
       
       // Audio QC fields
       case 'reject_qc_audio_gender':
@@ -510,13 +595,16 @@ export default function ProgressReportPage() {
                 AC Code
                 <span className="text-red-500 ml-1">*</span>
               </Text>
-              <Input
-                type="text"
+              <SelectDropdown
+                options={acList?.map(ac => ({
+                  value: ac.ac_code.toString(),
+                  label: ac.acnameandcode
+                })) || []}
                 value={searchForm.acCode}
-                onChange={(e) => handleInputChange('acCode', e.target.value)}
-                placeholder="Enter AC Code"
+                onChange={(value) => handleInputChange('acCode', value as string)}
+                placeholder={acListLoading ? "Loading AC list..." : "Select AC Code"}
                 className="w-full"
-                required
+                disabled={acListLoading}
               />
             </div>
           )}
@@ -578,7 +666,10 @@ export default function ProgressReportPage() {
         </div>
 
         <div className="table-responsive">
-          <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
+          <Table 
+            key={`${searchForm.typeOfReport}-${searchForm.level}-${searchForm.acCode}`}
+            className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300"
+          >
             <thead className="table-light">
               <tr>
                 {getTableHeaders().map((header) => (
@@ -612,9 +703,9 @@ export default function ProgressReportPage() {
                 </tr>
               ) : (
                 currentData.map((item, index) => (
-                  <tr key={item.ac_code || item.pc_code || item.interviewer_id || item.ps_name || index}>
+                  <tr key={`${item.ac_code || item.pc_code || item.interviewer_id || item.polling_station_no || item.polling_station_name || index}-${index}`}>
                     {getTableHeaders().map((header) => {
-                      const value = getDataValue(item, header.key);
+                      const value = getDataValue(item, header.key, index);
                       const isHighlighted = typeof value === 'number' && shouldHighlightRed(value, header.key);
                       const isPS = header.key === 'ps_covered' && value !== '-';
                       
