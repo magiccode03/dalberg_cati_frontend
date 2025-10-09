@@ -81,6 +81,7 @@ interface DashboardFilters {
   telecaller: string;
   acCode: string;
   date: string;
+  duration: string;
 }
 
 const TelecallerDailyCallDetailPage = () => {
@@ -122,6 +123,7 @@ const TelecallerDailyCallDetailPage = () => {
     telecaller: '',
     acCode: '',
     date: '',
+    duration: '',
   });
 
   // Telecaller and AC list states
@@ -217,6 +219,11 @@ const TelecallerDailyCallDetailPage = () => {
     })),
   ];
 
+  const durationOptions = [
+    { value: '', label: 'All Duration' },
+    { value: '180', label: '180 seconds' },
+  ];
+
   // Handlers
   const handleFilterChange = (field: keyof SearchFilters, value: string | boolean) => {
     setFilters(prev => ({
@@ -271,6 +278,10 @@ const TelecallerDailyCallDetailPage = () => {
       
       if (dashboardFilters.date && dashboardFilters.date !== '') {
         params.append('date', dashboardFilters.date);
+      }
+      
+      if (dashboardFilters.duration && dashboardFilters.duration !== '') {
+        params.append('duration', dashboardFilters.duration);
       }
       
       const url = `${apiBaseUrl}/api/cati/dashboard${params.toString() ? `?${params.toString()}` : ''}`;
@@ -350,6 +361,10 @@ const TelecallerDailyCallDetailPage = () => {
       
       if (dashboardFilters.date && dashboardFilters.date !== '') {
         params.append('date', dashboardFilters.date);
+      }
+      
+      if (dashboardFilters.duration && dashboardFilters.duration !== '') {
+        params.append('duration', dashboardFilters.duration);
       }
       
       // Apply additional filters from the search form (if uncommented later)
@@ -590,6 +605,22 @@ const TelecallerDailyCallDetailPage = () => {
               placeholder="Select Date"
             />
           </div>
+
+          {/* Duration Filter */}
+          {/* <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Duration
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.duration}
+              onChange={(value) => handleDashboardFilterChange('duration', value)}
+              options={durationOptions}
+              placeholder="Select Duration"
+              searchable={false}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div> */}
 
           {/* View Button */}
           <div className="flex-shrink-0">
@@ -895,9 +926,6 @@ const TelecallerDailyCallDetailPage = () => {
                   <TableHead>Caller Name</TableHead>
                   <TableHead>Caller ID</TableHead>
                   <TableHead>Call Time</TableHead>
-                  <TableHead>Call Received</TableHead>
-                  <TableHead>Caller Response</TableHead>
-                  <TableHead>API Response</TableHead>
                   <TableHead>IVR Duration</TableHead>
                   <TableHead>Talk Duration</TableHead>
                   <TableHead>Audio file</TableHead>
@@ -911,11 +939,6 @@ const TelecallerDailyCallDetailPage = () => {
                     <TableCell>{item.caller_name || '-'}</TableCell>
                     <TableCell>{item.caller_id || '-'}</TableCell>
                     <TableCell>{formatDateTime(item.call_time)}</TableCell>
-                    <TableCell>
-                      {item.call_received === 1 ? 'Yes' : item.call_received === 0 ? 'No' : '-'}
-                    </TableCell>
-                    <TableCell>-</TableCell>
-                    <TableCell>-</TableCell>
                     <TableCell>{formatDuration(item.ivr_duration)}</TableCell>
                     <TableCell>{formatDuration(item.talk_duration)}</TableCell>
                     <TableCell>

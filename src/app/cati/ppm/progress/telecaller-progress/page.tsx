@@ -497,7 +497,8 @@ const TelecallerProgressPage: React.FC = () => {
           />
           <MetricCard
             title="No Response"
-            value={data.no_response}
+            // value={data.no_response}
+            value={0}
             icon={<Phone className="h-6 w-6 text-teal-600" />}
             color="border-teal-500"
             bgColor="bg-teal-500"
@@ -616,8 +617,8 @@ const TelecallerProgressPage: React.FC = () => {
           /> */}
           <MetricCard
             title="Successful Interview"
-            // value={data.successful_interview}
-            value={406}
+            value={data.successful_interview}
+            // value={406}
             icon={<TrendingUp className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
