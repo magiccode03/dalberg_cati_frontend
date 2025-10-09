@@ -1568,6 +1568,10 @@ export default function DemographicPage() {
               <ul className="nav panel-tabs main-nav-line flex flex-wrap border-b border-gray-200">
                 {tabs.map((tab) => {
                   const IconComponent = tab.icon;
+                  // Hide castewise tab
+                  if (tab.id === 'castewise') {
+                    return null;
+                  }
                   return (
                     <li key={tab.id} className="mr-1">
                       <button

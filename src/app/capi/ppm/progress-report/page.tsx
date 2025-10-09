@@ -124,6 +124,44 @@ export default function ProgressReportPage() {
     }));
   };
 
+  const handleDownload = () => {
+    if (progressData.length === 0) return;
+
+    // Get table headers
+    const headers = getTableHeaders();
+    
+    // Create CSV content
+    const csvContent = [
+      // Header row
+      headers.map(header => `"${header.label}"`).join(','),
+      // Data rows
+      ...progressData.map((item, index) => 
+        headers.map(header => {
+          const value = getDataValue(item, header.key, index);
+          return `"${value}"`;
+        }).join(',')
+      )
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with current date and report type
+    const currentDate = new Date().toISOString().split('T')[0];
+    const reportType = searchForm.typeOfReport === 'performance' ? 'Performance' : 'Quality';
+    const level = searchForm.level.toUpperCase();
+    const filename = `${reportType}_Report_${level}_${currentDate}.csv`;
+    
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const totalPages = Math.ceil(progressData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -659,7 +697,12 @@ export default function ProgressReportPage() {
               {searchForm.typeOfReport === 'performance' ? 'PERFORMANCE' : 'QUALITY'} REPORT - {searchForm.level.toUpperCase()} LEVEL
             </Heading>
           </div>
-          <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
+          <Button 
+            variant="outline" 
+            className="bg-blue-600 hover:bg-blue-700 text-white border-0"
+            onClick={handleDownload}
+            disabled={loading || progressData.length === 0}
+          >
             <Download className="w-4 h-4 mr-2" />
             Download
           </Button>
