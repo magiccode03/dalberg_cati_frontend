@@ -1,0 +1,16 @@
+Section,Type,Label/Column Name,API Field Name
+AC Wise Report,Table Column,S.No,id
+AC Wise Report,Table Column,AC Code,ac_code
+AC Wise Report,Table Column,Name,ac_name
+AC Wise Report,Table Column,Agency Name,agency.agency_name
+AC Wise Report,Table Column,Sample,acsample
+AC Wise Report,Table Column,Checker,checker
+AC Wise Report,Table Column,Alloted,QcCount
+AC Wise Report,Table Column,Completed,complete
+AC Wise Report,Table Column,Accepted,achieved
+AC Wise Report,Table Column,Rejected,reject
+AC Wise Report,Table Column,Under QC,underqc
+AC Wise Report,Pagination,Current Page,page
+AC Wise Report,Pagination,Page Size,pageSize
+AC Wise Report,Pagination,Total Count,totalCount
+AC Wise Report,Pagination,Total Pages,pageCount

@@ -772,14 +772,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-  {
-    id: 'capi-fd-progress-report',
-    label: 'Progress Report',
-    href: '/capi/fd/progress-report',
-    icon: 'TrendingUp',
-    roles: ['fd'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-fd-progress-report',
+  //   label: 'Progress Report',
+  //   href: '/capi/fd/progress-report',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'capi',
+  // },
   {
     id: 'capi-fd-interview-audio',
     label: 'Interview Audio',
@@ -788,7 +788,22 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-
+  {
+    id: 'back',
+    label: 'Back To Menu',
+    href: '/home',
+    icon: 'Home',
+    roles: ['fd'],
+    system: 'capi',
+  },
+  // {
+  //   id: 'back',
+  //   label: 'Back To Menu',
+  //   href: '/home',
+  //   icon: 'Home',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
   // CAPI Access to Raw Data Menu
   {
     id: 'capi-atrd-capi',
@@ -1366,18 +1381,35 @@ export const menuData: MenuItem[] = [
     system: 'cati',
   },
   {
-    id: 'cati-fd-telecaller-dailycall-details',
-    label: 'Telecaller Daily Call Details',
-    href: '/cati/fd/telecaller-daily-call-details',
-    icon: 'TrendingUp',
+    id: 'ac-report',
+    label: 'AC Report',
+    href: '/cati/fd/ac-wise-data',
+    icon: 'BarChart3',
     roles: ['fd'],
     system: 'cati',
   },
+  // {
+  //   id: 'cati-fd-telecaller-dailycall-details',
+  //   label: 'Telecaller Daily Call Details',
+  //   href: '/cati/fd/telecaller-daily-call-details',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
+  
   {
     id: 'cati-fd-interview-audio',
     label: 'Interview Audio',
     href: '/cati/fd/interview-audio',
     icon: 'Mic',
+    roles: ['fd'],
+    system: 'cati',
+  },
+  {
+    id: 'back',
+    label: 'Back To Menu',
+    href: '/home',
+    icon: 'Home',
     roles: ['fd'],
     system: 'cati',
   },
@@ -1391,6 +1423,7 @@ export const menuData: MenuItem[] = [
     roles: ['ss'],
     system: 'cati',
   },
+
 ];
 
 export const getMenuByRole = (role: string, userSystem?: 'capi' | 'cati'): MenuItem[] => {
