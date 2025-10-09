@@ -314,107 +314,109 @@ export default function ProgressReportPage() {
       case 'interviewer_id':
         return item.interviewer_id || '-';
       case 'target_sample':
-        return item.target_sample || '-';
+        return item.target_sample ?? '-';
       case 'interviewer':
-        return item.interviewer || '-';
+        return item.interviewer ?? '-';
       case 'ac_covered':
-        return item.no_of_ac || item.ac_covered || '-';
+        return item.no_of_ac ?? item.ac_covered ?? '-';
       case 'ps_covered':
-        return item.pscovered || item.ps_covered || '-';
+        return item.pscovered ?? item.ps_covered ?? '-';
       case 'completed_interviews':
-        return item.total_interview || item.completed_interviews || '-';
+        return item.total_interview ?? item.completed_interviews ?? '-';
       case 'terminated_interviews':
-        return item.invalid || item.terminated_interviews || '-';
+        return item.invalid ?? item.terminated_interviews ?? '-';
       case 'system_rejections':
-        return item.reject_auto || item.system_rejections || '-';
+        return item.reject_auto ?? item.system_rejections ?? '-';
       case 'counts_after_terminated':
-        return item.count_after_termination_and_rejection || item.counts_after_terminated || '-';
+        return item.count_after_termination_and_rejection ?? item.counts_after_terminated ?? '-';
       
       // GPS fields (only for AC level)
       case 'gps_pending':
-        return item.interview_gps_pending || item.gps_pending || '-';
+        return item.interview_gps_pending ?? item.gps_pending ?? '-';
       case 'gps_fail':
-        return item.interview_gps_reject || item.gps_fail || '-';
+        return item.interview_gps_reject ?? item.gps_fail ?? '-';
       
       // Pass/Fail fields
       case 'passed':
-        return item.valid || item.passed || item.pass_interviews || '-';
+        return item.valid ?? item.passed ?? item.pass_interviews ?? '-';
       case 'failed':
-        return (item.reject - item.reject_auto) || item.failed || item.fail_interviews || '-';
+        const failedValue = (item.reject - item.reject_auto);
+        return failedValue ?? item.failed ?? item.fail_interviews ?? '-';
       case 'under_qc':
-        return (item.interview_in_qc + item.interview_in_qc_complete + item.interview_in_reqc + item.interview_in_reqc_complete) || item.under_qc || item.under_qc_interviews || item.under_qc_interview || '-';
+        const underQcValue = (item.interview_in_qc + item.interview_in_qc_complete + item.interview_in_reqc + item.interview_in_reqc_complete);
+        return underQcValue ?? item.under_qc ?? item.under_qc_interviews ?? item.under_qc_interview ?? '-';
       
       // Percentage fields
       case 'female_per':
-        return item.female_per || '-';
+        return item.female_per ?? '-';
       case 'without_phone_per':
-        return item.without_phone_per || '-';
+        return item.without_phone_per ?? '-';
       case 'pass_without_phone_per':
-        return item.valid_without_phone_per || item.pass_without_phone_per || '-';
+        return item.valid_without_phone_per ?? item.pass_without_phone_per ?? '-';
       case 'valid_without_phone_per':
-        return item.valid_without_phone_per || '-';
+        return item.valid_without_phone_per ?? '-';
       
       // SC and Muslim fields
       case 'actual_sc':
-        return item.sc || '-';
+        return item.sc ?? '-';
       case 'mentioned_sc':
-        return item.sc_category_per || item.mentioned_sc || '-';
+        return item.sc_category_per ?? item.mentioned_sc ?? '-';
       case 'actual_muslim':
-        return item.muslim || '-';
+        return item.muslim ?? '-';
       case 'mentioned_muslim':
-        return item.muslim_category_per || item.mentioned_muslim || '-';
+        return item.muslim_category_per ?? item.mentioned_muslim ?? '-';
       
       // Age fields
       case 'age_18_24':
-        return item.age_18_24_per || item.age_18_24 || '-';
+        return item.age_18_24_per ?? item.age_18_24 ?? '-';
       case 'age_50_plus':
-        return item.age_50_above_per || item.age_50_plus || '-';
+        return item.age_50_above_per ?? item.age_50_plus ?? '-';
       
       // Interviewer specific fields
       case 'days_worked':
-        return item.no_of_day || item.days_worked || '-';
+        return item.no_of_day ?? item.days_worked ?? '-';
       case 'without_audio':
-        return item.without_audio || '-';
+        return item.without_audio ?? '-';
       case 'average_per_day':
-        return item.average_per_day || '-';
+        return item.average_per_day ?? '-';
       case 'lowest_achievement':
-        return item.min_achivement || item.lowest_achievement || '-';
+        return item.min_achivement ?? item.lowest_achievement ?? '-';
       case 'highest_achievement':
-        return item.max_achivement || item.highest_achievement || '-';
+        return item.max_achivement ?? item.highest_achievement ?? '-';
       case 'rejection_per':
-        return item.rejection_per || '-';
+        return item.rejection_per ?? '-';
       
       // Quality specific fields
       case 'assigned_to_audio':
-        return item.assign_to_audioqc || item.assigned_to_audio || '-';
+        return item.assign_to_audioqc ?? item.assigned_to_audio ?? '-';
       case 'system_fail':
-        return item.reject_auto || item.system_fail || '-';
+        return item.reject_auto ?? item.system_fail ?? '-';
       case 'short_interviews_fail':
-        return item.reject_short || item.short_interviews_fail || '-';
+        return item.reject_short ?? item.short_interviews_fail ?? '-';
       case 'short_interviews':
-        return item.reject_short || item.short_interviews || '-';
+        return item.reject_short ?? item.short_interviews ?? '-';
       case 'duplicate_mobile':
-        return item.reject_duplicatephone || item.duplicate_mobile || '-';
+        return item.reject_duplicatephone ?? item.duplicate_mobile ?? '-';
       case 'audio_fail':
-        return item.reject_qc_audio || item.audio_fail || '-';
+        return item.reject_qc_audio ?? item.audio_fail ?? '-';
       
       // Audio QC fields
       case 'reject_qc_audio_gender':
-        return item.reject_qc_audio_gender || '-';
+        return item.reject_qc_audio_gender ?? '-';
       case 'reject_qc_audio_blank':
-        return item.reject_qc_audio_blank || '-';
+        return item.reject_qc_audio_blank ?? '-';
       case 'reject_qc_audio_irrelevant':
-        return item.reject_qc_audio_irrelevant || '-';
+        return item.reject_qc_audio_irrelevant ?? '-';
       case 'reject_qc_audio_respondent':
-        return item.reject_qc_audio_respondent || '-';
+        return item.reject_qc_audio_respondent ?? '-';
       case 'reject_qc_audio_interviewer_more':
-        return item.reject_qc_audio_interviewer_more || '-';
+        return item.reject_qc_audio_interviewer_more ?? '-';
       case 'reject_qc_audio_mechanical':
-        return item.reject_qc_audio_mechanical || '-';
+        return item.reject_qc_audio_mechanical ?? '-';
       
       // Other fields
       case 'nwrta_fail':
-        return item.reject_rta || item.nwrta_fail || '-';
+        return item.reject_rta ?? item.nwrta_fail ?? '-';
       
       default:
         return '-';
