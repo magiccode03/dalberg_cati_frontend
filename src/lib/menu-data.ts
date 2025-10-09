@@ -1082,6 +1082,14 @@ export const menuData: MenuItem[] = [
         system: 'cati',
       },
       {
+        id: 'cati-ppm-interview-audio',
+        label: 'Interview Audio',
+        href: '/cati/ppm/progress/interview-audio',
+        icon: 'Mic',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
         id: 'cati-ppm-completed-numbers',
         label: 'Completed Numbers',
         href: '/cati/ppm/progress/completed-numbers',
@@ -1176,7 +1184,7 @@ export const menuData: MenuItem[] = [
       {
         id: 'cati-ppm-overall-ac-progress',
         label: 'Overall AC Progress',
-        href: '/cati/ppm/ac-progress/overall ac-progress',
+        href: '/cati/ppm/ac-progress/overall-ac-progress',
         icon: 'BarChart3',
         roles: ['ppm'],
         system: 'cati',
