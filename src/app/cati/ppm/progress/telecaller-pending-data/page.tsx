@@ -73,7 +73,7 @@ const TelecallerPendingDataPage = () => {
             </Heading>
           </div>
           <div className="flex gap-2">
-            <Button 
+            {/* <Button 
               variant="secondary" 
               onClick={handleRedistributePending}
               className="flex items-center bg-green-500 hover:bg-green-600 text-white"
@@ -88,7 +88,7 @@ const TelecallerPendingDataPage = () => {
             >
               <CheckCircle className="w-4 h-4 mr-2" />
               Redistribute QC Pending Data
-            </Button>
+            </Button> */}
             {/* <Button 
               variant="secondary" 
               onClick={handleRedistributeReQC}
@@ -100,7 +100,7 @@ const TelecallerPendingDataPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
           {/* Left Column - Pending Data */}
           <div>
             <Table striped bordered hover>
@@ -135,7 +135,7 @@ const TelecallerPendingDataPage = () => {
 
           {/* Right Column - QC Pending Data */}
           <div>
-            <Table striped bordered hover>
+            {/* <Table striped bordered hover>
               <thead>
                 <tr>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Sr. No.</th>
@@ -162,7 +162,7 @@ const TelecallerPendingDataPage = () => {
                   ))
                 )}
               </tbody>
-            </Table>
+            </Table> */}
 
             {/* Re-QC Pending Data Section */}
             {/* <div className="mt-8">
