@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -9,6 +9,8 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
+import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
 
 // Interfaces
@@ -25,15 +27,24 @@ interface SearchFilters {
 
 interface CallDetailData {
   id: number;
-  callerName: string;
-  callerId: string;
-  callTime: string;
-  callReceived: string;
-  callerResponse: string;
-  apiResponse: string;
-  ivrDuration: string;
-  talkDuration: string;
-  audioFile: string;
+  caller_id: number;
+  caller_name: string;
+  phone: string;
+  ac_code: number;
+  call_time: string | null;
+  call_received: number;
+  ivr_duration: number | null;
+  talk_duration: number | null;
+  audio: string | null;
+}
+
+interface PaginationInfo {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
 }
 
 interface PerformanceMetrics {
@@ -68,7 +79,7 @@ const TelecallerDailyCallDetailPage = () => {
   });
 
   // State for performance metrics
-  const [performanceMetrics] = useState<PerformanceMetrics>({
+  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
     totalCallers: 0,
     daysTillNow: 0,
     numberOfDials: 0,
@@ -77,7 +88,7 @@ const TelecallerDailyCallDetailPage = () => {
     totalTalkDuration: '00:00:00',
   });
 
-  const [callOutcomeMetrics] = useState<CallOutcomeMetrics>({
+  const [callOutcomeMetrics, setCallOutcomeMetrics] = useState<CallOutcomeMetrics>({
     numberDoesNotExist: 0,
     respondentDidNotPick: 0,
     respondentPickedCall: 0,
@@ -86,8 +97,24 @@ const TelecallerDailyCallDetailPage = () => {
     pickedAndCallContinue: 0,
   });
 
-  // Sample data for call details
-  const [callDetailData] = useState<CallDetailData[]>([]);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+
+  // API state for call details
+  const [callDetailData, setCallDetailData] = useState<CallDetailData[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
 
   // Options for dropdowns
   const reportDaysOptions = [
@@ -159,8 +186,162 @@ const TelecallerDailyCallDetailPage = () => {
 
   const handleSearch = () => {
     console.log('Search filters:', filters);
-    // Implement search logic here
+    fetchCallDetails(1);
   };
+
+  // Fetch dashboard metrics from API
+  const fetchDashboardMetrics = async () => {
+    try {
+      setMetricsLoading(true);
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('Authentication token not found');
+        setMetricsLoading(false);
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(
+        `${apiBaseUrl}/api/cati/dashboard`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // Update performance metrics
+        setPerformanceMetrics({
+          totalCallers: result.data.total_callers || 0,
+          daysTillNow: result.data.days_till_now || 0,
+          numberOfDials: result.data.number_of_dials || 0,
+          totalIvrDuration: result.data.total_ivr_duration || '00:00:00',
+          callerDidNotPick: result.data.caller_did_not_pick || 0,
+          totalTalkDuration: result.data.total_talk_duration || '00:00:00',
+        });
+
+        // Update call outcome metrics
+        setCallOutcomeMetrics({
+          numberDoesNotExist: result.data.number_does_not_exist || 0,
+          respondentDidNotPick: result.data.respondent_did_not_pick || 0,
+          respondentPickedCall: result.data.respondent_picked_call || 0,
+          pickedAndRefused: result.data.picked_and_refused || 0,
+          totalNumberExhausted: result.data.total_number_exhausted || 0,
+          pickedAndCallContinue: result.data.picked_and_call_continue || 0,
+        });
+      } else {
+        throw new Error(result.message || 'Failed to fetch dashboard metrics');
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard metrics:', err);
+    } finally {
+      setMetricsLoading(false);
+    }
+  };
+
+  // Fetch call details from API
+  const fetchCallDetails = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('Authentication token not found');
+        setLoading(false);
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(
+        `${apiBaseUrl}/api/cati/interviews/call-details?page=${page}&limit=${pagination.limit}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setCallDetailData(result.data.data || []);
+        setPagination(result.data.pagination || pagination);
+      } else {
+        throw new Error(result.message || 'Failed to fetch call details');
+      }
+    } catch (err) {
+      console.error('Error fetching call details:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch call details');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    fetchCallDetails(newPage);
+  };
+
+  const handlePlayAudio = (audioUrl: string) => {
+    setCurrentAudio(audioUrl);
+    setShowAudioModal(true);
+    setAudioError(false);
+    setUseIframe(false);
+  };
+
+  const handleCloseAudioModal = () => {
+    setShowAudioModal(false);
+    setCurrentAudio(null);
+    setAudioError(false);
+    setUseIframe(false);
+  };
+
+  const handleAudioError = () => {
+    console.error('Audio playback error, switching to iframe');
+    setAudioError(true);
+    setUseIframe(true);
+  };
+
+  const formatDuration = (seconds: number | null) => {
+    if (seconds === null) return '-';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatDateTime = (dateTime: string | null) => {
+    if (!dateTime) return '-';
+    try {
+      return new Date(dateTime).toLocaleString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return '-';
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardMetrics();
+    fetchCallDetails(1);
+  }, []);
 
   const MetricCard = ({ 
     icon: Icon, 
@@ -336,47 +517,54 @@ const TelecallerDailyCallDetailPage = () => {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Caller Performance (coming soon)
+              Caller Performance
             </Heading>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <MetricCard
-              icon={Users}
-              title="Total Callers"
-              value={performanceMetrics.totalCallers}
-              bgColor="bg-blue-500"
-            />
-            <MetricCard
-              icon={Clock}
-              title="Days till now"
-              value={performanceMetrics.daysTillNow}
-              bgColor="bg-blue-500"
-            />
-            <MetricCard
-              icon={PhoneCall}
-              title="Number of dials"
-              value={performanceMetrics.numberOfDials}
-              bgColor="bg-blue-500"
-            />
-            <MetricCard
-              icon={Clock}
-              title="Total IVR Duration"
-              value={performanceMetrics.totalIvrDuration}
-              bgColor="bg-blue-500"
-            />
-            <MetricCard
-              icon={PhoneOff}
-              title="Caller did not pick"
-              value={performanceMetrics.callerDidNotPick}
-              bgColor="bg-blue-500"
-            />
-            <MetricCard
-              icon={PhoneCall}
-              title="Total Talk Duration"
-              value={performanceMetrics.totalTalkDuration}
-              bgColor="bg-blue-500"
-            />
-          </div>
+          {metricsLoading ? (
+            <div className="text-center py-12">
+              <i className="fa fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MetricCard
+                icon={Users}
+                title="Total Callers"
+                value={performanceMetrics.totalCallers}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={Clock}
+                title="Days till now"
+                value={performanceMetrics.daysTillNow}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Number of dials"
+                value={performanceMetrics.numberOfDials}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={Clock}
+                title="Total IVR Duration"
+                value={performanceMetrics.totalIvrDuration}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Caller did not pick"
+                value={performanceMetrics.callerDidNotPick}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Total Talk Duration"
+                value={performanceMetrics.totalTalkDuration}
+                bgColor="bg-blue-500"
+              />
+            </div>
+          )}
         </Card>
 
         {/* Call Outcome */}
@@ -384,110 +572,272 @@ const TelecallerDailyCallDetailPage = () => {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
             <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Call Outcome (coming soon)
+              Call Outcome
             </Heading>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <MetricCard
-              icon={PhoneOff}
-              title="Number does not exist"
-              value={callOutcomeMetrics.numberDoesNotExist}
-              bgColor="bg-green-500"
-            />
-            <MetricCard
-              icon={PhoneOff}
-              title="Respondent did not pick"
-              value={callOutcomeMetrics.respondentDidNotPick}
-              bgColor="bg-green-500"
-            />
-            <MetricCard
-              icon={PhoneCall}
-              title="Respondent Picked the call"
-              value={callOutcomeMetrics.respondentPickedCall}
-              bgColor="bg-green-500"
-            />
-            <MetricCard
-              icon={PhoneOff}
-              title="Picked and Refused"
-              value={callOutcomeMetrics.pickedAndRefused}
-              bgColor="bg-green-500"
-            />
-            <MetricCard
-              icon={PhoneOff}
-              title="Total Number Exhausted"
-              value={callOutcomeMetrics.totalNumberExhausted}
-              bgColor="bg-green-500"
-            />
-            <MetricCard
-              icon={PhoneCall}
-              title="Picked and Call Continue"
-              value={callOutcomeMetrics.pickedAndCallContinue}
-              bgColor="bg-green-500"
-            />
-          </div>
+          {metricsLoading ? (
+            <div className="text-center py-12">
+              <i className="fa fa-spinner fa-spin text-3xl text-green-600 mb-3"></i>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MetricCard
+                icon={PhoneOff}
+                title="Number does not exist"
+                value={callOutcomeMetrics.numberDoesNotExist}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Respondent did not pick"
+                value={callOutcomeMetrics.respondentDidNotPick}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Respondent Picked the call"
+                value={callOutcomeMetrics.respondentPickedCall}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Picked and Refused"
+                value={callOutcomeMetrics.pickedAndRefused}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Total Number Exhausted"
+                value={callOutcomeMetrics.totalNumberExhausted}
+                bgColor="bg-green-500"
+              />
+              <MetricCard
+                icon={PhoneCall}
+                title="Picked and Call Continue"
+                value={callOutcomeMetrics.pickedAndCallContinue}
+                bgColor="bg-green-500"
+              />
+            </div>
+          )}
         </Card>
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-4">
+          <Alert type="error">
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Error:</strong> {error}
+              </div>
+              <Button
+                size="sm"
+                onClick={() => fetchCallDetails(pagination.page)}
+                className="ml-4"
+              >
+                <i className="fa fa-refresh mr-2"></i>
+                Retry
+              </Button>
+            </div>
+          </Alert>
+        </div>
+      )}
 
       {/* Data Table */}
       <Card className="">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
-              Call Detail (coming soon)
+            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+              Call Detail
             </Heading>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <TableHeader>
-              <TableRow>
-                <TableHead>#</TableHead>
-                <TableHead>Caller Name</TableHead>
-                <TableHead>Caller ID</TableHead>
-                <TableHead>Call Time</TableHead>
-                <TableHead>Call Received</TableHead>
-                <TableHead>Caller Response</TableHead>
-                <TableHead>API Response</TableHead>
-                <TableHead>IVR Duration</TableHead>
-                <TableHead>Talk Duration</TableHead>
-                <TableHead>Audio file</TableHead>
-                <TableHead>Update</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {callDetailData.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <i className="fa fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">Loading call details...</p>
+            </div>
+          ) : callDetailData.length === 0 ? (
+            <div className="text-center py-12">
+              <i className="fa fa-inbox text-6xl text-gray-300 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">No call details found</p>
+            </div>
+          ) : (
+            <Table striped bordered hover>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center text-gray-500">
-                    No results found.
-                  </TableCell>
+                  <TableHead>#</TableHead>
+                  <TableHead>Caller Name</TableHead>
+                  <TableHead>Caller ID</TableHead>
+                  <TableHead>Call Time</TableHead>
+                  <TableHead>Call Received</TableHead>
+                  <TableHead>Caller Response</TableHead>
+                  <TableHead>API Response</TableHead>
+                  <TableHead>IVR Duration</TableHead>
+                  <TableHead>Talk Duration</TableHead>
+                  <TableHead>Audio file</TableHead>
+                  {/* <TableHead>Update</TableHead> */}
                 </TableRow>
-              ) : (
-                callDetailData.map((item) => (
+              </TableHeader>
+              <TableBody>
+                {callDetailData.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.callerName}</TableCell>
-                    <TableCell>{item.callerId}</TableCell>
-                    <TableCell>{item.callTime}</TableCell>
-                    <TableCell>{item.callReceived}</TableCell>
-                    <TableCell>{item.callerResponse}</TableCell>
-                    <TableCell>{item.apiResponse}</TableCell>
-                    <TableCell>{item.ivrDuration}</TableCell>
-                    <TableCell>{item.talkDuration}</TableCell>
-                    <TableCell>{item.audioFile}</TableCell>
+                    <TableCell>{(pagination.page - 1) * pagination.limit + index + 1}</TableCell>
+                    <TableCell>{item.caller_name || '-'}</TableCell>
+                    <TableCell>{item.caller_id || '-'}</TableCell>
+                    <TableCell>{formatDateTime(item.call_time)}</TableCell>
                     <TableCell>
+                      {item.call_received === 1 ? 'Yes' : item.call_received === 0 ? 'No' : '-'}
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>{formatDuration(item.ivr_duration)}</TableCell>
+                    <TableCell>{formatDuration(item.talk_duration)}</TableCell>
+                    <TableCell>
+                      {item.audio ? (
+                        <Button
+                          size="sm"
+                          onClick={() => handlePlayAudio(item.audio!)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <i className="fa fa-play mr-1"></i>
+                          Play
+                        </Button>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    {/* <TableCell>
                       <Button variant="outline" size="sm">
+                        <i className="fa fa-edit mr-1"></i>
                         Update
                       </Button>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
+
+        {/* Pagination */}
+        {!loading && !error && pagination.total > 0 && (
+          <div className="mt-4 px-4 pb-4">
+            <PaginationStandard
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              totalItems={pagination.total}
+              itemsPerPage={pagination.limit}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </Card>
+
+      {/* Audio Modal */}
+      {showAudioModal && currentAudio && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <Heading level={4} className="text-lg sm:text-xl">
+                <i className="fa fa-headphones mr-2 text-blue-600"></i>
+                Audio Player
+              </Heading>
+              <button
+                onClick={handleCloseAudioModal}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {!audioError && !useIframe ? (
+                <div className="space-y-4">
+                  <audio
+                    controls
+                    className="w-full"
+                    autoPlay
+                    preload="metadata"
+                    controlsList="nodownload"
+                    crossOrigin="anonymous"
+                    onError={handleAudioError}
+                  >
+                    <source src={currentAudio} type="audio/mpeg" />
+                    <source src={currentAudio} type="audio/mp3" />
+                    Your browser does not support the audio element.
+                  </audio>
+
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <a
+                      href={currentAudio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                    >
+                      <i className="fa fa-external-link mr-2"></i>
+                      Open in New Tab
+                    </a>
+                    <a
+                      href={currentAudio}
+                      download
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                    >
+                      <i className="fa fa-download mr-2"></i>
+                      Download Audio
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {audioError && (
+                    <Alert type="warning">
+                      <strong>Playback Issue:</strong> The audio couldn't play directly. Trying alternative method...
+                    </Alert>
+                  )}
+
+                  <iframe
+                    src={currentAudio}
+                    className="w-full h-64 border-2 border-gray-300 dark:border-gray-600 rounded"
+                    title="Audio Player"
+                  />
+
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <a
+                      href={currentAudio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                    >
+                      <i className="fa fa-external-link mr-2"></i>
+                      Open in New Tab
+                    </a>
+                    <a
+                      href={currentAudio}
+                      download
+                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                    >
+                      <i className="fa fa-download mr-2"></i>
+                      Download Audio
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Audio URL Info */}
+              <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-xs break-all">
+                <strong>Audio URL:</strong> {currentAudio}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </FluidContainer>
   );
 };

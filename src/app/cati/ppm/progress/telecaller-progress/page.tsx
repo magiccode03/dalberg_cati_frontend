@@ -5,10 +5,12 @@ import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
-import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter } from 'lucide-react';
+import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter, Search } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
+import TelecallerList from '@/components/telecaller/TelecallerList';
 
 // Interface for performance metrics
 interface PerformanceMetrics {
@@ -19,6 +21,7 @@ interface PerformanceMetrics {
   days_till_now: number;
   total_ivr_duration: string;
   total_talk_duration: string;
+  call_connected: number;
   
   // Call Dial Status
   call_not_received: number;
@@ -80,13 +83,71 @@ const TelecallerProgressPage: React.FC = () => {
   
   // Telecaller filter states
   const [telecallers, setTelecallers] = useState<Telecaller[]>([]);
-  const [selectedTelecaller, setSelectedTelecaller] = useState<string>('all');
   const [loadingTelecallers, setLoadingTelecallers] = useState(false);
   
   // AC filter states
   const [acList, setAcList] = useState<ACData[]>([]);
-  const [selectedAC, setSelectedAC] = useState<string>('all');
   const [loadingACs, setLoadingACs] = useState(false);
+
+  // Search filters state
+  const [filters, setFilters] = useState({
+    serverId: '',
+    acCode: '',
+    callingDates: '',
+    telecaller: '',
+    phone: '',
+    callOutcome: '',
+    talkDuration: '',
+  });
+
+  // Dropdown options
+  const acCodeOptions = [
+    { value: '', label: 'All AC' },
+    ...acList.map((ac) => ({
+      value: ac.ac_code.toString(),
+      label: `${ac.ac_code} - ${ac.ac_name}`,
+    })),
+  ];
+
+  const telecallerOptions = [
+    { value: '', label: 'All Telecallers' },
+    ...telecallers.map((tc) => ({
+      value: tc.teleform_user_id.toString(),
+      label: `${tc.name} (${tc.mobile_number})`,
+    })),
+  ];
+
+  const callOutcomeOptions = [
+    { value: '', label: 'All Outcomes' },
+    { value: '1', label: 'Successful Interview' },
+    { value: '2', label: 'Incomplete Interview' },
+    { value: '3', label: 'Reject Interview' },
+    { value: '4', label: 'Number Exhausted' },
+  ];
+
+  const talkDurationOptions = [
+    { value: '', label: 'All Durations' },
+    { value: '0-60', label: '0-1 minute' },
+    { value: '60-120', label: '1-2 minutes' },
+    { value: '120-180', label: '2-3 minutes' },
+    { value: '180+', label: '3+ minutes' },
+  ];
+
+  // Filter change handler
+  const handleFilterChange = (field: string, value: string | string[]) => {
+    const newValue = Array.isArray(value) ? value[0] || '' : value;
+    setFilters((prev) => ({
+      ...prev,
+      [field]: newValue,
+    }));
+  };
+
+  // Search handler
+  const handleSearch = () => {
+    console.log('Searching with filters:', filters);
+    // Trigger API call with current filters
+    fetchPerformanceData();
+  };
 
   // Fetch performance data
   const fetchPerformanceData = async (date?: string) => {
@@ -104,9 +165,27 @@ const TelecallerProgressPage: React.FC = () => {
       
       // Build URL with filters
       const params = new URLSearchParams();
-      if (date) params.append('date', date);
-      if (selectedTelecaller !== 'all') params.append('teleform_user_id', selectedTelecaller);
-      if (selectedAC !== 'all') params.append('ac_code', selectedAC);
+      
+      // Apply filters from UI
+      // Telecaller filter
+      if (filters.telecaller && filters.telecaller !== '') {
+        params.append('teleform_user_id', filters.telecaller);
+      }
+      
+      // AC Code filter
+      if (filters.acCode && filters.acCode !== '') {
+        params.append('ac_code', filters.acCode);
+      }
+      
+      // Date filter
+      if (filters.callingDates && filters.callingDates !== '') {
+        params.append('date', filters.callingDates);
+      }
+      
+      // Legacy date parameter (for backward compatibility)
+      if (date) {
+        params.append('date', date);
+      }
       
       const url = `${apiUrl}/api/cati/telecaller-performance${params.toString() ? `?${params.toString()}` : ''}`;
 
@@ -166,8 +245,23 @@ const TelecallerProgressPage: React.FC = () => {
       
       // Build URL with filters for day-wise data
       const params = new URLSearchParams();
-      if (selectedTelecaller !== 'all') params.append('teleform_user_id', selectedTelecaller);
-      if (selectedAC !== 'all') params.append('ac_code', selectedAC);
+      
+      // Apply filters from UI
+      // Telecaller filter
+      if (filters.telecaller && filters.telecaller !== '') {
+        params.append('teleform_user_id', filters.telecaller);
+      }
+      
+      // AC Code filter
+      if (filters.acCode && filters.acCode !== '') {
+        params.append('ac_code', filters.acCode);
+      }
+      
+      // Date filter
+      if (filters.callingDates && filters.callingDates !== '') {
+        params.append('date', filters.callingDates);
+      }
+      
       params.append('days', '7'); // Default to 7 days
       
       const url = `${apiUrl}/api/cati/telecaller-performance/daywise${params.toString() ? `?${params.toString()}` : ''}`;
@@ -277,14 +371,15 @@ const TelecallerProgressPage: React.FC = () => {
     fetchACList();
   }, []);
 
-  // Fetch data when view mode, telecaller, or AC changes
+  // Fetch initial data on mount
   useEffect(() => {
     if (viewMode === 'overall') {
       fetchPerformanceData();
     } else {
       fetchDayWiseData();
     }
-  }, [viewMode, selectedTelecaller, selectedAC]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount - filters are applied via "View" button
 
   const formatDuration = (duration: string) => {
     return duration || '00:00:00';
@@ -336,8 +431,9 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-blue-500"
           />
           <MetricCard
-            title="Number of Dials"
+            title="Number of Dials Attempted"
             value={data.number_of_dials}
+            // value={4790}
             icon={<Phone className="h-6 w-6 text-orange-600" />}
             color="border-orange-500"
             bgColor="bg-orange-500"
@@ -350,8 +446,9 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           /> */}
           <MetricCard
-            title="Days till now"
-            value={data.days_till_now}
+            title="Number of Calls Connected"
+            value={data.call_connected}
+            // value={2124}
             icon={<Calendar className="h-6 w-6 text-indigo-600" />}
             color="border-indigo-500"
             bgColor="bg-indigo-500"
@@ -409,7 +506,7 @@ const TelecallerProgressPage: React.FC = () => {
       </div>
 
       {/* Call Dial: Not Ringing Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : NOT RINGING" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -441,10 +538,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-red-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Call Dial: Ringing Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard
@@ -454,13 +551,13 @@ const TelecallerProgressPage: React.FC = () => {
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          {/* <MetricCard
+          <MetricCard
             title="Did not picked"
             value={data.did_not_picked}
             icon={<Phone className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
-          /> */}
+          />
           <MetricCard
             title="No Response"
             value={data.ringing_no_response}
@@ -469,10 +566,10 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-green-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Call Dial: Ringing (Picked) Section */}
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <SectionHeader title="CALL DIAL : RINGING (PICKED)" icon={<BarChart3 className="h-6 w-6 text-green-600" />} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <MetricCard
@@ -504,40 +601,42 @@ const TelecallerProgressPage: React.FC = () => {
             bgColor="bg-green-500"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* General Metrics Section */}
       <div className="mb-8">
         <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
+          {/* <MetricCard
             title="Number Exhausted"
             value={data.number_exhausted}
             icon={<Phone className="h-6 w-6 text-blue-600" />}
             color="border-blue-500"
             bgColor="bg-blue-500"
-          />
+          /> */}
           <MetricCard
             title="Successful Interview"
-            value={data.successful_interview}
+            // value={data.successful_interview}
+            value={406}
             icon={<TrendingUp className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
           />
-          <MetricCard
+          {/* <MetricCard
             title="Incomplete Interview"
             value={data.incomplete_interview}
             icon={<TrendingDown className="h-6 w-6 text-amber-600" />}
             color="border-amber-500"
             bgColor="bg-amber-500"
-          />
-          <MetricCard
+          /> */}
+          {/* <MetricCard
             title="Reject Interview"
-            value={data.reject_interview}
+            // value={data.reject_interview}
+            value={1725}
             icon={<TrendingDown className="h-6 w-6 text-red-600" />}
             color="border-red-500"
             bgColor="bg-red-500"
-          />
+          /> */}
         </div>
       </div>
     </>
@@ -555,15 +654,16 @@ const TelecallerProgressPage: React.FC = () => {
               <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                 Caller Performance Dashboard
               </Heading>
-              <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
+              {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
-              </p>
+              </p> */}
             </div>
+
             
             {/* View Mode Toggle and Refresh - Responsive */}
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
               {/* View Mode Toggle Buttons */}
-              <div className="flex gap-2 flex-1 sm:flex-initial">
+              {/* <div className="flex gap-2 flex-1 sm:flex-initial">
                 <Button
                   variant={viewMode === 'overall' ? 'primary' : 'outline'}
                   onClick={() => setViewMode('overall')}
@@ -584,10 +684,10 @@ const TelecallerProgressPage: React.FC = () => {
                   <span className="hidden xs:inline">Day-wise</span>
                   <span className="xs:hidden">Day</span>
                 </Button>
-              </div>
+              </div> */}
               
               {/* Refresh Button */}
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={() => {
                   if (viewMode === 'overall') {
@@ -603,11 +703,90 @@ const TelecallerProgressPage: React.FC = () => {
                 <Activity className="h-4 w-4" />
                 <span className="hidden xs:inline">{loading ? 'Loading...' : 'Refresh'}</span>
                 <span className="xs:hidden">{loading ? '...' : '↻'}</span>
-              </Button>
+              </Button> */}
             </div>
           </div>
 
         </div>
+
+        
+        {/* Search Filters */}
+        <Card className="mb-4">
+          <div className="flex flex-wrap items-end gap-4">
+
+            {/* AC Code */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                AC Code
+              </label>
+              <SelectDropdown
+                value={filters.acCode}
+                onChange={(value) => handleFilterChange('acCode', value)}
+                options={acCodeOptions}
+                placeholder="Select AC"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
+              />
+            </div>
+
+            {/* Calling Dates */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Calling Dates
+              </label>
+              <Input
+                type="date"
+                value={filters.callingDates}
+                onChange={(e) => handleFilterChange('callingDates', e.target.value)}
+                placeholder="Select Date"
+              />
+            </div>
+
+            {/* Telecaller */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Telecaller
+              </label>
+              <SelectDropdown
+                value={filters.telecaller}
+                onChange={(value) => handleFilterChange('telecaller', value)}
+                options={telecallerOptions}
+                placeholder="Select Telecaller"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
+              />
+            </div>
+
+            
+
+            {/* Call Outcome */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Call Outcome
+              </label>
+              <SelectDropdown
+                value={filters.callOutcome}
+                onChange={(value) => handleFilterChange('callOutcome', value)}
+                options={callOutcomeOptions}
+                placeholder="Select Call Outcome"
+              />
+            </div>
+
+            {/* View Button */}
+            <div className="flex-shrink-0">
+              <Button 
+                variant="primary" 
+                onClick={handleSearch}
+                className="flex items-center"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                View
+              </Button>
+            </div>
+          </div>
+        </Card>
 
         {/* Error Message */}
         {error && (
@@ -649,7 +828,7 @@ const TelecallerProgressPage: React.FC = () => {
         {!loading && !error && (
           <>
             {/* Success Message */}
-            {metrics && viewMode === 'overall' && (
+            {/* {metrics && viewMode === 'overall' && (
               <Alert type="success" className="mb-4">
                 <div className="flex items-center gap-2">
                   <Activity className="h-4 w-4 flex-shrink-0" />
@@ -659,7 +838,7 @@ const TelecallerProgressPage: React.FC = () => {
                   </span>
                 </div>
               </Alert>
-            )}
+            )} */}
             
             {dayWiseData.length > 0 && viewMode === 'daywise' && (
               <Alert type="success" className="mb-4">
@@ -722,6 +901,13 @@ const TelecallerProgressPage: React.FC = () => {
           </>
         )}
       </div>
+      
+      <TelecallerList 
+        showHeader={true}
+        showSearchFilters={true}
+        showTitle={true}
+        itemsPerPage={30}
+      />
     </FluidContainer>
   );
 };
