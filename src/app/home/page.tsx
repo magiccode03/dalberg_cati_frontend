@@ -219,7 +219,7 @@ export default function HomePage() {
                         className="flex-1 h-14 bg-[#a8d5a1] hover:bg-[#98c591] dark:bg-[#6b9b63] dark:hover:bg-[#5b8b53] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
                       >
                         <FileText className="h-5 w-5 text-gray-800 dark:text-white" />
-                        <span className="text-base font-bold text-gray-800 dark:text-white">CAPI</span>
+                        <span className="text-base font-bold text-gray-800 dark:text-white">F2F</span>
                       </button>
 
                       {/* CATI Button */}
@@ -281,7 +281,7 @@ export default function HomePage() {
               className="flex-1 h-14 bg-[#a8d5a1] hover:bg-[#98c591] dark:bg-[#6b9b63] dark:hover:bg-[#5b8b53] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
             >
               <FileText className="h-5 w-5 text-gray-800 dark:text-white" />
-              <span className="text-base font-bold text-gray-800 dark:text-white">CAPI</span>
+              <span className="text-base font-bold text-gray-800 dark:text-white">F2F</span>
             </button>
 
             {/* CATI Button */}

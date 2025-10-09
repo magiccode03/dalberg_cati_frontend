@@ -210,3 +210,6 @@ config/development.json
 !LICENSE
 
 /ref_page
+
+# Excel files folder
+xl_files/

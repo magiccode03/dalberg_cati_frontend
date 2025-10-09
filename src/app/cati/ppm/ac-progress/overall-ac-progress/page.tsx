@@ -2,18 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
-import { Download } from 'lucide-react';
+import { Download, Search } from 'lucide-react';
 import { apiService, CATIACData } from '@/lib/api';
 
 export default function CATIACWiseDataPage() {
   const [acData, setAcData] = useState<CATIACData[]>([]);
+  const [filteredData, setFilteredData] = useState<CATIACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [acNameFilter, setAcNameFilter] = useState('');
 
   useEffect(() => {
     fetchCATIData();
@@ -28,6 +31,7 @@ export default function CATIACWiseDataPage() {
       
       if (response.success && response.data) {
         setAcData(response.data);
+        setFilteredData(response.data);
       } else {
         setError('Failed to fetch CATI AC data');
       }
@@ -39,12 +43,60 @@ export default function CATIACWiseDataPage() {
     }
   };
 
+  const handleSearch = () => {
+    if (!acNameFilter.trim()) {
+      setFilteredData(acData);
+      return;
+    }
+
+    const filtered = acData.filter(item =>
+      item.ac_name.toLowerCase().includes(acNameFilter.toLowerCase())
+    );
+    setFilteredData(filtered);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAcNameFilter(e.target.value);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <Heading level={4} className="mb-6">
        AC-Wise Report
       </Heading>
+
+      {/* Search Filter */}
+      <Card className="p-4 md:p-6 mb-6">
+        <div className="grid grid-cols-12 gap-3 md:gap-4">
+          <div className="col-span-4">
+            <Input
+              type="text"
+              placeholder="Search by AC Name"
+              value={acNameFilter}
+              onChange={handleInputChange}
+              onKeyPress={handleKeyPress}
+              className="w-full"
+            />
+          </div>
+          <div className="col-span-2">
+            <Button 
+              type="button" 
+              onClick={handleSearch}
+              disabled={loading}
+              className="w-full"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Search
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       {/* CATI AC Data Table */}
       <Card className="">
@@ -76,14 +128,14 @@ export default function CATIACWiseDataPage() {
                 </tr>
               </thead>
               <tbody>
-                {acData.length === 0 ? (
+                {filteredData.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-8 text-gray-500 border border-gray-300">
-                      No CATI AC data found
+                      {acNameFilter ? 'No AC data found matching your search' : 'No CATI AC data found'}
                     </td>
                   </tr>
                 ) : (
-                  acData.map((item, index) => (
+                  filteredData.map((item, index) => (
                     <tr key={item.ac_code}>
                       <td className="border border-gray-300">{index + 1}</td>
                       <td className="border border-gray-300">{item.ac_name}</td>

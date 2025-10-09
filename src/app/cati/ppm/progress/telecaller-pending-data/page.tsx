@@ -89,14 +89,14 @@ const TelecallerPendingDataPage = () => {
               <CheckCircle className="w-4 h-4 mr-2" />
               Redistribute QC Pending Data
             </Button>
-            <Button 
+            {/* <Button 
               variant="secondary" 
               onClick={handleRedistributeReQC}
               className="flex items-center bg-yellow-500 hover:bg-yellow-600 text-white"
             >
               <AlertTriangle className="w-4 h-4 mr-2" />
               Redistribute Re-QC Pending Data
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -165,7 +165,7 @@ const TelecallerPendingDataPage = () => {
             </Table>
 
             {/* Re-QC Pending Data Section */}
-            <div className="mt-8">
+            {/* <div className="mt-8">
               <Text className="text-lg font-bold text-gray-900 mb-4">
                 Re-QC Pending Data
               </Text>
@@ -190,7 +190,7 @@ const TelecallerPendingDataPage = () => {
                   ))}
                 </tbody>
               </Table>
-            </div>
+            </div> */}
           </div>
         </div>
       </Card>
