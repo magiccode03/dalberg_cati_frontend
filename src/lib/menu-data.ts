@@ -1081,14 +1081,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
-      {
-        id: 'cati-ppm-interview-audio',
-        label: 'Interview Audio',
-        href: '/cati/ppm/progress/interview-audio',
-        icon: 'Mic',
-        roles: ['ppm'],
-        system: 'cati',
-      },
+      // {
+      //   id: 'cati-ppm-interview-audio',
+      //   label: 'Interview Audio',
+      //   href: '/cati/ppm/progress/interview-audio',
+      //   icon: 'Mic',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
       // {
       //   id: 'cati-ppm-completed-numbers',
       //   label: 'Completed Numbers',

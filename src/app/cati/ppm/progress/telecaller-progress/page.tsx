@@ -7,7 +7,7 @@ import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
-import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter, Search, Download } from 'lucide-react';
+import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter, Search, Download, RefreshCw } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import TelecallerList from '@/components/telecaller/TelecallerList';
@@ -124,6 +124,7 @@ const TelecallerProgressPage: React.FC = () => {
     serverId: '',
     acCode: '',
     callingDates: '',
+    customDate: '',
     telecaller: '',
     phone: '',
     callOutcome: '',
@@ -142,29 +143,39 @@ const TelecallerProgressPage: React.FC = () => {
   const [telecallerDataError, setTelecallerDataError] = useState<string | null>(null);
   const [downloadingCSV, setDownloadingCSV] = useState(false);
 
+  // Table sorting state
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof TelecallerWiseData | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
+
   // Dropdown options
   const acCodeOptions = [
-    { value: '', label: 'All AC' },
-    ...acList.map((ac) => ({
-      value: ac.ac_code.toString(),
-      label: `${ac.ac_code} - ${ac.ac_name}`,
-    })),
+    { value: '', label: 'All ACs' },
+    ...acList
+      .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
+      .map((ac) => ({
+        value: ac.ac_code.toString(),
+        label: `${ac.ac_name} - (${ac.ac_code})`,
+      })),
   ];
 
   const telecallerOptions = [
     { value: '', label: 'All Telecallers' },
-    ...telecallers.map((tc) => ({
-      value: tc.teleform_user_id.toString(),
-      label: `${tc.name} (${tc.mobile_number})`,
-    })),
+    ...telecallers
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((tc) => ({
+        value: tc.teleform_user_id.toString(),
+        label: `${tc.name} (${tc.mobile_number})`,
+      })),
   ];
 
   const callOutcomeOptions = [
     { value: '', label: 'All Outcomes' },
-    { value: '1', label: 'Successful Interview' },
     { value: '2', label: 'Incomplete Interview' },
-    { value: '3', label: 'Reject Interview' },
     { value: '4', label: 'Number Exhausted' },
+    { value: '3', label: 'Reject Interview' },
+    { value: '1', label: 'Successful Interview' },
   ];
 
   const talkDurationOptions = [
@@ -173,6 +184,18 @@ const TelecallerProgressPage: React.FC = () => {
     { value: '60-120', label: '1-2 minutes' },
     { value: '120-180', label: '2-3 minutes' },
     { value: '180+', label: '3+ minutes' },
+  ];
+
+  const callingDatesOptions = [
+    { value: '', label: 'All' },
+    { value: 'today', label: 'Today' },
+    { value: 'yesterday', label: 'Yesterday' },
+    { value: 'dby', label: 'Day Before Yesterday' },
+    { value: 'l3', label: 'Last 3 Days' },
+    { value: 'l7', label: 'Last 7 Days' },
+    { value: 'l15', label: 'Last 15 Days' },
+    { value: 'currentmonth', label: 'Current Month' },
+    { value: 'custom', label: 'Custom Date' },
   ];
 
   // Filter change handler
@@ -189,7 +212,7 @@ const TelecallerProgressPage: React.FC = () => {
     console.log('Searching with filters:', filters);
     // Trigger API calls with current filters
     fetchPerformanceData();
-    fetchTelecallerWiseData(1); // Reset to page 1 when filtering
+    fetchTelecallerWiseData(); // Fetch all data when filtering
   };
 
   // Fetch performance data
@@ -222,7 +245,11 @@ const TelecallerProgressPage: React.FC = () => {
       
       // Date filter
       if (filters.callingDates && filters.callingDates !== '') {
-        params.append('date', filters.callingDates);
+        if (filters.callingDates === 'custom' && filters.customDate) {
+          params.append('date', filters.customDate);
+        } else if (filters.callingDates !== 'custom') {
+          params.append('date', filters.callingDates);
+        }
       }
       
       // Legacy date parameter (for backward compatibility)
@@ -302,7 +329,11 @@ const TelecallerProgressPage: React.FC = () => {
       
       // Date filter
       if (filters.callingDates && filters.callingDates !== '') {
-        params.append('date', filters.callingDates);
+        if (filters.callingDates === 'custom' && filters.customDate) {
+          params.append('date', filters.customDate);
+        } else if (filters.callingDates !== 'custom') {
+          params.append('date', filters.callingDates);
+        }
       }
       
       params.append('days', '7'); // Default to 7 days
@@ -408,8 +439,8 @@ const TelecallerProgressPage: React.FC = () => {
     }
   };
 
-  // Fetch telecaller-wise data
-  const fetchTelecallerWiseData = async (page: number = 1) => {
+  // Fetch telecaller-wise data - fetch all pages to get complete data
+  const fetchTelecallerWiseData = async () => {
     setTelecallerDataLoading(true);
     setTelecallerDataError(null);
 
@@ -422,48 +453,67 @@ const TelecallerProgressPage: React.FC = () => {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
-      // Build query parameters
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: telecallerDataPagination.limit.toString(),
-      });
-      
-      // Add filters (only if they have values)
-      if (filters.acCode && filters.acCode !== '') {
-        params.append('ac_code', filters.acCode);
-      }
-      
-      if (filters.telecaller && filters.telecaller !== '') {
-        params.append('teleform_user_id', filters.telecaller);
-      }
-      
-      if (filters.callingDates && filters.callingDates !== '') {
-        // If single date, use it for both from and to
-        params.append('date_from', filters.callingDates);
-        params.append('date_to', filters.callingDates);
-      }
-      
-      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+      // Fetch all data by making multiple API calls
+      let allData: TelecallerWiseData[] = [];
+      let currentPage = 1;
+      let hasMoreData = true;
+      const limit = 100; // API maximum limit
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
+      while (hasMoreData) {
+        // Build query parameters for current page
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: limit.toString(),
+        });
+        
+        // Add filters (only if they have values)
+        if (filters.acCode && filters.acCode !== '') {
+          params.append('ac_code', filters.acCode);
+        }
+        
+        if (filters.telecaller && filters.telecaller !== '') {
+          params.append('teleform_user_id', filters.telecaller);
+        }
+        
+        if (filters.callingDates && filters.callingDates !== '') {
+          if (filters.callingDates === 'custom' && filters.customDate) {
+            params.append('date_from', filters.customDate);
+            params.append('date_to', filters.customDate);
+          } else if (filters.callingDates !== 'custom') {
+            params.append('date_from', filters.callingDates);
+            params.append('date_to', filters.callingDates);
+          }
+        }
+        
+        const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const pageData = result.data.data || [];
+          allData = [...allData, ...pageData];
+          
+          // Check if there are more pages
+          const pagination = result.data.pagination;
+          hasMoreData = pagination && currentPage < pagination.totalPages;
+          currentPage++;
+        } else {
+          throw new Error(result.message || 'Failed to fetch telecaller-wise data');
+        }
       }
 
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        setTelecallerWiseData(result.data.data || []);
-        setTelecallerDataPagination(result.data.pagination || telecallerDataPagination);
-      } else {
-        throw new Error(result.message || 'Failed to fetch telecaller-wise data');
-      }
+      setTelecallerWiseData(allData);
     } catch (err) {
       console.error('Error fetching telecaller-wise data:', err);
       setTelecallerDataError(err instanceof Error ? err.message : 'Failed to fetch telecaller-wise data');
@@ -472,9 +522,39 @@ const TelecallerProgressPage: React.FC = () => {
     }
   };
 
-  // Handle page change for telecaller data
+  // Handle page change for telecaller data (no longer needed since pagination is removed)
   const handleTelecallerDataPageChange = (newPage: number) => {
-    fetchTelecallerWiseData(newPage);
+    fetchTelecallerWiseData();
+  };
+
+  // Handle table sorting
+  const handleSort = (key: keyof TelecallerWiseData) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Get sorted data
+  const getSortedData = () => {
+    if (!sortConfig.key) return telecallerWiseData;
+
+    return [...telecallerWiseData].sort((a, b) => {
+      const aValue = a[sortConfig.key!];
+      const bValue = b[sortConfig.key!];
+
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
   };
 
   // Download telecaller data as CSV (limit 200 records with current filters)
@@ -490,10 +570,10 @@ const TelecallerProgressPage: React.FC = () => {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
-      // Build query parameters with limit 200 and current filters
+      // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
-        limit: '200', // Download up to 200 records
+        limit: '100', // API maximum limit
       });
       
       // Add filters (only if they have values)
@@ -506,8 +586,13 @@ const TelecallerProgressPage: React.FC = () => {
       }
       
       if (filters.callingDates && filters.callingDates !== '') {
-        params.append('date_from', filters.callingDates);
-        params.append('date_to', filters.callingDates);
+        if (filters.callingDates === 'custom' && filters.customDate) {
+          params.append('date_from', filters.customDate);
+          params.append('date_to', filters.customDate);
+        } else if (filters.callingDates !== 'custom') {
+          params.append('date_from', filters.callingDates);
+          params.append('date_to', filters.callingDates);
+        }
       }
       
       const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
@@ -613,7 +698,7 @@ const TelecallerProgressPage: React.FC = () => {
       fetchDayWiseData();
     }
     // Fetch telecaller-wise data
-    fetchTelecallerWiseData(1);
+    fetchTelecallerWiseData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount - filters are applied via "View" button
 
@@ -972,13 +1057,31 @@ const TelecallerProgressPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Calling Dates
               </label>
-              <Input
-                type="date"
+              <SelectDropdown
                 value={filters.callingDates}
-                onChange={(e) => handleFilterChange('callingDates', e.target.value)}
-                placeholder="Select Date"
+                onChange={(value) => handleFilterChange('callingDates', value)}
+                options={callingDatesOptions}
+                placeholder="Select Date Range"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
               />
             </div>
+
+            {/* Custom Date Input - Only show when "Custom Date" is selected */}
+            {filters.callingDates === 'custom' && (
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Custom Date
+                </label>
+                <Input
+                  type="date"
+                  value={filters.customDate}
+                  onChange={(e) => handleFilterChange('customDate', e.target.value)}
+                  placeholder="Select Custom Date"
+                />
+              </div>
+            )}
 
             {/* Telecaller */}
             <div className="flex-1 min-w-[200px]">
@@ -1008,6 +1111,9 @@ const TelecallerProgressPage: React.FC = () => {
                 onChange={(value) => handleFilterChange('callOutcome', value)}
                 options={callOutcomeOptions}
                 placeholder="Select Call Outcome"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
               />
             </div>
 
@@ -1144,9 +1250,14 @@ const TelecallerProgressPage: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
-              Telecaller Wise Data
-            </Heading>
+            <div>
+              <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+                Telecaller Wise Data
+              </Heading>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Total {telecallerWiseData.length} items.
+              </div>
+            </div>
           </div>
           
           {/* Download Button */}
@@ -1160,9 +1271,9 @@ const TelecallerProgressPage: React.FC = () => {
           >
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">
-              {downloadingCSV ? 'Downloading...' : 'Download CSV'}
+              {downloadingCSV ? 'Downloading...' : 'Download'}
             </span>
-            <span className="sm:hidden">CSV</span>
+            {/* <span className="sm:hidden">CSV</span> */}
           </Button>
         </div>
 
@@ -1176,7 +1287,7 @@ const TelecallerProgressPage: React.FC = () => {
                 </div>
                 <Button
                   size="sm"
-                  onClick={() => fetchTelecallerWiseData(telecallerDataPagination.page)}
+                  onClick={() => fetchTelecallerWiseData()}
                   className="ml-4"
                 >
                   Retry
@@ -1186,7 +1297,7 @@ const TelecallerProgressPage: React.FC = () => {
           </div>
         )}
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
           {telecallerDataLoading ? (
             <div className="text-center py-12">
               <LoadingSpinner size="lg" />
@@ -1200,30 +1311,184 @@ const TelecallerProgressPage: React.FC = () => {
             </div>
           ) : (
             <Table striped bordered hover>
-              <TableHeader>
+              <TableHeader className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
                 <TableRow>
-                  <TableHead className="whitespace-nowrap">#</TableHead>
-                  <TableHead className="whitespace-nowrap">Caller Name</TableHead>
-                  <TableHead className="whitespace-nowrap">Number of Dials</TableHead>
-                  <TableHead className="whitespace-nowrap">IVR Duration</TableHead>
-                  <TableHead className="whitespace-nowrap">Talk Duration</TableHead>
-                  <TableHead className="whitespace-nowrap">Caller Did Not Pick</TableHead>
-                  <TableHead className="whitespace-nowrap">Number Does Not Exist</TableHead>
-                  <TableHead className="whitespace-nowrap">Respondent Picked Call</TableHead>
-                  <TableHead className="whitespace-nowrap">Picked and Refused</TableHead>
-                  <TableHead className="whitespace-nowrap">Number Exhausted</TableHead>
-                  <TableHead className="whitespace-nowrap">Successful Interviews</TableHead>
-                  <TableHead className="whitespace-nowrap">Rejected Interviews</TableHead>
-                  <TableHead className="whitespace-nowrap">Incomplete Interviews</TableHead>
-                  <TableHead className="whitespace-nowrap">Number: Picked The Call</TableHead>
-                  <TableHead className="whitespace-nowrap">Number: Does Not Working</TableHead>
+                  <TableHead className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300">#</TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('caller_name')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Caller Name</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('number_of_dials')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Number of Dials</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'number_of_dials' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'number_of_dials' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('ivr_duration')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>IVR Duration</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('talk_duration')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Talk Duration</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('caller_did_not_pick')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Caller Did Not Pick</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'caller_did_not_pick' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'caller_did_not_pick' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('number_does_not_exist')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Number Does Not Exist</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'number_does_not_exist' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'number_does_not_exist' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('respondent_picked_call')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Respondent Picked Call</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'respondent_picked_call' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'respondent_picked_call' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('picked_and_refused')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Picked and Refused</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'picked_and_refused' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'picked_and_refused' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('number_exhausted')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Number Exhausted</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'number_exhausted' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'number_exhausted' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('successful_interviews')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Successful Interviews</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'successful_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'successful_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('rejected_interviews')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Rejected Interviews</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'rejected_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'rejected_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('incomplete_interviews')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Incomplete Interviews</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'incomplete_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'incomplete_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('number_picked_the_call')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Number: Picked The Call</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'number_picked_the_call' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'number_picked_the_call' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('number_does_not_working')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Number: Does Not Working</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'number_does_not_working' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'number_does_not_working' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {telecallerWiseData.map((item, index) => (
+                {getSortedData().map((item, index) => (
                   <TableRow key={item.telecaller_id}>
                     <TableCell>
-                      {(telecallerDataPagination.page - 1) * telecallerDataPagination.limit + index + 1}
+                      {index + 1}
                     </TableCell>
                     <TableCell className="font-medium text-gray-900 dark:text-white">
                       {item.caller_name || '-'}
@@ -1274,18 +1539,6 @@ const TelecallerProgressPage: React.FC = () => {
           )}
         </div>
 
-        {/* Pagination */}
-        {!telecallerDataLoading && !telecallerDataError && telecallerDataPagination.total > 0 && (
-          <div className="mt-4 px-4 pb-4">
-            <PaginationStandard
-              currentPage={telecallerDataPagination.page}
-              totalPages={telecallerDataPagination.totalPages}
-              totalItems={telecallerDataPagination.total}
-              itemsPerPage={telecallerDataPagination.limit}
-              onPageChange={handleTelecallerDataPageChange}
-            />
-          </div>
-        )}
       </Card>
     </FluidContainer>
   );

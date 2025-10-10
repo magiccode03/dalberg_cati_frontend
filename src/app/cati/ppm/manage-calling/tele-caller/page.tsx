@@ -264,9 +264,9 @@ const TeleUserInfoPage: React.FC = () => {
             <Heading level={1} className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
               Tele Caller
             </Heading>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Manage telecallers and their assignments
-            </p>
+            </p> */}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {/* Additional header content if needed */}
