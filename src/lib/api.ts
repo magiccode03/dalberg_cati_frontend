@@ -2318,6 +2318,78 @@ class ApiService {
     return this.request<ACListResponse>(API_ENDPOINTS.PERFORMANCE_REPORT_AC_LIST);
   }
 
+  async getPSDetails(params: {
+    ac_code?: string;
+    pc_code?: string;
+    report_days: string;
+    custom_date?: string;
+    custom_date_end?: string;
+    ps_covered: string;
+  }): Promise<ApiResponse<{
+    title: string;
+    ps_covered_type: string;
+    total_ps_covered: number;
+    ps_list: Array<{
+      sr_no: number;
+      ps_code: string;
+      no_of_interviewers_worked: number;
+      completed_interviews: number;
+      valid_interviews: number;
+      interviews_under_qc: number;
+      rejected_interviews: number;
+      interviewers: Array<{
+        interviewer_id: string;
+        full_interviews: number;
+      }>;
+    }>;
+    applied_filters: {
+      ps_covered: string;
+      report_days: string;
+      ac_code?: number;
+      pc_code?: string;
+      agency_id: number | null;
+      is_ppm_user: boolean;
+    };
+  }>> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+    
+    const queryString = queryParams.toString();
+    const endpoint = `/ps-covered?${queryString}`;
+    
+    return this.request<{
+      title: string;
+      ps_covered_type: string;
+      total_ps_covered: number;
+      ps_list: Array<{
+        sr_no: number;
+        ps_code: string;
+        no_of_interviewers_worked: number;
+        completed_interviews: number;
+        valid_interviews: number;
+        interviews_under_qc: number;
+        rejected_interviews: number;
+        interviewers: Array<{
+          interviewer_id: string;
+          full_interviews: number;
+        }>;
+      }>;
+      applied_filters: {
+        ps_covered: string;
+        report_days: string;
+        ac_code?: number;
+        pc_code?: string;
+        agency_id: number | null;
+        is_ppm_user: boolean;
+      };
+    }>(endpoint);
+  }
+
   // Utility Methods
   isAuthenticated(): boolean {
     return !!this.token;
