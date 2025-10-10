@@ -103,11 +103,6 @@ export default function ProgressReportPage() {
 
   const handleSearch = () => {
     // Validate required fields
-    if (['polingstation', 'interviewer'].includes(searchForm.level) && !searchForm.acCode.trim()) {
-      setError('AC Code is required for Polling Station and Interviewer levels');
-      return;
-    }
-    
     if (searchForm.reportDays === 'custom' && (!searchForm.customDate || !searchForm.customDateEnd)) {
       setError('Start Date and End Date are required for custom period');
       return;
@@ -631,7 +626,6 @@ export default function ProgressReportPage() {
             <div>
               <Text className="text-sm font-medium mb-2">
                 AC Code
-                <span className="text-red-500 ml-1">*</span>
               </Text>
               <SelectDropdown
                 options={acList?.map(ac => ({
