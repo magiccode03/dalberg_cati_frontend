@@ -631,7 +631,7 @@ const ProjectSettingPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={4} className="mb-6">
+      <Heading level={2} className=" text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Project Settings
       </Heading>
 

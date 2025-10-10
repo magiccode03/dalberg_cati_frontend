@@ -274,7 +274,7 @@ export default function SendToQcPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
             Send to QC
           </Heading>
         </div>
@@ -359,7 +359,7 @@ export default function SendToQcPage() {
             <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Cron ID</th>
                   <th>Action/Route</th>
                   <th>Planned At</th>
@@ -388,7 +388,7 @@ export default function SendToQcPage() {
                     </td>
                     <td className="text-center">
                       <Button
-                        variant="outline"
+                        variant="primary"
                         size="sm"
                         onClick={() => handleViewRequest(request.cronId)}
                         className="mr-2"
@@ -398,7 +398,7 @@ export default function SendToQcPage() {
                     </td>
                     <td className="text-center">
                       <Button
-                        variant="outline"
+                        variant="primary"
                         size="sm"
                         onClick={() => handleDownloadFile(request.cronId)}
                         title="Download Uploaded File"
