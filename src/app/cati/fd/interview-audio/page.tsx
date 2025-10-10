@@ -132,8 +132,8 @@ export default function CATIInterviewAudioPage() {
           const dateOptionsData = [
             { value: '', label: 'Interview Date' },
             ...uniqueDates.map(date => ({
-              value: date,
-              label: new Date(date).toLocaleDateString()
+              value: date as string,
+              label: new Date(date as string).toLocaleDateString()
             }))
           ];
           setInterviewDateOptions(dateOptionsData);
