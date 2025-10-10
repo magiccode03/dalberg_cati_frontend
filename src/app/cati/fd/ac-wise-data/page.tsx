@@ -88,7 +88,7 @@ export default function CATIACWiseDataPage() {
                     <tr key={item.ac_code}>
                       <td className="border border-gray-300">{item.ac_code}</td>
                       <td className="border border-gray-300">{item.ac_name}</td>
-                      <td className="border border-gray-300">-</td>
+                      <td className="border border-gray-300">{item.district_name}</td>
                       <td className="border border-gray-300">{item.call_attempt}</td>
                       <td className="border border-gray-300">{item.call_connected}</td>
                       <td className="border border-gray-300">{item.success}</td>

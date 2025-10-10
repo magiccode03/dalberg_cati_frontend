@@ -532,6 +532,7 @@ export interface GainLossZoneData {
 export interface CATIACData {
   ac_code: number;
   ac_name: string;
+  district_name: string;
   call_attempt: number;
   call_connected: number;
   success: number;
