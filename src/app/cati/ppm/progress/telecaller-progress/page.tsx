@@ -7,10 +7,13 @@ import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
-import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter, Search } from 'lucide-react';
+import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, Filter, Search, Download } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import TelecallerList from '@/components/telecaller/TelecallerList';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
+import Text from '@/components/ui/Text';
 
 // Interface for performance metrics
 interface PerformanceMetrics {
@@ -73,6 +76,33 @@ interface ACData {
   district_name: string;
 }
 
+// Telecaller Wise Data interface
+interface TelecallerWiseData {
+  telecaller_id: number;
+  caller_name: string;
+  number_of_dials: number;
+  ivr_duration: string;
+  talk_duration: string;
+  caller_did_not_pick: number;
+  number_does_not_exist: number;
+  respondent_picked_call: number;
+  picked_and_refused: number;
+  number_exhausted: number;
+  successful_interviews: number;
+  rejected_interviews: number;
+  incomplete_interviews: number;
+  number_picked_the_call: number;
+  number_does_not_working: number;
+}
+
+// Pagination interface for telecaller data
+interface TelecallerDataPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 const TelecallerProgressPage: React.FC = () => {
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
   const [dayWiseData, setDayWiseData] = useState<DayWisePerformance[]>([]);
@@ -99,6 +129,18 @@ const TelecallerProgressPage: React.FC = () => {
     callOutcome: '',
     talkDuration: '',
   });
+
+  // Telecaller-wise data states
+  const [telecallerWiseData, setTelecallerWiseData] = useState<TelecallerWiseData[]>([]);
+  const [telecallerDataPagination, setTelecallerDataPagination] = useState<TelecallerDataPagination>({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  });
+  const [telecallerDataLoading, setTelecallerDataLoading] = useState(false);
+  const [telecallerDataError, setTelecallerDataError] = useState<string | null>(null);
+  const [downloadingCSV, setDownloadingCSV] = useState(false);
 
   // Dropdown options
   const acCodeOptions = [
@@ -145,8 +187,9 @@ const TelecallerProgressPage: React.FC = () => {
   // Search handler
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
-    // Trigger API call with current filters
+    // Trigger API calls with current filters
     fetchPerformanceData();
+    fetchTelecallerWiseData(1); // Reset to page 1 when filtering
   };
 
   // Fetch performance data
@@ -365,6 +408,197 @@ const TelecallerProgressPage: React.FC = () => {
     }
   };
 
+  // Fetch telecaller-wise data
+  const fetchTelecallerWiseData = async (page: number = 1) => {
+    setTelecallerDataLoading(true);
+    setTelecallerDataError(null);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setTelecallerDataError('Authentication token not found');
+        return;
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: telecallerDataPagination.limit.toString(),
+      });
+      
+      // Add filters (only if they have values)
+      if (filters.acCode && filters.acCode !== '') {
+        params.append('ac_code', filters.acCode);
+      }
+      
+      if (filters.telecaller && filters.telecaller !== '') {
+        params.append('teleform_user_id', filters.telecaller);
+      }
+      
+      if (filters.callingDates && filters.callingDates !== '') {
+        // If single date, use it for both from and to
+        params.append('date_from', filters.callingDates);
+        params.append('date_to', filters.callingDates);
+      }
+      
+      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setTelecallerWiseData(result.data.data || []);
+        setTelecallerDataPagination(result.data.pagination || telecallerDataPagination);
+      } else {
+        throw new Error(result.message || 'Failed to fetch telecaller-wise data');
+      }
+    } catch (err) {
+      console.error('Error fetching telecaller-wise data:', err);
+      setTelecallerDataError(err instanceof Error ? err.message : 'Failed to fetch telecaller-wise data');
+    } finally {
+      setTelecallerDataLoading(false);
+    }
+  };
+
+  // Handle page change for telecaller data
+  const handleTelecallerDataPageChange = (newPage: number) => {
+    fetchTelecallerWiseData(newPage);
+  };
+
+  // Download telecaller data as CSV (limit 200 records with current filters)
+  const handleDownloadTelecallerCSV = async () => {
+    setDownloadingCSV(true);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Authentication token not found');
+        return;
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      
+      // Build query parameters with limit 200 and current filters
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '200', // Download up to 200 records
+      });
+      
+      // Add filters (only if they have values)
+      if (filters.acCode && filters.acCode !== '') {
+        params.append('ac_code', filters.acCode);
+      }
+      
+      if (filters.telecaller && filters.telecaller !== '') {
+        params.append('teleform_user_id', filters.telecaller);
+      }
+      
+      if (filters.callingDates && filters.callingDates !== '') {
+        params.append('date_from', filters.callingDates);
+        params.append('date_to', filters.callingDates);
+      }
+      
+      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data && result.data.data) {
+        const data = result.data.data;
+        
+        // Convert to CSV
+        const headers = [
+          'Sr. No.',
+          'Caller Name',
+          'Number of Dials',
+          'IVR Duration',
+          'Talk Duration',
+          'Caller Did Not Pick',
+          'Number Does Not Exist',
+          'Respondent Picked Call',
+          'Picked and Refused',
+          'Number Exhausted',
+          'Successful Interviews',
+          'Rejected Interviews',
+          'Incomplete Interviews',
+          'Number: Picked The Call',
+          'Number: Does Not Working',
+        ];
+
+        const csvRows = [
+          headers.join(','),
+          ...data.map((item: TelecallerWiseData, index: number) => [
+            index + 1,
+            `"${item.caller_name || '-'}"`,
+            item.number_of_dials || 0,
+            `"${item.ivr_duration || '00:00:00'}"`,
+            `"${item.talk_duration || '00:00:00'}"`,
+            item.caller_did_not_pick || 0,
+            item.number_does_not_exist || 0,
+            item.respondent_picked_call || 0,
+            item.picked_and_refused || 0,
+            item.number_exhausted || 0,
+            item.successful_interviews || 0,
+            item.rejected_interviews || 0,
+            item.incomplete_interviews || 0,
+            item.number_picked_the_call || 0,
+            item.number_does_not_working || 0,
+          ].join(','))
+        ];
+
+        const csvContent = csvRows.join('\n');
+
+        // Generate filename with current date
+        const today = new Date().toISOString().split('T')[0];
+        const filename = `Telecaller_Wise_Data_${today}.csv`;
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const csvUrl = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', csvUrl);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(csvUrl);
+
+        console.log(`Downloaded ${data.length} records to ${filename}`);
+      } else {
+        throw new Error(result.message || 'Failed to fetch data for download');
+      }
+    } catch (err) {
+      console.error('Error downloading CSV:', err);
+      alert(err instanceof Error ? err.message : 'Failed to download CSV');
+    } finally {
+      setDownloadingCSV(false);
+    }
+  };
+
   // Fetch telecallers and ACs on mount
   useEffect(() => {
     fetchTelecallers();
@@ -378,6 +612,8 @@ const TelecallerProgressPage: React.FC = () => {
     } else {
       fetchDayWiseData();
     }
+    // Fetch telecaller-wise data
+    fetchTelecallerWiseData(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount - filters are applied via "View" button
 
@@ -903,12 +1139,154 @@ const TelecallerProgressPage: React.FC = () => {
         )}
       </div>
       
-      <TelecallerList 
-        showHeader={true}
-        showSearchFilters={true}
-        showTitle={true}
-        itemsPerPage={30}
-      />
+      {/* Telecaller Wise Data Table */}
+      <Card className="mt-6">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+              Telecaller Wise Data
+            </Heading>
+          </div>
+          
+          {/* Download Button */}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleDownloadTelecallerCSV}
+            disabled={downloadingCSV || telecallerDataLoading}
+            loading={downloadingCSV}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">
+              {downloadingCSV ? 'Downloading...' : 'Download CSV'}
+            </span>
+            <span className="sm:hidden">CSV</span>
+          </Button>
+        </div>
+
+        {/* Error Alert */}
+        {telecallerDataError && (
+          <div className="mb-4">
+            <Alert type="error">
+              <div className="flex items-center justify-between">
+                <div>
+                  <strong>Error:</strong> {telecallerDataError}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => fetchTelecallerWiseData(telecallerDataPagination.page)}
+                  className="ml-4"
+                >
+                  Retry
+                </Button>
+              </div>
+            </Alert>
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          {telecallerDataLoading ? (
+            <div className="text-center py-12">
+              <LoadingSpinner size="lg" />
+              <p className="text-gray-600 dark:text-gray-400 mt-4">Loading telecaller data...</p>
+            </div>
+          ) : telecallerWiseData.length === 0 ? (
+            <div className="text-center py-12">
+              <Phone className="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">No telecaller data found</p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Try adjusting your filters</p>
+            </div>
+          ) : (
+            <Table striped bordered hover>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="whitespace-nowrap">#</TableHead>
+                  <TableHead className="whitespace-nowrap">Caller Name</TableHead>
+                  <TableHead className="whitespace-nowrap">Number of Dials</TableHead>
+                  <TableHead className="whitespace-nowrap">IVR Duration</TableHead>
+                  <TableHead className="whitespace-nowrap">Talk Duration</TableHead>
+                  <TableHead className="whitespace-nowrap">Caller Did Not Pick</TableHead>
+                  <TableHead className="whitespace-nowrap">Number Does Not Exist</TableHead>
+                  <TableHead className="whitespace-nowrap">Respondent Picked Call</TableHead>
+                  <TableHead className="whitespace-nowrap">Picked and Refused</TableHead>
+                  <TableHead className="whitespace-nowrap">Number Exhausted</TableHead>
+                  <TableHead className="whitespace-nowrap">Successful Interviews</TableHead>
+                  <TableHead className="whitespace-nowrap">Rejected Interviews</TableHead>
+                  <TableHead className="whitespace-nowrap">Incomplete Interviews</TableHead>
+                  <TableHead className="whitespace-nowrap">Number: Picked The Call</TableHead>
+                  <TableHead className="whitespace-nowrap">Number: Does Not Working</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {telecallerWiseData.map((item, index) => (
+                  <TableRow key={item.telecaller_id}>
+                    <TableCell>
+                      {(telecallerDataPagination.page - 1) * telecallerDataPagination.limit + index + 1}
+                    </TableCell>
+                    <TableCell className="font-medium text-gray-900 dark:text-white">
+                      {item.caller_name || '-'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.number_of_dials?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.ivr_duration || '00:00:00'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {item.talk_duration || '00:00:00'}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.caller_did_not_pick?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.number_does_not_exist?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.respondent_picked_call?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.picked_and_refused?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.number_exhausted?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right text-green-600 dark:text-green-400 font-semibold">
+                      {item.successful_interviews?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right text-red-600 dark:text-red-400 font-semibold">
+                      {item.rejected_interviews?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right text-amber-600 dark:text-amber-400 font-semibold">
+                      {item.incomplete_interviews?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.number_picked_the_call?.toLocaleString() || 0}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {item.number_does_not_working?.toLocaleString() || 0}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {!telecallerDataLoading && !telecallerDataError && telecallerDataPagination.total > 0 && (
+          <div className="mt-4 px-4 pb-4">
+            <PaginationStandard
+              currentPage={telecallerDataPagination.page}
+              totalPages={telecallerDataPagination.totalPages}
+              totalItems={telecallerDataPagination.total}
+              itemsPerPage={telecallerDataPagination.limit}
+              onPageChange={handleTelecallerDataPageChange}
+            />
+          </div>
+        )}
+      </Card>
     </FluidContainer>
   );
 };
