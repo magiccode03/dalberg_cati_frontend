@@ -124,7 +124,8 @@ const TelecallerProgressPage: React.FC = () => {
     serverId: '',
     acCode: '',
     callingDates: '',
-    customDate: '',
+    customDateFrom: '',
+    customDateTo: '',
     telecaller: '',
     phone: '',
     callOutcome: '',
@@ -155,9 +156,9 @@ const TelecallerProgressPage: React.FC = () => {
     ...acList
       .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
       .map((ac) => ({
-        value: ac.ac_code.toString(),
+      value: ac.ac_code.toString(),
         label: `${ac.ac_name} - (${ac.ac_code})`,
-      })),
+    })),
   ];
 
   const telecallerOptions = [
@@ -165,9 +166,9 @@ const TelecallerProgressPage: React.FC = () => {
     ...telecallers
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((tc) => ({
-        value: tc.teleform_user_id.toString(),
-        label: `${tc.name} (${tc.mobile_number})`,
-      })),
+      value: tc.teleform_user_id.toString(),
+      label: `${tc.name} (${tc.mobile_number})`,
+    })),
   ];
 
   const callOutcomeOptions = [
@@ -195,8 +196,132 @@ const TelecallerProgressPage: React.FC = () => {
     { value: 'l7', label: 'Last 7 Days' },
     { value: 'l15', label: 'Last 15 Days' },
     { value: 'currentmonth', label: 'Current Month' },
-    { value: 'custom', label: 'Custom Date' },
+    { value: 'custom', label: 'Custom Date Range' },
   ];
+
+  // Helper function to convert date range to actual dates for performance API
+  const getDateRangeForPerformanceAPI = (dateValue: string, customDateFrom?: string, customDateTo?: string) => {
+    if (dateValue === 'custom' && customDateFrom && customDateTo) {
+      return {
+        start_date: customDateFrom,
+        end_date: customDateTo
+      };
+    } else if (dateValue && dateValue !== 'custom') {
+      // Convert predefined ranges to actual date strings
+      const today = new Date();
+      let startDate: string;
+      let endDate: string;
+
+      switch (dateValue) {
+        case 'today':
+          startDate = endDate = today.toISOString().split('T')[0];
+          break;
+        case 'yesterday':
+          const yesterday = new Date(today);
+          yesterday.setDate(today.getDate() - 1);
+          startDate = endDate = yesterday.toISOString().split('T')[0];
+          break;
+        case 'dby': // Day Before Yesterday
+          const dby = new Date(today);
+          dby.setDate(today.getDate() - 2);
+          startDate = endDate = dby.toISOString().split('T')[0];
+          break;
+        case 'l3': // Last 3 Days
+          const l3Start = new Date(today);
+          l3Start.setDate(today.getDate() - 2);
+          startDate = l3Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l7': // Last 7 Days
+          const l7Start = new Date(today);
+          l7Start.setDate(today.getDate() - 6);
+          startDate = l7Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l15': // Last 15 Days
+          const l15Start = new Date(today);
+          l15Start.setDate(today.getDate() - 14);
+          startDate = l15Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'currentmonth':
+          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          startDate = firstDayOfMonth.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        default:
+          return {};
+      }
+
+      return {
+        start_date: startDate,
+        end_date: endDate
+      };
+    }
+    return {};
+  };
+
+  // Helper function to convert date range to actual dates for other APIs (telecaller-wise)
+  const getDateRangeForOtherAPI = (dateValue: string, customDateFrom?: string, customDateTo?: string) => {
+    if (dateValue === 'custom' && customDateFrom && customDateTo) {
+      return {
+        date_from: customDateFrom,
+        date_to: customDateTo
+      };
+    } else if (dateValue && dateValue !== 'custom') {
+      // Convert predefined ranges to actual date strings
+      const today = new Date();
+      let startDate: string;
+      let endDate: string;
+
+      switch (dateValue) {
+        case 'today':
+          startDate = endDate = today.toISOString().split('T')[0];
+          break;
+        case 'yesterday':
+          const yesterday = new Date(today);
+          yesterday.setDate(today.getDate() - 1);
+          startDate = endDate = yesterday.toISOString().split('T')[0];
+          break;
+        case 'dby': // Day Before Yesterday
+          const dby = new Date(today);
+          dby.setDate(today.getDate() - 2);
+          startDate = endDate = dby.toISOString().split('T')[0];
+          break;
+        case 'l3': // Last 3 Days
+          const l3Start = new Date(today);
+          l3Start.setDate(today.getDate() - 2);
+          startDate = l3Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l7': // Last 7 Days
+          const l7Start = new Date(today);
+          l7Start.setDate(today.getDate() - 6);
+          startDate = l7Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l15': // Last 15 Days
+          const l15Start = new Date(today);
+          l15Start.setDate(today.getDate() - 14);
+          startDate = l15Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'currentmonth':
+          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          startDate = firstDayOfMonth.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        default:
+          return {};
+      }
+
+      return {
+        date_from: startDate,
+        date_to: endDate
+      };
+    }
+    return {};
+  };
 
   // Filter change handler
   const handleFilterChange = (field: string, value: string | string[]) => {
@@ -211,7 +336,11 @@ const TelecallerProgressPage: React.FC = () => {
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
     // Trigger API calls with current filters
+    if (viewMode === 'overall') {
     fetchPerformanceData();
+    } else {
+      fetchDayWiseData();
+    }
     fetchTelecallerWiseData(); // Fetch all data when filtering
   };
 
@@ -243,14 +372,11 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('ac_code', filters.acCode);
       }
       
-      // Date filter
-      if (filters.callingDates && filters.callingDates !== '') {
-        if (filters.callingDates === 'custom' && filters.customDate) {
-          params.append('date', filters.customDate);
-        } else if (filters.callingDates !== 'custom') {
-          params.append('date', filters.callingDates);
-        }
-      }
+      // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
+      const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       
       // Legacy date parameter (for backward compatibility)
       if (date) {
@@ -258,6 +384,10 @@ const TelecallerProgressPage: React.FC = () => {
       }
       
       const url = `${apiUrl}/api/cati/telecaller-performance${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      // Debug log for API calls
+      console.log('Performance API URL:', url);
+      console.log('Date range:', dateRange);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -327,18 +457,19 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('ac_code', filters.acCode);
       }
       
-      // Date filter
-      if (filters.callingDates && filters.callingDates !== '') {
-        if (filters.callingDates === 'custom' && filters.customDate) {
-          params.append('date', filters.customDate);
-        } else if (filters.callingDates !== 'custom') {
-          params.append('date', filters.callingDates);
-        }
-      }
+      // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
+      const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       
       params.append('days', '7'); // Default to 7 days
       
       const url = `${apiUrl}/api/cati/telecaller-performance/daywise${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      // Debug log for day-wise API calls
+      console.log('Day-wise API URL:', url);
+      console.log('Date range:', dateRange);
       
       const response = await fetch(url, {
         method: 'GET',
@@ -475,17 +606,17 @@ const TelecallerProgressPage: React.FC = () => {
           params.append('teleform_user_id', filters.telecaller);
         }
         
-        if (filters.callingDates && filters.callingDates !== '') {
-          if (filters.callingDates === 'custom' && filters.customDate) {
-            params.append('date_from', filters.customDate);
-            params.append('date_to', filters.customDate);
-          } else if (filters.callingDates !== 'custom') {
-            params.append('date_from', filters.callingDates);
-            params.append('date_to', filters.callingDates);
-          }
-        }
+        // Date filter - handle custom dates and predefined ranges (telecaller-wise API uses date_from/date_to)
+        const dateRange = getDateRangeForOtherAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+        Object.entries(dateRange).forEach(([key, value]) => {
+          if (value) params.append(key, value);
+        });
         
         const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+
+        // Debug log for telecaller-wise API calls
+        console.log('Telecaller-wise API URL:', url);
+        console.log('Date range:', dateRange);
 
         const response = await fetch(url, {
           headers: {
@@ -585,15 +716,11 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('teleform_user_id', filters.telecaller);
       }
       
-      if (filters.callingDates && filters.callingDates !== '') {
-        if (filters.callingDates === 'custom' && filters.customDate) {
-          params.append('date_from', filters.customDate);
-          params.append('date_to', filters.customDate);
-        } else if (filters.callingDates !== 'custom') {
-          params.append('date_from', filters.callingDates);
-          params.append('date_to', filters.callingDates);
-        }
-      }
+      // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
+      const dateRange = getDateRangeForOtherAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       
       const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
 
@@ -1062,25 +1189,39 @@ const TelecallerProgressPage: React.FC = () => {
                 onChange={(value) => handleFilterChange('callingDates', value)}
                 options={callingDatesOptions}
                 placeholder="Select Date Range"
-                searchable={true}
+                searchable={false}
                 clearable={true}
                 maxHeight={300}
               />
             </div>
 
-            {/* Custom Date Input - Only show when "Custom Date" is selected */}
+            {/* Custom Date Range Inputs - Only show when "Custom Date Range" is selected */}
             {filters.callingDates === 'custom' && (
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Custom Date
-                </label>
-                <Input
-                  type="date"
-                  value={filters.customDate}
-                  onChange={(e) => handleFilterChange('customDate', e.target.value)}
-                  placeholder="Select Custom Date"
-                />
-              </div>
+              <>
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    From Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.customDateFrom}
+                    onChange={(e) => handleFilterChange('customDateFrom', e.target.value)}
+                    placeholder="Select From Date"
+                  />
+                </div>
+                
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    To Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.customDateTo}
+                    onChange={(e) => handleFilterChange('customDateTo', e.target.value)}
+                    placeholder="Select To Date"
+                  />
+                </div>
+              </>
             )}
 
             {/* Telecaller */}
@@ -1117,16 +1258,39 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            {/* View Button */}
-            <div className="flex-shrink-0">
+            {/* View and Clear Buttons */}
+            <div className="flex-shrink-0 flex gap-2">
               <Button 
                 variant="primary" 
                 onClick={handleSearch}
                 className="flex items-center"
               >
                 <Search className="w-4 h-4 mr-2" />
-                View
+                Search
               </Button>
+              
+              {/* Clear Filters Button */}
+              {/* <Button 
+                variant="outline" 
+                onClick={() => {
+                  setFilters({
+                    serverId: '',
+                    acCode: '',
+                    callingDates: '',
+                    customDateFrom: '',
+                    customDateTo: '',
+                    telecaller: '',
+                    phone: '',
+                    callOutcome: '',
+                    talkDuration: '',
+                  });
+                }}
+                className="flex items-center"
+                title="Clear all filters"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Clear
+              </Button> */}
             </div>
           </div>
         </Card>
