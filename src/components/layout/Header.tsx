@@ -16,13 +16,27 @@ export default function Header() {
   const notifications: any[] = []; // Empty notifications array for now
   const { getAgencies } = useGetAgencies();
 
-  // Function to get dynamic title based on current path
+  // Function to get dynamic title based on current path and user system
   const getDynamicTitle = () => {
+    // On home page, always show base title without system suffix
+    if (pathname === '/home') {
+      return 'West Bengal Opinion Poll 2025';
+    }
+    
+    // Check if user has a system preference set
+    if (user?.system === 'capi') {
+      return 'West Bengal Opinion Poll 2025 (F2F)';
+    } else if (user?.system === 'cati') {
+      return 'West Bengal Opinion Poll 2025 (CATI)';
+    }
+    
+    // Fallback to pathname-based detection
     if (pathname.startsWith('/cati/fd')) {
       return 'West Bengal Opinion Poll 2025 (CATI)';
     } else if (pathname.startsWith('/capi/fd')) {
       return 'West Bengal Opinion Poll 2025 (F2F)';
     }
+    
     return 'West Bengal Opinion Poll 2025';
   };
 
