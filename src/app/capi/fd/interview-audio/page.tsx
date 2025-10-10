@@ -12,6 +12,7 @@ import { Search, Play, Download } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface InterviewData {
+  id: string;
   server_token: string;
   ac_code: number;
   ac_name: string;
@@ -21,27 +22,9 @@ interface InterviewData {
 
 interface APIResponse {
   success: boolean;
-  data: {
-    success: boolean;
-    data: InterviewData[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      total_pages: number;
-    };
-    filters: {
-      ac_codes: Array<{
-        ac_code: number;
-        ac_name: string;
-      }>;
-      interview_dates: string[];
-    };
-    message: string;
-    timestamp: string;
-  };
-  message: string;
-  timestamp: string;
+  data: any; // More flexible to handle different response structures
+  message?: string;
+  timestamp?: string;
 }
 
 export default function CAPIInterviewAudioPage() {
@@ -83,34 +66,57 @@ export default function CAPIInterviewAudioPage() {
       
       const response = await apiService.getInterviewAudio(params) as APIResponse;
       console.log('API Response:', response);
+      console.log('Response success:', response.success);
+      console.log('Response data:', response.data);
 
-      if (response.success && response.data.success) {
-        console.log('Setting interview data:', response.data.data);
-        setInterviewData(response.data.data);
-        setTotalItems(response.data.pagination.total);
-        setTotalPages(response.data.pagination.total_pages);
+      // Handle different response structures
+      if (response.success) {
+        // Check if data is directly in response.data or nested
+        const responseData = response.data;
         
-        // Set filter options from API
-        const acOptionsData = [
-          { value: '', label: 'Select AC' },
-          ...response.data.filters.ac_codes.map(ac => ({
-            value: ac.ac_code.toString(),
-            label: `${ac.ac_name} (${ac.ac_code})`
-          }))
-        ];
-        setAcOptions(acOptionsData);
-        
-        const dateOptionsData = [
-          { value: '', label: 'Interview Date' },
-          ...response.data.filters.interview_dates.map(date => ({
-            value: date.split('T')[0],
-            label: date.split('T')[0]
-          }))
-        ];
-        setInterviewDateOptions(dateOptionsData);
+        if (responseData && (responseData.data || Array.isArray(responseData))) {
+          // Handle nested structure (response.data.data)
+          const interviewData = responseData.data || responseData;
+          const pagination = responseData.pagination;
+          const filters = responseData.filters;
+          
+          console.log('Setting interview data:', interviewData);
+          setInterviewData(interviewData);
+          
+          if (pagination) {
+            setTotalItems(pagination.total);
+            setTotalPages(pagination.total_pages);
+          }
+          
+          // Set filter options if available
+          if (filters && filters.ac_codes) {
+            const acOptionsData = [
+              { value: '', label: 'Select AC' },
+              ...filters.ac_codes.map((ac: any) => ({
+                value: ac.ac_code.toString(),
+                label: `${ac.ac_name} (${ac.ac_code})`
+              }))
+            ];
+            setAcOptions(acOptionsData);
+          }
+          
+          if (filters && filters.interview_dates) {
+            const dateOptionsData = [
+              { value: '', label: 'Interview Date' },
+              ...filters.interview_dates.map((date: string) => ({
+                value: date.split('T')[0],
+                label: date.split('T')[0]
+              }))
+            ];
+            setInterviewDateOptions(dateOptionsData);
+          }
+        } else {
+          console.error('Unexpected response data structure:', responseData);
+          setError('Unexpected response format from server');
+        }
       } else {
         console.error('API response not successful:', response);
-        setError('Failed to fetch interview audio data');
+        setError(`Failed to fetch interview audio data: ${response.message || 'Unknown error'}`);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -261,9 +267,9 @@ export default function CAPIInterviewAudioPage() {
                   </tr>
                 ) : (
                   interviewData.map((row, index) => (
-                    <tr key={row.server_token} data-key={row.server_token}>
+                    <tr key={row.id} data-key={row.id}>
                       <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td>{row.server_token}</td>
+                      <td>{row.id}</td>
                       <td className="text-center">{row.ac_code}</td>
                       <td>{row.ac_name}</td>
                       <td>{row.interview_date.split('T')[0]}</td>
