@@ -16,7 +16,7 @@ interface PerformanceMetrics {
   total_callers: number;
   number_of_dials: number;
   caller_did_not_pick: number;
-  days_till_now: number;
+  call_connected: number;
   total_ivr_duration: string;
   total_talk_duration: string;
   
@@ -337,8 +337,8 @@ const TelecallerProgressPage: React.FC = () => {
           />
           <MetricCard
             title="Number of Dials Attempted"
-            // value={data.number_of_dials}
-            value={4790}
+            value={data.number_of_dials}
+            // value={4790}
             icon={<Phone className="h-6 w-6 text-orange-600" />}
             color="border-orange-500"
             bgColor="bg-orange-500"
@@ -352,8 +352,8 @@ const TelecallerProgressPage: React.FC = () => {
           /> */}
           <MetricCard
             title="Number of Calls Connected"
-            // value={data.days_till_now}
-            value={2124}
+            value={data.call_connected}
+            // value={2124}
             icon={<Calendar className="h-6 w-6 text-indigo-600" />}
             color="border-indigo-500"
             bgColor="bg-indigo-500"
@@ -402,7 +402,8 @@ const TelecallerProgressPage: React.FC = () => {
           />
           <MetricCard
             title="No Response"
-            value={data.no_response}
+            // value={data.no_response}
+            value={0}
             icon={<Phone className="h-6 w-6 text-teal-600" />}
             color="border-teal-500"
             bgColor="bg-teal-500"
@@ -521,8 +522,7 @@ const TelecallerProgressPage: React.FC = () => {
           /> */}
           <MetricCard
             title="Successful Interview"
-            // value={data.successful_interview}
-            value={406}
+            value={data.successful_interview}
             icon={<TrendingUp className="h-6 w-6 text-green-600" />}
             color="border-green-500"
             bgColor="bg-green-500"
@@ -706,7 +706,7 @@ const TelecallerProgressPage: React.FC = () => {
                         </span>
                       </h3>
                       <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                        Day {dayData.metrics.days_till_now}
+                        Day {dayData.metrics.call_connected}
                       </span>
                     </div>
                     {renderMetrics(dayData.metrics)}
