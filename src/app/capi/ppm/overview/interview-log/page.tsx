@@ -210,16 +210,16 @@ const InterviewLogPage = () => {
 
   const acOptions = [
     { value: '', label: 'Select AC' },
-    { value: '1', label: 'Valmiki Nagar (1)' },
-    { value: '2', label: 'Ramnagar (SC) (2)' },
-    { value: '3', label: 'Narkatiaganj (3)' },
     { value: '4', label: 'Bagaha (4)' },
-    { value: '5', label: 'Lauriya (5)' },
-    { value: '6', label: 'Nautan (6)' },
-    { value: '7', label: 'Chanpatia (7)' },
     { value: '8', label: 'Bettiah (8)' },
-    { value: '9', label: 'Sikta (9)' },
+    { value: '7', label: 'Chanpatia (7)' },
+    { value: '5', label: 'Lauriya (5)' },
+    { value: '3', label: 'Narkatiaganj (3)' },
+    { value: '6', label: 'Nautan (6)' },
+    { value: '2', label: 'Ramnagar (SC) (2)' },
     { value: '10', label: 'Raxaul (10)' },
+    { value: '9', label: 'Sikta (9)' },
+    { value: '1', label: 'Valmiki Nagar (1)' },
   ];
 
   // Sample data fallback for when API fails
@@ -402,7 +402,7 @@ const InterviewLogPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={4} className="mb-6">
+      <Heading level={2} className=" text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Interview Log
       </Heading>
 
@@ -451,7 +451,8 @@ const InterviewLogPage = () => {
                   ]}
                   value={filters.interview_date}
                   onChange={(value) => handleFilterChange('interview_date', value)}
-                  placeholder="Select Interview Date"
+                  placeholder="Search or select date"
+                  searchable={true}
                 />
               </div>
 
@@ -462,7 +463,8 @@ const InterviewLogPage = () => {
                   options={acOptions}
                   value={filters.ac_code}
                   onChange={(value) => handleFilterChange('ac_code', value)}
-                  placeholder="Select AC"
+                  placeholder="Search or select AC"
+                  searchable={true}
                 />
               </div>
 
@@ -473,7 +475,8 @@ const InterviewLogPage = () => {
                   options={[{ value: '', label: 'Select Poling Station' }]}
                   value={filters.ps_code}
                   onChange={(value) => handleFilterChange('ps_code', value)}
-                  placeholder="Select Poling Station"
+                  placeholder="Search or select polling station"
+                  searchable={true}
                 />
               </div>
 
@@ -491,7 +494,8 @@ const InterviewLogPage = () => {
                   ]}
                   value={filters.user_id}
                   onChange={(value) => handleFilterChange('user_id', value)}
-                  placeholder="Select Enumerator ID"
+                  placeholder="Search or select enumerator ID"
+                  searchable={true}
                 />
               </div>
 
@@ -509,7 +513,8 @@ const InterviewLogPage = () => {
                   ]}
                   value={filters.interviewer_id}
                   onChange={(value) => handleFilterChange('interviewer_id', value)}
-                  placeholder="Select Interviewer ID"
+                  placeholder="Search or select interviewer ID"
+                  searchable={true}
                 />
               </div>
 

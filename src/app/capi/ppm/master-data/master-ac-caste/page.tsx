@@ -157,7 +157,7 @@ export default function MasterACCastePage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
             List of AC Wise Caste
           </Heading>
         </div>
@@ -252,7 +252,7 @@ export default function MasterACCastePage() {
             <Table className="table table-striped table-bordered">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Ac Code</th>
                   <th>Caste Name</th>
                   <th>Absoulte Caste</th>

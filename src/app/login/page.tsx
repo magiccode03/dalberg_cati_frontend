@@ -194,7 +194,7 @@ export default function LoginPage() {
               </label>
               <button
                 type="button"
-                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                className="text-sm hidden text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Forgot password?
               </button>

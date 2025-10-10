@@ -79,7 +79,7 @@ const AssignedInterviewerContent = () => {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
-      <Heading level={3} className="mb-6 text-gray-800">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Assigned Interviewers
       </Heading>
 

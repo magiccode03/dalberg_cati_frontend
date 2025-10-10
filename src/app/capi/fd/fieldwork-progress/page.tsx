@@ -138,12 +138,12 @@ export default function FieldworkProgressPage() {
         </div>
         
         <div className="card-body">
-          <div className="table-responsive">
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
             <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th>Details</th>
-                  <th>Measure</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Details</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Measure</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,22 +174,22 @@ export default function FieldworkProgressPage() {
         </div>
         
         <div className="card-body">
-          <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <b>{acProgressData.length}</b> items.
-              </Text>
-            </div>
-            
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{acProgressData.length}</b> items.
+            </Text>
+          </div>
+          
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
             <Table className="table table-bordered table-striped table-hover">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-center">AC Code</th>
-                  <th>AC Name</th>
-                  <th>District Name</th>
-                  <th className="text-center">Valid+Under QC</th>
-                  <th className="text-center">Reject</th>
-                  <th className="text-center">% of Completion</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">District Name</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Valid+Under QC</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Reject</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">% of Completion</th>
                 </tr>
               </thead>
               <tbody>
