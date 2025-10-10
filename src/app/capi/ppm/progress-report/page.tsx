@@ -13,6 +13,7 @@ import { Table } from '@/components/ui/Table';
 import { Search, Download } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
+import PSDetailsModal from '@/components/modals/PSDetailsModal';
 
 export default function ProgressReportPage() {
   const [searchForm, setSearchForm] = useState({
@@ -29,6 +30,8 @@ export default function ProgressReportPage() {
   const [error, setError] = useState<string | null>(null);
   const [acList, setAcList] = useState<ACListItem[]>([]);
   const [acListLoading, setAcListLoading] = useState(false);
+  const [psModalOpen, setPsModalOpen] = useState(false);
+  const [selectedAcCode, setSelectedAcCode] = useState<string>('');
 
   // Load AC list and fetch progress report data on component mount
   useEffect(() => {
@@ -118,6 +121,11 @@ export default function ProgressReportPage() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handlePSClick = (code: string) => {
+    setSelectedAcCode(code);
+    setPsModalOpen(true);
   };
 
   const handleDownload = () => {
@@ -743,13 +751,24 @@ export default function ProgressReportPage() {
                       const value = getDataValue(item, header.key, index);
                       const isHighlighted = typeof value === 'number' && shouldHighlightRed(value, header.key);
                       const isPS = header.key === 'ps_covered' && value !== '-';
+                      const isClickablePS = isPS && searchForm.typeOfReport === 'performance' && ['ac', 'pc'].includes(searchForm.level);
+                      
+                      // Get the appropriate code based on level
+                      const codeToPass = searchForm.level === 'ac' ? item.ac_code : item.pc_code;
                       
                       return (
                         <td 
                           key={header.key}
-                          className={`border border-gray-300 ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isPS ? 'text-blue-600' : ''}`}
+                          className={`border border-gray-300 ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isPS ? 'text-blue-600' : ''} ${isClickablePS ? 'cursor-pointer hover:bg-blue-50' : ''}`}
+                          onClick={isClickablePS ? () => handlePSClick(codeToPass || 'all') : undefined}
                         >
-                          {value}
+                          {isClickablePS ? (
+                            <span className="underline hover:no-underline">
+                              {value}
+                            </span>
+                          ) : (
+                            value
+                          )}
                         </td>
                       );
                     })}
@@ -761,6 +780,18 @@ export default function ProgressReportPage() {
         </div>
 
       </Card>
+
+      {/* PS Details Modal */}
+      <PSDetailsModal
+        isOpen={psModalOpen}
+        onClose={() => setPsModalOpen(false)}
+        acCode={searchForm.level === 'ac' ? selectedAcCode : undefined}
+        pcCode={searchForm.level === 'pc' ? selectedAcCode : undefined}
+        reportDays={searchForm.reportDays}
+        customDate={searchForm.customDate}
+        customDateEnd={searchForm.customDateEnd}
+        level={searchForm.level as 'ac' | 'pc'}
+      />
     </Container>
   );
 }
