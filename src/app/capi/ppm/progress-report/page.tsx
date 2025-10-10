@@ -10,7 +10,6 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
@@ -25,8 +24,6 @@ export default function ProgressReportPage() {
     customDateEnd: ''
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
   const [progressData, setProgressData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +65,6 @@ export default function ProgressReportPage() {
     setLoading(true);
     setError(null);
     setProgressData([]); // Clear previous data immediately
-    setCurrentPage(1); // Reset to first page
     
     // Add a small delay to ensure data is cleared
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -162,10 +158,6 @@ export default function ProgressReportPage() {
     document.body.removeChild(link);
   };
 
-  const totalPages = Math.ceil(progressData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = progressData.slice(startIndex, endIndex);
 
   // Helper function to get table headers based on type and level
   const getTableHeaders = () => {
@@ -373,7 +365,7 @@ export default function ProgressReportPage() {
   const getDataValue = (item: any, key: string, itemIndex?: number) => {
     switch (key) {
       case 'sr':
-        return startIndex + (itemIndex || 0) + 1; // Calculate correct serial number based on pagination
+        return (itemIndex || 0) + 1; // Calculate correct serial number
       
         // Common fields across all levels
         case 'ac_code':
@@ -745,7 +737,7 @@ export default function ProgressReportPage() {
                   </td>
                 </tr>
               ) : (
-                currentData.map((item, index) => (
+                progressData.map((item, index) => (
                   <tr key={`${item.ac_code || item.pc_code || item.interviewer_id || item.polling_station_no || item.polling_station_name || index}-${index}`}>
                     {getTableHeaders().map((header) => {
                       const value = getDataValue(item, header.key, index);
@@ -757,7 +749,7 @@ export default function ProgressReportPage() {
                           key={header.key}
                           className={`border border-gray-300 ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isPS ? 'text-blue-600' : ''}`}
                         >
-                          {header.key === 'sr' ? startIndex + index + 1 : value}
+                          {value}
                         </td>
                       );
                     })}
@@ -768,18 +760,6 @@ export default function ProgressReportPage() {
           </Table>
         </div>
 
-        {progressData.length > 0 && (
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={progressData.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="justify-center"
-          />
-        </div>
-        )}
       </Card>
     </Container>
   );
