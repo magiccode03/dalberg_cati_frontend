@@ -57,8 +57,6 @@ export default function RejectionReportPage() {
   const apiParams = React.useMemo(() => {
     const params: any = {
       report_days: filters.reportDays,
-      custom_date: filters.customDate,
-      custom_date_end: filters.customDateEnd,
       report_level: filters.reportLevel,
       interviewer_id: filters.interviewerId,
       enumerator_id: filters.enumeratorId,
@@ -73,6 +71,16 @@ export default function RejectionReportPage() {
       per_page: pageSize
     };
 
+    // Only include custom_date and custom_date_end if report_days is 'custom' and they have values
+    if (filters.reportDays === 'custom') {
+      if (filters.customDate && filters.customDate.trim() !== '') {
+        params.custom_date = filters.customDate;
+      }
+      if (filters.customDateEnd && filters.customDateEnd.trim() !== '') {
+        params.custom_date_end = filters.customDateEnd;
+      }
+    }
+
     // Only include ac_code if it has a value
     if (filters.acCode && filters.acCode.trim() !== '') {
       params.ac_code = filters.acCode;
@@ -83,6 +91,14 @@ export default function RejectionReportPage() {
   
   // Check if we should make the API call based on required parameters for each level
   const shouldMakeApiCall = React.useMemo(() => {
+    // For custom date range: both custom_date and custom_date_end are required
+    if (filters.reportDays === 'custom') {
+      if (!filters.customDate || filters.customDate.trim() === '' || 
+          !filters.customDateEnd || filters.customDateEnd.trim() === '') {
+        return false;
+      }
+    }
+    
     // For AC level: ac_code is required
     if ((filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (!filters.acCode || filters.acCode.trim() === '')) {
       return false;
@@ -99,7 +115,7 @@ export default function RejectionReportPage() {
     }
     
     return true;
-  }, [filters.reportLevel, filters.acCode, filters.interviewerId]);
+  }, [filters.reportDays, filters.customDate, filters.customDateEnd, filters.reportLevel, filters.acCode, filters.interviewerId]);
 
   // Fetch rejection report data from API
   const { data, loading, error, refetch } = useRejectionReport(shouldMakeApiCall ? apiParams : null);
@@ -135,7 +151,20 @@ export default function RejectionReportPage() {
 
   // Transform filter options data to dropdown options format
   const reportDaysOptions = React.useMemo(() => {
-    if (!filterOptionsData?.report_days) return [];
+    if (!filterOptionsData?.report_days) {
+      // Fallback options if API data is not available
+      return [
+        { value: 'all', label: 'All' },
+        { value: 'today', label: 'Today' },
+        { value: 'yesterday', label: 'Yesterday' },
+        { value: 'dby', label: 'Day Before Yesterday' },
+        { value: 'l3', label: 'Last 3 Days' },
+        { value: 'l7', label: 'Last 7 Days' },
+        { value: 'l15', label: 'Last 15 Days' },
+        { value: 'currentmonth', label: 'Current Month' },
+        { value: 'custom', label: 'Custom Date' }
+      ];
+    }
     return Object.entries(filterOptionsData.report_days).map(([value, label]) => ({
       value,
       label
@@ -325,10 +354,11 @@ export default function RejectionReportPage() {
             <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
-                value={filters.failReason}
-                onChange={(value) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
+                clearable={true}
               />
             </div>
 
@@ -488,10 +518,11 @@ export default function RejectionReportPage() {
             <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
-                value={filters.failReason}
-                onChange={(value) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
+                clearable={true}
               />
             </div>
 
