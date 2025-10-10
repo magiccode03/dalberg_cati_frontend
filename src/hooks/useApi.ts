@@ -303,7 +303,25 @@ export function useTeamRegistration(page: number = 1, limit: number = 20) {
 
 // Rejection Report Hooks
 export function useRejectionReport(params?: any) {
-  return useApi(() => apiService.getRejectionReport(params), [
+  return useApi(() => {
+    if (!params) {
+      // Return a promise that resolves with empty data when params is null
+      return Promise.resolve({
+        success: true,
+        data: { 
+          interviews: [], 
+          pagination: { current_page: 1, per_page: 25, total_count: 0, total_pages: 0 },
+          filters_applied: {},
+          sorting: {},
+          level_filter: {},
+          message: 'No data to fetch'
+        },
+        message: 'No data to fetch',
+        timestamp: new Date().toISOString()
+      } as any);
+    }
+    return apiService.getRejectionReport(params);
+  }, [
     params?.report_days,
     params?.custom_date,
     params?.custom_date_end,
@@ -317,6 +335,7 @@ export function useRejectionReport(params?: any) {
     params?.server_id,
     params?.mobile_no,
     params?.fail_reason,
+    params?.qualityreportstatus,
     params?.page,
     params?.per_page
   ]);
@@ -757,4 +776,19 @@ export function useApiCall() {
   }, []);
 
   return { execute, loading, error };
+}
+
+// AC Dropdown Hook
+export function useACDropdown() {
+  return useApi(() => apiService.getACDropdownList());
+}
+
+// Filter Options Hook
+export function useRejectionReportFilterOptions() {
+  return useApi(() => apiService.getRejectionReportFilterOptions());
+}
+
+// Interviewer Dropdown Hook
+export function useInterviewerDropdown() {
+  return useApi(() => apiService.getInterviewerDropdownList());
 }
