@@ -153,7 +153,7 @@ export default function MasterACPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
             List of AC
           </Heading>
         </div>
@@ -202,7 +202,7 @@ export default function MasterACPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
                 List of AC
               </Heading>
             </div>
@@ -231,14 +231,14 @@ export default function MasterACPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{data.total_count}</b> items.
+                Total <strong>{data.total_count}</strong> items.
               </Text>
             </div>
             
             <Table className="table table-striped table-bordered">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Ac Code</th>
                   <th>Ac Name</th>
                   <th>District Code</th>

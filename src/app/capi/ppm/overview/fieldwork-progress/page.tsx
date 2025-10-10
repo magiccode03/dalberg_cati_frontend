@@ -114,12 +114,16 @@ export default function FieldworkProgressPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      {/* Breadcrumb Header */}
-      <div className="breadcrumb-header justify-content-between mb-6">
-        <div className="justify-content-center mt-2">
+      {/* Page Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex-1">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Fieldwork Progress
+          </Heading>
         </div>
-        <div className="right-content">
-          <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
+        <div className="flex-1"></div>
+        <div className="flex-1">
+          <span></span>
         </div>
       </div>
 
@@ -128,7 +132,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               Progress <i>Summary</i>
             </Heading>
           </div>
@@ -161,7 +165,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
           <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise Progress
             </Heading>
             <span className="text-end">
@@ -171,24 +175,24 @@ export default function FieldworkProgressPage() {
         </div>
         
         <div className="card-body">
-          <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <b>{acProgressData.length}</b> items.
-              </Text>
-            </div>
-            
-            <Table className="table table-bordered table-striped table-hover">
-              <thead>
-                <tr>
-                  <th className="text-center">AC Code</th>
-                  <th>AC Name</th>
-                  <th>District Name</th>
-                  <th className="text-center">Valid+Under QC</th>
-                  <th className="text-center">Reject</th>
-                  <th className="text-center">% of Completion</th>
-                </tr>
-              </thead>
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{acProgressData.length}</b> items.
+            </Text>
+          </div>
+          
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Code</th>
+                    <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
+                    <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">District Name</th>
+                    <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Valid+Under QC</th>
+                    <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Reject</th>
+                    <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">% of Completion</th>
+                  </tr>
+                </thead>
               <tbody>
                 {acProgressData.map((ac, index) => (
                   <tr key={ac.acCode} className={getRowStyle(ac.completionPercent)}>
@@ -205,6 +209,7 @@ export default function FieldworkProgressPage() {
           </div>
         </div>
       </Card>
+
     </Container>
   );
 }

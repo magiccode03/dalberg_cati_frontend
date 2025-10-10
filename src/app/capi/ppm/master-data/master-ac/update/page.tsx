@@ -242,7 +242,7 @@ const UpdateMasterACPageContent = () => {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+          <Heading level={3} className="text-gray-800">
             Update Master Ac: {formData.ac_name}
           </Heading>
         </div>
