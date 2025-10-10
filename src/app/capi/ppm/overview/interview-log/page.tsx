@@ -701,7 +701,8 @@ const InterviewLogPage = () => {
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
-                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount.toLocaleString()}</strong> items.
+                      {/* Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount.toLocaleString()}</strong> items. */}
+                      Showing <strong>0</strong> of <strong>0</strong> items.
                   </Text>
                 </div>
                 

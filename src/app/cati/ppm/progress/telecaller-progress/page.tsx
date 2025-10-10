@@ -155,9 +155,9 @@ const TelecallerProgressPage: React.FC = () => {
     ...acList
       .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
       .map((ac) => ({
-        value: ac.ac_code.toString(),
+      value: ac.ac_code.toString(),
         label: `${ac.ac_name} - (${ac.ac_code})`,
-      })),
+    })),
   ];
 
   const telecallerOptions = [
@@ -165,9 +165,9 @@ const TelecallerProgressPage: React.FC = () => {
     ...telecallers
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((tc) => ({
-        value: tc.teleform_user_id.toString(),
-        label: `${tc.name} (${tc.mobile_number})`,
-      })),
+      value: tc.teleform_user_id.toString(),
+      label: `${tc.name} (${tc.mobile_number})`,
+    })),
   ];
 
   const callOutcomeOptions = [
@@ -248,7 +248,7 @@ const TelecallerProgressPage: React.FC = () => {
         if (filters.callingDates === 'custom' && filters.customDate) {
           params.append('date', filters.customDate);
         } else if (filters.callingDates !== 'custom') {
-          params.append('date', filters.callingDates);
+        params.append('date', filters.callingDates);
         }
       }
       
@@ -332,7 +332,7 @@ const TelecallerProgressPage: React.FC = () => {
         if (filters.callingDates === 'custom' && filters.customDate) {
           params.append('date', filters.customDate);
         } else if (filters.callingDates !== 'custom') {
-          params.append('date', filters.callingDates);
+        params.append('date', filters.callingDates);
         }
       }
       
@@ -461,46 +461,46 @@ const TelecallerProgressPage: React.FC = () => {
 
       while (hasMoreData) {
         // Build query parameters for current page
-        const params = new URLSearchParams({
+      const params = new URLSearchParams({
           page: currentPage.toString(),
           limit: limit.toString(),
-        });
-        
-        // Add filters (only if they have values)
-        if (filters.acCode && filters.acCode !== '') {
-          params.append('ac_code', filters.acCode);
-        }
-        
-        if (filters.telecaller && filters.telecaller !== '') {
-          params.append('teleform_user_id', filters.telecaller);
-        }
-        
-        if (filters.callingDates && filters.callingDates !== '') {
+      });
+      
+      // Add filters (only if they have values)
+      if (filters.acCode && filters.acCode !== '') {
+        params.append('ac_code', filters.acCode);
+      }
+      
+      if (filters.telecaller && filters.telecaller !== '') {
+        params.append('teleform_user_id', filters.telecaller);
+      }
+      
+      if (filters.callingDates && filters.callingDates !== '') {
           if (filters.callingDates === 'custom' && filters.customDate) {
             params.append('date_from', filters.customDate);
             params.append('date_to', filters.customDate);
           } else if (filters.callingDates !== 'custom') {
-            params.append('date_from', filters.callingDates);
-            params.append('date_to', filters.callingDates);
+        params.append('date_from', filters.callingDates);
+        params.append('date_to', filters.callingDates);
           }
-        }
-        
-        const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+      }
+      
+      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
 
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        });
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-        const result = await response.json();
+      const result = await response.json();
 
-        if (result.success && result.data) {
+      if (result.success && result.data) {
           const pageData = result.data.data || [];
           allData = [...allData, ...pageData];
           
@@ -508,9 +508,9 @@ const TelecallerProgressPage: React.FC = () => {
           const pagination = result.data.pagination;
           hasMoreData = pagination && currentPage < pagination.totalPages;
           currentPage++;
-        } else {
-          throw new Error(result.message || 'Failed to fetch telecaller-wise data');
-        }
+      } else {
+        throw new Error(result.message || 'Failed to fetch telecaller-wise data');
+      }
       }
 
       setTelecallerWiseData(allData);
@@ -590,8 +590,8 @@ const TelecallerProgressPage: React.FC = () => {
           params.append('date_from', filters.customDate);
           params.append('date_to', filters.customDate);
         } else if (filters.callingDates !== 'custom') {
-          params.append('date_from', filters.callingDates);
-          params.append('date_to', filters.callingDates);
+        params.append('date_from', filters.callingDates);
+        params.append('date_to', filters.callingDates);
         }
       }
       
@@ -1073,14 +1073,14 @@ const TelecallerProgressPage: React.FC = () => {
               <div className="flex-1 min-w-[200px]">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Custom Date
-                </label>
-                <Input
-                  type="date"
+              </label>
+              <Input
+                type="date"
                   value={filters.customDate}
                   onChange={(e) => handleFilterChange('customDate', e.target.value)}
                   placeholder="Select Custom Date"
-                />
-              </div>
+              />
+            </div>
             )}
 
             {/* Telecaller */}
@@ -1251,9 +1251,9 @@ const TelecallerProgressPage: React.FC = () => {
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <div>
-              <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
-                Telecaller Wise Data
-              </Heading>
+            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+              Telecaller Wise Data
+            </Heading>
               <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Total {telecallerWiseData.length} items.
               </div>
