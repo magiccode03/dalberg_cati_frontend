@@ -374,7 +374,7 @@ export default function RejectionReportPage() {
                   value={filters.acCode}
                   onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
                   options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select AC Code' },
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
                     ...acDropdownOptions
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
