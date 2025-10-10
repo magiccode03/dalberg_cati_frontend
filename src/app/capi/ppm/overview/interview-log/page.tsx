@@ -210,16 +210,16 @@ const InterviewLogPage = () => {
 
   const acOptions = [
     { value: '', label: 'Select AC' },
-    { value: '1', label: 'Valmiki Nagar (1)' },
-    { value: '2', label: 'Ramnagar (SC) (2)' },
-    { value: '3', label: 'Narkatiaganj (3)' },
     { value: '4', label: 'Bagaha (4)' },
-    { value: '5', label: 'Lauriya (5)' },
-    { value: '6', label: 'Nautan (6)' },
-    { value: '7', label: 'Chanpatia (7)' },
     { value: '8', label: 'Bettiah (8)' },
-    { value: '9', label: 'Sikta (9)' },
+    { value: '7', label: 'Chanpatia (7)' },
+    { value: '5', label: 'Lauriya (5)' },
+    { value: '3', label: 'Narkatiaganj (3)' },
+    { value: '6', label: 'Nautan (6)' },
+    { value: '2', label: 'Ramnagar (SC) (2)' },
     { value: '10', label: 'Raxaul (10)' },
+    { value: '9', label: 'Sikta (9)' },
+    { value: '1', label: 'Valmiki Nagar (1)' },
   ];
 
   // Sample data fallback for when API fails
@@ -402,7 +402,7 @@ const InterviewLogPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={4} className="mb-6">
+      <Heading level={2} className=" text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Interview Log
       </Heading>
 
@@ -411,7 +411,7 @@ const InterviewLogPage = () => {
         {/* Filters Sidebar */}
         <div className="lg:col-span-2">
           <Card className="sticky top-4">
-            <Heading level={4} className="mb-4">
+            <Heading level={4} className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Filters
             </Heading>
             <div className="space-y-4">
@@ -451,7 +451,8 @@ const InterviewLogPage = () => {
                   ]}
                   value={filters.interview_date}
                   onChange={(value) => handleFilterChange('interview_date', value)}
-                  placeholder="Select Interview Date"
+                  placeholder="Search or select date"
+                  searchable={true}
                 />
               </div>
 
@@ -462,7 +463,8 @@ const InterviewLogPage = () => {
                   options={acOptions}
                   value={filters.ac_code}
                   onChange={(value) => handleFilterChange('ac_code', value)}
-                  placeholder="Select AC"
+                  placeholder="Search or select AC"
+                  searchable={true}
                 />
               </div>
 
@@ -473,7 +475,8 @@ const InterviewLogPage = () => {
                   options={[{ value: '', label: 'Select Poling Station' }]}
                   value={filters.ps_code}
                   onChange={(value) => handleFilterChange('ps_code', value)}
-                  placeholder="Select Poling Station"
+                  placeholder="Search or select polling station"
+                  searchable={true}
                 />
               </div>
 
@@ -491,7 +494,8 @@ const InterviewLogPage = () => {
                   ]}
                   value={filters.user_id}
                   onChange={(value) => handleFilterChange('user_id', value)}
-                  placeholder="Select Enumerator ID"
+                  placeholder="Search or select enumerator ID"
+                  searchable={true}
                 />
               </div>
 
@@ -509,7 +513,8 @@ const InterviewLogPage = () => {
                   ]}
                   value={filters.interviewer_id}
                   onChange={(value) => handleFilterChange('interviewer_id', value)}
-                  placeholder="Select Interviewer ID"
+                  placeholder="Search or select interviewer ID"
+                  searchable={true}
                 />
               </div>
 
@@ -658,7 +663,7 @@ const InterviewLogPage = () => {
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center">
                   <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-              <Heading level={4}>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 Interview Details
               </Heading>
                 </div>
@@ -701,7 +706,7 @@ const InterviewLogPage = () => {
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
-                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount.toLocaleString()}</strong> items.
+                      Total <strong>{totalCount.toLocaleString()}</strong> items.
                   </Text>
                 </div>
                 
@@ -709,7 +714,7 @@ const InterviewLogPage = () => {
                   <Table striped bordered hover className="min-w-full">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-center w-16">#</TableHead>
+                        <TableHead className="text-center w-16">S.No</TableHead>
                         <TableHead className="w-32">Server ID</TableHead>
                         <TableHead className="w-32">Interview Date</TableHead>
                         <TableHead className="w-24">Sample Type</TableHead>

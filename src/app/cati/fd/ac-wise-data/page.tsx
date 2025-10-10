@@ -42,7 +42,7 @@ export default function CATIACWiseDataPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={4} className="mb-6">
+      <Heading level={2} className="mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
        AC-Wise Report
       </Heading>
 
@@ -51,7 +51,7 @@ export default function CATIACWiseDataPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4}>AC-Wise Call Progress Report</Heading>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC-Wise Call Progress Report</Heading>
           </div>
         </div>
 

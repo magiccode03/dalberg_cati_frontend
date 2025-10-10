@@ -467,7 +467,7 @@ export default function RejectionReportPage() {
   return (
     <Container maxWidth="full">
         {/* Page Title */}
-        <Heading level={1} className="text-2xl font-bold mb-6">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
           Rejection Report
         </Heading>
 

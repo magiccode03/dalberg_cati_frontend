@@ -66,26 +66,26 @@ const ACListPage = () => {
 
   const acOptions = [
     { value: '', label: 'Select AC' },
-    { value: '1', label: 'Valmiki Nagar (1)' },
-    { value: '2', label: 'Ramnagar (SC) (2)' },
-    { value: '3', label: 'Narkatiaganj (3)' },
     { value: '4', label: 'Bagaha (4)' },
-    { value: '5', label: 'Lauriya (5)' },
-    { value: '6', label: 'Nautan (6)' },
-    { value: '7', label: 'Chanpatia (7)' },
     { value: '8', label: 'Bettiah (8)' },
-    { value: '9', label: 'Sikta (9)' },
-    { value: '10', label: 'Raxaul (10)' },
-    { value: '11', label: 'Sugauli (11)' },
-    { value: '12', label: 'Narkatia (12)' },
-    { value: '13', label: 'Harsidhi (SC) (13)' },
+    { value: '7', label: 'Chanpatia (7)' },
+    { value: '20', label: 'Chiraia (20)' },
     { value: '14', label: 'Govindganj (14)' },
+    { value: '13', label: 'Harsidhi (SC) (13)' },
     { value: '15', label: 'Kesaria (15)' },
     { value: '16', label: 'Kalyanpur (16)' },
-    { value: '17', label: 'Pipra (17)' },
+    { value: '5', label: 'Lauriya (5)' },
     { value: '18', label: 'Madhuban (18)' },
     { value: '19', label: 'Motihari (19)' },
-    { value: '20', label: 'Chiraia (20)' },
+    { value: '12', label: 'Narkatia (12)' },
+    { value: '3', label: 'Narkatiaganj (3)' },
+    { value: '6', label: 'Nautan (6)' },
+    { value: '17', label: 'Pipra (17)' },
+    { value: '2', label: 'Ramnagar (SC) (2)' },
+    { value: '10', label: 'Raxaul (10)' },
+    { value: '9', label: 'Sikta (9)' },
+    { value: '11', label: 'Sugauli (11)' },
+    { value: '1', label: 'Valmiki Nagar (1)' },
   ];
 
   // Fetch agencies for dropdown
@@ -243,7 +243,7 @@ const ACListPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={3} className="mb-6">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         AC List
       </Heading>
 
@@ -291,7 +291,8 @@ const ACListPage = () => {
                 options={agencyOptions}
                 value={filters.agencyId}
                 onChange={(value) => handleFilterChange('agencyId', value as string)}
-                placeholder="Select State Teams"
+                placeholder="Search or select state teams"
+                searchable={true}
               />
             </div>
             <div>
@@ -300,7 +301,8 @@ const ACListPage = () => {
                 options={acOptions}
                 value={filters.acCode}
                 onChange={(value) => handleFilterChange('acCode', value as string)}
-                placeholder="Select AC"
+                placeholder="Search or select AC"
+                searchable={true}
               />
             </div>
             <div className="flex items-end">
@@ -318,7 +320,7 @@ const ACListPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
-            <Heading level={4}>AC List</Heading>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC List</Heading>
           </div>
           <Button variant="primary" className="bg-blue-600 text-white hover:bg-blue-500">
           <Plus className="w-4 h-4 mr-2" />
@@ -328,7 +330,7 @@ const ACListPage = () => {
 
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
-            Showing <strong>{(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount}</strong> items.
+            Total <strong>{totalCount}</strong> items.
           </Text>
         </div>
                 

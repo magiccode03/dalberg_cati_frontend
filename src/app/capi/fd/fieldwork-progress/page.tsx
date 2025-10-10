@@ -117,7 +117,7 @@ export default function FieldworkProgressPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold mb-0">
             Fieldwork Progress
           </Heading>
         </div>
@@ -131,19 +131,19 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               Progress <i>Summary</i>
             </Heading>
           </div>
         </div>
         
         <div className="card-body">
-          <div className="table-responsive">
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
             <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th>Details</th>
-                  <th>Measure</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Details</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Measure</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,7 +164,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
           <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise Progress
             </Heading>
             <span className="text-end">
@@ -174,22 +174,22 @@ export default function FieldworkProgressPage() {
         </div>
         
         <div className="card-body">
-          <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <b>{acProgressData.length}</b> items.
-              </Text>
-            </div>
-            
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{acProgressData.length}</b> items.
+            </Text>
+          </div>
+          
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
             <Table className="table table-bordered table-striped table-hover">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="text-center">AC Code</th>
-                  <th>AC Name</th>
-                  <th>District Name</th>
-                  <th className="text-center">Valid+Under QC</th>
-                  <th className="text-center">Reject</th>
-                  <th className="text-center">% of Completion</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">District Name</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Valid+Under QC</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Reject</th>
+                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">% of Completion</th>
                 </tr>
               </thead>
               <tbody>

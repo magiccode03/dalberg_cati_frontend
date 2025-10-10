@@ -104,7 +104,7 @@ export default function CronRequestPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold mb-0">
             Cron Requests
           </Heading>
         </div>
@@ -119,7 +119,7 @@ export default function CronRequestPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white card-title mg-b-0">
                 Cron Requests
               </Heading>
             </div>
@@ -204,7 +204,7 @@ export default function CronRequestPage() {
         <div className="card-header mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               List of Dynamic Recoding Requests
             </Heading>
           </div>
@@ -214,14 +214,14 @@ export default function CronRequestPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{totalItems}</b> items.
+                Total <strong>{totalItems}</strong> items.
               </Text>
             </div>
             
             <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Cron ID</th>
                   <th>Action/Route</th>
                   <th>Planned At</th>
@@ -250,7 +250,7 @@ export default function CronRequestPage() {
                     </td>
                     <td className="text-center">
                       <Button
-                        variant="outline"
+                        variant="primary"
                         size="sm"
                         onClick={() => handleViewRequest(request.cronId)}
                         className="mr-2 bg-blue-600 hover:bg-blue-700 text-white border-0"

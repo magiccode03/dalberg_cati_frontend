@@ -71,8 +71,9 @@ export default function GPSMapPage() {
     { value: 'rejected', label: 'Rejected' },
   ];
 
-  const handleFilterChange = (field: string, value: string) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
+  const handleFilterChange = (field: string, value: string | string[]) => {
+    const stringValue = Array.isArray(value) ? value[0] || '' : value;
+    setFilters(prev => ({ ...prev, [field]: stringValue }));
   };
 
   const handleSearch = () => {
@@ -99,7 +100,7 @@ export default function GPSMapPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Heading level={4} className="mb-2">GPS Map</Heading>
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">GPS Map</Heading>
           <p className="text-gray-600 dark:text-gray-400">
             View GPS locations and track interview progress on the map
           </p>
@@ -213,9 +214,9 @@ export default function GPSMapPage() {
         {/* GPS Map Card */}
         <Card>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 GPS Map
-              </h4>
+              </Heading>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
