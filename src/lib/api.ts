@@ -1847,7 +1847,7 @@ class ApiService {
     return this.request(`${API_ENDPOINTS.FD.INTERNAL_DASHBOARD}${queryString}`);
   }
 
-  async getInterviewAudio(params?: { page?: number; limit?: number; ac_code?: string; interview_date?: string }): Promise<any> {
+  async getInterviewAudio(params?: { page?: number; limit?: number; server_id?: string; ac_code?: string; interview_date?: string }): Promise<any> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO}${queryString}`);
   }

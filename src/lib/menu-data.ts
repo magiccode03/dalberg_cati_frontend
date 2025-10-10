@@ -796,6 +796,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
+  {
+    id: 'back',
+    label: 'Go To Cati',
+    href: '/cati/fd/telecaller-progress',
+    icon: 'Home',
+    roles: ['fd'],
+    system: 'capi',
+  },
   // {
   //   id: 'back',
   //   label: 'Back To Menu',
@@ -1421,7 +1429,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
-
+  {
+    id: 'back',
+    label: 'Back To Capi',
+    href: '/capi/fd/fieldwork-progress',
+    icon: 'Home',
+    roles: ['fd'],
+    system: 'cati',
+  },
   // CATI Start Survey (SS) Menu
   {
     id: 'cati-ss-start-form-filling',

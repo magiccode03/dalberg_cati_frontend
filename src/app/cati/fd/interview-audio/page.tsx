@@ -77,7 +77,7 @@ export default function CATIInterviewAudioPage() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   const fetchData = async () => {
     try {
@@ -90,11 +90,18 @@ export default function CATIInterviewAudioPage() {
       };
       
       if (filters.serverId) params.server_id = filters.serverId;
-      if (filters.acCode) params.ac_code = filters.acCode;
-      if (filters.acName) params.ac_name = filters.acName;
+      // Priority: AC Name dropdown takes precedence over AC Code input
+      if (filters.acName) {
+        params.ac_code = filters.acName; // AC Name dropdown stores AC code as value
+      } else if (filters.acCode) {
+        params.ac_code = filters.acCode;
+      }
       if (filters.interviewDate) params.interview_date = filters.interviewDate;
       
       // Use the existing getInterviewAudio method from apiService
+      console.log('API params:', params);
+      console.log('Current filters:', filters);
+      
       const response = await apiService.getInterviewAudio(params);
       
       console.log('API Response:', response); // Debug log
@@ -114,8 +121,8 @@ export default function CATIInterviewAudioPage() {
           setTotalPages(Math.ceil(interviewData.length / itemsPerPage));
         }
         
-        // Extract unique AC codes for filter (only on first load)
-        if (currentPage === 1 && interviewData.length > 0) {
+        // Extract unique AC codes for filter (only on first load when options are empty)
+        if (currentPage === 1 && interviewData.length > 0 && acOptions.length === 0) {
           const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewAudioData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
             .map((str: unknown) => JSON.parse(str as string) as { ac_code: number; ac_name: string });
           const acOptionsData = [
@@ -158,7 +165,7 @@ export default function CATIInterviewAudioPage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchData();
+    // fetchData will be called automatically due to useEffect dependency on currentPage and filters
   };
 
   const handleFilterChange = (field: string, value: string) => {
@@ -217,7 +224,7 @@ export default function CATIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Interview Audio (CATI)
           </Heading>
         </div>
@@ -364,16 +371,16 @@ export default function CATIInterviewAudioPage() {
               </button>
             </div>
           ) : (
-          <div className="table-responsive max-h-[600px] overflow-y-auto">
+          <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
+              <thead>
                 <tr>
-                  <th className="bg-white dark:bg-gray-800" style={{ width: '2%' }}>#</th>
-                  <th className="bg-white dark:bg-gray-800" style={{ width: '10%' }}>Server Id</th>
-                  <th className="text-center bg-white dark:bg-gray-800" style={{ width: '10%' }}>AC Code</th>
-                  <th className="bg-white dark:bg-gray-800" style={{ width: '10%' }}>AC Name</th>
-                  <th className="bg-white dark:bg-gray-800" style={{ width: '10%' }}>Interview Date</th>
-                  <th className="text-center bg-white dark:bg-gray-800" style={{ width: '8%' }}>Interview Audio</th>
+                  <th style={{ width: '2%' }}>#</th>
+                  <th style={{ width: '10%' }}>Server Id</th>
+                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
+                  <th style={{ width: '10%' }}>AC Name</th>
+                  <th style={{ width: '10%' }}>Interview Date</th>
+                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
               </thead>
               <tbody>
@@ -387,10 +394,10 @@ export default function CATIInterviewAudioPage() {
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center gap-2 mx-auto"
+                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center justify-center mx-auto"
+                        title="Play Audio"
                       >
                         <Play className="h-4 w-4" />
-                        Play
                       </Button>
                     </td>
                   </tr>

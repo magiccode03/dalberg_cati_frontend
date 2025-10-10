@@ -65,6 +65,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/home',
       hasSubmenu: false,
     },
+    {
+      id: 'back',
+      label: 'Go To Cati',
+      icon: Home,
+      href: '/cati/fd/telecaller-progress',
+      hasSubmenu: false,
+    },
   ];
 
   // CATI FD menu items
@@ -91,6 +98,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/cati/fd/interview-audio',
       hasSubmenu: false,
     },
+    // {
+    //   id: 'back',
+    //   label: 'Go To Capi',
+    //   icon: Home,
+    //   href: '/capi/fd/fieldwork-progress',
+    //   hasSubmenu: false,
+    // },
     // {
     //   id: 'back',
     //   label: 'Back To Main',
