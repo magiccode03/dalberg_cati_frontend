@@ -58,7 +58,7 @@ const TelecallerPendingDataPage = () => {
     <FluidContainer>
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Telecaller Pending Data
         </Heading>
       </div>
@@ -68,7 +68,7 @@ const TelecallerPendingDataPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Telecaller Pending Data
             </Heading>
           </div>

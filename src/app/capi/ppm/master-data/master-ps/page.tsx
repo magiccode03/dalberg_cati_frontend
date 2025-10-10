@@ -231,7 +231,7 @@ export default function MasterPSPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
                 List of Master Poling Station
               </Heading>
             </div>
@@ -268,7 +268,7 @@ export default function MasterPSPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{totalItems.toLocaleString()}</b> items.
+                Total <strong>{totalItems.toLocaleString()}</strong> items.
               </Text>
             </div>
             

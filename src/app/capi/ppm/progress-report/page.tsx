@@ -687,12 +687,12 @@ export default function ProgressReportPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4}>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               {searchForm.typeOfReport === 'performance' ? 'PERFORMANCE' : 'QUALITY'} REPORT - {searchForm.level.toUpperCase()} LEVEL
             </Heading>
           </div>
           <Button 
-            variant="outline" 
+            variant="primary" 
             className="bg-blue-600 hover:bg-blue-700 text-white border-0"
             onClick={handleDownload}
             disabled={loading || progressData.length === 0}

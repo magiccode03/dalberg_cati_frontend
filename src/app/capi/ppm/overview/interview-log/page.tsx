@@ -411,7 +411,7 @@ const InterviewLogPage = () => {
         {/* Filters Sidebar */}
         <div className="lg:col-span-2">
           <Card className="sticky top-4">
-            <Heading level={4} className="mb-4">
+            <Heading level={4} className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Filters
             </Heading>
             <div className="space-y-4">
@@ -663,7 +663,7 @@ const InterviewLogPage = () => {
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center">
                   <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-              <Heading level={4}>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 Interview Details
               </Heading>
                 </div>
@@ -706,7 +706,7 @@ const InterviewLogPage = () => {
               <div className="p-6">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
-                      Showing <strong>{((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount.toLocaleString()}</strong> items.
+                      Total <strong>{totalCount.toLocaleString()}</strong> items.
                   </Text>
                 </div>
                 
@@ -714,7 +714,7 @@ const InterviewLogPage = () => {
                   <Table striped bordered hover className="min-w-full">
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="text-center w-16">#</TableHead>
+                        <TableHead className="text-center w-16">S.No</TableHead>
                         <TableHead className="w-32">Server ID</TableHead>
                         <TableHead className="w-32">Interview Date</TableHead>
                         <TableHead className="w-24">Sample Type</TableHead>

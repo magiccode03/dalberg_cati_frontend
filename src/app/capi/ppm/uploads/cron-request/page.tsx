@@ -104,7 +104,7 @@ export default function CronRequestPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold mb-0">
             Cron Requests
           </Heading>
         </div>
@@ -204,7 +204,7 @@ export default function CronRequestPage() {
         <div className="card-header mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               List of Dynamic Recoding Requests
             </Heading>
           </div>
@@ -214,7 +214,7 @@ export default function CronRequestPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{endIndex}</b> of <b>{totalItems}</b> items.
+                Total <strong>{totalItems}</strong> items.
               </Text>
             </div>
             
