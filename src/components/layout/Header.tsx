@@ -187,7 +187,7 @@ export default function Header() {
         {/* Center - Project Title */}
         <div className="flex-1 text-center">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            West Bengal Opinion Poll 2025 (F2F)
+            West Bengal Opinion Poll 2025
           </h1>
         </div>
 
