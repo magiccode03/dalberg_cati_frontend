@@ -790,7 +790,7 @@ export const menuData: MenuItem[] = [
   },
   {
     id: 'back',
-    label: 'Back To Menu',
+    label: 'Back To Home',
     href: '/home',
     icon: 'Home',
     roles: ['fd'],
@@ -1415,7 +1415,7 @@ export const menuData: MenuItem[] = [
   },
   {
     id: 'back',
-    label: 'Back To Menu',
+    label: 'Back To Home',
     href: '/home',
     icon: 'Home',
     roles: ['fd'],
