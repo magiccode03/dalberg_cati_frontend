@@ -63,10 +63,12 @@ export default function CATIACWiseDataPage() {
   // Create dropdown options from AC data
   const acOptions = [
     { value: '', label: 'All ACs' },
-    ...acData.map(ac => ({
-      value: ac.ac_code.toString(),
-      label: `${ac.ac_name} (${ac.ac_code})`
-    }))
+    ...acData
+      .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
+      .map(ac => ({
+        value: ac.ac_code.toString(),
+        label: `${ac.ac_name} (${ac.ac_code})`
+      }))
   ];
 
   const handleDownload = () => {
@@ -175,15 +177,15 @@ export default function CATIACWiseDataPage() {
             <Text>{error}</Text>
           </div>
         ) : (
-          <div className="table-responsive">
+          <div className="table-responsive max-h-[600px] overflow-y-auto">
             <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
-              <thead className="table-light">
+              <thead className="table-light sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
                 <tr>
-                  <th className="border border-gray-300 w-16">Sr.No.</th>
-                  <th className="border border-gray-300 w-32">AC Name</th>
-                  <th className="border border-gray-300 w-24">Call Attempted</th>
-                  <th className="border border-gray-300 w-24">Call Connected</th>
-                  <th className="border border-gray-300 w-20">Success</th>
+                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800">Sr.No.</th>
+                  <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800">AC Name</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800">Call Attempted</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800">Call Connected</th>
+                  <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800">Success</th>
                 </tr>
               </thead>
               <tbody>

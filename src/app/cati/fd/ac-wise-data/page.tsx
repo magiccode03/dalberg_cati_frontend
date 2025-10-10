@@ -68,8 +68,9 @@ export default function CATIACWiseDataPage() {
             <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="table-light">
                 <tr>
-                  <th className="border border-gray-300 w-16">Sr.No.</th>
+                  <th className="border border-gray-300 w-16">AC Code</th>
                   <th className="border border-gray-300 w-32">AC Name</th>
+                  <th className="border border-gray-300 w-32">District Name</th>
                   <th className="border border-gray-300 w-24">Call Attempted</th>
                   <th className="border border-gray-300 w-24">Call Connected</th>
                   <th className="border border-gray-300 w-20">Success</th>
@@ -78,15 +79,16 @@ export default function CATIACWiseDataPage() {
               <tbody>
                 {acData.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500 border border-gray-300">
+                    <td colSpan={6} className="text-center py-8 text-gray-500 border border-gray-300">
                       No CATI AC data found
                     </td>
                   </tr>
                 ) : (
                   acData.map((item, index) => (
                     <tr key={item.ac_code}>
-                      <td className="border border-gray-300">{index + 1}</td>
+                      <td className="border border-gray-300">{item.ac_code}</td>
                       <td className="border border-gray-300">{item.ac_name}</td>
+                      <td className="border border-gray-300">{item.district_name}</td>
                       <td className="border border-gray-300">{item.call_attempt}</td>
                       <td className="border border-gray-300">{item.call_connected}</td>
                       <td className="border border-gray-300">{item.success}</td>

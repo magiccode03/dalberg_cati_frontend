@@ -557,7 +557,7 @@ const TelecallerProgressPage: React.FC = () => {
             {/* Title Section */}
             <div className="flex-1">
               <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                Caller Performance Dashboard
+                Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics

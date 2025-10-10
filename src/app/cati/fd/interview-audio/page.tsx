@@ -8,7 +8,7 @@ import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Play, X, Volume2 } from 'lucide-react';
+import { Search, Play, X, Volume2, Download } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface InterviewAudioData {
@@ -55,8 +55,12 @@ const fixAudioUrl = (url: string): string => {
 };
 
 export default function CATIInterviewAudioPage() {
-  const [acCode, setAcCode] = useState('');
-  const [interviewDate, setInterviewDate] = useState('');
+  const [filters, setFilters] = useState({
+    serverId: '',
+    acCode: '',
+    acName: '',
+    interviewDate: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,10 +74,14 @@ export default function CATIInterviewAudioPage() {
   const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof InterviewAudioData | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, acCode, interviewDate]);
+  }, [currentPage]);
 
   const fetchData = async () => {
     try {
@@ -85,8 +93,10 @@ export default function CATIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (acCode) params.ac_code = acCode;
-      if (interviewDate) params.interview_date = interviewDate;
+      if (filters.serverId) params.server_id = filters.serverId;
+      if (filters.acCode) params.ac_code = filters.acCode;
+      if (filters.acName) params.ac_name = filters.acName;
+      if (filters.interviewDate) params.interview_date = filters.interviewDate;
       
       // Use the existing getInterviewAudio method from apiService
       const response = await apiService.getInterviewAudio(params);
@@ -113,11 +123,13 @@ export default function CATIInterviewAudioPage() {
           const uniqueACs = Array.from(new Set(interviewData.map(item => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
             .map(str => JSON.parse(str));
           const acOptionsData = [
-            { value: '', label: 'Select AC' },
-            ...uniqueACs.map(ac => ({
-              value: ac.ac_code.toString(),
-              label: `${ac.ac_name} (${ac.ac_code})`
-            }))
+            { value: '', label: 'Select ACs' },
+            ...uniqueACs
+              .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
+              .map(ac => ({
+                value: ac.ac_code.toString(),
+                label: `${ac.ac_name} (${ac.ac_code})`
+              }))
           ];
           setAcOptions(acOptionsData);
           
@@ -126,8 +138,8 @@ export default function CATIInterviewAudioPage() {
           const dateOptionsData = [
             { value: '', label: 'Interview Date' },
             ...uniqueDates.map(date => ({
-              value: date,
-              label: new Date(date).toLocaleDateString()
+              value: date as string,
+              label: new Date(date as string).toLocaleDateString()
             }))
           ];
           setInterviewDateOptions(dateOptionsData);
@@ -151,6 +163,13 @@ export default function CATIInterviewAudioPage() {
     e.preventDefault();
     setCurrentPage(1);
     fetchData();
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handlePlayAudio = (audioData: InterviewAudioData) => {
@@ -192,8 +211,64 @@ export default function CATIInterviewAudioPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Use interviewData directly since pagination is handled by the API
-  const paginatedData = interviewData;
+  const handleSort = (key: keyof InterviewAudioData) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedData = () => {
+    if (!sortConfig.key) return interviewData;
+    
+    return [...interviewData].sort((a, b) => {
+      const aValue = a[sortConfig.key!];
+      const bValue = b[sortConfig.key!];
+      
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
+  // Use sorted data
+  const paginatedData = getSortedData();
+
+  const handleDownload = () => {
+    if (paginatedData.length === 0) return;
+
+    const headers = ['Sr.No.', 'Server Id', 'AC Code', 'AC Name', 'Interview Date'];
+    
+    const csvContent = [
+      headers.join(','),
+      ...paginatedData.map((item, index) => [
+        (currentPage - 1) * itemsPerPage + index + 1,
+        item.id,
+        item.ac_code,
+        `"${item.ac_name}"`,
+        new Date(item.interview_date).toLocaleDateString()
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    const currentDate = new Date().toISOString().split('T')[0];
+    const filename = `Interview-Audio-CATI-${currentDate}.csv`;
+    
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -221,29 +296,56 @@ export default function CATIInterviewAudioPage() {
       )}
 
       {/* Search Form */}
-      {/* <form id="interviewsearch-form" onSubmit={handleSearch}>
-        <Card className=" mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <form id="interviewsearch-form" onSubmit={handleSearch}>
+        <Card className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Server Id
+              </label>
+              <input
+                type="text"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Server Id"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Code
               </label>
+              <input
+                type="text"
+                value={filters.acCode}
+                onChange={(e) => handleFilterChange('acCode', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter AC Code"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                AC Name
+              </label>
               <SelectDropdown
-                value={acCode}
-                onChange={(value) => setAcCode(Array.isArray(value) ? value[0] : value)}
+                value={filters.acName}
+                onChange={(value) => handleFilterChange('acName', Array.isArray(value) ? value[0] : value)}
                 options={acOptions}
                 className="w-full"
+                placeholder="Select AC Name"
+                searchable={true}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Interview Date
               </label>
-              <SelectDropdown
-                value={interviewDate}
-                onChange={(value) => setInterviewDate(Array.isArray(value) ? value[0] : value)}
-                options={interviewDateOptions}
-                className="w-full"
+              <input
+                type="date"
+                value={filters.interviewDate}
+                onChange={(e) => handleFilterChange('interviewDate', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="yy-mm-dd"
               />
             </div>
             <div className="flex items-end">
@@ -257,20 +359,34 @@ export default function CATIInterviewAudioPage() {
             </div>
           </div>
         </Card>
-      </form> */}
+      </form>
 
       {/* Interview List */}
       <Card className="">
         <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                Interview List (CATI)
-              </Heading>
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col">
+              <div className="flex items-center">
+                <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+                <Heading level={4} className="card-title mg-b-0">
+                  Interview List (CATI)
+                </Heading>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
+                Total {totalItems} items.
+              </div>
             </div>
             <span className="text-end">
-              {/* Empty for now */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownload}
+                disabled={loading || paginatedData.length === 0}
+                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </Button>
             </span>
           </div>
         </div>
@@ -292,8 +408,10 @@ export default function CATIInterviewAudioPage() {
                     <p><strong>Total Items:</strong> {totalItems}</p>
                     <p><strong>Total Pages:</strong> {totalPages}</p>
                     <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
-                    <p><strong>AC Code Filter:</strong> {acCode || 'None'}</p>
-                    <p><strong>Date Filter:</strong> {interviewDate || 'None'}</p>
+                    <p><strong>Server Id Filter:</strong> {filters.serverId || 'None'}</p>
+                    <p><strong>AC Code Filter:</strong> {filters.acCode || 'None'}</p>
+                    <p><strong>AC Name Filter:</strong> {filters.acName || 'None'}</p>
+                    <p><strong>Interview Date Filter:</strong> {filters.interviewDate || 'None'}</p>
                   </div>
                 </details>
               </div>
@@ -316,16 +434,64 @@ export default function CATIInterviewAudioPage() {
               </button>
             </div>
           ) : (
-          <div className="table-responsive">
+          <div className="table-responsive max-h-[600px] overflow-y-auto">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
+              <thead className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
-                  <th style={{ width: '10%' }}>Server Token</th>
-                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
-                  <th style={{ width: '10%' }}>Interview Date</th>
-                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
+                  <th className="text-center bg-white dark:bg-gray-800" style={{ width: '2%' }}>#</th>
+                  <th 
+                    style={{ width: '10%' }} 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('id')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Server Id</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'id' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'id' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className="text-center cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300" 
+                    style={{ width: '10%' }}
+                    onClick={() => handleSort('ac_code')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="flex-1 text-center">AC Code</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'ac_code' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'ac_code' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    style={{ width: '10%' }} 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('ac_name')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>AC Name</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'ac_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'ac_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    style={{ width: '10%' }} 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('interview_date')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Interview Date</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'interview_date' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'interview_date' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </th>
+                  <th className="text-center bg-white dark:bg-gray-800" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
               </thead>
               <tbody>

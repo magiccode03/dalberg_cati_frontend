@@ -116,7 +116,10 @@ export default function FieldworkProgressPage() {
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
-        <div className="justify-content-center mt-2">
+        <div className="left-content">
+          <Heading level={1} className="text-2xl font-bold mb-0">
+            Fieldwork Progress
+          </Heading>
         </div>
         <div className="right-content">
           <span className="main-content-title mg-b-0 mg-b-lg-1"></span>

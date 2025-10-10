@@ -662,10 +662,10 @@ const InterviewLogPage = () => {
                 Interview Details
               </Heading>
                 </div>
-                <Button variant="outline" className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 border-blue-600">
+                {/* <Button variant="outline" className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 border-blue-600">
                 <i className="fa fa-download"></i>
                 Download
-              </Button>
+              </Button> */}
             </div>
             
             {/* Loading State */}
@@ -677,7 +677,7 @@ const InterviewLogPage = () => {
             )}
 
             {/* Error State */}
-            {(error || apiError) && !loading && (
+            {/* {(error || apiError) && !loading && (
               <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
                 <svg className="w-12 h-12 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.822-.833-2.592 0L4.27 15.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -694,7 +694,7 @@ const InterviewLogPage = () => {
                   Retry
                 </Button>
               </div>
-            )}
+            )} */}
             
             {!loading && (
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
@@ -729,7 +729,7 @@ const InterviewLogPage = () => {
                         <TableHead className="text-center w-24">GPS Map</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    {/* <TableBody>
                       {interviewData.map((interview, index) => (
                           <TableRow key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
                           <TableCell className="text-center text-gray-500 font-medium w-16">
@@ -812,10 +812,10 @@ const InterviewLogPage = () => {
                           </TableCell>
                         </TableRow>
                       ))}
-                    </TableBody>
+                    </TableBody> */}
                   </Table>
                 </div>
-                
+{/*                 
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard
                     currentPage={currentPage}
@@ -825,7 +825,7 @@ const InterviewLogPage = () => {
                     onPageChange={handlePageChange}
                     className="justify-center"
                   />
-                </div>
+                </div> */}
               </div>
             </div>
             )}

@@ -148,6 +148,10 @@ const TelecallerDailyCallDetailPage = () => {
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof CallDetailData | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
 
   // Options for dropdowns
   const reportDaysOptions = [
@@ -205,18 +209,22 @@ const TelecallerDailyCallDetailPage = () => {
   // Dashboard filter dropdown options
   const telecallerOptions = [
     { value: '', label: 'All Telecallers' },
-    ...telecallers.map((tc) => ({
-      value: tc.teleform_user_id.toString(),
-      label: `${tc.name} (${tc.mobile_number})`,
-    })),
+    ...telecallers
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((tc) => ({
+        value: tc.teleform_user_id.toString(),
+        label: `${tc.name} (${tc.mobile_number})`,
+      })),
   ];
 
   const acCodeOptions = [
-    { value: '', label: 'All AC' },
-    ...acList.map((ac) => ({
-      value: ac.ac_code.toString(),
-      label: `${ac.ac_code} - ${ac.ac_name}`,
-    })),
+    { value: '', label: 'All ACs' },
+    ...acList
+      .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
+      .map((ac) => ({
+        value: ac.ac_code.toString(),
+        label: `${ac.ac_name} - (${ac.ac_code})`,
+      })),
   ];
 
   const durationOptions = [
@@ -445,6 +453,34 @@ const TelecallerDailyCallDetailPage = () => {
     } catch {
       return '-';
     }
+  };
+
+  const handleSort = (key: keyof CallDetailData) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedData = () => {
+    if (!sortConfig.key) return callDetailData;
+
+    return [...callDetailData].sort((a, b) => {
+      const aValue = a[sortConfig.key!];
+      const bValue = b[sortConfig.key!];
+
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
   };
 
   // Fetch telecallers list
@@ -923,17 +959,72 @@ const TelecallerDailyCallDetailPage = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>#</TableHead>
-                  <TableHead>Caller Name</TableHead>
-                  <TableHead>Caller ID</TableHead>
-                  <TableHead>Call Time</TableHead>
-                  <TableHead>IVR Duration</TableHead>
-                  <TableHead>Talk Duration</TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('caller_name')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>CALLER NAME</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('caller_id')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>CALLER ID</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'caller_id' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'caller_id' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('call_time')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>CALL TIME</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'call_time' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'call_time' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('ivr_duration')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>IVR DURATION</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
+                    onClick={() => handleSort('talk_duration')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>TALK DURATION</span>
+                      <div className="flex flex-col">
+                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
+                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
+                      </div>
+                    </div>
+                  </TableHead>
                   <TableHead>Audio file</TableHead>
                   {/* <TableHead>Update</TableHead> */}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {callDetailData.map((item, index) => (
+                {getSortedData().map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell>{(pagination.page - 1) * pagination.limit + index + 1}</TableCell>
                     <TableCell>{item.caller_name || '-'}</TableCell>
