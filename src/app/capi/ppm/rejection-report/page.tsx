@@ -118,7 +118,7 @@ export default function RejectionReportPage() {
     if (!acDropdownData) return [];
     return Object.entries(acDropdownData).map(([code, name]) => ({
       value: code,
-      label: `${code} - ${name}`
+      label: `${name}(${code})`
     }));
   }, [acDropdownData]);
 
@@ -129,7 +129,7 @@ export default function RejectionReportPage() {
       .filter(([id, name]) => id !== '') // Filter out empty entries
       .map(([id, name]) => ({
         value: id,
-        label: `${id} - ${name}`
+        label: id // Show just the ID since API returns same value for key and value
       }));
   }, [interviewerDropdownData]);
 
@@ -579,7 +579,6 @@ export default function RejectionReportPage() {
                   <th>Fail Reason</th>
                   <th>Audio QC ID</th>
                   <th>Audio Fail Reason</th>
-                  <th>Re-Audio Fail Reason</th>
                   <th>Audio</th>
                   <th>GPS</th>
                 </tr>
@@ -604,12 +603,9 @@ export default function RejectionReportPage() {
                     <td className="font-mono">{row.interviewDuration}</td>
                     <td>{row.respondentName}</td>
                     <td>{row.respondentMobile || '-'}</td>
-                    <td>
-                      {getFailReasonBadge(row.failReason)}
-                    </td>
+                    <td>{row.failReason}</td>
                     <td>{row.audioQcId || '-'}</td>
                     <td>{row.audioFailReason || '-'}</td>
-                    <td>{row.reAudioFailReason || '-'}</td>
                     <td>
                       {row.hasAudio ? (
                         <Button 
