@@ -12,7 +12,7 @@ import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2 } from 'lucide-react';
-import { useRejectionReport } from '@/hooks/useApi';
+import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
 
 interface RejectionData {
   srNo: number;
@@ -46,33 +46,120 @@ export default function RejectionReportPage() {
     supervisorId: '',
     serverId: '',
     mobileNo: '',
-    failReason: ''
+    failReason: '',
+    qualityreportstatus: ''
   });
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25);
   
   // Memoize the API parameters to prevent infinite re-renders
-  const apiParams = React.useMemo(() => ({
-    report_days: filters.reportDays,
-    custom_date: filters.customDate,
-    custom_date_end: filters.customDateEnd,
-    report_level: filters.reportLevel,
-    interviewer_id: filters.interviewerId,
-    enumerator_id: filters.enumeratorId,
-    ac_code: filters.acCode,
-    district_code: filters.districtCode,
-    pc_code: filters.pcCode,
-    supervisor_id: filters.supervisorId,
-    server_id: filters.serverId,
-    mobile_no: filters.mobileNo,
-    fail_reason: filters.failReason,
-    page: currentPage,
-    per_page: pageSize
-  }), [filters, currentPage, pageSize]);
+  const apiParams = React.useMemo(() => {
+    const params: any = {
+      report_days: filters.reportDays,
+      custom_date: filters.customDate,
+      custom_date_end: filters.customDateEnd,
+      report_level: filters.reportLevel,
+      interviewer_id: filters.interviewerId,
+      enumerator_id: filters.enumeratorId,
+      district_code: filters.districtCode,
+      pc_code: filters.pcCode,
+      supervisor_id: filters.supervisorId,
+      server_id: filters.serverId,
+      mobile_no: filters.mobileNo,
+      fail_reason: filters.failReason,
+      qualityreportstatus: filters.qualityreportstatus,
+      page: currentPage,
+      per_page: pageSize
+    };
+
+    // Only include ac_code if it has a value
+    if (filters.acCode && filters.acCode.trim() !== '') {
+      params.ac_code = filters.acCode;
+    }
+
+    return params;
+  }, [filters, currentPage, pageSize]);
   
+  // Check if we should make the API call based on required parameters for each level
+  const shouldMakeApiCall = React.useMemo(() => {
+    // For AC level: ac_code is required
+    if ((filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (!filters.acCode || filters.acCode.trim() === '')) {
+      return false;
+    }
+    
+    // For Poling Station level: ac_code is required
+    if (filters.reportLevel === 'polingstation' && (!filters.acCode || filters.acCode.trim() === '')) {
+      return false;
+    }
+    
+    // For Interviewer level: interviewer_id is required
+    if (filters.reportLevel === 'interviewer' && (!filters.interviewerId || filters.interviewerId.trim() === '')) {
+      return false;
+    }
+    
+    return true;
+  }, [filters.reportLevel, filters.acCode, filters.interviewerId]);
+
   // Fetch rejection report data from API
-  const { data, loading, error, refetch } = useRejectionReport(apiParams);
+  const { data, loading, error, refetch } = useRejectionReport(shouldMakeApiCall ? apiParams : null);
+  
+  // Fetch AC dropdown data
+  const { data: acDropdownData, loading: acDropdownLoading } = useACDropdown();
+
+  // Fetch interviewer dropdown data
+  const { data: interviewerDropdownData, loading: interviewerDropdownLoading } = useInterviewerDropdown();
+
+  // Fetch filter options data
+  const { data: filterOptionsData, loading: filterOptionsLoading } = useRejectionReportFilterOptions();
+
+  // Transform AC dropdown data to options format
+  const acDropdownOptions = React.useMemo(() => {
+    if (!acDropdownData) return [];
+    return Object.entries(acDropdownData).map(([code, name]) => ({
+      value: code,
+      label: `${code} - ${name}`
+    }));
+  }, [acDropdownData]);
+
+  // Transform interviewer dropdown data to options format
+  const interviewerDropdownOptions = React.useMemo(() => {
+    if (!interviewerDropdownData) return [];
+    return Object.entries(interviewerDropdownData)
+      .filter(([id, name]) => id !== '') // Filter out empty entries
+      .map(([id, name]) => ({
+        value: id,
+        label: `${id} - ${name}`
+      }));
+  }, [interviewerDropdownData]);
+
+  // Transform filter options data to dropdown options format
+  const reportDaysOptions = React.useMemo(() => {
+    if (!filterOptionsData?.report_days) return [];
+    return Object.entries(filterOptionsData.report_days).map(([value, label]) => ({
+      value,
+      label
+    }));
+  }, [filterOptionsData]);
+
+  const reportLevelsOptions = React.useMemo(() => {
+    if (!filterOptionsData?.report_levels) return [];
+    return Object.entries(filterOptionsData.report_levels).map(([value, label]) => ({
+      value,
+      label
+    }));
+  }, [filterOptionsData]);
+
+  const failReasonOptions = React.useMemo(() => {
+    if (!filterOptionsData?.quality_statuses) return [];
+    return [
+      { value: '', label: 'Select Fail Reason' },
+      ...Object.entries(filterOptionsData.quality_statuses).map(([value, label]) => ({
+        value,
+        label
+      }))
+    ];
+  }, [filterOptionsData]);
 
   // Handle page changes
   useEffect(() => {
@@ -90,7 +177,7 @@ export default function RejectionReportPage() {
       psCode: item.ps_code,
       interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
       interviewerId: item.interviewer_id,
-      interviewDuration: formatDuration(item.total_duration),
+      interviewDuration: item.interview_duration_human || formatDuration(item.total_duration),
       respondentName: item.respondent_name,
       respondentMobile: item.mobile_no || '',
       failReason: item.fail_reason,
@@ -111,7 +198,25 @@ export default function RejectionReportPage() {
   };
 
   const handleFilterChange = (field: string, value: string) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
+    setFilters(prev => {
+      const newFilters = { ...prev, [field]: value };
+      
+      // Clear AC code when level changes away from 'ac' or 'polingstation'
+      if (field === 'reportLevel' && 
+          !['ac', 'polingstation'].includes(value) && 
+          ['ac', 'polingstation'].includes(prev.reportLevel)) {
+        newFilters.acCode = '';
+      }
+      
+      // Clear interviewer_id when level changes away from 'interviewer'
+      if (field === 'reportLevel' && 
+          value !== 'interviewer' && 
+          prev.reportLevel === 'interviewer') {
+        newFilters.interviewerId = '';
+      }
+      
+      return newFilters;
+    });
   };
 
   const handleSearch = () => {
@@ -126,14 +231,23 @@ export default function RejectionReportPage() {
       return <Badge variant="secondary" size="sm">Short Interview</Badge>;
     } else if (reason.includes('Audio reject')) {
       return <Badge variant="outline" size="sm">Audio Reject</Badge>;
+    } else if (reason.includes('System Fail')) {
+      return <Badge variant="error" size="sm">System Fail</Badge>;
+    } else if (reason.includes('GPS Check Fail')) {
+      return <Badge variant="warning" size="sm">GPS Fail</Badge>;
+    } else if (reason.includes('Audio QC Fail')) {
+      return <Badge variant="outline" size="sm">Audio QC Fail</Badge>;
     }
     return <Badge variant="secondary" size="sm">{reason}</Badge>;
   };
 
   // Extract data from API response
-  const rejectionData = data?.interviews ? transformAPIData(data.interviews) : [];
-  const totalPages = data?.pagination?.total_pages || 0;
-  const totalCount = data?.pagination?.total_count || 0;
+  const rejectionData = (data && typeof data === 'object' && 'interviews' in data && Array.isArray(data.interviews)) 
+    ? transformAPIData(data.interviews) : [];
+  const totalPages = (data && typeof data === 'object' && 'pagination' in data && data.pagination && typeof data.pagination === 'object' && 'total_pages' in data.pagination) 
+    ? (data.pagination as any).total_pages || 0 : 0;
+  const totalCount = (data && typeof data === 'object' && 'pagination' in data && data.pagination && typeof data.pagination === 'object' && 'total_count' in data.pagination) 
+    ? (data.pagination as any).total_count || 0 : 0;
 
   // Debug logging
   console.log('API Response:', { data, loading, error });
@@ -149,6 +263,153 @@ export default function RejectionReportPage() {
             <Text>Loading rejection report data...</Text>
           </div>
         </div>
+      </Container>
+    );
+  }
+
+  // Show message when required parameters are missing for specific levels
+  if (
+    ((filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (!filters.acCode || filters.acCode.trim() === '')) ||
+    (filters.reportLevel === 'interviewer' && (!filters.interviewerId || filters.interviewerId.trim() === ''))
+  ) {
+    return (
+      <Container maxWidth="full">
+        <Heading level={1} className="text-2xl font-bold mb-6">
+          Rejection Report
+        </Heading>
+
+        {/* Search Filters */}
+        <Card className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div>
+              <Text className="block text-sm font-medium mb-2">Report Days</Text>
+              <SelectDropdown
+                value={filters.reportDays}
+                onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
+                options={reportDaysOptions}
+                disabled={filterOptionsLoading}
+              />
+            </div>
+
+            {filters.reportDays === 'custom' && (
+              <>
+                <div>
+                  <Text className="block text-sm font-medium mb-2">Start Date</Text>
+                  <Input
+                    type="date"
+                    value={filters.customDate}
+                    onChange={(e) => handleFilterChange('customDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Text className="block text-sm font-medium mb-2">End Date</Text>
+                  <Input
+                    type="date"
+                    value={filters.customDateEnd}
+                    onChange={(e) => handleFilterChange('customDateEnd', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Level</Text>
+              <SelectDropdown
+                value={filters.reportLevel}
+                onChange={(value) => handleFilterChange('reportLevel', Array.isArray(value) ? value[0] : value)}
+                options={reportLevelsOptions}
+                disabled={filterOptionsLoading}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.failReason}
+                onChange={(value) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
+              <Input
+                type="text"
+                placeholder="Search by Mobile Number"
+                value={filters.mobileNo}
+                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
+              />
+            </div>
+
+            {filters.reportLevel === 'interviewer' && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
+                <SelectDropdown
+                  value={filters.interviewerId}
+                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
+                    ...interviewerDropdownOptions
+                  ]}
+                  disabled={interviewerDropdownLoading || filterOptionsLoading}
+                />
+              </div>
+            )}
+
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                />
+              </div>
+            )}
+
+            <div className="flex items-end">
+              <Button onClick={handleSearch} className="w-full">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Message when required parameters are missing */}
+        <Card>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Text className="text-blue-600 mb-4 text-lg">
+                {filters.reportLevel === 'interviewer' 
+                  ? 'Please enter an Interviewer ID to view the rejection report'
+                  : 'Please select an AC Code to view the rejection report'
+                }
+              </Text>
+              <Text className="text-gray-600">
+                {filters.reportLevel === 'interviewer'
+                  ? 'Enter the Interviewer ID in the field above to filter the data.'
+                  : 'Choose an Assembly Constituency from the dropdown above to filter the data.'
+                }
+              </Text>
+            </div>
+          </div>
+        </Card>
       </Container>
     );
   }
@@ -184,31 +445,39 @@ export default function RejectionReportPage() {
               <SelectDropdown
                 value={filters.reportDays}
                 onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
-                options={[
-                  { value: 'all', label: 'All' },
-                  { value: 'today', label: 'Today' },
-                  { value: 'yesterday', label: 'Yesterday' },
-                  { value: 'dby', label: 'Day Before Yesterday' },
-                  { value: 'l3', label: 'Last 3 Days' },
-                  { value: 'l7', label: 'Last 7 Days' },
-                  { value: 'l15', label: 'Last 15 Days' },
-                  { value: 'currentmonth', label: 'Current Month' },
-                  { value: 'custom', label: 'Custom Date' }
-                ]}
+                options={reportDaysOptions}
+                disabled={filterOptionsLoading}
               />
             </div>
+
+            {filters.reportDays === 'custom' && (
+              <>
+                <div>
+                  <Text className="block text-sm font-medium mb-2">Start Date</Text>
+                  <Input
+                    type="date"
+                    value={filters.customDate}
+                    onChange={(e) => handleFilterChange('customDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Text className="block text-sm font-medium mb-2">End Date</Text>
+                  <Input
+                    type="date"
+                    value={filters.customDateEnd}
+                    onChange={(e) => handleFilterChange('customDateEnd', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
 
             <div>
               <Text className="block text-sm font-medium mb-2">Level</Text>
               <SelectDropdown
                 value={filters.reportLevel}
                 onChange={(value) => handleFilterChange('reportLevel', Array.isArray(value) ? value[0] : value)}
-                options={[
-                  { value: '0', label: 'All' },
-                  { value: 'ac', label: 'Ac Level' },
-                  { value: 'interviewer', label: 'Interviewer Level' },
-                  { value: 'polingstation', label: 'Poling Station Level' }
-                ]}
+                options={reportLevelsOptions}
+                disabled={filterOptionsLoading}
               />
             </div>
 
@@ -217,16 +486,8 @@ export default function RejectionReportPage() {
               <SelectDropdown
                 value={filters.failReason}
                 onChange={(value) => handleFilterChange('failReason', Array.isArray(value) ? value[0] : value)}
-                options={[
-                  { value: '', label: 'Select Fail Reason' },
-                  { value: 'autorejectstatus', label: 'System Fail' },
-                  { value: 'shortinterviewstatus', label: 'System Fail : Short Interview' },
-                  { value: 'duplicatemobilenumberstatus', label: 'System Fail: Duplicate Mobile Number' },
-                  { value: 'noaudionomobilestatus', label: 'System Fail: No Audio' },
-                  { value: 'gpsrejectedstatus', label: 'GPS Check Fail' },
-                  { value: 'autorejectedstatus', label: 'Audio QC Fail' },
-                  { value: 'rtastatus', label: 'N+W+RTA Rejected (Manually)' }
-                ]}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
               />
             </div>
 
@@ -249,6 +510,36 @@ export default function RejectionReportPage() {
                 onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
               />
             </div>
+
+            {filters.reportLevel === 'interviewer' && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
+                <SelectDropdown
+                  value={filters.interviewerId}
+                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
+                    ...interviewerDropdownOptions
+                  ]}
+                  disabled={interviewerDropdownLoading || filterOptionsLoading}
+                />
+              </div>
+            )}
+
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                />
+              </div>
+            )}
 
             <div className="flex items-end">
               <Button onClick={handleSearch} className="w-full">
@@ -278,7 +569,7 @@ export default function RejectionReportPage() {
                 <tr>
                   <th>Sr. No</th>
                   <th>Server ID</th>
-                  <th>Ac Name</th>
+                  <th>AC Name</th>
                   <th>PS Code</th>
                   <th>Interview Date</th>
                   <th>Interviewer ID</th>
