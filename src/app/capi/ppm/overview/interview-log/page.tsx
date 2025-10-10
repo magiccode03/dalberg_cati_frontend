@@ -710,122 +710,131 @@ const InterviewLogPage = () => {
                   </Text>
                 </div>
                 
-                <div className="overflow-x-auto">
-                  <Table striped bordered hover className="min-w-full">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-center w-16">S.No</TableHead>
-                        <TableHead className="w-32">Server ID</TableHead>
-                        <TableHead className="w-32">Interview Date</TableHead>
-                        <TableHead className="w-24">Sample Type</TableHead>
-                        <TableHead className="w-48">AC Name</TableHead>
-                        <TableHead className="w-64">PS Name</TableHead>
-                        <TableHead className="w-40">Device ID</TableHead>
-                        <TableHead className="w-32">Interviewer ID</TableHead>
-                        <TableHead className="w-24">Audio QC</TableHead>
-                        <TableHead className="w-32">Audio QC ID</TableHead>
-                        <TableHead className="w-40">Audio Fail Reason</TableHead>
-                        <TableHead className="text-center w-32">QC Outcome</TableHead>
-                        <TableHead className="w-48">Status</TableHead>
-                        <TableHead className="text-center w-24">PS Image</TableHead>
-                        <TableHead className="text-center w-24">Selfie Image</TableHead>
-                        <TableHead className="text-center w-20">Gender</TableHead>
-                        <TableHead className="text-center w-24">Play Audio</TableHead>
-                        <TableHead className="text-center w-24">GPS Map</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    {/* <TableBody>
+                <div className="table-responsive">
+                  <Table className="table table-bordered table-striped table-hover">
+                    <thead className="sticky-header bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Server ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Interview Date</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Sample Type</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">AC Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">PS Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Device ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Interviewer ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Audio QC</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Audio QC ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Audio Fail Reason</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Outcome</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">PS Image</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Selfie Image</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Gender</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Play Audio</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">GPS Map</th>
+                      </tr>
+                    </thead>
+                    {/* <tbody>
                       {interviewData.map((interview, index) => (
-                          <TableRow key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
-                          <TableCell className="text-center text-gray-500 font-medium w-16">
-                              {((currentPage - 1) * pageSize) + index + 1}
-                          </TableCell>
-                          <TableCell className="w-32">
+                        <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                            {((currentPage - 1) * pageSize) + index + 1}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200">
                             <span className="font-mono text-sm font-medium text-blue-600">
-                                {interview.server_id}
+                              {interview.server_id}
                             </span>
-                          </TableCell>
-                            <TableCell className="w-32 font-mono text-sm">{interview.interview_date}</TableCell>
-                            <TableCell className="w-24">{interview.sample_type}</TableCell>
-                            <TableCell className="w-48">{interview.ac_name}</TableCell>
-                            <TableCell className="w-64">{interview.ps_name}</TableCell>
-                            <TableCell className="w-40">{interview.device_id}</TableCell>
-                            <TableCell className="w-32">{interview.interviewer_id || '-'}</TableCell>
-                            <TableCell className="w-24">{interview.audio_qc_label}</TableCell>
-                            <TableCell className="w-32">{interview.audio_qc_id || '-'}</TableCell>
-                            <TableCell className="w-40">{interview.audio1_status_label || '-'}</TableCell>
-                          <TableCell className="text-center w-32">
-                              {getQcOutcomeBadge(interview.qc_outcome)}
-                          </TableCell>
-                            <TableCell className="w-48">{interview.status_label}</TableCell>
-                          <TableCell className="text-center w-24">
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm">{interview.interview_date}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.sample_type}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.ac_name}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.ps_name}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.device_id}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.interviewer_id || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio_qc_label}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio_qc_id || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio1_status_label || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {getQcOutcomeBadge(interview.qc_outcome)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.status_label}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
-                                {interview.ps_image_available ? (
-                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                    <Image className="w-4 h-4 text-green-600" />
-                                  </div>
+                              {interview.ps_image_available ? (
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <Image className="w-4 h-4 text-green-600" />
+                                </div>
                               ) : (
                                 <Image className="w-5 h-5 text-gray-400" />
                               )}
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center w-24">
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
-                                {interview.selfie_image_available ? (
-                                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                    <User className="w-4 h-4 text-green-600" />
-                                  </div>
+                              {interview.selfie_image_available ? (
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <User className="w-4 h-4 text-green-600" />
+                                </div>
                               ) : (
                                 <User className="w-5 h-5 text-gray-400" />
                               )}
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center w-20">
-                              <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-                                {interview.gender_label || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                              {interview.gender_label || '-'}
                             </span>
-                          </TableCell>
-                          <TableCell className="text-center w-24">
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
                               <button 
-                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                    interview.audio_playback_available 
-                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                  title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
-                                  disabled={!interview.audio_playback_available}
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.audio_playback_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                                disabled={!interview.audio_playback_available}
                               >
                                 <Volume2 className="w-4 h-4" />
                               </button>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center w-24">
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
                               <button 
-                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                    interview.gps_available 
-                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                  title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
-                                  disabled={!interview.gps_available}
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.gps_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                                disabled={!interview.gps_available}
                               >
                                 <MapPin className="w-4 h-4" />
                               </button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </td>
+                        </tr>
                       ))}
-                    </TableBody> */}
+                    </tbody> */}
                   </Table>
                 </div>
-{/*                 
-                <div className="mt-6 pt-4 border-t border-gray-200">
+
+                {/* Empty State */}
+                {interviewData.length === 0 && !loading && (
+                  <div className="text-center py-12">
+                    <Text className="text-gray-500 text-lg">
+                      No interview data found.
+                    </Text>
+                  </div>
+                )}
+
+                {/* <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard
                     currentPage={currentPage}
-                      totalPages={totalPages}
-                      totalItems={totalCount}
+                    totalPages={totalPages}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={handlePageChange}
                     className="justify-center"

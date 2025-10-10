@@ -118,7 +118,7 @@ export default function RejectionReportPage() {
     if (!acDropdownData) return [];
     return Object.entries(acDropdownData).map(([code, name]) => ({
       value: code,
-      label: `${code} - ${name}`
+      label: `${name} (${code})`
     }));
   }, [acDropdownData]);
 
