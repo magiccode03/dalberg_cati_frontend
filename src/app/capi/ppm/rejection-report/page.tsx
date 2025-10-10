@@ -363,6 +363,8 @@ export default function RejectionReportPage() {
                     ...interviewerDropdownOptions
                   ]}
                   disabled={interviewerDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
                 />
               </div>
             )}
@@ -378,6 +380,8 @@ export default function RejectionReportPage() {
                     ...acDropdownOptions
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
                 />
               </div>
             )}
@@ -522,6 +526,8 @@ export default function RejectionReportPage() {
                     ...interviewerDropdownOptions
                   ]}
                   disabled={interviewerDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
                 />
               </div>
             )}
@@ -537,6 +543,8 @@ export default function RejectionReportPage() {
                     ...acDropdownOptions
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
                 />
               </div>
             )}
