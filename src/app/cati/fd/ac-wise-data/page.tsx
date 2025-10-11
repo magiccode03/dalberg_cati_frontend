@@ -69,6 +69,44 @@ export default function CATIACWiseDataPage() {
     });
   };
 
+  const handleDownloadCSV = () => {
+    // Prepare CSV data
+    const csvHeaders = [
+      'AC Code',
+      'AC Name', 
+      'District Name',
+      'Call Attempted',
+      'Call Connected',
+      'Success'
+    ];
+
+    const csvData = getSortedData().map(item => [
+      item.ac_code,
+      item.ac_name,
+      item.district_name,
+      item.call_attempt,
+      item.call_connected,
+      item.success
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `cati-ac-wise-data-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
@@ -87,6 +125,14 @@ export default function CATIACWiseDataPage() {
               Total {acData.length} items.
             </div>
           </div>
+          <button
+            onClick={handleDownloadCSV}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            title="Download AC-Wise Call Progress Report as CSV"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download</span>
+          </button>
         </div>
 
         {loading ? (
