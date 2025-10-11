@@ -95,7 +95,17 @@ export default function Sidebar() {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const menuItems = user ? getMenuByRole(user.role, user.system) : [];
+  // Determine current system based on pathname for FD role
+  const getCurrentSystem = (): 'capi' | 'cati' | undefined => {
+    if (user?.role === 'fd') {
+      if (pathname.startsWith('/cati/fd')) return 'cati';
+      if (pathname.startsWith('/capi/fd')) return 'capi';
+    }
+    return user?.system;
+  };
+
+  const currentSystem = getCurrentSystem();
+  const menuItems = user ? getMenuByRole(user.role, currentSystem) : [];
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => ({ ...prev, [id]: !prev[id] }));
