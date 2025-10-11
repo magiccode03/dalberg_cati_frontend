@@ -33,7 +33,13 @@ interface FormField {
   options?: FormOption[];
   placeholder?: string;
   hint?: string | { en?: string; hi?: string; bn?: string };
-  survey_q_tag?: string;
+  survey_q_tag?: string | {
+    tag: string;
+    options: Array<{
+      value: number;
+      lable: { en?: string; hi?: string; bn?: string };
+    }>;
+  };
   min?: number;
   max?: number;
   maxLength?: number;
@@ -172,6 +178,37 @@ export default function QCFormPage() {
   const getLabel = (label: string | { en?: string; hi?: string; bn?: string }): string => {
     if (typeof label === 'string') return label;
     return label[language as keyof typeof label] || label.en || '';
+  };
+
+  // Helper function to get survey answer display value
+  const getSurveyAnswerDisplay = (field: FormField): string | null => {
+    if (!field.survey_q_tag) return null;
+    
+    // Handle object structure with options
+    if (typeof field.survey_q_tag === 'object' && field.survey_q_tag.tag && field.survey_q_tag.options) {
+      const tag = field.survey_q_tag.tag;
+      const options = field.survey_q_tag.options;
+      const surveyValue = instanceData[tag];
+      
+      if (surveyValue === undefined || surveyValue === null) return null;
+      
+      // Find matching option
+      const matchingOption = options.find(opt => opt.value == surveyValue);
+      if (matchingOption && matchingOption.lable) {
+        return getLabel(matchingOption.lable);
+      }
+      
+      // Fallback to raw value if no matching option found
+      return String(surveyValue);
+    }
+    
+    // Handle simple string tag
+    if (typeof field.survey_q_tag === 'string') {
+      const surveyValue = instanceData[field.survey_q_tag];
+      return surveyValue !== undefined && surveyValue !== null ? String(surveyValue) : null;
+    }
+    
+    return null;
   };
 
   // Get audio URL from instance data
@@ -486,13 +523,13 @@ export default function QCFormPage() {
   const determineQCOutcome = (): number => {
     const audioStatus = formData.qc_audio_status;
     
-    // If audio status is 3 (Irrelevant) or 4 (Interviewer more than respondent), it's fail
-    if (audioStatus === '3' || audioStatus === '4') {
+    // If audio status is 2 (No Conversation) or 3 (Irrelevant), it's fail
+    if (audioStatus === '2' || audioStatus === '3') {
       return 2; // Fail
     }
     
-    // If audio status is 1 or 2, check other mandatory questions
-    if (audioStatus === '1' || audioStatus === '2') {
+    // If audio status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
+    if (audioStatus === '1' || audioStatus === '4') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
       const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
       
@@ -606,10 +643,10 @@ export default function QCFormPage() {
                 {getLabel(field.hint)}
               </Text>
             )}
-            {field.survey_q_tag && instanceData[field.survey_q_tag] && (
+            {getSurveyAnswerDisplay(field) && (
               <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded text-xs">
                 <Text className="text-blue-800 dark:text-blue-300">
-                  Survey Answer: <span className="font-semibold">{instanceData[field.survey_q_tag]}</span>
+                  Survey Answer: <span className="font-semibold">{getSurveyAnswerDisplay(field)}</span>
                 </Text>
               </div>
             )}
@@ -813,9 +850,9 @@ export default function QCFormPage() {
                       Your browser does not support the audio element.
                     </audio>
                   </div>
-                  <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                  {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     Duration: {formatDuration(instanceData.audio1_duration)}
-                  </Text>
+                  </Text> */}
                 </div>
               </div>
             </Card>
@@ -832,9 +869,12 @@ export default function QCFormPage() {
             <div>
               <Heading level={4} className="text-base sm:text-lg md:text-xl">Audio QC Form</Heading>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
-                {/* <div>Server ID: <span className="font-mono font-semibold">{serverId}</span></div> */}
+                <div>Server ID: <span className="font-mono font-semibold">{serverId}</span></div>
                 {instanceData.ac_name && (
                   <div>AC: <span className="font-semibold">{instanceData.ac_code} - {instanceData.ac_name}</span></div>
+                )}
+                {instanceData.interviewer_id && (
+                  <div>Interviewer ID: <span className="font-semibold">{instanceData.interviewer_id} - {instanceData.interviewer_name}</span></div>
                 )}
                 {/* {instanceData.district_name && (
                   <div>District: <span className="font-semibold">{instanceData.district_name}</span></div>
@@ -882,7 +922,7 @@ export default function QCFormPage() {
               className="w-full sm:w-auto sm:min-w-[200px] bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
             >
               <i className="fa fa-paper-plane mr-2"></i>
-              {isSubmitting ? 'Processing...' : 'Submit QC Evaluation'}
+              {isSubmitting ? 'Processing...' : 'Submit'}
             </Button>
           </div>
         </Card>
