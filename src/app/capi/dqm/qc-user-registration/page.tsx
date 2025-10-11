@@ -515,12 +515,17 @@ export default function QCUserRegistrationPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    QC USER INFO
-                  </Heading>
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col">
+                  <div className="flex items-center">
+                    <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+                    <Heading level={4} className="text-lg font-semibold text-gray-900">
+                      QC USER INFO
+                    </Heading>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
+                    Total <span className="font-semibold">{totalCount}</span> items.
+                  </div>
                 </div>
                 <Button
                   variant="primary"
@@ -604,9 +609,9 @@ export default function QCUserRegistrationPage() {
             </div>
 
             {/* Table Footer */}
-            <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-              <div className="text-sm text-gray-700">
-                Total <span className="font-semibold">{totalCount}</span> items.
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-6 py-4 border-t border-gray-200">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
               </div>
               <div>
                 <PaginationStandard

@@ -133,7 +133,7 @@ export default function CATIInterviewAudioPage() {
           const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewAudioData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
             .map((str: unknown) => JSON.parse(str as string) as { ac_code: number; ac_name: string });
           const acOptionsData = [
-            { value: '', label: 'Select ACs' },
+            { value: '', label: 'All ACs' },
             ...uniqueACs
               .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
               .map(ac => ({
