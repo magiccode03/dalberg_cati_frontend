@@ -180,6 +180,7 @@ export const API_ENDPOINTS = {
   FD: {
     INTERNAL_DASHBOARD: '/fd/internal-dashboard',
     INTERVIEW_AUDIO: '/cati/interviews/ac-audio',
+    INTERVIEW_AUDIO_SEARCH_CAPI: '/fd/interviewaudio/search',
     AC_WISE_DATA: '/cati/ac-progress-report',
   },
   
@@ -1854,7 +1855,54 @@ class ApiService {
     return this.request(`${API_ENDPOINTS.FD.INTERNAL_DASHBOARD}${queryString}`);
   }
 
-  async getInterviewAudio(params?: { page?: number; limit?: number; server_id?: string; ac_code?: string; interview_date?: string }): Promise<any> {
+  async getInterviewAudio(params?: { page?: number; limit?: number; server_id?: string; ac_code?: string; interview_date?: string }): Promise<ApiResponse<{
+    data: Array<{
+      server_id: number;
+      ac_code: number;
+      ac_name: string;
+      interview_date: string;
+      interview_audio: string;
+    }>;
+    pagination?: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+    filters?: {
+      ac_codes?: Array<{
+        ac_code: number;
+        ac_name: string;
+      }>;
+      interview_dates?: string[];
+    };
+  }>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+    return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO_SEARCH_CAPI}${queryString}`);
+  }
+
+  async getCatiInterviewAudio(params?: { page?: number; limit?: number; server_id?: string; ac_code?: string; interview_date?: string }): Promise<ApiResponse<{
+    data: Array<{
+      id: number;
+      ac_code: number;
+      ac_name: string;
+      audio: string;
+      interview_date: string;
+    }>;
+    pagination?: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
+    filters?: {
+      ac_codes?: Array<{
+        ac_code: number;
+        ac_name: string;
+      }>;
+      interview_dates?: string[];
+    };
+  }>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO}${queryString}`);
   }
