@@ -274,12 +274,12 @@ export default function CastePage() {
                       <tr>
                         <td rowSpan={4} className="font-semibold text-center">
                           {activeTab === 'ACs' ? 
-                            `${(row as DetailedCasteACData).ac_code}-${(row as DetailedCasteACData).ac_name}` :
+                            `${(row as DetailedCasteACData).ac_name} (${(row as DetailedCasteACData).ac_code})` :
                             activeTab === 'PCs' ?
-                            `${(row as DetailedCastePCData).pc_code}-${(row as DetailedCastePCData).pc_name}${(row as DetailedCastePCData).district_name ? ` (${(row as DetailedCastePCData).district_name})` : ''}` :
+                            `${(row as DetailedCastePCData).pc_name} (${(row as DetailedCastePCData).pc_code})${(row as DetailedCastePCData).district_name ? ` - ${(row as DetailedCastePCData).district_name}` : ''}` :
                             activeTab === 'Districts' ?
-                            `${(row as DetailedCasteDistrictData).district_code}-${(row as DetailedCasteDistrictData).district_name}` :
-                            `${(row as DetailedCasteZoneData).region_code}-${(row as DetailedCasteZoneData).region_name}`
+                            `${(row as DetailedCasteDistrictData).district_name} (${(row as DetailedCasteDistrictData).district_code})` :
+                            `${(row as DetailedCasteZoneData).region_name} (${(row as DetailedCasteZoneData).region_code})`
                           }
                         </td>
                         <td rowSpan={4} className="font-semibold text-center">

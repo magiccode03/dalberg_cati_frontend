@@ -1928,8 +1928,15 @@ class ApiService {
 
   // Interview Masters Methods
   async getInterviewMasters(params?: { page?: number; limit?: number }): Promise<ApiResponse<InterviewMastersResponse>> {
-    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    return this.request(`${API_ENDPOINTS.INTERVIEW_MASTERS}${queryString}`);
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    
+    const url = queryParams.toString() 
+      ? `${API_ENDPOINTS.INTERVIEW_MASTERS}?${queryParams.toString()}`
+      : `${API_ENDPOINTS.INTERVIEW_MASTERS}`;
+    
+    return this.request(url);
   }
 
   async getInterviewerAssignedACs(userId: string): Promise<ApiResponse<{ user_id: number; fullname: string; assigned_ac: number[] }>> {
@@ -1957,8 +1964,16 @@ class ApiService {
   }
 
   // Interview Assigned Methods
-  async getAssignedInterviewers(): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[]; agency_name: string }> }>> {
-    return this.request(`${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list`);
+  async getAssignedInterviewers(params?: { page?: number; limit?: number }): Promise<ApiResponse<{ total: number; data: Array<{ user_id: number; fullname: string; login_id: string; assigned_ac: number[]; agency_name?: string }> }>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+    
+    const url = queryParams.toString() 
+      ? `${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list?${queryParams.toString()}`
+      : `${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list`;
+    
+    return this.request(url);
   }
 
   async getInterviewMasterForUpdate(userId: string): Promise<ApiResponse<{ user_id: number; fullname: string; login_id: string; total_data_submitted: number; is_active: boolean; assigned_ac: number[]; updated_at: string }>> {

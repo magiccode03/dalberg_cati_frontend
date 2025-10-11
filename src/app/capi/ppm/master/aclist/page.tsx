@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2, Edit, Plus, Search } from 'lucide-react';
+import { Loader2, Edit, Plus, Search, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { apiService } from '@/lib/api';
 
@@ -123,6 +123,44 @@ const ACListPage = () => {
 
   // Fetch data from API
   const fetchACData = async () => {
+    return fetchACDataWithFilters(filters);
+  };
+
+  // Fetch data on component mount and when page changes
+  useEffect(() => {
+    fetchAgencies(); // Load agencies first
+    fetchACData();
+  }, [currentPage]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page when searching
+    fetchACData();
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleClearFilters = () => {
+    // Reset filters to empty values
+    const clearedFilters = {
+      agencyId: '',
+      acCode: '',
+    };
+    
+    setFilters(clearedFilters);
+    setCurrentPage(1);
+    
+    // Fetch data with cleared filters immediately
+    fetchACDataWithFilters(clearedFilters);
+  };
+
+  // Helper function to fetch data with specific filters
+  const fetchACDataWithFilters = async (customFilters = filters) => {
     try {
       setLoading(true);
       setError(null);
@@ -132,8 +170,8 @@ const ACListPage = () => {
       // Build query parameters
       const queryParams = new URLSearchParams();
       
-      if (filters.agencyId) queryParams.append('agency_id', filters.agencyId);
-      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
+      if (customFilters.agencyId) queryParams.append('agency_id', customFilters.agencyId);
+      if (customFilters.acCode) queryParams.append('ac_code', customFilters.acCode);
       
       // Add pagination
       queryParams.append('page', currentPage.toString());
@@ -217,25 +255,6 @@ const ACListPage = () => {
     }
   };
 
-  // Fetch data on component mount and when filters/page change
-  useEffect(() => {
-    fetchAgencies(); // Load agencies first
-    fetchACData();
-  }, [currentPage, filters]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset to first page when searching
-    fetchACData();
-  };
-
-  const handleFilterChange = (field: string, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   // Navigation functions
   const handleUpdateAgency = (acItem: ACData) => {
     router.push(`/capi/ppm/master/aclist/acupdate?ac_code=${acItem.acCode}`);
@@ -305,10 +324,19 @@ const ACListPage = () => {
                 searchable={true}
               />
             </div>
-            <div className="flex items-end">
-              <Button type="submit" className="w-full">
-              <Search className="w-4 h-4 mr-2" />
+            <div className="flex items-end gap-2">
+              <Button type="submit" className="flex-1">
+                <Search className="w-4 h-4 mr-2" />
                 Search
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
             </div>
           </div>
