@@ -12,8 +12,9 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2, Image, User } from 'lucide-react';
+import { Volume2, MapPin, Loader2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
 // TypeScript interfaces for API response
 interface InterviewData {
@@ -77,6 +78,7 @@ interface InterviewData {
   ps_image_available: boolean;
   selfie_image_available: boolean;
   audio_playback_available: boolean;
+  audio1: string;
 }
 
 // Display data interface for transformed data
@@ -99,6 +101,7 @@ interface DisplayInterviewData {
   ps_image_available: boolean;
   selfie_image_available: boolean;
   audio_playback_available: boolean;
+  audio1: string;
 }
 
 interface PaginationData {
@@ -174,6 +177,11 @@ const InterviewLogPage = () => {
   // Polling stations dropdown state
   const [pollingStations, setPollingStations] = useState<{ value: string; label: string }[]>([]);
   const [pollingStationsLoading, setPollingStationsLoading] = useState(false);
+
+  // Audio modal state
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [selectedServerId, setSelectedServerId] = useState<string>('');
+  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
 
   // Fetch polling stations from API based on selected AC code
   const fetchPollingStations = async (acCode?: string) => {
@@ -486,6 +494,7 @@ const InterviewLogPage = () => {
       ps_image_available: item.ps_image_available,
       selfie_image_available: item.selfie_image_available,
       audio_playback_available: item.audio_playback_available,
+      audio1: item.audio1 || '',
     }));
   };
 
@@ -585,6 +594,18 @@ const InterviewLogPage = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handlePlayAudio = (serverId: string, audioFile: string) => {
+    setSelectedServerId(serverId);
+    setSelectedAudioFile(audioFile);
+    setAudioModalOpen(true);
+  };
+
+  const handleCloseAudioModal = () => {
+    setAudioModalOpen(false);
+    setSelectedServerId('');
+    setSelectedAudioFile('');
   };
 
   return (
@@ -1080,6 +1101,14 @@ const InterviewLogPage = () => {
         </div>
         </div>
       </div>
+
+      {/* Audio Player Modal */}
+      <AudioPlayerModal
+        isOpen={audioModalOpen}
+        onClose={handleCloseAudioModal}
+        serverId={selectedServerId}
+        audioFileName={selectedAudioFile}
+      />
     </Container>
   );
 };
