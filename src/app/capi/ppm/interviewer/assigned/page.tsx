@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2, Eye, Search } from 'lucide-react';
+import { Loader2, Search, Edit, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface AssignedInterviewerData {
@@ -46,26 +46,7 @@ const AssignedInterviewerContent = () => {
 
   // Fetch data from API with comprehensive filtering
   const fetchInterviewerData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Check if we need comprehensive filtering
-      const needsComprehensiveFiltering = filters.id.trim() !== '' || filters.fullName.trim() !== '' || filters.zonalManager.trim() !== '';
-      
-      if (needsComprehensiveFiltering) {
-        // Fetch multiple pages to get comprehensive results
-        await fetchAllDataForFiltering();
-      } else {
-        // Normal pagination
-        await fetchPageData();
-      }
-    } catch (err) {
-      console.error('Error fetching assigned interviewer data:', err);
-      setError('Error fetching assigned interviewer data');
-    } finally {
-      setLoading(false);
-    }
+    return fetchInterviewerDataWithFilters(filters);
   };
 
   // Fetch data for a specific page
@@ -163,7 +144,7 @@ const AssignedInterviewerContent = () => {
 
   useEffect(() => {
     fetchInterviewerData();
-  }, [currentPage, filters]);
+  }, [currentPage]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
@@ -174,8 +155,129 @@ const AssignedInterviewerContent = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔍 Search button clicked with filters:', filters);
     setCurrentPage(1); // Reset to first page when searching
-    fetchInterviewerData();
+    fetchInterviewerDataWithFilters(filters); // Use current filters directly
+  };
+
+  const handleClearFilters = () => {
+    // Reset filters to empty values
+    const clearedFilters = {
+      id: '',
+      fullName: '',
+      zonalManager: '',
+    };
+    
+    setFilters(clearedFilters);
+    setCurrentPage(1);
+    
+    // Fetch data with cleared filters immediately
+    fetchInterviewerDataWithFilters(clearedFilters);
+  };
+
+  // Helper function to fetch data with specific filters
+  const fetchInterviewerDataWithFilters = async (customFilters = filters) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Check if we need comprehensive filtering
+      const needsComprehensiveFiltering = customFilters.id.trim() !== '' || customFilters.fullName.trim() !== '' || customFilters.zonalManager.trim() !== '';
+      
+      if (needsComprehensiveFiltering) {
+        // Fetch multiple pages to get comprehensive results
+        await fetchAllDataForFilteringWithCustomFilters(customFilters);
+      } else {
+        // Normal pagination
+        await fetchPageData();
+      }
+    } catch (err) {
+      console.error('Error fetching assigned interviewer data:', err);
+      setError('Error fetching assigned interviewer data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all data for comprehensive filtering with custom filters
+  const fetchAllDataForFilteringWithCustomFilters = async (customFilters: typeof filters) => {
+    console.log('Fetching all data for filtering with custom filters...');
+    
+    let allData: AssignedInterviewerData[] = [];
+    let currentPageNum = 1;
+    let hasMoreData = true;
+    const maxPages = 10; // Limit to prevent infinite loops
+    
+    while (hasMoreData && currentPageNum <= maxPages) {
+      try {
+        const apiParams = {
+          page: currentPageNum,
+          limit: pageSize
+        };
+        
+        console.log(`Fetching page ${currentPageNum}:`, apiParams);
+        
+        const response = await apiService.getAssignedInterviewers(apiParams);
+        
+        if (response.success && response.data) {
+          allData = [...allData, ...response.data.data];
+          
+          // Check if there are more pages
+          hasMoreData = currentPageNum < Math.ceil(response.data.total / pageSize);
+          currentPageNum++;
+        } else {
+          hasMoreData = false;
+        }
+      } catch (err) {
+        console.error(`Error fetching page ${currentPageNum}:`, err);
+        hasMoreData = false;
+      }
+    }
+    
+    console.log(`Fetched ${allData.length} total records`);
+    
+    // Remove duplicates based on user_id
+    const uniqueData = allData.filter((item, index, self) => 
+      index === self.findIndex(t => t.user_id === item.user_id)
+    );
+    
+    console.log(`After removing duplicates: ${uniqueData.length} records`);
+    
+    // Apply filtering with custom filters
+    let filteredData = uniqueData;
+    
+    console.log('🔍 Applying filters:', customFilters);
+    console.log('📊 Data before filtering:', uniqueData.length, 'records');
+    
+    if (customFilters.id.trim() !== '') {
+      console.log('🔍 Filtering by ID:', customFilters.id);
+      filteredData = filteredData.filter(item => 
+        item.login_id.toLowerCase().includes(customFilters.id.toLowerCase())
+      );
+      console.log('📊 After ID filter:', filteredData.length, 'records');
+    }
+    
+    if (customFilters.fullName.trim() !== '') {
+      console.log('🔍 Filtering by Full Name:', customFilters.fullName);
+      filteredData = filteredData.filter(item => 
+        item.fullname.toLowerCase().includes(customFilters.fullName.toLowerCase())
+      );
+      console.log('📊 After Full Name filter:', filteredData.length, 'records');
+    }
+    
+    if (customFilters.zonalManager.trim() !== '') {
+      console.log('🔍 Filtering by Zonal Manager:', customFilters.zonalManager);
+      filteredData = filteredData.filter(item => 
+        (item.agency_name || '').toLowerCase().includes(customFilters.zonalManager.toLowerCase())
+      );
+      console.log('📊 After Zonal Manager filter:', filteredData.length, 'records');
+    }
+    
+    console.log(`Filtered to ${filteredData.length} records`);
+    
+    setInterviewerData(filteredData);
+    setTotalCount(filteredData.length);
+    setTotalPages(1); // Show all filtered results
   };
 
   if (loading && currentPage === 1) {
@@ -216,7 +318,7 @@ const AssignedInterviewerContent = () => {
       {/* Search Form */}
       <Card className="mb-3">
         <form onSubmit={handleSearch} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <Text className="text-sm font-medium mb-2">Mobile Number</Text>
               <Input
@@ -244,10 +346,19 @@ const AssignedInterviewerContent = () => {
                 onChange={(e) => handleFilterChange('zonalManager', e.target.value)}
               />
             </div>
-            <div className="flex items-end">
-              <Button type="submit" className="w-full">
+            <div className="col-span-2 flex items-end gap-2">
+              <Button type="submit" className="flex-1">
                 <Search className="w-4 h-4 mr-2" />
                 Search
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
             </div>
           </div>
@@ -317,7 +428,7 @@ const AssignedInterviewerContent = () => {
                       onClick={() => router.push(`/capi/ppm/interviewer/assigned/update?user_id=${item.user_id}`)}
                       title="Update Assigned ACs"
                     >
-                      <Eye className="h-4 w-4" />
+                      <Edit className="h-4 w-4" />
                     </Button>
                   </td>
                 </tr>

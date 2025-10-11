@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2, Eye, Search } from 'lucide-react';
+import { Loader2, Search, Edit, X } from 'lucide-react';
 import { apiService, InterviewMaster, InterviewMastersResponse } from '@/lib/api';
 
 const MasterInterviewerContent = () => {
@@ -32,26 +32,7 @@ const MasterInterviewerContent = () => {
 
   // Fetch data from API with comprehensive filtering
   const fetchInterviewerData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Check if we need comprehensive filtering
-      const needsComprehensiveFiltering = filters.fullName.trim() !== '' || filters.loginId.trim() !== '';
-      
-      if (needsComprehensiveFiltering) {
-        // Fetch multiple pages to get comprehensive results
-        await fetchAllDataForFiltering();
-      } else {
-        // Normal pagination
-        await fetchPageData();
-      }
-    } catch (err) {
-      console.error('Error fetching interviewer data:', err);
-      setError('Error fetching interviewer data');
-    } finally {
-      setLoading(false);
-    }
+    return fetchInterviewerDataWithFilters(filters);
   };
 
   // Fetch data for a specific page
@@ -143,7 +124,7 @@ const MasterInterviewerContent = () => {
 
   useEffect(() => {
     fetchInterviewerData();
-  }, [currentPage, filters]);
+  }, [currentPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -160,6 +141,110 @@ const MasterInterviewerContent = () => {
     e.preventDefault();
     setCurrentPage(1); // Reset to first page when searching
     fetchInterviewerData();
+  };
+
+  const handleClearFilters = () => {
+    // Reset filters to empty values
+    const clearedFilters = {
+      fullName: '',
+      loginId: '',
+    };
+    
+    setFilters(clearedFilters);
+    setCurrentPage(1);
+    
+    // Fetch data with cleared filters immediately
+    fetchInterviewerDataWithFilters(clearedFilters);
+  };
+
+  // Helper function to fetch data with specific filters
+  const fetchInterviewerDataWithFilters = async (customFilters = filters) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Check if we need comprehensive filtering
+      const needsComprehensiveFiltering = customFilters.fullName.trim() !== '' || customFilters.loginId.trim() !== '';
+      
+      if (needsComprehensiveFiltering) {
+        // Fetch multiple pages to get comprehensive results
+        await fetchAllDataForFilteringWithCustomFilters(customFilters);
+      } else {
+        // Normal pagination
+        await fetchPageData();
+      }
+    } catch (err) {
+      console.error('Error fetching interviewer data:', err);
+      setError('Error fetching interviewer data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch all data for comprehensive filtering with custom filters
+  const fetchAllDataForFilteringWithCustomFilters = async (customFilters: typeof filters) => {
+    console.log('Fetching all data for filtering with custom filters...');
+    
+    let allData: any[] = [];
+    let currentPageNum = 1;
+    let hasMoreData = true;
+    const maxPages = 10; // Limit to prevent infinite loops
+    
+    while (hasMoreData && currentPageNum <= maxPages) {
+      try {
+        const apiParams = {
+          page: currentPageNum,
+          limit: pageSize
+        };
+        
+        console.log(`Fetching page ${currentPageNum}:`, apiParams);
+        
+        const response = await apiService.getInterviewMasters(apiParams);
+        
+        if (response.success && response.data) {
+          allData = [...allData, ...response.data.data];
+          
+          // Check if there are more pages
+          hasMoreData = currentPageNum < response.data.total_pages;
+          currentPageNum++;
+        } else {
+          hasMoreData = false;
+        }
+      } catch (err) {
+        console.error(`Error fetching page ${currentPageNum}:`, err);
+        hasMoreData = false;
+      }
+    }
+    
+    console.log(`Fetched ${allData.length} total records`);
+    
+    // Remove duplicates based on id
+    const uniqueData = allData.filter((item, index, self) => 
+      index === self.findIndex(t => t.id === item.id)
+    );
+    
+    console.log(`After removing duplicates: ${uniqueData.length} records`);
+    
+    // Apply filtering with custom filters
+    let filteredData = uniqueData;
+    
+    if (customFilters.fullName.trim() !== '') {
+      filteredData = filteredData.filter(item => 
+        item.fullname.toLowerCase().includes(customFilters.fullName.toLowerCase())
+      );
+    }
+    
+    if (customFilters.loginId.trim() !== '') {
+      filteredData = filteredData.filter(item => 
+        item.login_id.toLowerCase().includes(customFilters.loginId.toLowerCase())
+      );
+    }
+    
+    console.log(`Filtered to ${filteredData.length} records`);
+    
+    setInterviewerData(filteredData);
+    setTotalCount(filteredData.length);
+    setTotalPages(1); // Show all filtered results
   };
 
 
@@ -250,10 +335,19 @@ const MasterInterviewerContent = () => {
                 onChange={(e) => handleFilterChange('loginId', e.target.value)}
               />
             </div>
-            <div className="flex items-end">
-              <Button type="submit" className="w-full">
+            <div className="flex items-end gap-2">
+              <Button type="submit" className="flex-1">
                 <Search className="w-4 h-4 mr-2" />
                 Search
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
             </div>
           </div>
@@ -312,12 +406,12 @@ const MasterInterviewerContent = () => {
                       className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
                       onClick={() => handleViewACs(item.id.toString())}
                       disabled={loadingUserId === item.id.toString()}
-                      title="View ACs"
+                      title="Update ACs"
                     >
                       {loadingUserId === item.id.toString() ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Eye className="h-4 w-4" />
+                        <Edit className="h-4 w-4" />
                       )}
                     </Button>
                   </td>

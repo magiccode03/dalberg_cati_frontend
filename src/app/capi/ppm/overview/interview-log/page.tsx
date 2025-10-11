@@ -158,14 +158,19 @@ const InterviewLogPage = () => {
       const data: APIResponse = response.data;
       
       if (data.success && data.data.interviews) {
-        setInterviewData(transformAPIData(data.data.interviews));
-        setTotalCount(data.data.pagination.total_count);
+        const transformedData = transformAPIData(data.data.interviews);
+        setInterviewData(transformedData);
+        // Use the actual count from pagination, or 0 if no data
+        const actualCount = transformedData.length > 0 ? data.data.pagination.total_count : 0;
+        setTotalCount(actualCount);
         setTotalPages(data.data.pagination.total_pages);
         setError(null);
       } else {
         console.error('API did not return interview data:', data);
-        setInterviewData(transformAPIData(sampleInterviewData));
-        setError('No data received from API, using sample data');
+        setInterviewData([]);
+        setTotalCount(0);
+        setTotalPages(0);
+        setError('No data received from API');
       }
     } catch (err: any) {
       console.error('❌ Error fetching interview logs:', err);
@@ -186,10 +191,10 @@ const InterviewLogPage = () => {
         setApiError(`Failed to load interview data: ${err.response?.data?.message || err.message}`);
       }
       
-      // Use sample data as fallback
-      setInterviewData(transformAPIData(sampleInterviewData));
-      setTotalCount(108333);
-      setTotalPages(25);
+      // Set empty data when API fails
+      setInterviewData([]);
+      setTotalCount(0);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
@@ -543,20 +548,29 @@ const InterviewLogPage = () => {
               {/* Audio QC */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio QC</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '1', label: 'Pending' },
                     { value: '2', label: 'Completed' },
                     { value: '0', label: 'NA' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_qc', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_qc_${option.value}`}
+                        checked={filters.audio_qc.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_qc', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_qc_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -564,21 +578,30 @@ const InterviewLogPage = () => {
               {/* Audio QC Status */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio QC Status</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '1', label: 'Pass' },
                     { value: '2', label: 'Fail' },
                     { value: '3', label: 'Pending' },
                     { value: '0', label: 'NA' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc_status.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_qc_status', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_qc_status_${option.value}`}
+                        checked={filters.audio_qc_status.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_qc_status', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_qc_status_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -586,7 +609,7 @@ const InterviewLogPage = () => {
               {/* Audio QC Status (Detailed) */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio QC Status (Detailed)</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '1', label: 'Survey Conversation can be heard' },
                     { value: '2', label: 'No Conversation' },
@@ -595,14 +618,23 @@ const InterviewLogPage = () => {
                     { value: '4', label: 'Can hear the interviewer more than the respondent' },
                     { value: '5', label: 'The interviewer is asking questions mechanically' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc_status_detailed.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_qc_status_detailed', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_qc_${option.value}`}
+                        checked={filters.audio_qc_status_detailed.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_qc_status_detailed', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_qc_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -610,21 +642,30 @@ const InterviewLogPage = () => {
               {/* Audio Re-QC */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio Re-QC</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '1', label: 'Pass' },
                     { value: '2', label: 'Fail' },
                     { value: '3', label: 'Pending' },
                     { value: '0', label: 'NA' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_re_qc_status.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_re_qc_status', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_re_qc_${option.value}`}
+                        checked={filters.audio_re_qc_status.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_re_qc_status', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_re_qc_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -632,7 +673,7 @@ const InterviewLogPage = () => {
               {/* Status */}
               <div>
                 <Text className="text-sm font-medium mb-2">Status</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '40', label: 'Under QC' },
                     { value: '60', label: 'QC Completed' },
@@ -642,14 +683,23 @@ const InterviewLogPage = () => {
                     { value: '20', label: 'Rejected' },
                     { value: '0', label: 'Terminated' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.status.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('status', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`status_${option.value}`}
+                        checked={filters.status.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('status', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`status_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
