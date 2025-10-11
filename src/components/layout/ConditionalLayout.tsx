@@ -48,7 +48,7 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
     if (isNoMenuRoute) {
       return (
         <>
-          <Header />
+          <Header key={pathname} />
           <main className="flex-1">
             {children}
           </main>
@@ -60,11 +60,11 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
     if (isSidebarRoute || shouldShowSidebar) {
       return (
         <>
-          <Header />
+          <Header key={pathname} />
           <div className="flex">
-            <Sidebar />
+            <Sidebar key={pathname} />
             <main 
-              className="flex-1 pt-16 transition-all duration-300 ease-in-out"
+              className="flex-1 pt-4 transition-all duration-300 ease-in-out"
               style={{ marginLeft: isCollapsed ? '4rem' : '16rem' }}
             >
               {children}
@@ -77,7 +77,7 @@ export default function ConditionalLayout({ children }: ConditionalLayoutProps) 
     // All other pages: show both header and horizontal menu
     return (
       <>
-        <Header />
+        <Header key={pathname} />
         <HorizontalNav />
         <main className="flex-1">
           {children}

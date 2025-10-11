@@ -995,6 +995,11 @@ const InterviewLogPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.status_label}</td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                              {interview.gender_label || '-'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
                               {interview.ps_image_available ? (
                                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
