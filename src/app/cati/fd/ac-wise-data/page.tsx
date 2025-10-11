@@ -69,6 +69,44 @@ export default function CATIACWiseDataPage() {
     });
   };
 
+  const handleDownloadCSV = () => {
+    // Prepare CSV data
+    const csvHeaders = [
+      'AC Code',
+      'AC Name', 
+      'District Name',
+      'Call Attempted',
+      'Call Connected',
+      'Success'
+    ];
+
+    const csvData = getSortedData().map(item => [
+      item.ac_code,
+      item.ac_name,
+      item.district_name,
+      item.call_attempt,
+      item.call_connected,
+      item.success
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `cati-ac-wise-data-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6">
@@ -87,6 +125,14 @@ export default function CATIACWiseDataPage() {
               Total {acData.length} items.
             </div>
           </div>
+          <button
+            onClick={handleDownloadCSV}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            title="Download AC-Wise Call Progress Report as CSV"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download</span>
+          </button>
         </div>
 
         {loading ? (
@@ -106,8 +152,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-16 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('ac_code')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>AC Code</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">AC Code</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'ac_code' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -154,8 +200,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-24 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('call_attempt')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>Call Attempted</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">Call Attempted</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'call_attempt' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -170,8 +216,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-24 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('call_connected')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>Call Connected</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">Call Connected</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'call_connected' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -186,8 +232,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-20 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('success')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>Success</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">Success</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'success' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -210,12 +256,12 @@ export default function CATIACWiseDataPage() {
                 ) : (
                   getSortedData().map((item, index) => (
                     <tr key={item.ac_code}>
-                      <td className="border border-gray-300">{item.ac_code}</td>
+                      <td className="border border-gray-300 text-center">{item.ac_code}</td>
                       <td className="border border-gray-300">{item.ac_name}</td>
                       <td className="border border-gray-300">{item.district_name}</td>
-                      <td className="border border-gray-300">{item.call_attempt}</td>
-                      <td className="border border-gray-300">{item.call_connected}</td>
-                      <td className="border border-gray-300">{item.success}</td>
+                      <td className="border border-gray-300 text-center">{item.call_attempt}</td>
+                      <td className="border border-gray-300 text-center">{item.call_connected}</td>
+                      <td className="border border-gray-300 text-center">{item.success}</td>
                     </tr>
                   ))
                 )}
