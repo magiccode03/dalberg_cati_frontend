@@ -187,50 +187,50 @@ const TeamRegistrationPage = () => {
           <Table className="table table-vcenter text-nowrap table-bordered border-bottom">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Team ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Team Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager Username</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">QC Team</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Total AC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Total Interviews Conducted</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Valid</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Rejected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Under QC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Action</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Team ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Team Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Zonal Manager Username</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">QC Team</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total AC</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Interviews Conducted</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Valid</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Rejected</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Under QC</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Status</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {agencyData.map((item: TeamRegistrationData, index: number) => (
                         <tr key={item.agency_id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.agency_id}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-left">
                             {item.agency_name}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
                             {item.username}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
                             {item.qc_agency}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.total_ac}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.total_interviews_conducted.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-green-600">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-green-600 text-center">
                             {item.valid.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-red-600">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-red-600 text-center">
                             {item.rejected.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.under_qc}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {getStatusBadge(item.status)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">

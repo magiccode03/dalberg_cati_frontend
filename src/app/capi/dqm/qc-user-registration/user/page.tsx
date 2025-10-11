@@ -324,22 +324,6 @@ const NewQCUserPage = () => {
                   label="GPS QC"
                 />
               </div>
-
-              <div>
-                <Checkbox
-                  checked={formData.tele}
-                  onCheckedChange={(checked) => handleInputChange('tele', checked as boolean)}
-                  label="Tele QC"
-                />
-              </div>
-
-              <div>
-                <Checkbox
-                  checked={formData.clientaudiocheck}
-                  onCheckedChange={(checked) => handleInputChange('clientaudiocheck', checked as boolean)}
-                  label="Re-Checking"
-                />
-              </div>
             </div>
           </div>
 

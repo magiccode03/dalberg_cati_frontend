@@ -388,34 +388,34 @@ const AssignedInterviewerContent = () => {
           <Table className="table table-bordered table-striped table-hover">
             <thead className="sticky-header bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">ID</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Assigned ACS</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">ID</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Full Name</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Zonal Manager</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Assigned ACS</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {interviewerData.map((item, index) => (
                 <tr key={`${item.user_id}-${index}`} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                  <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200 font-mono">
+                  <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">
                     {item.login_id}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
+                  <td className="px-4 py-3 border-b border-gray-200 text-left">
                     <span className="text-gray-800">
                       {item.fullname}
                     </span>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
+                  <td className="px-4 py-3 border-b border-gray-200 text-left">
                     <span className="text-gray-700">
                       {item.agency_name || 'N/A'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
+                  <td className="px-4 py-3 border-b border-gray-200 text-left">
                     <span className="text-gray-700">
                       {item.assigned_ac.join(', ')}
                     </span>

@@ -366,37 +366,37 @@ const ACListPage = () => {
                   <Table className="table table-bordered table-striped table-hover">
                     <thead className="sticky-header bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">AC Code</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Zonal Manager Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Total Interview</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Valid Interview</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Action</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Code</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Zonal Manager ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Zonal Manager Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Interview</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Valid Interview</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {acData.map((item, index) => (
                         <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.acCode}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
                             {item.acName}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.agencyId}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
                             {item.agencyName}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.totalInterview}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.validInterview}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="relative group">
                               <button
                                 className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"

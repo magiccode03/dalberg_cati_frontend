@@ -17,6 +17,7 @@ interface InterviewData {
   ac_name: string;
   interview_date: string;
   interview_audio: string;
+  audio_url: string;
 }
 
 interface APIResponse {
@@ -26,35 +27,6 @@ interface APIResponse {
   timestamp?: string;
 }
 
-// Utility function to fix audio URL encoding
-const fixAudioUrl = (url: string): string => {
-  if (!url) return url;
-  
-  // Check if URL contains unencoded JSON in query parameter
-  if (url.includes('data={')) {
-    try {
-      // Extract base URL and JSON part
-      const parts = url.split('data=');
-      if (parts.length === 2) {
-        const baseUrl = parts[0] + 'data=';
-        const jsonStr = parts[1];
-        
-        // URL encode the JSON part
-        const encoded = encodeURIComponent(jsonStr);
-        const fixedUrl = baseUrl + encoded;
-        
-        console.log('Original URL:', url);
-        console.log('Fixed URL:', fixedUrl);
-        
-        return fixedUrl;
-      }
-    } catch (e) {
-      console.error('Error fixing audio URL:', e);
-    }
-  }
-  
-  return url;
-};
 
 export default function CAPIInterviewAudioPage() {
   const [filters, setFilters] = useState({
@@ -200,17 +172,14 @@ export default function CAPIInterviewAudioPage() {
 
 
   const handlePlayAudio = (audioData: InterviewData) => {
-    // Construct the full audio URL from the filename
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    const audioUrl = `${baseUrl}/api/fd/interviewaudio/audio/${audioData.interview_audio}`;
-    
+    // Use the audio_url directly from the API response
     const processedAudioData = {
       ...audioData,
-      audio: audioUrl
+      audio: audioData.audio_url
     };
     
     console.log('Playing audio:', processedAudioData);
-    console.log('Audio URL:', audioUrl);
+    console.log('Audio URL:', audioData.audio_url);
     
     setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
@@ -250,8 +219,8 @@ export default function CAPIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            Interview Audio
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+            Interview Audio (F2F  )
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -361,8 +330,8 @@ export default function CAPIInterviewAudioPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                Interview List
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900">
+                Interview List (F2F)
               </Heading>
             </div>
             <span className="text-end">
@@ -421,12 +390,12 @@ export default function CAPIInterviewAudioPage() {
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
+                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
                   <th className="text-center" style={{ width: '10%' }}>Server Id</th>
                   <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
+                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
                   <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
                   <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
@@ -435,7 +404,7 @@ export default function CAPIInterviewAudioPage() {
                 {paginatedData.map((row, index) => (
                   <tr key={row.server_id}>
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.server_id}</td>
+                    <td className="text-center">{row.server_id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
                     <td className="text-center">{new Date(row.interview_date).toLocaleDateString()}</td>
@@ -459,9 +428,6 @@ export default function CAPIInterviewAudioPage() {
           {!loading && !error && interviewData.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
-                </div>
                 {totalPages > 1 && (
                   <PaginationStandard
                     currentPage={currentPage}

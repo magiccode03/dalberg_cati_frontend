@@ -303,7 +303,7 @@ export default function RejectionReportPage() {
   ) {
     return (
       <Container maxWidth="full">
-        <Heading level={1} className="text-2xl font-bold mb-6">
+        <Heading level={2} className="text-2xl font-semibold mb-6">
           Rejection Report
         </Heading>
 
@@ -594,35 +594,36 @@ export default function RejectionReportPage() {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-              <Heading level={4}>Rejection Report</Heading>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
             </div>
           </div>
+          
 
           <div className="table-responsive">
-            <Table className="table table-centered table-striped dt-responsive nowrap w-100">
-              <thead className="table-light">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <th>Sr. No</th>
-                  <th>Server ID</th>
-                  <th>AC Name</th>
-                  <th>PS Code</th>
-                  <th>Interview Date</th>
-                  <th>Interviewer ID</th>
-                  <th>Interview Duration</th>
-                  <th>Respondent Name</th>
-                  <th>Respondent Mobile</th>
-                  <th>Fail Reason</th>
-                  <th>Audio QC ID</th>
-                  <th>Audio Fail Reason</th>
-                  <th>Audio</th>
-                  <th>GPS</th>
+                  <th className="text-center">Sr. No</th>
+                  <th className="text-center">Server ID</th>
+                  <th className="text-left">AC Name</th>
+                  <th className="text-center">PS Code</th>
+                  <th className="text-center">Interview Date</th>
+                  <th className="text-center">Interviewer ID</th>
+                  <th className="text-center">Interview Duration</th>
+                  <th className="text-left">Respondent Name</th>
+                  <th className="text-center">Respondent Mobile</th>
+                  <th className="text-left">Fail Reason</th>
+                  <th className="text-center">Audio QC ID</th>
+                  <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-center">Audio</th>
+                  <th className="text-center">GPS</th>
                 </tr>
               </thead>
               <tbody>
                 {rejectionData.map((row) => (
                   <tr key={row.srNo}>
-                    <td>{row.srNo}</td>
-                    <td>
+                    <td className="text-center">{row.srNo}</td>
+                    <td className="text-center">
                       <a 
                         href={`/interview-detail?server_id=${row.serverId}`}
                         target="_blank"
@@ -631,17 +632,17 @@ export default function RejectionReportPage() {
                         {row.serverId}
                       </a>
                     </td>
-                    <td>{row.acName}</td>
-                    <td className="font-mono">{row.psCode}</td>
-                    <td>{row.interviewDate}</td>
-                    <td>{row.interviewerId}</td>
-                    <td className="font-mono">{row.interviewDuration}</td>
-                    <td>{row.respondentName}</td>
-                    <td>{row.respondentMobile || '-'}</td>
-                    <td>{row.failReason}</td>
-                    <td>{row.audioQcId || '-'}</td>
-                    <td>{row.audioFailReason || '-'}</td>
-                    <td>
+                    <td className="text-left">{row.acName}</td>
+                    <td className="text-center font-mono">{row.psCode}</td>
+                    <td className="text-center">{row.interviewDate}</td>
+                    <td className="text-center">{row.interviewerId}</td>
+                    <td className="text-center font-mono">{row.interviewDuration}</td>
+                    <td className="text-left">{row.respondentName}</td>
+                    <td className="text-center">{row.respondentMobile || '-'}</td>
+                    <td className="text-left">{row.failReason}</td>
+                    <td className="text-center">{row.audioQcId || '-'}</td>
+                    <td className="text-left">{row.audioFailReason || '-'}</td>
+                    <td className="text-center">
                       {row.hasAudio ? (
                         <Button 
                           variant="outline" 
@@ -655,7 +656,7 @@ export default function RejectionReportPage() {
                         '-'
                       )}
                     </td>
-                    <td>
+                    <td className="text-center">
                       <Button 
                         variant="outline" 
                         size="sm"

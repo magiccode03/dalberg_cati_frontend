@@ -133,7 +133,7 @@ export default function CATIInterviewAudioPage() {
           const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewAudioData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
             .map((str: unknown) => JSON.parse(str as string) as { ac_code: number; ac_name: string });
           const acOptionsData = [
-            { value: '', label: 'All ACs' },
+            { value: '', label: 'Select ACs' },
             ...uniqueACs
               .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
               .map(ac => ({
@@ -232,8 +232,8 @@ export default function CATIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            Interview Audio
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+            Interview Audio (CATI)
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -344,11 +344,11 @@ export default function CATIInterviewAudioPage() {
               <div className="flex items-center">
                 <div className="w-1 h-6 bg-blue-500 mr-3"></div>
                 <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                  Interview List
+                  Interview List (CATI)
                 </Heading>
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
-                Total {totalItems} items.
+                Total <strong>{totalItems}</strong> items.
               </div>
             </div>
           </div>
@@ -399,12 +399,12 @@ export default function CATIInterviewAudioPage() {
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
+                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
                   <th className="text-center" style={{ width: '10%' }}>Server Id</th>
                   <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
+                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
                   <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
                   <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
@@ -415,7 +415,7 @@ export default function CATIInterviewAudioPage() {
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="text-center">{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
-                    <td>{row.ac_name}</td>
+                    <td className="text-left">{row.ac_name}</td>
                     <td className="text-center"><DateFormatter date={row.interview_date} format="dd/mm/yyyy" /></td>
                     <td className="text-center">
                       <Button

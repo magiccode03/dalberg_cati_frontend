@@ -238,34 +238,34 @@ export default function MasterACPage() {
             <Table className="table table-striped table-bordered">
               <thead>
                 <tr>
-                  <th>S.No</th>
-                  <th>Ac Code</th>
-                  <th>Ac Name</th>
-                  <th>District Code</th>
-                  <th>District Name</th>
-                  <th>Pc Name</th>
-                  <th>Pc Code</th>
-                  <th>Zone Code</th>
-                  <th>Zone Name</th>
-                  <th>Current Mla</th>
-                  <th>Agency</th>
-                  <th className="action-column">Actions</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Ac Code</th>
+                  <th className="text-left">Ac Name</th>
+                  <th className="text-center">District Code</th>
+                  <th className="text-left">District Name</th>
+                  <th className="text-left">Pc Name</th>
+                  <th className="text-center">Pc Code</th>
+                  <th className="text-center">Zone Code</th>
+                  <th className="text-left">Zone Name</th>
+                  <th className="text-left">Current Mla</th>
+                  <th className="text-left">Agency</th>
+                  <th className="text-center action-column">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data.acs.map((ac, index) => (
                   <tr key={ac.ac_code}>
-                    <td>{startIndex + index + 1}</td>
-                    <td>{ac.ac_code}</td>
-                    <td>{ac.ac_name}</td>
-                    <td>{ac.district_code}</td>
-                    <td>{ac.district_name}</td>
-                    <td>{ac.pc_name}</td>
-                    <td>{ac.pc_code}</td>
-                    <td>{ac.zone_code}</td>
-                    <td>{ac.zone_name}</td>
-                    <td>{ac.current_mla}</td>
-                    <td>{ac.agency_name || ''}</td>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{ac.ac_code}</td>
+                    <td className="text-left">{ac.ac_name}</td>
+                    <td className="text-center">{ac.district_code}</td>
+                    <td className="text-left">{ac.district_name}</td>
+                    <td className="text-left">{ac.pc_name}</td>
+                    <td className="text-center">{ac.pc_code}</td>
+                    <td className="text-center">{ac.zone_code}</td>
+                    <td className="text-left">{ac.zone_name}</td>
+                    <td className="text-left">{ac.current_mla}</td>
+                    <td className="text-left">{ac.agency_name || ''}</td>
                     <td className="text-center">
                       <Button
                         variant="primary"

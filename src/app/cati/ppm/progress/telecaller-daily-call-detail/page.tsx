@@ -9,10 +9,10 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import Checkbox from '@/components/ui/Checkbox';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
-import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
+import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle, Play, Volume2 } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -943,6 +943,10 @@ const TelecallerDailyCallDetailPage = () => {
           </div>
         </div>
 
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+          Total <strong>{pagination.total}</strong> items.
+        </div>
+
         <div className="overflow-x-auto">
           {loading ? (
             <div className="text-center py-12">
@@ -955,107 +959,65 @@ const TelecallerDailyCallDetailPage = () => {
               <p className="text-gray-600 dark:text-gray-400">No call details found</p>
             </div>
           ) : (
-            <Table striped bordered hover>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('caller_name')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>CALLER NAME</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('caller_id')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>CALLER ID</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'caller_id' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'caller_id' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('call_time')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>CALL TIME</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'call_time' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'call_time' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('ivr_duration')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>IVR DURATION</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-gray-50 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('talk_duration')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>TALK DURATION</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead>Audio file</TableHead>
-                  {/* <TableHead>Update</TableHead> */}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getSortedData().map((item, index) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{(pagination.page - 1) * pagination.limit + index + 1}</TableCell>
-                    <TableCell>{item.caller_name || '-'}</TableCell>
-                    <TableCell>{item.caller_id || '-'}</TableCell>
-                    <TableCell>{formatDateTime(item.call_time)}</TableCell>
-                    <TableCell>{formatDuration(item.ivr_duration)}</TableCell>
-                    <TableCell>{formatDuration(item.talk_duration)}</TableCell>
-                    <TableCell>
-                      {item.audio ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handlePlayAudio(item.audio!)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <i className="fa fa-play mr-1"></i>
-                          Play
-                        </Button>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-                    {/* <TableCell>
-                      <Button variant="outline" size="sm">
-                        <i className="fa fa-edit mr-1"></i>
-                        Update
-                      </Button>
-                    </TableCell> */}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                <div className="table-responsive">
+                  <Table className="table table-bordered table-striped table-hover">
+                    <thead className="sticky-header bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio File</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getSortedData().map((item, index) => (
+                        <tr key={item.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {(pagination.page - 1) * pagination.limit + index + 1}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
+                            {item.caller_name || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.caller_id || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {formatDateTime(item.call_time)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {formatDuration(item.ivr_duration)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {formatDuration(item.talk_duration)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {item.audio ? (
+                              <div className="relative group">
+                                <Button
+                                  size="sm"
+                                  onClick={() => handlePlayAudio(item.audio!)}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                >
+                                  <Volume2 className="w-4 h-4" />
+                                </Button>
+                                {/* Tooltip */}
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                  Play
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                                </div>
+                              </div>
+                            ) : (
+                              '-'
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
           )}
         </div>
 

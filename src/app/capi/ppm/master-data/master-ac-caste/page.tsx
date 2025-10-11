@@ -252,30 +252,30 @@ export default function MasterACCastePage() {
             <Table className="table table-striped table-bordered">
               <thead>
                 <tr>
-                  <th>S.No</th>
-                  <th>Ac Code</th>
-                  <th>Caste Name</th>
-                  <th>Absoulte Caste</th>
-                  <th>Caste</th>
-                  <th>Rank</th>
-                  <th>Caste Code</th>
-                  <th>Castecode</th>
-                  <th>Minsample</th>
-                  <th className="action-column">Actions</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Ac Code</th>
+                  <th className="text-left">Caste Name</th>
+                  <th className="text-left">Absoulte Caste</th>
+                  <th className="text-left">Caste</th>
+                  <th className="text-center">Rank</th>
+                  <th className="text-center">Caste Code</th>
+                  <th className="text-center">Castecode</th>
+                  <th className="text-center">Minsample</th>
+                  <th className="text-center action-column">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data.castes.map((caste, index) => (
                   <tr key={caste.id}>
-                    <td>{startIndex + index + 1}</td>
-                    <td>{caste.ac_code}</td>
-                    <td>{caste.caste_name}</td>
-                    <td>{caste.absoulte_caste}</td>
-                    <td>{caste.caste}</td>
-                    <td>{caste.rank}</td>
-                    <td>{caste.caste_code}</td>
-                    <td>{caste.castecode}</td>
-                    <td>{caste.minsample}</td>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{caste.ac_code}</td>
+                    <td className="text-left">{caste.caste_name}</td>
+                    <td className="text-left">{caste.absoulte_caste}</td>
+                    <td className="text-left">{caste.caste}</td>
+                    <td className="text-center">{caste.rank}</td>
+                    <td className="text-center">{caste.caste_code}</td>
+                    <td className="text-center">{caste.castecode}</td>
+                    <td className="text-center">{caste.minsample}</td>
                     <td className="text-center">
                       <Button
                         variant="primary"

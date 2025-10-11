@@ -556,7 +556,7 @@ const TelecallerProgressPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             {/* Title Section */}
             <div className="flex-1">
-              <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
                 Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
