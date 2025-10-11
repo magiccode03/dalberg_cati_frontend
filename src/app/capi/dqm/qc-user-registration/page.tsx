@@ -15,6 +15,7 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Plus, Edit, Check, Eye, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
+import CapiQCACAssignModal from '@/components/modals/CapiQCACAssignModal';
 
 interface QCUserData {
   id: number;
@@ -25,6 +26,15 @@ interface QCUserData {
   audio: boolean;
   reChecking: boolean;
   status: string;
+  agencyId?: number;
+  assignedAcCount?: number;
+  assignedAcInterviewers?: string;
+  accessPermissions?: {
+    audio_qc: boolean;
+    gps_qc: boolean;
+    tele_qc: boolean;
+    rechecking: boolean;
+  };
 }
 
 interface QCUserAssignment {
@@ -41,14 +51,44 @@ interface APIResponse {
       qc_id: number;
       name: string;
       mobile_number: string;
-      gps: boolean;
-      audio: boolean;
-      re_checking: boolean;
+      audio: number;
+      gps: number;
+      tele: number;
+      agency_id: number;
       status: string;
+      clientaudiocheck: number;
+      access_permissions: {
+        audio_qc: boolean;
+        gps_qc: boolean;
+        tele_qc: boolean;
+        rechecking: boolean;
+      };
+      assigned_ac_count: number;
+      assigned_ac_interviewers: string;
+      created_at: string | number;
+      updated_at: string | number;
     }>;
+    statistics: {
+      total_users: number;
+      active_users: string;
+      inactive_users: string;
+      audio_qc_users: string;
+      gps_qc_users: string;
+      rechecking_users: string;
+    };
+    filters_applied: {
+      status: number;
+    };
+    pagination: {
+      total_count: number;
+      page_count: number;
+      current_page: number;
+      per_page: number;
+    };
   };
-  error?: string;
+  message?: string;
   timestamp?: string;
+  error?: string;
 }
 
 export default function QCUserRegistrationPage() {
@@ -79,11 +119,25 @@ export default function QCUserRegistrationPage() {
   const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statistics, setStatistics] = useState({
+    total_users: 0,
+    active_users: '0',
+    inactive_users: '0',
+    audio_qc_users: '0',
+    gps_qc_users: '0',
+    rechecking_users: '0'
+  });
+  const [totalCount, setTotalCount] = useState(0);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<QCUserData | null>(null);
   const [userAssignments, setUserAssignments] = useState<QCUserAssignment[]>([]);
+  
+  // AC Assignment Modal state
+  const [isACAssignModalOpen, setIsACAssignModalOpen] = useState(false);
+  const [selectedQCId, setSelectedQCId] = useState<number | null>(null);
+  const [selectedQCName, setSelectedQCName] = useState<string>('');
 
   // Fetch data from API
   useEffect(() => {
@@ -91,11 +145,6 @@ export default function QCUserRegistrationPage() {
       try {
         setLoading(true);
         setError(null);
-        
-        // Debug: Check if token exists
-        const token = localStorage.getItem('accessToken');
-        console.log('Access token exists:', !!token);
-        console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
         
         // Build query parameters from applied filters
         const queryParams = new URLSearchParams();
@@ -113,56 +162,36 @@ export default function QCUserRegistrationPage() {
         const response = await apiClient.get(endpoint);
         const data: APIResponse = response.data;
         
-        console.log('API Response:', data);
-        console.log('Response success:', data.success);
-        console.log('Response data:', data.data);
-        
-        // Handle different response structures
-        if (data.success && data.data) {
-          // Check if qc_users exists in the response
-          if (data.data.qc_users && Array.isArray(data.data.qc_users)) {
-            // Transform QC user data
-            const userData: QCUserData[] = data.data.qc_users.map(user => ({
-              id: user.id,
-              qcId: user.qc_id,
-              name: user.name,
-              mobileNumber: user.mobile_number,
-              gps: user.gps,
-              audio: user.audio,
-              reChecking: user.re_checking,
-              status: user.status
-            }));
-            setQcUserData(userData);
-          } else {
-            // If qc_users doesn't exist, use fallback data
-            console.log('qc_users not found in response, using fallback data...');
-            const fallbackData: QCUserData[] = [
-              { id: 9, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', gps: false, audio: true, reChecking: false, status: 'Active' },
-              { id: 27, qcId: 117, name: 'Riya', mobileNumber: '8287465958', gps: false, audio: true, reChecking: true, status: 'Active' },
-              { id: 28, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', gps: false, audio: true, reChecking: false, status: 'Active' },
-              { id: 29, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', gps: true, audio: true, reChecking: true, status: 'Active' },
-              { id: 30, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', gps: false, audio: true, reChecking: false, status: 'Active' }
-            ];
-            setQcUserData(fallbackData);
+        if (data.success && data.data?.qc_users) {
+          // Transform QC user data
+          const userData: QCUserData[] = data.data.qc_users.map(user => ({
+            id: user.id,
+            qcId: user.qc_id,
+            name: user.name,
+            mobileNumber: user.mobile_number,
+            gps: user.gps === 1,
+            audio: user.audio === 1,
+            reChecking: user.clientaudiocheck === 1,
+            status: user.status,
+            agencyId: user.agency_id,
+            assignedAcCount: user.assigned_ac_count,
+            assignedAcInterviewers: user.assigned_ac_interviewers,
+            accessPermissions: user.access_permissions
+          }));
+          setQcUserData(userData);
+          
+          // Set statistics and pagination data
+          if (data.data.statistics) {
+            setStatistics(data.data.statistics);
           }
-        } else if (data.error) {
-          setError(data.error);
+          if (data.data.pagination) {
+            setTotalCount(data.data.pagination.total_count);
+          }
         } else {
-          // Fallback to sample data if API fails
-          console.log('API returned no data, using fallback sample data...');
-          const fallbackData: QCUserData[] = [
-            { id: 9, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', gps: false, audio: true, reChecking: false, status: 'Active' },
-            { id: 27, qcId: 117, name: 'Riya', mobileNumber: '8287465958', gps: false, audio: true, reChecking: true, status: 'Active' },
-            { id: 28, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', gps: false, audio: true, reChecking: false, status: 'Active' },
-            { id: 29, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', gps: true, audio: true, reChecking: true, status: 'Active' },
-            { id: 30, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', gps: false, audio: true, reChecking: false, status: 'Active' }
-          ];
-          setQcUserData(fallbackData);
+          setError(data.error || 'No data received from server');
         }
       } catch (err: any) {
-        console.error('Error fetching data:', err);
-        console.error('Error response:', err.response?.data || 'No response data');
-        console.error('Error status:', err.response?.status || 'No status code');
+        console.error('Error fetching QC user data:', err);
         
         if (err.response?.status === 401) {
           setError('Authentication required. Please log in again.');
@@ -170,22 +199,9 @@ export default function QCUserRegistrationPage() {
           setError('Access forbidden. You do not have permission to view this data.');
         } else if (err.response?.data?.error) {
           setError(err.response.data.error);
-        } else if (err.response?.data?.message) {
-          setError(err.response.data.message);
         } else {
           setError(err.message || 'An error occurred while fetching data');
         }
-        
-        // Use fallback data on error (always show sample data even if API fails)
-        console.log('All API endpoints failed, using fallback sample data...');
-        const fallbackData: QCUserData[] = [
-          { id: 9, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', gps: false, audio: true, reChecking: false, status: 'Active' },
-          { id: 27, qcId: 117, name: 'Riya', mobileNumber: '8287465958', gps: false, audio: true, reChecking: true, status: 'Active' },
-          { id: 28, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', gps: false, audio: true, reChecking: false, status: 'Active' },
-          { id: 29, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', gps: true, audio: true, reChecking: true, status: 'Active' },
-          { id: 30, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', gps: false, audio: true, reChecking: false, status: 'Active' }
-        ];
-        setQcUserData(fallbackData);
       } finally {
         setLoading(false);
       }
@@ -194,42 +210,6 @@ export default function QCUserRegistrationPage() {
     fetchData();
   }, [appliedFilters]);
 
-  // Sample data based on the provided HTML (fallback)
-  const sampleData: QCUserData[] = [
-    { id: 9, qcId: 109, name: 'Kundan', mobileNumber: '8851258589', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 27, qcId: 117, name: 'Riya', mobileNumber: '8287465958', gps: false, audio: true, reChecking: true, status: 'Active' },
-    { id: 28, qcId: 119, name: 'Mohd Usman', mobileNumber: '8799770442', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 29, qcId: 120, name: 'Supriya', mobileNumber: '8130510620', gps: true, audio: true, reChecking: true, status: 'Active' },
-    { id: 30, qcId: 121, name: 'Ashifa', mobileNumber: '9315606691', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 31, qcId: 122, name: 'Rama', mobileNumber: '9625885362', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 37, qcId: 135, name: 'Parveen Sharma', mobileNumber: '7011783380', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 38, qcId: 128, name: 'Kumudmessey', mobileNumber: '9990744898', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 39, qcId: 127, name: 'Faizal Saifi', mobileNumber: '7290857388', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 51, qcId: 130, name: 'Himanshi', mobileNumber: '8802624605', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 52, qcId: 136, name: 'Muskan', mobileNumber: '8448096724', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 53, qcId: 137, name: 'Muskan Siddiqui', mobileNumber: '7398814662', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 55, qcId: 139, name: 'Himanshi-2', mobileNumber: '8920180129', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 56, qcId: 140, name: 'Priyanka', mobileNumber: '8076066334', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 57, qcId: 2001, name: 'Vijay Sharma', mobileNumber: '8423257507', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 58, qcId: 2002, name: 'Mehul Kapoor', mobileNumber: '7275477996', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 59, qcId: 2003, name: 'Nishi', mobileNumber: '8953989468', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 60, qcId: 2004, name: 'Asha Chaurasiya', mobileNumber: '6386460589', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 61, qcId: 2011, name: 'Sucharita Das', mobileNumber: '9123306043', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 62, qcId: 2012, name: 'Srabani Mondal', mobileNumber: '8585862838', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 63, qcId: 2013, name: 'Kiran Naskar', mobileNumber: '8777043262', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 64, qcId: 2014, name: 'Mousimi Parida', mobileNumber: '9804022156', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 65, qcId: 2015, name: 'Rohini Das', mobileNumber: '9163792436', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 66, qcId: 2006, name: 'Deepanjali Trivedi', mobileNumber: '6388846837', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 67, qcId: 2007, name: 'Puja Pandey', mobileNumber: '9792822296', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 68, qcId: 2008, name: 'Archana Singh', mobileNumber: '8887176399', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 69, qcId: 2009, name: 'Seema', mobileNumber: '9721518355', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 70, qcId: 2005, name: 'Meenu Trivedi', mobileNumber: '9454271142', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 71, qcId: 2010, name: 'Shashi Tiwari', mobileNumber: '9161054887', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 72, qcId: 2016, name: 'Dwipannita Sanyanal', mobileNumber: '9874382415', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 73, qcId: 2017, name: 'Rupa Mondal', mobileNumber: '8240170825', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 74, qcId: 2020, name: 'Pratishtha Mishra', mobileNumber: '9450458554', gps: false, audio: true, reChecking: false, status: 'Active' },
-    { id: 75, qcId: 1022, name: 'Priyanak Mondal', mobileNumber: '8910346616', gps: false, audio: true, reChecking: false, status: 'Active' },
-  ];
 
   const handleFilterChange = (field: string, value: string | boolean) => {
     setFilters(prev => ({
@@ -272,11 +252,6 @@ export default function QCUserRegistrationPage() {
   };
 
   const handleAssignAC = (userId: number) => {
-    // Navigate to the assign AC/Interviewer page
-    router.push(`/capi/dqm/qc-user-registration/${userId}/assign`);
-  };
-
-  const handleViewAssignedAC = (userId: number) => {
     // Find the user data
     const user = qcUserData.find(u => u.id === userId);
     if (!user) {
@@ -284,15 +259,94 @@ export default function QCUserRegistrationPage() {
       return;
     }
 
-    // Mock assignment data - replace with actual API call
-    const mockAssignments: QCUserAssignment[] = [
-      { acCode: '1', acName: 'Valmiki Nagar', interviewerId: '101' },
-      { acCode: '1', acName: 'Valmiki Nagar', interviewerId: '102' },
-      { acCode: '1', acName: 'Valmiki Nagar', interviewerId: '104' }
-    ];
+    // Open AC Assignment Modal
+    setSelectedQCId(user.qcId);
+    setSelectedQCName(user.name);
+    setIsACAssignModalOpen(true);
+  };
+
+  const handleACAssignSuccess = () => {
+    // Refresh the data after successful assignment
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Build query parameters from filters
+        const queryParams = new URLSearchParams();
+        if (filters.qcId) queryParams.append('qc_id', filters.qcId);
+        if (filters.name) queryParams.append('name', filters.name);
+        if (filters.mobileNumber) queryParams.append('mobile_number', filters.mobileNumber);
+        if (filters.status) queryParams.append('status', filters.status);
+        if (filters.gps) queryParams.append('gps', '1');
+        if (filters.audio) queryParams.append('audio', '1');
+        if (filters.reChecking) queryParams.append('clientaudiocheck', '1');
+        
+        const queryString = queryParams.toString();
+        const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
+        
+        const response = await apiClient.get(endpoint);
+        const data: APIResponse = response.data;
+        
+        if (data.success && data.data?.qc_users) {
+          const userData: QCUserData[] = data.data.qc_users.map(user => ({
+            id: user.id,
+            qcId: user.qc_id,
+            name: user.name,
+            mobileNumber: user.mobile_number,
+            gps: user.gps === 1,
+            audio: user.audio === 1,
+            reChecking: user.clientaudiocheck === 1,
+            status: user.status,
+            agencyId: user.agency_id,
+            assignedAcCount: user.assigned_ac_count,
+            assignedAcInterviewers: user.assigned_ac_interviewers,
+            accessPermissions: user.access_permissions
+          }));
+          setQcUserData(userData);
+          
+          if (data.data.statistics) {
+            setStatistics(data.data.statistics);
+          }
+          if (data.data.pagination) {
+            setTotalCount(data.data.pagination.total_count);
+          }
+        }
+      } catch (err: any) {
+        console.error('Error refreshing QC user data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  };
+
+  const handleViewAssignedAC = (userId: number) => {
+    const user = qcUserData.find(u => u.id === userId);
+    if (!user) {
+      console.error('User not found:', userId);
+      return;
+    }
+
+    // Parse assigned AC interviewers string
+    const assignments: QCUserAssignment[] = [];
+    if (user.assignedAcInterviewers) {
+      const pairs = user.assignedAcInterviewers.split(',');
+      pairs.forEach(pair => {
+        const [acCode, interviewerId] = pair.split(':');
+        if (acCode && interviewerId) {
+          assignments.push({
+            acCode: acCode.trim(),
+            acName: `AC ${acCode.trim()}`, // This should come from API
+            interviewerId: interviewerId.trim()
+          });
+        }
+      });
+    }
 
     setSelectedUser(user);
-    setUserAssignments(mockAssignments);
+    setUserAssignments(assignments);
     setIsModalOpen(true);
   };
 
@@ -304,10 +358,9 @@ export default function QCUserRegistrationPage() {
     );
   };
 
-  const totalPages = Math.ceil(qcUserData.length / pageSize);
+  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentData = qcUserData.slice(startIndex, endIndex);
+  const currentData = qcUserData.slice(startIndex, startIndex + pageSize);
 
   if (loading) {
     return (
@@ -353,115 +406,102 @@ export default function QCUserRegistrationPage() {
   return (
     <div className="main-content horizontal-content">
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              QC User Info
-            </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
+        {/* Page Header */}
+        <div className="mb-6">
+          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            QC User Info
+          </Heading>
         </div>
 
         {/* Search Form */}
         <div className="mb-6">
           <Card>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  QC ID
-                </label>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    QC ID
+                  </label>
                 <Input
                   type="text"
                   placeholder="Enter QC ID"
                   value={filters.qcId}
                   onChange={(e) => handleFilterChange('qcId', e.target.value)}
                 />
-              </div>
+                </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Name
-                </label>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Name
+                  </label>
                 <Input
                   type="text"
                   placeholder="Enter Name"
                   value={filters.name}
                   onChange={(e) => handleFilterChange('name', e.target.value)}
                 />
-              </div>
+                </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Mobile Number
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Enter Mobile Number"
-                  value={filters.mobileNumber}
-                  onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
-                />
-              </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Mobile Number
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter Mobile Number"
+                    value={filters.mobileNumber}
+                    onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Status
-                </label>
-                <SelectDropdown
-                  value={filters.status}
-                  onChange={(value) => handleFilterChange('status', value as string)}
-                  options={[
-                    { value: '', label: 'Select User Status' },
-                    { value: '1', label: 'Active' },
-                    { value: '2', label: 'Inactive' },
-                  ]}
-                />
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Status
+                  </label>
+                  <SelectDropdown
+                    value={filters.status}
+                    onChange={(value) => handleFilterChange('status', value as string)}
+                    options={[
+                      { value: '', label: 'Select User Status' },
+                      { value: '1', label: 'Active' },
+                      { value: '2', label: 'Inactive' },
+                    ]}
+                  />
+                </div>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={filters.gps}
-                  onCheckedChange={(checked) => handleFilterChange('gps', checked as boolean)}
-                />
-                <Text className="text-sm text-gray-700">GPS</Text>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={filters.audio}
-                  onCheckedChange={(checked) => handleFilterChange('audio', checked as boolean)}
-                />
-                <Text className="text-sm text-gray-700">Audio</Text>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mt-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={filters.reChecking}
-                  onCheckedChange={(checked) => handleFilterChange('reChecking', checked as boolean)}
-                />
-                <Text className="text-sm text-gray-700">Re-Checking</Text>
-              </div>
-
-              <div className="space-y-2">
+              
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={filters.gps}
+                    onCheckedChange={(checked) => handleFilterChange('gps', checked as boolean)}
+                  />
+                  <Text className="text-sm text-gray-700">GPS</Text>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={filters.audio}
+                    onCheckedChange={(checked) => handleFilterChange('audio', checked as boolean)}
+                  />
+                  <Text className="text-sm text-gray-700">Audio</Text>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={filters.reChecking}
+                    onCheckedChange={(checked) => handleFilterChange('reChecking', checked as boolean)}
+                  />
+                  <Text className="text-sm text-gray-700">Re-Checking</Text>
+                </div>
                 <Button
                   variant="primary"
                   onClick={handleSearch}
-                  className="w-full"
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
-              </div>
-
-              <div className="space-y-2">
                 <Button
                   onClick={handleClear}
-                  className="w-full bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center space-x-2"
+                  className="bg-gray-500 text-white hover:bg-gray-600 flex items-center space-x-2"
                 >
                   <X className="w-4 h-4" />
                   <span>Clear</span>
@@ -492,14 +532,13 @@ export default function QCUserRegistrationPage() {
                 </Button>
               </div>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
+            <div className="overflow-x-auto">
+              <Table
+                striped
+                bordered
+                hover
+                className="w-full border-collapse"
+              >
                     <thead>
                       <tr className="bg-gray-50">
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
@@ -510,6 +549,7 @@ export default function QCUserRegistrationPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audio</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Re-Checking</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned ACs</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assign AC</th>
                       </tr>
@@ -525,6 +565,11 @@ export default function QCUserRegistrationPage() {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.audio)}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.reChecking)}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.status}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {user.assignedAcCount || 0} ACs
+                            </span>
+                          </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             <Button
                               variant="primary"
@@ -555,24 +600,23 @@ export default function QCUserRegistrationPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </Table>
-                </div>
+              </Table>
+            </div>
 
-                {/* Table Footer */}
-                <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                  <div className="text-sm text-gray-700">
-                    Total <span className="font-semibold">{qcUserData.length}</span> items.
-                  </div>
-                  <div>
-                    <PaginationStandard
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      totalItems={qcUserData.length}
-                      itemsPerPage={pageSize}
-                      onPageChange={setCurrentPage}
-                    />
-                  </div>
-                </div>
+            {/* Table Footer */}
+            <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
+              <div className="text-sm text-gray-700">
+                Total <span className="font-semibold">{totalCount}</span> items.
+              </div>
+              <div>
+                <PaginationStandard
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalCount}
+                  itemsPerPage={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
             </div>
           </Card>
         </div>
@@ -585,6 +629,21 @@ export default function QCUserRegistrationPage() {
         qcUserName={selectedUser?.name || ''}
         assignments={userAssignments}
       />
+
+      {/* AC Assignment Modal */}
+      {selectedQCId && (
+        <CapiQCACAssignModal
+          isOpen={isACAssignModalOpen}
+          onClose={() => {
+            setIsACAssignModalOpen(false);
+            setSelectedQCId(null);
+            setSelectedQCName('');
+          }}
+          teleformUserId={selectedQCId}
+          telecallerName={selectedQCName}
+          onSuccess={handleACAssignSuccess}
+        />
+      )}
     </div>
   );
 }

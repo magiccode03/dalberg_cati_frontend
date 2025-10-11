@@ -59,6 +59,7 @@ export default function Header() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [selectedAgency, setSelectedAgency] = useState<string>('all');
   const [teleformUserData, setTeleformUserData] = useState<any>(null);
+  const [qcUserData, setQcUserData] = useState<any>(null);
 
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
@@ -75,6 +76,21 @@ export default function Header() {
       }
     } else {
       setTeleformUserData(null);
+    }
+  };
+
+  const checkQCUserData = () => {
+    const savedData = localStorage.getItem('qc_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setQcUserData(userData);
+      } catch (err) {
+        console.error('Error parsing QC user data:', err);
+        setQcUserData(null);
+      }
+    } else {
+      setQcUserData(null);
     }
   };
 
@@ -115,22 +131,26 @@ export default function Header() {
       document.documentElement.classList.remove('dark');
     }
 
-    // Check for teleform user data
+    // Check for teleform user data and QC user data
     checkTeleformUserData();
+    checkQCUserData();
     
     // Add storage event listener for real-time updates
     const handleStorageChange = () => {
       checkTeleformUserData();
+      checkQCUserData();
     };
     
     window.addEventListener('storage', handleStorageChange);
     
-    // Custom event for same-tab updates
+    // Custom events for same-tab updates
     window.addEventListener('teleformUserUpdated', handleStorageChange);
+    window.addEventListener('qcUserUpdated', handleStorageChange);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('teleformUserUpdated', handleStorageChange);
+      window.removeEventListener('qcUserUpdated', handleStorageChange);
     };
   }, []);
 
@@ -175,6 +195,22 @@ export default function Header() {
 
   const handleTeleformUserClick = () => {
     router.push('/cati/ss/start-form-filling');
+  };
+
+  const handleQCUserClick = () => {
+    // Get QC ID from localStorage
+    const savedData = localStorage.getItem('qc_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        router.push(`/capi/capi-qc/new-qc/${userData.qc_id}`);
+      } catch (err) {
+        console.error('Error parsing QC user data:', err);
+        router.push('/capi/capi-qc/qc-auth');
+      }
+    } else {
+      router.push('/capi/capi-qc/qc-auth');
+    }
   };
 
   return (
@@ -244,6 +280,25 @@ export default function Header() {
                 </p>
                 <p className="text-xs text-green-600 dark:text-green-400">
                   ID: {teleformUserData.teleform_user_id}
+                </p>
+              </div>
+            </button>
+          )}
+
+          {/* QC User Button */}
+          {mounted && qcUserData && user?.role === 'capi_qc' && (
+            <button
+              onClick={handleQCUserClick}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 transition-colors"
+              title="View QC User"
+            >
+              <UserCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="text-left">
+                <p className="text-xs font-medium text-blue-800 dark:text-blue-300">
+                  {qcUserData.name}
+                </p>
+                <p className="text-xs text-blue-600 dark:text-blue-400">
+                  ID: {qcUserData.qc_id}
                 </p>
               </div>
             </button>
