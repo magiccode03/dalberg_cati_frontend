@@ -121,7 +121,7 @@ export default function CATIInterviewAudioPage() {
             { value: '', label: 'All AC' },
             ...acData.map((ac: any) => ({
               value: ac.ac_code.toString(),
-              label: `${ac.ac_code} - ${ac.ac_name}`,
+              label: `${ac.ac_name} (${ac.ac_code})`,
             })),
           ];
           setAcOptions(acOptionsData);
