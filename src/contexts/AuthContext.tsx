@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const roleName = apiUser.roleName || apiUser.role?.name || 'super_admin';
         
         // Determine system based on API response or default to 'capi' for system-specific roles
-        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc'];
+        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc'];
         const userSystem = apiUser.system || (systemRoles.includes(roleName) ? 'capi' : undefined);
         
         const userData: User = {
@@ -191,6 +191,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'start_qc': ['qc:read', 'dashboard:read'],
       'data_quality': ['data:read', 'data:write', 'dashboard:read'],
       'convergent_analysis': ['analysis:read', 'analysis:write', 'dashboard:read'],
+      'capi_qc': ['qc:read', 'qc:write', 'dashboard:read'],
     };
     return permissions[role as keyof typeof permissions] || ['dashboard:read'];
   };
@@ -433,6 +434,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'start_qc': 'SQC',
       'data_quality': 'DQ',
       'convergent_analysis': 'CA',
+      'capi_qc': 'CAPIQC',
     };
 
     const prefix = rolePrefix[role as keyof typeof rolePrefix] || 'USER';
@@ -459,6 +461,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // PPMT role goes directly to fieldwork progress page
     if (role === 'ppmt') return '/capi/ppmt/overview/fieldwork-progress';
+    
+    // CAPI QC role goes directly to QC auth page
+    if (role === 'capi_qc') return '/capi/capi-qc/qc-auth';
     
     // All other roles (including research, ppm, dqm, fd, etc.) go to /home
     return '/home';
