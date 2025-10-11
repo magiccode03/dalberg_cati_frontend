@@ -12,7 +12,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Plus, Edit, Check, Eye } from 'lucide-react';
+import { Search, Plus, Edit, Check, Eye, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
 
@@ -63,6 +63,17 @@ export default function QCUserRegistrationPage() {
     reChecking: false,
   });
 
+  // Separate state for applied filters (what actually filters the data)
+  const [appliedFilters, setAppliedFilters] = useState({
+    qcId: '',
+    name: '',
+    mobileNumber: '',
+    status: '1',
+    gps: false,
+    audio: false,
+    reChecking: false,
+  });
+
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
   const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
@@ -86,15 +97,15 @@ export default function QCUserRegistrationPage() {
         console.log('Access token exists:', !!token);
         console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
         
-        // Build query parameters from filters
+        // Build query parameters from applied filters
         const queryParams = new URLSearchParams();
-        if (filters.qcId) queryParams.append('qc_id', filters.qcId);
-        if (filters.name) queryParams.append('name', filters.name);
-        if (filters.mobileNumber) queryParams.append('mobile_number', filters.mobileNumber);
-        if (filters.status) queryParams.append('status', filters.status);
-        if (filters.gps) queryParams.append('gps', '1');
-        if (filters.audio) queryParams.append('audio', '1');
-        if (filters.reChecking) queryParams.append('clientaudiocheck', '1');
+        if (appliedFilters.qcId) queryParams.append('qc_id', appliedFilters.qcId);
+        if (appliedFilters.name) queryParams.append('name', appliedFilters.name);
+        if (appliedFilters.mobileNumber) queryParams.append('mobile_number', appliedFilters.mobileNumber);
+        if (appliedFilters.status) queryParams.append('status', appliedFilters.status);
+        if (appliedFilters.gps) queryParams.append('gps', '1');
+        if (appliedFilters.audio) queryParams.append('audio', '1');
+        if (appliedFilters.reChecking) queryParams.append('clientaudiocheck', '1');
         
         const queryString = queryParams.toString();
         const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
@@ -181,7 +192,7 @@ export default function QCUserRegistrationPage() {
     };
 
     fetchData();
-  }, [filters]);
+  }, [appliedFilters]);
 
   // Sample data based on the provided HTML (fallback)
   const sampleData: QCUserData[] = [
@@ -228,9 +239,26 @@ export default function QCUserRegistrationPage() {
   };
 
   const handleSearch = () => {
-    // Search is automatically triggered by useEffect when filters change
-    console.log('Searching with filters:', filters);
+    // Apply the current filter values to trigger the search
+    setAppliedFilters(filters);
     setCurrentPage(1); // Reset to first page when searching
+    console.log('Searching with filters:', filters);
+  };
+
+  const handleClear = () => {
+    // Reset all filters to default values
+    const defaultFilters = {
+      qcId: '',
+      name: '',
+      mobileNumber: '',
+      status: '1', // Default to Active
+      gps: false,
+      audio: false,
+      reChecking: false,
+    };
+    setFilters(defaultFilters);
+    setAppliedFilters(defaultFilters);
+    setCurrentPage(1);
   };
 
   const handleAddNewUser = () => {
@@ -343,33 +371,45 @@ export default function QCUserRegistrationPage() {
           <Card>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  QC ID
+                </label>
                 <Input
                   type="text"
-                  placeholder="QC ID"
+                  placeholder="Enter QC ID"
                   value={filters.qcId}
                   onChange={(e) => handleFilterChange('qcId', e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Name
+                </label>
                 <Input
                   type="text"
-                  placeholder="Name"
+                  placeholder="Enter Name"
                   value={filters.name}
                   onChange={(e) => handleFilterChange('name', e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Mobile Number
+                </label>
                 <Input
                   type="text"
-                  placeholder="Mobile Number"
+                  placeholder="Enter Mobile Number"
                   value={filters.mobileNumber}
                   onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Status
+                </label>
                 <SelectDropdown
                   value={filters.status}
                   onChange={(value) => handleFilterChange('status', value as string)}
@@ -415,6 +455,16 @@ export default function QCUserRegistrationPage() {
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Search
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  onClick={handleClear}
+                  className="w-full bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center space-x-2"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Clear</span>
                 </Button>
               </div>
             </div>
