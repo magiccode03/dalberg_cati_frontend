@@ -12,7 +12,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2, Image, User } from 'lucide-react';
+import { Volume2, MapPin, Loader2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 // TypeScript interfaces for API response
@@ -971,33 +971,6 @@ const InterviewLogPage = () => {
                             {getQcOutcomeBadge(interview.qc_outcome)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200">{interview.status_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-                              {interview.gender_label || '-'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              {interview.ps_image_available ? (
-                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                  <Image className="w-4 h-4 text-green-600" />
-                                </div>
-                              ) : (
-                                <Image className="w-5 h-5 text-gray-400" />
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              {interview.selfie_image_available ? (
-                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                  <User className="w-4 h-4 text-green-600" />
-                                </div>
-                              ) : (
-                                <User className="w-5 h-5 text-gray-400" />
-                              )}
-                            </div>
-                          </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
                               {interview.gender_label || '-'}
