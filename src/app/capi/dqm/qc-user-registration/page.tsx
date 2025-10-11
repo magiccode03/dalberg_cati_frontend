@@ -272,15 +272,15 @@ export default function QCUserRegistrationPage() {
         setLoading(true);
         setError(null);
         
-        // Build query parameters from filters
+        // Build query parameters from appliedFilters
         const queryParams = new URLSearchParams();
-        if (filters.qcId) queryParams.append('qc_id', filters.qcId);
-        if (filters.name) queryParams.append('name', filters.name);
-        if (filters.mobileNumber) queryParams.append('mobile_number', filters.mobileNumber);
-        if (filters.status) queryParams.append('status', filters.status);
-        if (filters.gps) queryParams.append('gps', '1');
-        if (filters.audio) queryParams.append('audio', '1');
-        if (filters.reChecking) queryParams.append('clientaudiocheck', '1');
+        if (appliedFilters.qcId) queryParams.append('qc_id', appliedFilters.qcId);
+        if (appliedFilters.name) queryParams.append('name', appliedFilters.name);
+        if (appliedFilters.mobileNumber) queryParams.append('mobile_number', appliedFilters.mobileNumber);
+        if (appliedFilters.status) queryParams.append('status', appliedFilters.status);
+        if (appliedFilters.gps) queryParams.append('gps', '1');
+        if (appliedFilters.audio) queryParams.append('audio', '1');
+        if (appliedFilters.reChecking) queryParams.append('clientaudiocheck', '1');
         
         const queryString = queryParams.toString();
         const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
@@ -485,13 +485,6 @@ export default function QCUserRegistrationPage() {
                   />
                   <Text className="text-sm text-gray-700">Audio</Text>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={filters.reChecking}
-                    onCheckedChange={(checked) => handleFilterChange('reChecking', checked as boolean)}
-                  />
-                  <Text className="text-sm text-gray-700">Re-Checking</Text>
-                </div>
                 <Button
                   variant="primary"
                   onClick={handleSearch}
@@ -552,9 +545,7 @@ export default function QCUserRegistrationPage() {
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile Number</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GPS</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audio</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Re-Checking</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned ACs</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assign AC</th>
                       </tr>
@@ -568,13 +559,7 @@ export default function QCUserRegistrationPage() {
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.mobileNumber}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.gps)}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.audio)}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.reChecking)}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.status}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {user.assignedAcCount || 0} ACs
-                            </span>
-                          </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             <Button
                               variant="primary"
@@ -593,13 +578,13 @@ export default function QCUserRegistrationPage() {
                               >
                                 <Check className="w-4 h-4" />
                               </Button>
-                              <Button
+                              {/* <Button
                                 variant="primary"
                                 size="sm"
                                 onClick={() => handleViewAssignedAC(user.id)}
                               >
                                 <Eye className="w-4 h-4" />
-                              </Button>
+                              </Button> */}
                             </div>
                           </td>
                         </tr>

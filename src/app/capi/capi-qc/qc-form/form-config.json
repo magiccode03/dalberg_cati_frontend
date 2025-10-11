@@ -56,8 +56,8 @@
     },
     "survey_q_tag": {
       "tag": "resp_gender",
-      "options": [
-        {
+    "options": [
+      {
           "value": 1,
           "lable": {
             "en": "Male",
@@ -81,6 +81,7 @@
       "bn": "পরীক্ষকের নির্দেশনা: অডিও অনুসারে উত্তরদাতার লিঙ্গ উল্লেখ করা হয়েছে কিনা তা যাচাই করুন।"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {
@@ -112,8 +113,8 @@
     },
     "survey_q_tag": {
       "tag": "q8",
-      "options": [
-        {
+    "options": [
+      {
           "value": 1,
           "lable": {
             "en": "AITC (Trinamool Congress)",
@@ -201,6 +202,7 @@
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {
@@ -241,8 +243,8 @@
     },
     "survey_q_tag": {
       "tag": "q5",
-      "options": [
-        {
+    "options": [
+      {
           "value": 1,
           "lable": {
             "en": "AITC (Trinamool Congress)",
@@ -338,6 +340,7 @@
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {
@@ -378,8 +381,8 @@
     },
     "survey_q_tag": {
       "tag": "q6",
-      "options": [
-        {
+    "options": [
+      {
           "value": 1,
           "lable": {
             "en": "AITC (Trinamool Congress)",
@@ -467,6 +470,7 @@
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {
@@ -507,6 +511,7 @@
     },
     "survey_q_tag": "resp_name",
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {
@@ -547,6 +552,7 @@
     },
     "survey_q_tag": "resp_age",
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {
@@ -577,6 +583,7 @@
       "bn": "8. সাক্ষাৎকারগ্রহণকারী কি উত্তরদাতার ফোন নম্বর জিজ্ঞাসা করেছিলেন?"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": true,
     "options": [
       {
         "label": {

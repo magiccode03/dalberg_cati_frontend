@@ -12,12 +12,11 @@ import { Search, Play, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface InterviewData {
-  id: string;
-  server_token: string;
+  server_id: number;
   ac_code: number;
   ac_name: string;
   interview_date: string;
-  interview_audio: string | null;
+  interview_audio: string;
 }
 
 interface APIResponse {
@@ -123,14 +122,13 @@ export default function CAPIInterviewAudioPage() {
       console.log('Response success:', response.success);
       console.log('Response data:', response.data);
 
-      // Handle different response structures
+      // Handle the API response structure
       if (response.success) {
-        // Check if data is directly in response.data or nested
         const responseData = response.data;
         
-        if (responseData && (responseData.data || Array.isArray(responseData))) {
-          // Handle nested structure (response.data.data)
-          const interviewData = responseData.data || responseData;
+        if (responseData && responseData.data) {
+          // Handle the nested structure from the API
+          const interviewData = responseData.data;
           const pagination = responseData.pagination;
           const filters = responseData.filters;
           
@@ -138,7 +136,7 @@ export default function CAPIInterviewAudioPage() {
           setInterviewData(interviewData);
           
           if (pagination) {
-            setTotalItems(pagination.total);
+            setTotalItems(pagination.total_count || pagination.total);
             setTotalPages(pagination.total_pages);
           }
           
@@ -174,49 +172,6 @@ export default function CAPIInterviewAudioPage() {
         console.error('API response not successful:', response);
         setError(`Failed to fetch interview audio data: ${response.message || 'Unknown error'}`);
       }
-      
-      if (response.success && response.data) {
-        const interviewData = response.data.data || [];
-        
-        setInterviewData(interviewData);
-        
-        // Handle pagination from API response
-        if (response.data.pagination) {
-          setTotalItems(response.data.pagination.total);
-          setTotalPages(response.data.pagination.totalPages);
-        } else {
-          // Fallback to client-side calculation if no pagination info
-          setTotalItems(interviewData.length);
-          setTotalPages(Math.ceil(interviewData.length / itemsPerPage));
-        }
-        
-        // Extract unique AC codes and dates for filter (only on first load when options are empty)
-        if (currentPage === 1 && interviewData.length > 0 && acOptions.length === 0) {
-          const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
-            .map((str: unknown) => JSON.parse(str as string));
-          const acOptionsData = [
-            { value: '', label: 'Select ACs' },
-            ...uniqueACs
-              .sort((a: any, b: any) => a.ac_name.localeCompare(b.ac_name))
-              .map((ac: any) => ({
-                value: ac.ac_code.toString(),
-                label: `${ac.ac_name} (${ac.ac_code})`
-              }))
-          ];
-          setAcOptions(acOptionsData);
-          
-          // Extract unique dates for filter
-          const uniqueDates = Array.from(new Set(interviewData.map((item: InterviewData) => item.interview_date.split('T')[0])));
-          const dateOptionsData = [
-            { value: '', label: 'Interview Date' },
-            ...uniqueDates.map((date: unknown) => ({
-              value: date as string,
-              label: new Date(date as string).toLocaleDateString()
-            }))
-          ];
-          setInterviewDateOptions(dateOptionsData);
-        }
-      }
     } catch (err) {
       console.error('Error fetching data:', err);
       console.error('Error details:', {
@@ -245,13 +200,17 @@ export default function CAPIInterviewAudioPage() {
 
 
   const handlePlayAudio = (audioData: InterviewData) => {
-    // Fix the audio URL encoding
+    // Construct the full audio URL from the filename
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    const audioUrl = `${baseUrl}/api/fd/interviewaudio/audio/${audioData.interview_audio}`;
+    
     const processedAudioData = {
       ...audioData,
-      audio: fixAudioUrl(audioData.interview_audio || '')
+      audio: audioUrl
     };
     
     console.log('Playing audio:', processedAudioData);
+    console.log('Audio URL:', audioUrl);
     
     setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
@@ -474,9 +433,9 @@ export default function CAPIInterviewAudioPage() {
               </thead>
               <tbody>
                 {paginatedData.map((row, index) => (
-                  <tr key={row.id}>
+                  <tr key={row.server_id}>
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td className="text-center">{row.id}</td>
+                    <td>{row.server_id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
                     <td className="text-center">{new Date(row.interview_date).toLocaleDateString()}</td>
@@ -544,8 +503,8 @@ export default function CAPIInterviewAudioPage() {
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Token</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.id}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.server_id}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>

@@ -465,7 +465,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // CAPI QC role goes directly to QC auth page
     if (role === 'capi_qc') return '/capi/capi-qc/qc-auth';
     
-    // All other roles (including research, ppm, dqm, fd, etc.) go to /home
+    // DQM role goes directly to QC user registration page
+    if (role === 'dqm') return '/capi/dqm/qc-user-registration';
+    
+    // All other roles (including research, ppm, fd, etc.) go to /home
     return '/home';
   };
 
