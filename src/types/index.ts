@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality' | 'ppm' | 'ppmt' | 'dqm' | 'dqmt' | 'fd' | 'portal_admin';
+  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality' | 'ppm' | 'ppmt' | 'dqm' | 'dqmt' | 'fd' | 'portal_admin' | 'capi_qc';
   avatar?: string;
   permissions: string[];
   system?: 'capi' | 'cati'; // System assignment for CAPI/CATI users
