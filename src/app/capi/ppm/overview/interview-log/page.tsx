@@ -587,6 +587,8 @@ const InterviewLogPage = () => {
                   onChange={(value) => handleFilterChange('agency_id', value)}
                   placeholder={agenciesLoading ? "Loading teams..." : "Select State Teams"}
                   disabled={agenciesLoading}
+                  searchable={true}
+                  clearable={true}
                 />
               </div>
 
@@ -617,6 +619,7 @@ const InterviewLogPage = () => {
                   onChange={(value) => handleFilterChange('interview_date', value)}
                   placeholder="Search or select date"
                   searchable={true}
+                  clearable={true}
                 />
               </div>
 
@@ -629,6 +632,7 @@ const InterviewLogPage = () => {
                   onChange={(value) => handleFilterChange('ac_code', value)}
                   placeholder={acLoading ? "Loading AC list..." : "Search or select AC"}
                   searchable={true}
+                  clearable={true}
                   disabled={acLoading}
                 />
               </div>
@@ -648,6 +652,7 @@ const InterviewLogPage = () => {
                         : "Search or select polling station"
                   }
                   searchable={true}
+                  clearable={true}
                   disabled={pollingStationsLoading || !filters.ac_code}
                 />
               </div>
@@ -661,6 +666,7 @@ const InterviewLogPage = () => {
                   onChange={(value) => handleFilterChange('user_id', value)}
                   placeholder={usersLoading ? "Loading enumerators..." : "Search or select enumerator ID"}
                   searchable={true}
+                  clearable={true}
                   disabled={usersLoading}
                 />
               </div>
@@ -674,6 +680,7 @@ const InterviewLogPage = () => {
                   onChange={(value) => handleFilterChange('interviewer_id', value)}
                   placeholder={interviewersLoading ? "Loading interviewers..." : "Search or select interviewer ID"}
                   searchable={true}
+                  clearable={true}
                   disabled={interviewersLoading}
                 />
               </div>
