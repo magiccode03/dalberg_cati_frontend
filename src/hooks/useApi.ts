@@ -296,6 +296,96 @@ export function useGPSData(params?: any) {
   return useApi(() => apiService.getGPSData(params), [params]);
 }
 
+// Team Registration Hooks
+export function useTeamRegistration(page: number = 1, limit: number = 20) {
+  return useApi(() => apiService.getTeamRegistration(page, limit), [page, limit]);
+}
+
+// Rejection Report Hooks
+export function useRejectionReport(params?: any) {
+  return useApi(() => {
+    if (!params) {
+      // Return a promise that resolves with empty data when params is null
+      return Promise.resolve({
+        success: true,
+        data: { 
+          interviews: [], 
+          pagination: { current_page: 1, per_page: 25, total_count: 0, total_pages: 0 },
+          filters_applied: {},
+          sorting: {},
+          level_filter: {},
+          message: 'No data to fetch'
+        },
+        message: 'No data to fetch',
+        timestamp: new Date().toISOString()
+      } as any);
+    }
+    return apiService.getRejectionReport(params);
+  }, [
+    params?.report_days,
+    params?.custom_date,
+    params?.custom_date_end,
+    params?.report_level,
+    params?.interviewer_id,
+    params?.enumerator_id,
+    params?.ac_code,
+    params?.district_code,
+    params?.pc_code,
+    params?.supervisor_id,
+    params?.server_id,
+    params?.mobile_no,
+    params?.fail_reason,
+    params?.qualityreportstatus,
+    params?.page,
+    params?.per_page
+  ]);
+}
+
+export function useToggleReQcStatus() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const toggleReQc = async (agencyId: number, dataSendForReqc: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Toggling Re-QC status:', { agencyId, dataSendForReqc });
+      
+      // First, let's test if the endpoint exists with a simple request
+      console.log('Testing endpoint availability...');
+      
+      const response = await apiService.toggleReQcStatus(agencyId, dataSendForReqc);
+      
+      console.log('Toggle Re-QC response:', response);
+      
+      return response;
+    } catch (err: any) {
+      console.error('Toggle Re-QC error:', err);
+      
+      let errorMessage = 'Failed to toggle Re-QC status';
+      
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      // Add more specific error information
+      if (err.message?.includes('500')) {
+        errorMessage += ' (Server Error - Check if endpoint exists)';
+      }
+      
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { toggleReQc, loading, error };
+}
+
 // Data Quality Hooks
 export function useDataValidation() {
   return useApi(() => apiService.getDataValidation());
@@ -307,6 +397,354 @@ export function useQualityMetrics() {
 
 export function useQualityIssues() {
   return useApi(() => apiService.getQualityIssues());
+}
+
+// Team Registration Hooks
+export function useCreateTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createTeamRegistration = useCallback(async (data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.createTeamRegistration(data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to create team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { createTeamRegistration, loading, error };
+}
+
+// Team Registration Update Hook
+export function useUpdateTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateTeamRegistration = useCallback(async (agencyId: number, data: {
+    agency_name: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    status: number;
+    qa_id: number;
+    unique_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.updateTeamRegistration(agencyId, data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to update team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateTeamRegistration, loading, error };
+}
+
+// Get Team Registration by ID Hook
+export function useGetTeamRegistrationById() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getTeamRegistrationById = useCallback(async (agencyId: number) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getTeamRegistrationById(agencyId);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getTeamRegistrationById, loading, error };
+}
+
+// Fieldwork Progress Hook
+export function useFieldworkProgress() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getFieldworkProgress = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getFieldworkProgress();
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch fieldwork progress');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getFieldworkProgress, loading, error };
+}
+
+export function useCreateQCTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createQCTeamRegistration = useCallback(async (data: {
+    agency_name: string;
+    status: number;
+    unique_id: string;
+    password: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.createQCTeamRegistration(data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to create QC team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { createQCTeamRegistration, loading, error };
+}
+
+export function useGetQCTeamRegistrations() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getQCTeamRegistrations = useCallback(async (params?: { page?: number; pageSize?: number }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getQCTeamRegistrations(params);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch QC team registrations');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getQCTeamRegistrations, loading, error };
+}
+
+export function useUpdateQCTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateQCTeamRegistration = useCallback(async (id: string, data: {
+    agency_name: string;
+    status: number;
+    unique_id: string;
+    password?: string;
+    qc_agency_id: number;
+    show_second_level_column: number;
+    qa_id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log('🔄 Hook: Updating QC team registration:', { id, data });
+      const response = await apiService.updateQCTeamRegistration(id, data);
+      console.log('🔄 Hook: API response:', response);
+      
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to update QC team registration');
+        return null;
+      }
+    } catch (err) {
+      console.error('🔄 Hook: Error updating QC team registration:', err);
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateQCTeamRegistration, loading, error };
+}
+
+// Get Team Registration Dropdown Options Hook
+export function useGetTeamRegistrationDropdownOptions() {
+  const [data, setData] = useState<{
+    show_second_level_column: Array<{
+      value: number;
+      label: string;
+    }>;
+    status: Array<{
+      value: number;
+      label: string;
+    }>;
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getDropdownOptions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getTeamRegistrationDropdownOptions();
+      if (response.success) {
+        setData(response.data);
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch dropdown options');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getDropdownOptions, data, loading, error };
+}
+
+// Get QC Agencies Hook
+export function useGetQCAgencies() {
+  const [data, setData] = useState<Array<{
+    id: number;
+    agency_name: string;
+    username: string;
+  }> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getQCAgencies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getQCAgencies();
+      if (response.success) {
+        setData(response.data);
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch QC agencies');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getQCAgencies, data, loading, error };
+}
+
+// Get Agencies Hook
+export function useGetAgencies() {
+  const [data, setData] = useState<{ [key: string]: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getAgencies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await apiService.getAgencies();
+      if (response.success) {
+        setData(response.data);
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch agencies');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getAgencies, data, loading, error };
 }
 
 // Utility Hook for Manual API Calls
@@ -338,4 +776,19 @@ export function useApiCall() {
   }, []);
 
   return { execute, loading, error };
+}
+
+// AC Dropdown Hook
+export function useACDropdown() {
+  return useApi(() => apiService.getACDropdownList());
+}
+
+// Filter Options Hook
+export function useRejectionReportFilterOptions() {
+  return useApi(() => apiService.getRejectionReportFilterOptions());
+}
+
+// Interviewer Dropdown Hook
+export function useInterviewerDropdown() {
+  return useApi(() => apiService.getInterviewerDropdownList());
 }

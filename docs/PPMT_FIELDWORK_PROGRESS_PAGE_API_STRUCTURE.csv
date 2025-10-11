@@ -1,0 +1,21 @@
+Section,Type,Label/Column Name,API Field Name
+Progress Summary,Filters,Total Sample,total_sample
+Progress Summary,Filters,Sample Achieved (Numbers),sample_achieved_numbers
+Progress Summary,Filters,Sample Achieved (%),sample_achieved_percent
+Progress Summary,Filters,ACs completed,acs_completed
+Progress Summary,Filters,ACs not completed,acs_not_completed
+Progress Summary,Filters,ACs yet to be initiated,acs_yet_to_be_initiated
+Progress Summary,Table Column,Details,details
+Progress Summary,Table Column,Measure,measure
+AC Wise Progress,Filters,AC Code,ac_code
+AC Wise Progress,Filters,AC Name,ac_name
+AC Wise Progress,Filters,District Name,district_name
+AC Wise Progress,Filters,Valid Under QC,valid_under_qc
+AC Wise Progress,Filters,Reject,reject
+AC Wise Progress,Filters,Completion Percent,completion_percent
+AC Wise Progress,Table Column,AC Code,ac_code
+AC Wise Progress,Table Column,AC Name,ac_name
+AC Wise Progress,Table Column,District Name,district_name
+AC Wise Progress,Table Column,Valid+Under QC,valid_under_qc
+AC Wise Progress,Table Column,Reject,reject
+AC Wise Progress,Table Column,% of Completion,completion_percent

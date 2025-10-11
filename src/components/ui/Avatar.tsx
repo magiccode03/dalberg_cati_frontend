@@ -37,7 +37,7 @@ export interface AvatarProps {
   groupSize?: number;
   groupSpacing?: number;
   groupOverlap?: boolean;
-  groupDirection?: 'horizontal' | 'vertical';
+  groupDirection?: '' | 'vertical';
   groupReverse?: boolean;
   groupLimit?: number;
   groupMore?: React.ReactNode;
@@ -155,7 +155,7 @@ export default function Avatar({
   groupSize = 3,
   groupSpacing = -4,
   groupOverlap = true,
-  groupDirection = 'horizontal',
+  groupDirection = '',
   groupReverse = false,
   groupLimit = 3,
   groupMore,
@@ -449,7 +449,7 @@ export default function Avatar({
           className
         )}
         style={{
-          marginLeft: groupDirection === 'horizontal' && groupOverlap ? `${groupSpacing}px` : undefined,
+          marginLeft: groupDirection === '' && groupOverlap ? `${groupSpacing}px` : undefined,
           marginTop: groupDirection === 'vertical' && groupOverlap ? `${groupSpacing}px` : undefined,
         }}
       >

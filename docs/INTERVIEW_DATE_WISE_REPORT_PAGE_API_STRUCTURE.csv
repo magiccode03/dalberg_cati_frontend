@@ -1,0 +1,8 @@
+Section,Type,Label/Column Name,API Field Name
+Interview Date Wise Report,Table Column,Interview Date,interview_date
+Interview Date Wise Report,Table Column,Total Interview,total_interview
+Interview Date Wise Report,Table Column,Valid Interview,valid_interview
+Interview Date Wise Report,Table Column,Reject Interview,reject_interview
+Interview Date Wise Report,Table Column,QC Assigned,qc_assigned
+Interview Date Wise Report,Table Column,QC Pending,qc_pending
+Interview Date Wise Report,Table Column,QC Completed,qc_completed

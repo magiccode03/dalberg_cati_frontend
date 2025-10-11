@@ -3,9 +3,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality';
+  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality' | 'ppm' | 'ppmt' | 'dqm' | 'dqmt' | 'fd' | 'portal_admin' | 'capi_qc';
   avatar?: string;
   permissions: string[];
+  system?: 'capi' | 'cati'; // System assignment for CAPI/CATI users
 }
 
 export interface Notification {
@@ -67,6 +68,7 @@ export interface MenuItem {
   icon: string;
   children?: MenuItem[];
   roles: string[];
+  system?: 'capi' | 'cati' | 'common'; // System identifier for menu filtering
 }
 
 // Table Types
@@ -96,12 +98,12 @@ export interface BaseComponentProps {
   children?: React.ReactNode;
 }
 
-export interface ButtonProps extends BaseComponentProps {
+export interface ButtonProps
+  extends BaseComponentProps,
+    React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
-  disabled?: boolean;
   loading?: boolean;
-  onClick?: () => void;
 }
 
 export interface CardProps extends BaseComponentProps {

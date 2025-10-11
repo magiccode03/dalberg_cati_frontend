@@ -9,7 +9,9 @@ export interface User {
   uniqueId: string; // Alphanumeric/numeric unique ID
   name: string;
   email?: string; // Optional email for notifications
+  mobile?: string; // Mobile phone number
   role: string;
+  roleDisplayName?: string; // Display name for the role
   avatar?: string;
   permissions?: string[];
   lastLogin?: string;
@@ -19,14 +21,16 @@ export interface User {
   createdAt?: string;
   isActive?: boolean;
   password?: string; // Only for SUPER ADMIN user management
+  system?: 'capi' | 'cati'; // System assignment for CAPI/CATI users
 }
 
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (uniqueId: string, password: string, rememberMe?: boolean) => Promise<boolean>;
+  login: (uniqueId: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; user?: User }>;
   logout: () => void;
+  clearUserData: () => void;
   register: (userData: any) => Promise<boolean>;
   updateUser: (userData: Partial<User>) => void;
   hasPermission: (permission: string) => boolean;
@@ -114,7 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (uniqueId: string, password: string, rememberMe = false): Promise<boolean> => {
+  const login = async (uniqueId: string, password: string, rememberMe = false): Promise<{ success: boolean; user?: User }> => {
     try {
       setIsLoading(true);
 
@@ -124,21 +128,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.success && response.data) {
         const { user: apiUser, token, refreshToken } = response.data;
         
+        // Store authentication tokens
+        if (token && refreshToken) {
+          localStorage.setItem('accessToken', token);
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+        
         // Transform API user to our User interface
+        const roleName = apiUser.roleName || apiUser.role?.name || 'super_admin';
+        
+        // Determine system based on API response or default to 'capi' for system-specific roles
+        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc'];
+        const userSystem = apiUser.system || (systemRoles.includes(roleName) ? 'capi' : undefined);
+        
         const userData: User = {
           id: apiUser.id.toString(),
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          role: apiUser.role.name,
+          mobile: apiUser.mobile,
+          role: roleName,
+          roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
-          permissions: getDefaultPermissions(apiUser.role.name),
+          permissions: getDefaultPermissions(roleName),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
-          designation: apiUser.role.displayName,
+          designation: apiUser.roleDisplayName || apiUser.role?.displayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
+          system: userSystem,
         };
 
         setUser(userData);
@@ -149,13 +168,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           localStorage.setItem('rememberMe', 'true');
         }
 
-        return true;
+
+        return { success: true, user: userData };
       }
 
-      return false;
+      return { success: false };
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { success: false };
     } finally {
       setIsLoading(false);
     }
@@ -171,24 +191,43 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'start_qc': ['qc:read', 'dashboard:read'],
       'data_quality': ['data:read', 'data:write', 'dashboard:read'],
       'convergent_analysis': ['analysis:read', 'analysis:write', 'dashboard:read'],
+      'capi_qc': ['qc:read', 'qc:write', 'dashboard:read'],
     };
     return permissions[role as keyof typeof permissions] || ['dashboard:read'];
   };
 
-  const logout = async () => {
-    try {
-      // Call API logout endpoint
-      await apiService.logout();
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Always clear local state
+  const logout = () => {
+    // Redirect first, then clear state to avoid UI flash
+    router.replace('/login');
+    
+    // Use setTimeout to clear state after redirect starts
+    setTimeout(() => {
       setUser(null);
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('user');
       localStorage.removeItem('rememberMe');
-      router.push('/login');
-    }
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('tokenExpiresAt');
+      localStorage.removeItem('teleform_user_data'); // Clear teleform data as well
+      
+      // Dispatch event to update header
+      window.dispatchEvent(new Event('teleformUserUpdated'));
+    }, 0);
+    
+    // Call API logout endpoint in background (don't wait for it)
+    apiService.logout().catch(error => {
+      console.error('Logout API error:', error);
+    });
+  };
+
+  // Function to clear stored user data and force re-login (for updating user structure)
+  const clearUserData = () => {
+    setUser(null);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    router.push('/login');
   };
 
   const register = async (userData: any): Promise<boolean> => {
@@ -207,12 +246,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          role: apiUser.role.name,
+          mobile: apiUser.mobile,
+          role: apiUser.roleName || apiUser.role?.name || 'super_admin',
+          roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
           avatar: '/logo.png',
-          permissions: getDefaultPermissions(apiUser.role.name),
+          permissions: getDefaultPermissions(apiUser.roleName || apiUser.role?.name || 'super_admin'),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
-          designation: apiUser.role.displayName,
+          designation: apiUser.roleDisplayName || apiUser.role?.displayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
@@ -385,6 +426,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const generateUniqueId = (role: string): string => {
     const rolePrefix = {
       'super_admin': 'SUPER',
+      'portal_admin': 'PORTAL',
       'admin': 'ADMIN',
       'pmt': 'PMT',
       'qc_manager': 'QC',
@@ -392,6 +434,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'start_qc': 'SQC',
       'data_quality': 'DQ',
       'convergent_analysis': 'CA',
+      'capi_qc': 'CAPIQC',
     };
 
     const prefix = rolePrefix[role as keyof typeof rolePrefix] || 'USER';
@@ -409,17 +452,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const getRedirectUrl = (role: string): string => {
-    const roleRedirects: { [key: string]: string } = {
-      'super_admin': '/super-admin/dashboard',
-      'admin': '/dashboard',
-      'pmt': '/pmt/dashboard',
-      'qc': '/dashboard/qc',
-      'quality_analyst': '/dashboard/quality-analyst',
-      'start_qc': '/dashboard/start-qc',
-      'data_quality': '/dashboard/data-quality',
-    };
-
-    return roleRedirects[role] || '/dashboard';
+    // Super Admin and Portal Admin go directly to their dashboards
+    if (role === 'super_admin') return '/super-admin/dashboard';
+    if (role === 'portal_admin') return '/portal-admin/users';
+    
+    // SS role (CATI System Supervisor/Telecaller) goes to start-form-filling page
+    if (role === 'ss') return '/cati/ss/start-form-filling';
+    
+    // PPMT role goes directly to fieldwork progress page
+    if (role === 'ppmt') return '/capi/ppmt/overview/fieldwork-progress';
+    
+    // CAPI QC role goes directly to QC auth page
+    if (role === 'capi_qc') return '/capi/capi-qc/qc-auth';
+    
+    // DQM role goes directly to QC user registration page
+    if (role === 'dqm') return '/capi/dqm/qc-user-registration';
+    
+    // All other roles (including research, ppm, fd, etc.) go to /home
+    return '/home';
   };
 
   const value: AuthContextType = {
@@ -428,6 +478,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    clearUserData,
     register,
     updateUser,
     hasPermission,

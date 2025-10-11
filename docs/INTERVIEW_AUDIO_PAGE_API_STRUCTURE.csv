@@ -1,0 +1,15 @@
+Section,Type,Label/Column Name,
+Interview Data,Table Column,Serial Number,#
+Interview Data,Table Column,Server Token,server_token
+Interview Data,Table Column,AC Code,ac_code
+Interview Data,Table Column,AC Name,ac_name
+Interview Data,Table Column,Interview Date,interview_date
+Interview Data,Table Column,Interview Audio,interview_audio
+,,,
+Actions,Action Button,Search,search
+Actions,Action Button,Check Audio,checkAudio
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,itemsPerPage
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages

@@ -1,0 +1,1769 @@
+[
+  {
+    "type": "radio",
+    "label": "Number Status",
+    "required": true,
+    "options": [
+      {
+        "label": "Call Not Received to Telecaller",
+        "value": "3",
+        "tag": "opt_call_not_received"
+      },
+      {
+        "label": "Ringing (Respondent Call)",
+        "value": "1",
+        "tag": "opt_ringing"
+      },
+      {
+        "label": "Not Ringing (Respondent Call)",
+        "value": "2",
+        "tag": "opt_not_ringing"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_ringing": [
+          "call_not_ring",
+          "call_ring_status",
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_not_ringing": [
+          "call_ring_status",
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_call_not_received": [
+          "call_not_ring",
+          "call_ring_status",
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ]
+      },
+      "showFields": {
+        "opt_ringing": [
+          "call_ring_status"
+        ],
+        "opt_not_ringing": [
+          "call_not_ring"
+        ]
+      }
+    },
+    "tag": "number_status"
+  },
+  {
+    "type": "radio",
+    "label": "Call Not Ring Status",
+    "conditional": "number_status === '2'",
+    "options": [
+      {
+        "label": "Switched Off",
+        "value": "1",
+        "tag": "opt_switched_off"
+      },
+      {
+        "label": "Number Not Reachable",
+        "value": "2",
+        "tag": "opt_number_not_reachable"
+      },
+      {
+        "label": "Number Does not exist",
+        "value": "3",
+        "tag": "opt_number_does_not_exist"
+      }
+    ],
+    "tag": "call_not_ring"
+  },
+  {
+    "type": "radio",
+    "label": "Call Ring Status",
+    "conditional": "number_status === '1'",
+    "options": [
+      {
+        "label": "Picked Up",
+        "value": "1",
+        "tag": "opt_picked_up"
+      },
+      {
+        "label": "Did not picked",
+        "value": "2",
+        "tag": "opt_did_not_picked"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_picked_up": [
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_did_not_picked": [
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ]
+      },
+      "showFields": {
+        "opt_picked_up": [
+          "q_call_status"
+        ]
+      }
+    },
+    "tag": "call_ring_status"
+  },
+  {
+    "type": "radio",
+    "label": "Q Call Status",
+    "conditional": "call_ring_status === '1'",
+    "options": [
+      {
+        "label": "Continue",
+        "value": "1",
+        "tag": "opt_continue"
+      },
+      {
+        "label": "Refuse to Respond",
+        "value": "3",
+        "tag": "opt_refuse_to_respond"
+      },
+      {
+        "label": "Call Back Later",
+        "value": "4",
+        "tag": "opt_call_back_later"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_continue": [
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_wrong_number": [
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_respondent_not_available": [
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ]
+      },
+      "showFields": {
+        "opt_continue": [
+          "consent"
+        ],
+        "opt_respondent_not_available": [
+          "call_reschedule"
+        ]
+      }
+    },
+    "tag": "q_call_status"
+  },
+  {
+    "type": "radio",
+    "label": "Should I continue?",
+    "conditional": "q_call_status === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "q11",
+          "q12",
+          "q13",
+          "q14",
+          "q15",
+          "q16_a",
+          "q16_b",
+          "q17",
+          "q19",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_age"
+        ]
+      }
+    },
+    "tag": "consent"
+  },
+  {
+    "type": "number",
+    "label": "आप कितने साल के हो अभी?",
+    "conditional": "consent === '1'",
+    "required": true,
+    "min": 10,
+    "max": 99,
+    "placeholder": "Please write your age",
+    "rules": {
+      "clearFields": {
+        "age_validation": {
+          "condition": "value < 18",
+          "fields": [
+            "resp_registered_voter",
+            "resp_gender",
+            "q5",
+            "q6",
+            "q7",
+            "q8",
+            "q9",
+            "q10",
+            "q11",
+            "q12",
+            "q13",
+            "q14",
+            "q15",
+            "q16_a",
+            "q16_b",
+            "q17",
+            "q19",
+            "resp_religion",
+            "resp_social_cat",
+            "resp_caste_jati",
+            "resp_female_edu",
+            "resp_male_edu",
+            "resp_occupation",
+            "thanks_future"
+          ]
+        }
+      },
+      "showFields": {
+        "age_18_plus": {
+          "condition": "value >= 18",
+          "fields": [
+            "resp_registered_voter"
+          ]
+        }
+      }
+    },
+    "tag": "resp_age"
+  },
+  {
+    "type": "radio",
+    "label": "क्या आपका नाम इस विधानसभा में वोटर लिस्ट में है?",
+    "conditional": "resp_age >= 18",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_gender",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "q11",
+          "q12",
+          "q13",
+          "q14",
+          "q15",
+          "q16_a",
+          "q16_b",
+          "q17",
+          "q19",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_gender"
+        ]
+      }
+    },
+    "tag": "resp_registered_voter"
+  },
+  {
+    "type": "radio",
+    "label": "जवाब देने वाला महिला है या पुरुष, ये नोट कर लीजिए।",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "पुरुष",
+        "value": "1",
+        "tag": "opt_male"
+      },
+      {
+        "label": "महिला",
+        "value": "2",
+        "tag": "opt_female"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_male": [
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "q11",
+          "q12",
+          "q13",
+          "q14",
+          "q15",
+          "q16_a",
+          "q16_b",
+          "q17",
+          "q19",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "thanks_future"
+        ],
+        "opt_female": [
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "q11",
+          "q12",
+          "q13",
+          "q14",
+          "q15",
+          "q16_a",
+          "q16_b",
+          "q17",
+          "q19",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "thanks_future"
+        ]
+      }
+    },
+    "tag": "resp_gender"
+  },
+  {
+    "type": "radio",
+    "label": "5. पिछले विधानसभा चुनाव (2021) में आपने किस पार्टी को वोट दिया था?",
+    "conditional": "resp_age >= 22 && resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "AITC (Trinamool Congress)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "BJP",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "INC (Congress)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "Left Front",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "Independent",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "NOTA",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "Did not vote",
+        "value": "66",
+        "tag": "opt_did_not_vote"
+      },
+      {
+        "label": "Not eligible for voting",
+        "value": "77",
+        "tag": "opt_not_eligible"
+      },
+      {
+        "label": "No response/Refused to answer",
+        "value": "88",
+        "tag": "opt_no_response"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q5_oth"
+        ],
+        "opt_independent": [
+          "q5_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q5_ind"
+        ],
+        "opt_independent": [
+          "q5_oth"
+        ]
+      }
+    },
+    "tag": "q5"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q5 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q5_oth"
+  },
+  {
+    "type": "text",
+    "label": "Independent (specify)",
+    "conditional": "q5 === '12'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q5_ind"
+  },
+  {
+    "type": "radio",
+    "label": "6. पिछले लोकसभा चुनाव (2024) में आपने किस पार्टी को वोट दिया था?",
+    "conditional": "resp_age >= 19 && resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "AITC (Trinamool Congress)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "BJP",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "INC (Congress)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "Left Front",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "Independent",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "NOTA",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "Did not vote",
+        "value": "66",
+        "tag": "opt_did_not_vote"
+      },
+      {
+        "label": "Not eligible for voting",
+        "value": "77",
+        "tag": "opt_not_eligible"
+      },
+      {
+        "label": "Refused to answer",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q6_oth"
+        ],
+        "opt_independent": [
+          "q6_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q6_ind"
+        ],
+        "opt_independent": [
+          "q6_oth"
+        ]
+      }
+    },
+    "tag": "q6"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q6 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q6_oth"
+  },
+  {
+    "type": "text",
+    "label": "Independent (specify)",
+    "conditional": "q6 === '12'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q6_ind"
+  },
+  {
+    "type": "radio",
+    "label": "7. 2021 के बाद आपके विधानसभा क्षेत्र में हुए उपचुनाव में आपने किस पार्टी को वोट दिया?",
+    "conditional": "resp_age >= 20 && resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "AITC (Trinamool Congress)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "BJP",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "INC (Congress)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "Left Front",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "Independent",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "NOTA",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "Did not vote",
+        "value": "66",
+        "tag": "opt_did_not_vote"
+      },
+      {
+        "label": "Not eligible for voting",
+        "value": "77",
+        "tag": "opt_not_eligible"
+      },
+      {
+        "label": "Refused to answer",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q7_oth"
+        ],
+        "opt_independent": [
+          "q7_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q7_ind"
+        ],
+        "opt_independent": [
+          "q7_oth"
+        ]
+      }
+    },
+    "tag": "q7"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q7 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q7_oth"
+  },
+  {
+    "type": "text",
+    "label": "Independent (specify)",
+    "conditional": "q7 === '12'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q7_ind"
+  },
+  {
+    "type": "radio",
+    "label": "8. अगर कल विधानसभा चुनाव (MLA) हों, तो आप किस पार्टी को वोट देंगे?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "AITC (Trinamool Congress)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "BJP",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "INC (Congress)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "Left Front",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "Independent",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "NOTA",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "Will not vote",
+        "value": "67",
+        "tag": "opt_will_not_vote"
+      },
+      {
+        "label": "Not yet decided",
+        "value": "78",
+        "tag": "opt_not_decided"
+      },
+      {
+        "label": "Refused to answer",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q8_oth"
+        ],
+        "opt_independent": [
+          "q8_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q8_ind"
+        ],
+        "opt_independent": [
+          "q8_oth"
+        ]
+      }
+    },
+    "tag": "q8"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q8 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q8_oth"
+  },
+  {
+    "type": "text",
+    "label": "Independent (specify)",
+    "conditional": "q8 === '12'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q8_ind"
+  },
+  {
+    "type": "radio",
+    "label": "9. मान लीजिए कि आपकी पसंदीदा पार्टी आपके विधानसभा क्षेत्र से चुनाव नहीं लड़ती है, तो आप किस पार्टी को चुनेंगे?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "AITC (Trinamool Congress)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "BJP",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "INC (Congress)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "Left Front",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "Independent",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "NOTA",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "I will not vote for anyone else",
+        "value": "67",
+        "tag": "opt_will_not_vote"
+      },
+      {
+        "label": "Refused to answer",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q9_oth"
+        ],
+        "opt_independent": [
+          "q9_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q9_ind"
+        ],
+        "opt_independent": [
+          "q9_oth"
+        ]
+      },
+      "excludeOptions": "q8"
+    },
+    "tag": "q9"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q9 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q9_oth"
+  },
+  {
+    "type": "text",
+    "label": "Independent (specify)",
+    "conditional": "q9 === '12'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q9_ind"
+  },
+  {
+    "type": "checkbox",
+    "label": "10. आपने जिस पार्टी को अपनी दूसरी पसंद चुना है, उसके पीछे क्या कारण हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "maxSelections": 6,
+    "options": [
+      {
+        "label": "The party works for my caste and community",
+        "value": "1",
+        "tag": "opt_caste_community"
+      },
+      {
+        "label": "The party makes some good arguments in their speeches",
+        "value": "2",
+        "tag": "opt_good_arguments"
+      },
+      {
+        "label": "The party supports my first choice party",
+        "value": "3",
+        "tag": "opt_supports_first_choice"
+      },
+      {
+        "label": "The leaders of the party work for Bengal",
+        "value": "4",
+        "tag": "opt_leaders_work_bengal"
+      },
+      {
+        "label": "Do not wish to vote for any other party",
+        "value": "5",
+        "tag": "opt_do_not_wish"
+      },
+      {
+        "label": "Others(Specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Don't know/can't say",
+        "value": "99",
+        "tag": "opt_dont_know"
+      }
+    ],
+    "rules": {
+      "exclusiveOptions": [
+        "5",
+        "99"
+      ],
+      "showFields": {
+        "opt_others": [
+          "q10_oth"
+        ]
+      }
+    },
+    "tag": "q10"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q10.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q10_oth"
+  },
+  {
+    "type": "checkbox",
+    "label": "11. आपकी राय में तृणमूल कांग्रेस (AITC) को वोट देने के शीर्ष 3 कारण क्या हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "maxSelections": 3,
+    "options": [
+      {
+        "label": "The party has performed well in the state",
+        "value": "1",
+        "tag": "opt_performed_well"
+      },
+      {
+        "label": "For Good governance /delivering government services",
+        "value": "2",
+        "tag": "opt_good_governance"
+      },
+      {
+        "label": "For the benefit of West Bengal",
+        "value": "3",
+        "tag": "opt_benefit_wb"
+      },
+      {
+        "label": "For the development of WB",
+        "value": "4",
+        "tag": "opt_development_wb"
+      },
+      {
+        "label": "The party provides good services when it comes to healthcare/education/drinking water/electricity/housing",
+        "value": "5",
+        "tag": "opt_good_services"
+      },
+      {
+        "label": "Works for farmers/agriculture/irrigation",
+        "value": "6",
+        "tag": "opt_farmers"
+      },
+      {
+        "label": "Promotes small businesses",
+        "value": "7",
+        "tag": "opt_small_business"
+      },
+      {
+        "label": "Works for the poor",
+        "value": "8",
+        "tag": "opt_works_poor"
+      },
+      {
+        "label": "To control price rise",
+        "value": "9",
+        "tag": "opt_control_price"
+      },
+      {
+        "label": "The party will generate more employment",
+        "value": "11",
+        "tag": "opt_employment"
+      },
+      {
+        "label": "For greater communal harmony",
+        "value": "13",
+        "tag": "opt_communal_harmony"
+      },
+      {
+        "label": "Mamata B. is the best CM of Bengal so far",
+        "value": "14",
+        "tag": "opt_mamata_best_cm"
+      },
+      {
+        "label": "For minorities' welfare",
+        "value": "15",
+        "tag": "opt_minorities_welfare"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Don't know/ Can't Say",
+        "value": "99",
+        "tag": "opt_dont_know"
+      }
+    ],
+    "rules": {
+      "exclusiveOptions": [
+        "99"
+      ],
+      "showFields": {
+        "opt_others": [
+          "q11_oth"
+        ]
+      }
+    },
+    "tag": "q11"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q11.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q11_oth"
+  },
+  {
+    "type": "checkbox",
+    "label": "12. आपकी राय में भारतीय जनता पार्टी (भाजपा) को वोट देने के शीर्ष 3 कारण क्या हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "maxSelections": 3,
+    "options": [
+      {
+        "label": "BJP has proven to be a stable govt. at the centre",
+        "value": "1",
+        "tag": "opt_stable_govt"
+      },
+      {
+        "label": "For Good governance /delivering government services",
+        "value": "2",
+        "tag": "opt_good_governance"
+      },
+      {
+        "label": "Because of Narendra Modi: good/ strong/decisive leader",
+        "value": "3",
+        "tag": "opt_narendra_modi"
+      },
+      {
+        "label": "For the better development of WB",
+        "value": "5",
+        "tag": "opt_better_development"
+      },
+      {
+        "label": "Better for farmers/agriculture/irrigation",
+        "value": "6",
+        "tag": "opt_better_farmers"
+      },
+      {
+        "label": "Better for small businesses",
+        "value": "7",
+        "tag": "opt_better_small_business"
+      },
+      {
+        "label": "For better healthcare/education/drinking water/electricity/housing",
+        "value": "8",
+        "tag": "opt_better_healthcare"
+      },
+      {
+        "label": "For good welfare schemes",
+        "value": "9",
+        "tag": "opt_welfare_schemes"
+      },
+      {
+        "label": "BJP is better for Hindus",
+        "value": "11",
+        "tag": "opt_better_hindus"
+      },
+      {
+        "label": "BJP cares for the poor",
+        "value": "12",
+        "tag": "opt_cares_poor"
+      },
+      {
+        "label": "TMC has not performed in West Bengal",
+        "value": "14",
+        "tag": "opt_tmc_not_performed"
+      },
+      {
+        "label": "Others (Specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Don't Know/Can't say",
+        "value": "99",
+        "tag": "opt_dont_know"
+      }
+    ],
+    "rules": {
+      "exclusiveOptions": [
+        "99"
+      ],
+      "showFields": {
+        "opt_others": [
+          "q12_oth"
+        ]
+      }
+    },
+    "tag": "q12"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q12.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q12_oth"
+  },
+  {
+    "type": "checkbox",
+    "label": "13. आपको क्या लगता है, आपके इलाके की सबसे बड़ी 3 दिक़्क़तें कौन-सी हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "maxSelections": 3,
+    "options": [
+      {
+        "label": "Price rise / inflation",
+        "value": "2",
+        "tag": "opt_price_rise"
+      },
+      {
+        "label": "Unemployment / lack of jobs",
+        "value": "3",
+        "tag": "opt_unemployment"
+      },
+      {
+        "label": "Electricity/power problems",
+        "value": "4",
+        "tag": "opt_electricity"
+      },
+      {
+        "label": "Healthcare not good",
+        "value": "5",
+        "tag": "opt_healthcare"
+      },
+      {
+        "label": "Education system issues",
+        "value": "6",
+        "tag": "opt_education"
+      },
+      {
+        "label": "Voter list issues / fear of losing citizenship",
+        "value": "7",
+        "tag": "opt_voter_list"
+      },
+      {
+        "label": "Safety for migrant workers",
+        "value": "8",
+        "tag": "opt_migrant_safety"
+      },
+      {
+        "label": "Teacher protests & job insecurity",
+        "value": "9",
+        "tag": "opt_teacher_protests"
+      },
+      {
+        "label": "Floods and natural disasters",
+        "value": "10",
+        "tag": "opt_floods"
+      },
+      {
+        "label": "Communal tensions / law-and-order concerns",
+        "value": "11",
+        "tag": "opt_communal_tensions"
+      },
+      {
+        "label": "Safety of women (crime / security)",
+        "value": "12",
+        "tag": "opt_women_safety"
+      },
+      {
+        "label": "Infrastructure (roads, connectivity)",
+        "value": "13",
+        "tag": "opt_infrastructure"
+      },
+      {
+        "label": "Others(Specify)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q13_oth"
+        ]
+      }
+    },
+    "tag": "q13"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q13.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q13_oth"
+  },
+  {
+    "type": "radio",
+    "label": "14. ममता बनर्जी की सरकार के काम से आप कितने खुश या नाखुश हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q14"
+  },
+  {
+    "type": "radio",
+    "label": "15. भाजपा ने राज्य में विपक्ष का जो काम किया है, उससे आप कितने खुश या नाखुश हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q15"
+  },
+  {
+    "type": "radio",
+    "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_a"
+  },
+  {
+    "type": "radio",
+    "label": "16 B. आपके वर्तमान विधायक (MLA) के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_b"
+  },
+  {
+    "type": "radio",
+    "label": "17. आपके विचार में पश्चिम बंगाल का मुख्यमंत्री बनने के लिए सबसे अच्छा नेता कौन है?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Mamata Banerjee(TMC)",
+        "value": "1",
+        "tag": "opt_mamata_banerjee"
+      },
+      {
+        "label": "Dilip Ghosh (BJP)",
+        "value": "2",
+        "tag": "opt_dilip_ghosh"
+      },
+      {
+        "label": "Suvendu Adhikari (BJP)",
+        "value": "3",
+        "tag": "opt_suvendu_adhikari"
+      },
+      {
+        "label": "Sukanta Majumudar (BJP)",
+        "value": "4",
+        "tag": "opt_sukanta_majumudar"
+      },
+      {
+        "label": "Abhishek Banerjee (TMC)",
+        "value": "5",
+        "tag": "opt_abhishek_banerjee"
+      },
+      {
+        "label": "Samik Bhattacharya (BJP)",
+        "value": "6",
+        "tag": "opt_samik_bhattacharya"
+      },
+      {
+        "label": "Subhankar Sarkar (INC)",
+        "value": "7",
+        "tag": "opt_subhankar_sarkar"
+      },
+      {
+        "label": "Biman Bose( Left Front)",
+        "value": "8",
+        "tag": "opt_biman_bose"
+      },
+      {
+        "label": "Srideep (Sridip) Bhattacharya (Left Front)",
+        "value": "9",
+        "tag": "opt_srideep_bhattacharya"
+      },
+      {
+        "label": "Anyone from TMC",
+        "value": "10",
+        "tag": "opt_anyone_tmc"
+      },
+      {
+        "label": "Anyone from INC",
+        "value": "11",
+        "tag": "opt_anyone_inc"
+      },
+      {
+        "label": "Anyone from BJP",
+        "value": "12",
+        "tag": "opt_anyone_bjp"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q17_oth"
+        ]
+      }
+    },
+    "tag": "q17"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q17 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q17_oth"
+  },
+  {
+    "type": "radio",
+    "label": "19. आपके अनुसार, जब अगला विधानसभा चुनाव होगा, तो आपके क्षेत्र से कौन-सी पार्टी जीत सकती है?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "AITC (Trinamool Congress)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "BJP",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "INC (Congress)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "Left Front",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "Others (specify)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Don't know/Can't say",
+        "value": "99",
+        "tag": "opt_dont_know"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q19_oth"
+        ]
+      }
+    },
+    "tag": "q19"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q19 === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q19_oth"
+  },
+  {
+    "type": "radio",
+    "label": "20. अगर आप चाहें तो हमें अपना धर्म बता सकते हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Hindu",
+        "value": "1",
+        "tag": "opt_hindu"
+      },
+      {
+        "label": "Muslim",
+        "value": "2",
+        "tag": "opt_muslim"
+      },
+      {
+        "label": "Christian",
+        "value": "3",
+        "tag": "opt_christian"
+      },
+      {
+        "label": "Sikh",
+        "value": "4",
+        "tag": "opt_sikh"
+      },
+      {
+        "label": "Jain",
+        "value": "5",
+        "tag": "opt_jain"
+      },
+      {
+        "label": "Buddhist",
+        "value": "6",
+        "tag": "opt_buddhist"
+      },
+      {
+        "label": "No response",
+        "value": "7",
+        "tag": "opt_no_response"
+      },
+      {
+        "label": "Others (Specify)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "resp_religion_oth"
+        ]
+      }
+    },
+    "tag": "resp_religion"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "resp_religion === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "resp_religion_oth"
+  },
+  {
+    "type": "radio",
+    "label": "21. आप किस सामाजिक वर्ग से हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "General/OC",
+        "value": "1",
+        "tag": "opt_general"
+      },
+      {
+        "label": "Schedule Castes",
+        "value": "2",
+        "tag": "opt_sc"
+      },
+      {
+        "label": "Schedule Tribes",
+        "value": "3",
+        "tag": "opt_st"
+      },
+      {
+        "label": "Other Backward Caste",
+        "value": "4",
+        "tag": "opt_obc"
+      },
+      {
+        "label": "No response",
+        "value": "88",
+        "tag": "opt_no_response"
+      }
+    ],
+    "tag": "resp_social_cat"
+  },
+  {
+    "type": "radio",
+    "label": "23. आपके घर की सबसे पढ़ी-लिखी महिला ने कितनी पढ़ाई की है?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "निरक्षर",
+        "value": "1",
+        "tag": "opt_no_female_adult"
+      },
+      {
+        "label": "प्राथमिक शिक्षा (कक्षा 1 से 5)",
+        "value": "2",
+        "tag": "opt_no_formal_education"
+      },
+      {
+        "label": "माध्यमिक शिक्षा (कक्षा 6 से 10)",
+        "value": "3",
+        "tag": "opt_upto_class_5"
+      },
+      {
+        "label": "उच्च माध्यमिक शिक्षा (कक्षा 11–12)",
+        "value": "4",
+        "tag": "opt_class_6_9"
+      },
+      {
+        "label": "स्नातक",
+        "value": "5",
+        "tag": "opt_class_10_14"
+      },
+      {
+        "label": "स्नातकोत्तर",
+        "value": "6",
+        "tag": "opt_degree_regular"
+      },
+      {
+        "label": "तकनीकी / व्यावसायिक शिक्षा",
+        "value": "7",
+        "tag": "opt_professional_degree"
+      }
+    ],
+    "tag": "resp_female_edu"
+  },
+  {
+    "type": "radio",
+    "label": "24. आपके घर के सबसे पढ़े-लिखे पुरुष की पढ़ाई कितनी हुई है?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "निरक्षर",
+        "value": "1",
+        "tag": "opt_no_male_adult"
+      },
+      {
+        "label": "प्राथमिक शिक्षा (कक्षा 1 से 5)",
+        "value": "2",
+        "tag": "opt_no_formal_education"
+      },
+      {
+        "label": "माध्यमिक शिक्षा (कक्षा 6 से 10)",
+        "value": "3",
+        "tag": "opt_upto_class_5"
+      },
+      {
+        "label": "उच्च माध्यमिक शिक्षा (कक्षा 11–12)",
+        "value": "4",
+        "tag": "opt_class_6_9"
+      },
+      {
+        "label": "स्नातक",
+        "value": "5",
+        "tag": "opt_class_10_14"
+      },
+      {
+        "label": "स्नातकोत्तर",
+        "value": "6",
+        "tag": "opt_degree_regular"
+      },
+      {
+        "label": "तकनीकी / व्यावसायिक शिक्षा",
+        "value": "7",
+        "tag": "opt_professional_degree"
+      }
+    ],
+    "tag": "resp_male_edu"
+  },
+  {
+    "type": "radio",
+    "label": "25. आपके घर में जो मुख्य कमाने वाले हैं, वे क्या काम करते हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Labour",
+        "value": "2",
+        "tag": "opt_labour"
+      },
+      {
+        "label": "Farmer",
+        "value": "3",
+        "tag": "opt_farmer"
+      },
+      {
+        "label": "Worker",
+        "value": "4",
+        "tag": "opt_worker"
+      },
+      {
+        "label": "Trader",
+        "value": "5",
+        "tag": "opt_trader"
+      },
+      {
+        "label": "Clerical Sales/Supervisor",
+        "value": "6",
+        "tag": "opt_clerical"
+      },
+      {
+        "label": "Managerial/Professional",
+        "value": "7",
+        "tag": "opt_managerial"
+      }
+    ],
+    "tag": "resp_occupation"
+  },
+  {
+    "type": "radio",
+    "label": "26. आपके अच्छे सुझावों के लिए धन्यवाद। क्या हम आगे भी आपसे ऐसे ही सर्वे के लिए राय ले सकते हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "tag": "thanks_future"
+  }
+]
+

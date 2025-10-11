@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiService } from '@/lib/api';
+import { apiService } from '@/lib/api-service';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
 import Alert from '@/components/ui/Alert';
-import Modal from '@/components/ui/Modal';
-import SelectDropdown from '@/components/ui/SelectDropdown';
 import StatusBadge from '@/components/ui/StatusBadge';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { 
@@ -21,32 +20,11 @@ import {
   CheckCircle, 
   XCircle, 
   Info,
-  KeyRound,
   RefreshCw,
   Filter,
-  Download,
-  Eye,
-  EyeOff,
-  Mail,
-  Calendar,
   ArrowLeft
 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useRouter } from 'next/navigation';
 
-const userSchema = z.object({
-  uniqueId: z.string().min(3, 'Unique ID must be at least 3 characters'),
-  email: z.string().email('Please enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  roleId: z.number().min(1, 'Please select a role'),
-  portalSlug: z.string().min(2, 'Portal slug must be at least 2 characters'),
-});
-
-type UserFormData = z.infer<typeof userSchema>;
 
 interface User {
   id: number;
@@ -55,12 +33,10 @@ interface User {
   firstName: string;
   lastName: string;
   portalSlug: string;
-  role: {
-    id: number;
-    name: string;
-    displayName: string;
-    level: number;
-  };
+  roleId: number;
+  roleName: string;
+  roleDisplayName: string;
+  roleLevel: number;
   isActive: boolean;
   lastLoginAt?: string;
   createdAt: string;
@@ -79,15 +55,12 @@ export default function SuperAdminUsersPage() {
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -95,31 +68,47 @@ export default function SuperAdminUsersPage() {
     totalPages: 0,
   });
 
-  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm<UserFormData>({
-    resolver: zodResolver(userSchema),
-  });
 
   const fetchUsers = async (page = 1, limit = 10, search = '', role = '', status = '') => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        ...(search && { search }),
-        ...(role && { role }),
-        ...(status && { status }),
-      });
-
-      const response = await apiService.request(`/users?${params.toString()}`);
+      const response = await apiService.getUsers();
       
       if (response.success && response.data) {
-        setUsers(response.data.users || []);
+        let filteredUsers = response.data.users || [];
+        
+        // Apply search filter
+        if (search) {
+          filteredUsers = filteredUsers.filter(user => 
+            user.firstName.toLowerCase().includes(search.toLowerCase()) ||
+            user.lastName.toLowerCase().includes(search.toLowerCase()) ||
+            user.email.toLowerCase().includes(search.toLowerCase()) ||
+            user.uniqueId.toLowerCase().includes(search.toLowerCase())
+          );
+        }
+        
+        // Apply role filter
+        if (role) {
+          filteredUsers = filteredUsers.filter(user => 
+            user.roleName === role || user.role?.name === role
+          );
+        }
+        
+        // Apply status filter
+        if (status) {
+          const isActive = status === '1';
+          filteredUsers = filteredUsers.filter(user => 
+            user.isActive === isActive
+          );
+        }
+        
+        setUsers(filteredUsers);
         setPagination(response.data.pagination || {
           page: 1,
           limit: 10,
-          total: 0,
-          totalPages: 0,
+          total: filteredUsers.length,
+          totalPages: Math.ceil(filteredUsers.length / 10),
         });
       } else {
         setError('Failed to fetch users');
@@ -148,32 +137,13 @@ export default function SuperAdminUsersPage() {
     fetchRoles();
   }, []);
 
+
   const handleCreateUser = () => {
-    setEditingUser(null);
-    reset({
-      uniqueId: '',
-      email: '',
-      password: '',
-      firstName: '',
-      lastName: '',
-      roleId: 0,
-      portalSlug: '',
-    });
-    setIsModalOpen(true);
+    router.push('/super-admin/users/create');
   };
 
   const handleEditUser = (user: User) => {
-    setEditingUser(user);
-    reset({
-      uniqueId: user.uniqueId,
-      email: user.email,
-      password: '', // Don't pre-fill password
-      firstName: user.firstName,
-      lastName: user.lastName,
-      roleId: user.role.id,
-      portalSlug: user.portalSlug,
-    });
-    setIsModalOpen(true);
+    router.push(`/super-admin/users/edit/${user.id}`);
   };
 
   const handleDeleteUser = async (userId: number) => {
@@ -198,50 +168,6 @@ export default function SuperAdminUsersPage() {
     }
   };
 
-  const onSubmit = async (data: UserFormData) => {
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    try {
-      let result;
-      if (editingUser) {
-        // Update user
-        result = await apiService.updateUser(editingUser.id.toString(), {
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          roleId: data.roleId,
-          portalSlug: data.portalSlug,
-          ...(data.password && { password: data.password }),
-        });
-      } else {
-        // Create user
-        result = await apiService.createUser({
-          uniqueId: data.uniqueId,
-          email: data.email,
-          password: data.password,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          roleId: data.roleId,
-          portalSlug: data.portalSlug,
-        });
-      }
-
-      if (result.success) {
-        setSuccess(editingUser ? 'User updated successfully!' : 'User created successfully!');
-        setIsModalOpen(false);
-        fetchUsers(pagination.page, pagination.limit, searchTerm, filterRole, filterStatus);
-      } else {
-        setError(result.message || 'Operation failed');
-      }
-    } catch (err) {
-      setError('An error occurred during the operation');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSearch = () => {
     fetchUsers(1, pagination.limit, searchTerm, filterRole, filterStatus);
@@ -254,15 +180,15 @@ export default function SuperAdminUsersPage() {
   const roleOptions = [
     { label: 'All Roles', value: '' },
     ...roles.map(role => ({
-      label: role.displayName,
-      value: role.name,
+      label: role.displayName || role.roleDisplayName,
+      value: role.name || role.roleName,
     })),
   ];
 
   const statusOptions = [
     { label: 'All Status', value: '' },
-    { label: 'Active', value: 'active' },
-    { label: 'Inactive', value: 'inactive' },
+    { label: 'Active', value: '1' },
+    { label: 'Inactive', value: '0' },
   ];
 
   if (currentUser?.role !== 'super_admin') {
@@ -322,18 +248,28 @@ export default function SuperAdminUsersPage() {
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             />
           </div>
-          <SelectDropdown
-            options={roleOptions}
+          <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="w-full lg:w-48"
-          />
-          <SelectDropdown
-            options={statusOptions}
+            className="w-full lg:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          >
+            {roleOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full lg:w-48"
-          />
+            className="w-full lg:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          >
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
           <div className="flex gap-2">
             <Button onClick={handleSearch} variant="outline">
               <Filter className="h-4 w-4 mr-2" />
@@ -390,7 +326,7 @@ export default function SuperAdminUsersPage() {
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => (
+                  (users || []).map((user) => (
                     <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -414,10 +350,10 @@ export default function SuperAdminUsersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge 
-                          variant={user.role.name === 'super_admin' ? 'primary' : user.role.name === 'admin' ? 'info' : 'default'}
+                          variant={user.roleName === 'super_admin' ? 'primary' : user.roleName === 'admin' ? 'info' : 'default'}
                           size="sm"
                         >
-                          {user.role.displayName}
+                          {user.roleDisplayName}
                         </StatusBadge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -493,95 +429,6 @@ export default function SuperAdminUsersPage() {
         )}
       </Card>
 
-      {/* Create/Edit User Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingUser ? 'Edit User' : 'Create New User'}
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="First Name"
-              {...register('firstName')}
-              error={errors.firstName?.message}
-              disabled={isSubmitting}
-            />
-            <Input
-              label="Last Name"
-              {...register('lastName')}
-              error={errors.lastName?.message}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <Input
-            label="Unique ID"
-            {...register('uniqueId')}
-            error={errors.uniqueId?.message}
-            disabled={isSubmitting || !!editingUser}
-            placeholder="e.g., USER001"
-          />
-
-          <Input
-            label="Email"
-            type="email"
-            {...register('email')}
-            error={errors.email?.message}
-            disabled={isSubmitting}
-            icon={<Mail className="h-4 w-4" />}
-          />
-
-          <Input
-            label="Portal Slug"
-            {...register('portalSlug')}
-            error={errors.portalSlug?.message}
-            disabled={isSubmitting}
-            placeholder="e.g., john-doe"
-          />
-
-          <SelectDropdown
-            label="Role"
-            options={roles.map(role => ({
-              label: role.displayName,
-              value: role.id.toString(),
-            }))}
-            {...register('roleId', { valueAsNumber: true })}
-            error={errors.roleId?.message}
-            disabled={isSubmitting}
-          />
-
-          <Input
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            {...register('password')}
-            placeholder={editingUser ? 'Leave blank to keep current password' : 'Enter password'}
-            error={errors.password?.message}
-            icon={<KeyRound className="h-4 w-4" />}
-            rightIcon={showPassword ? <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(false)} /> : <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(true)} />}
-            disabled={isSubmitting}
-          />
-
-          <div className="flex justify-end space-x-2 mt-6">
-            <Button 
-              type="button" 
-              variant="secondary" 
-              onClick={() => setIsModalOpen(false)} 
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              variant="primary" 
-              loading={isSubmitting} 
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : editingUser ? 'Update User' : 'Create User'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
     </div>
   );
 }

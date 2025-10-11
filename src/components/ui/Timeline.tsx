@@ -181,15 +181,16 @@ export default function Timeline({
               </div>
 
               {/* Content */}
-              <div className={cn(
-                'flex-1 min-w-0',
-                sizeConfig[size].event,
-                'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
-                onEventClick && 'cursor-pointer hover:shadow-md transition-shadow',
-                animated && 'animate-in fade-in-0 slide-in-from-right-4 duration-300'
-              )}
-              onClick={() => onEventClick?.(event)}
-            >
+              <div 
+                className={cn(
+                  'flex-1 min-w-0',
+                  sizeConfig[size].event,
+                  'bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
+                  onEventClick && 'cursor-pointer hover:shadow-md transition-shadow',
+                  animated && 'animate-in fade-in-0 slide-in-from-right-4 duration-300'
+                )}
+                onClick={() => onEventClick?.(event)}
+              >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <h3 className={cn(
@@ -266,6 +267,7 @@ export default function Timeline({
               </div>
             </div>
           </div>
+        </div>
         );
       })}
 
@@ -293,13 +295,14 @@ export default function Timeline({
 
           return (
             <div key={event.id} className="flex-shrink-0 w-64">
-              <div className={cn(
-                'relative p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
-                onEventClick && 'cursor-pointer hover:shadow-md transition-shadow',
-                animated && 'animate-in fade-in-0 slide-in-from-bottom-4 duration-300'
-              )}
-              onClick={() => onEventClick?.(event)}
-            >
+              <div 
+                className={cn(
+                  'relative p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm',
+                  onEventClick && 'cursor-pointer hover:shadow-md transition-shadow',
+                  animated && 'animate-in fade-in-0 slide-in-from-bottom-4 duration-300'
+                )}
+                onClick={() => onEventClick?.(event)}
+              >
               {/* Icon */}
               <div className={cn(
                 'absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 shadow-sm',
@@ -336,6 +339,7 @@ export default function Timeline({
                 )}
               </div>
             </div>
+          </div>
           );
         })}
       </div>

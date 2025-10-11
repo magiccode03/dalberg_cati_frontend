@@ -187,3 +187,8 @@ body {
 .dark .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(75, 85, 99, 0.5);
 }
+
+/* Hide horizontal navbar for specific pages */
+body.hide-horizontal-nav nav {
+  display: none !important;
+}

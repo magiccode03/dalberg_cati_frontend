@@ -2,9 +2,9 @@
 
 import React, { useState, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from './Button';
-import { Input } from './Input';
-import { Checkbox } from './Checkbox';
+import Button from './Button';
+import Input from './Input';
+import Checkbox from './Checkbox';
 import { 
   ChevronUp, 
   ChevronDown, 

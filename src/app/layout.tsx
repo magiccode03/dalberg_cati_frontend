@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import ConditionalLayout from "@/components/layout/ConditionalLayout";
 
 const inter = Inter({
@@ -11,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Bihar Election Analysis Dashboard",
+  title: "West Bengal Opinion Poll 2025",
   description: "Comprehensive election analysis and management system for Bihar 2025",
 };
 
@@ -25,11 +26,13 @@ export default function RootLayout({
       <body className="font-sans antialiased" suppressHydrationWarning={true}>
         <Providers>
           <AuthProvider>
-            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-              <ConditionalLayout>
-                {children}
-              </ConditionalLayout>
-            </div>
+            <SidebarProvider>
+              <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <ConditionalLayout>
+                  {children}
+                </ConditionalLayout>
+              </div>
+            </SidebarProvider>
           </AuthProvider>
         </Providers>
       </body>

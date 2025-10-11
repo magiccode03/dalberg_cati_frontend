@@ -70,7 +70,8 @@ export default function NotificationList({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  const [currentSortBy, setCurrentSortBy] = useState(sortBy);
 
   // Filter and sort notifications
   const filteredNotifications = useMemo(() => {
@@ -96,7 +97,7 @@ export default function NotificationList({
 
     // Sort notifications
     filtered.sort((a, b) => {
-      switch (sortBy) {
+      switch (currentSortBy) {
         case 'newest':
           return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
         case 'oldest':
@@ -112,7 +113,7 @@ export default function NotificationList({
     });
 
     return filtered;
-  }, [notifications, searchQuery, selectedType, selectedPriority, sortBy]);
+  }, [notifications, searchQuery, selectedType, selectedPriority, currentSortBy]);
 
   // Group notifications
   const groupedNotifications = useMemo(() => {
@@ -241,7 +242,7 @@ export default function NotificationList({
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setShowFilters(!showFilters)}
+                  onClick={() => setShowFiltersPanel(!showFiltersPanel)}
                   icon={<Filter className="h-4 w-4" />}
                 />
               </div>
@@ -289,8 +290,8 @@ export default function NotificationList({
               </select>
 
               <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as any)}
+                value={currentSortBy}
+                onChange={(e) => setCurrentSortBy(e.target.value as any)}
                 className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 {Object.entries(sortByOptions).map(([value, label]) => (

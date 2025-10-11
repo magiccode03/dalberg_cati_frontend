@@ -1,0 +1,14 @@
+Section,Type,Label/Column Name,
+Progress Summary,Data Row,Total Sample,summary.total_sample
+Progress Summary,Data Row,Sample Achieved (Numbers),summary.sample_achieved_numbers
+Progress Summary,Data Row,Sample Achieved (%),summary.sample_achieved_percentage
+Progress Summary,Data Row,ACs completed,summary.acs_completed
+Progress Summary,Data Row,ACs not completed,summary.acs_in_progress
+Progress Summary,Data Row,ACs yet to be initiated,summary.acs_yet_to_initiate
+,,,
+AC Wise Progress,Table Column,AC Code,ac_code
+AC Wise Progress,Table Column,AC Name,ac_name
+AC Wise Progress,Table Column,District Name,district_name
+AC Wise Progress,Table Column,Valid+Under QC,valid_interviews
+AC Wise Progress,Table Column,Reject,rejected_interviews
+AC Wise Progress,Table Column,% of Completion,completion_percentage
