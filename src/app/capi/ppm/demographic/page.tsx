@@ -1039,20 +1039,20 @@ export default function DemographicPage() {
 
     return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
         <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
           <tr>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              Male
-            </th>
+            Male
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              Female
-            </th>
-          </tr>
-          <tr>
+            Female
+          </th>
+        </tr>
+        <tr>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold"></th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
@@ -1062,9 +1062,9 @@ export default function DemographicPage() {
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Female Quota</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Female covered</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
+        </tr>
+      </thead>
+      <tbody>
           {genderWiseData.map((row, index) => (
             <tr key={row.ac_code}>
               <td>{row.ac_name}</td>
@@ -1073,17 +1073,17 @@ export default function DemographicPage() {
               <td className="text-center">{row.male_min_sample}</td>
               <td className={`text-center ${getCellStyle(row.male_covered)}`}>
                 {row.male_covered}
-              </td>
+            </td>
               <td className="text-center">{row.male_balance}</td>
               <td className="text-center">{row.female_min_sample}</td>
               <td className={`text-center ${getCellStyle(row.female_covered, true)}`}>
                 {row.female_covered}
-              </td>
+            </td>
               <td className="text-center">{row.female_balance}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
     </div>
   );
   };
@@ -1107,26 +1107,26 @@ export default function DemographicPage() {
 
     return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
         <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
           <tr>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              18-24 Years
-            </th>
+            18-24 Years
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              25-34 Years
-            </th>
+            25-34 Years
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-                35-50 Years
-            </th>
+              35-50 Years
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              50+ Years
-            </th>
-          </tr>
-          <tr>
+            50+ Years
+          </th>
+        </tr>
+        <tr>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold"></th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
@@ -1142,10 +1142,10 @@ export default function DemographicPage() {
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ageWiseData.map((row) => (
+        </tr>
+      </thead>
+      <tbody>
+        {ageWiseData.map((row) => (
             <tr key={row.ac_code}>
               <td>{row.ac_name}</td>
               <td className="text-center">{row.ac_code}</td>
@@ -1170,10 +1170,10 @@ export default function DemographicPage() {
               <td className={`text-center ${getAgeWiseBalanceStyle(row.age_groups['50_above'].balance)}`}>
                 {row.age_groups['50_above'].balance}
               </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+          </tr>
+        ))}
+      </tbody>
+    </Table>
     </div>
   );
   };
@@ -1207,121 +1207,121 @@ export default function DemographicPage() {
     
     return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
         <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
           <tr>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 1
-            </th>
+            Caste 1
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 2
-            </th>
+            Caste 2
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 3
-            </th>
+            Caste 3
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 4
-            </th>
+            Caste 4
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 5
-            </th>
+            Caste 5
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 6
-            </th>
+            Caste 6
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 7
-            </th>
+            Caste 7
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 8
-            </th>
+            Caste 8
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 9
-            </th>
+            Caste 9
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
-              Caste 10
-            </th>
+            Caste 10
+          </th>
+        </tr>
+        <tr>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {casteWiseData.map((row) => (
+          <tr key={row.ac_code}>
+            <td>{row.ac_name}</td>
+            <td className="text-center">{row.ac_code}</td>
+            <td className="text-center">{row.sample_achieved}</td>
+            {/* Render up to 10 castes */}
+            {Array.from({ length: 10 }).map((_, index) => {
+              const caste = row.castes[index];
+              if (caste) {
+                return (
+                  <React.Fragment key={index}>
+                    <td className="text-center">{caste.caste_name}</td>
+                    <td className="text-center">{caste.quota}</td>
+                    <td className="text-center">{caste.covered}</td>
+                    <td className={`text-center ${getCasteBalanceStyle(caste.balance)}`}>
+                      {caste.balance}
+                    </td>
+                  </React.Fragment>
+                );
+              } else {
+                return (
+                  <React.Fragment key={index}>
+                    <td className="text-center"></td>
+                    <td className="text-center"></td>
+                    <td className="text-center"></td>
+                    <td className="text-center"></td>
+                  </React.Fragment>
+                );
+              }
+            })}
           </tr>
-          <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {casteWiseData.map((row) => (
-            <tr key={row.ac_code}>
-              <td>{row.ac_name}</td>
-              <td className="text-center">{row.ac_code}</td>
-              <td className="text-center">{row.sample_achieved}</td>
-              {/* Render up to 10 castes */}
-              {Array.from({ length: 10 }).map((_, index) => {
-                const caste = row.castes[index];
-                if (caste) {
-                  return (
-                    <React.Fragment key={index}>
-                      <td className="text-center">{caste.caste_name}</td>
-                      <td className="text-center">{caste.quota}</td>
-                      <td className="text-center">{caste.covered}</td>
-                      <td className={`text-center ${getCasteBalanceStyle(caste.balance)}`}>
-                        {caste.balance}
-                      </td>
-                    </React.Fragment>
-                  );
-                } else {
-                  return (
-                    <React.Fragment key={index}>
-                      <td className="text-center"></td>
-                      <td className="text-center"></td>
-                      <td className="text-center"></td>
-                      <td className="text-center"></td>
-                    </React.Fragment>
-                  );
-                }
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+        ))}
+      </tbody>
+    </Table>
     </div>
   );
   };
@@ -1352,74 +1352,74 @@ export default function DemographicPage() {
 
     return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
         <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
           <tr>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              Hindu
-            </th>
+            Hindu
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              Muslim
-            </th>
+            Muslim
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              Christian
-            </th>
+            Christian
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              Others
-            </th>
+            Others
+          </th>
+        </tr>
+        <tr>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {religionWiseData.map((row) => (
+          <tr key={row.ac_code}>
+            <td>{row.ac_name}</td>
+            <td className="text-center">{row.ac_code}</td>
+            <td className="text-center">{row.sample_achieved}</td>
+            {/* Hindu */}
+            <td className="text-center">{row.hindu.population}</td>
+            <td className="text-center">{row.hindu.sample}</td>
+            <td className={`text-center ${getReligionDifferenceStyle(row.hindu.difference)}`}>
+              {row.hindu.difference}
+            </td>
+            {/* Muslim */}
+            <td className="text-center">{row.muslim.population}</td>
+            <td className="text-center">{row.muslim.sample}</td>
+            <td className={`text-center ${getReligionDifferenceStyle(row.muslim.difference)}`}>
+              {row.muslim.difference}
+            </td>
+            {/* Christian */}
+            <td className="text-center">{row.christian.population}</td>
+            <td className="text-center">{row.christian.sample}</td>
+            <td className={`text-center ${getReligionDifferenceStyle(row.christian.difference)}`}>
+              {row.christian.difference}
+            </td>
+            {/* Others */}
+            <td className="text-center">{row.others.population}</td>
+            <td className="text-center">{row.others.sample}</td>
+            <td className={`text-center ${getReligionDifferenceStyle(row.others.difference)}`}>
+              {row.others.difference}
+            </td>
           </tr>
-          <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-          </tr>
-        </thead>
-        <tbody>
-          {religionWiseData.map((row) => (
-            <tr key={row.ac_code}>
-              <td>{row.ac_name}</td>
-              <td className="text-center">{row.ac_code}</td>
-              <td className="text-center">{row.sample_achieved}</td>
-              {/* Hindu */}
-              <td className="text-center">{row.hindu.population}</td>
-              <td className="text-center">{row.hindu.sample}</td>
-              <td className={`text-center ${getReligionDifferenceStyle(row.hindu.difference)}`}>
-                {row.hindu.difference}
-              </td>
-              {/* Muslim */}
-              <td className="text-center">{row.muslim.population}</td>
-              <td className="text-center">{row.muslim.sample}</td>
-              <td className={`text-center ${getReligionDifferenceStyle(row.muslim.difference)}`}>
-                {row.muslim.difference}
-              </td>
-              {/* Christian */}
-              <td className="text-center">{row.christian.population}</td>
-              <td className="text-center">{row.christian.sample}</td>
-              <td className={`text-center ${getReligionDifferenceStyle(row.christian.difference)}`}>
-                {row.christian.difference}
-              </td>
-              {/* Others */}
-              <td className="text-center">{row.others.population}</td>
-              <td className="text-center">{row.others.sample}</td>
-              <td className={`text-center ${getReligionDifferenceStyle(row.others.difference)}`}>
-                {row.others.difference}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+        ))}
+      </tbody>
+    </Table>
     </div>
   );
   };
@@ -1450,62 +1450,62 @@ export default function DemographicPage() {
 
     return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
-      <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
+    <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
         <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
           <tr>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
             <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              SC
-            </th>
+            SC
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              ST
-            </th>
+            ST
+          </th>
             <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              General+OBC
-            </th>
+            General+OBC
+          </th>
+        </tr>
+        <tr>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
+            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {socialCategoryWiseData.map((row) => (
+          <tr key={row.ac_code}>
+            <td>{row.ac_name}</td>
+            <td className="text-center">{row.ac_code}</td>
+            <td className="text-center">{row.sample_achieved}</td>
+            {/* SC */}
+            <td className="text-center">{row.sc.population}</td>
+            <td className="text-center">{row.sc.sample}</td>
+            <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.sc.difference))}`}>
+              {row.sc.difference}
+            </td>
+            {/* ST */}
+            <td className="text-center">{row.st.population}</td>
+            <td className="text-center">{row.st.sample}</td>
+            <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.st.difference))}`}>
+              {row.st.difference}
+            </td>
+            {/* General+OBC */}
+            <td className="text-center">{row.general_obc.population}</td>
+            <td className="text-center">{row.general_obc.sample}</td>
+            <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.general_obc.difference))}`}>
+              {row.general_obc.difference}
+            </td>
           </tr>
-          <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Population</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Sample</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Difference</th>
-          </tr>
-        </thead>
-        <tbody>
-          {socialCategoryWiseData.map((row) => (
-            <tr key={row.ac_code}>
-              <td>{row.ac_name}</td>
-              <td className="text-center">{row.ac_code}</td>
-              <td className="text-center">{row.sample_achieved}</td>
-              {/* SC */}
-              <td className="text-center">{row.sc.population}</td>
-              <td className="text-center">{row.sc.sample}</td>
-              <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.sc.difference))}`}>
-                {row.sc.difference}
-              </td>
-              {/* ST */}
-              <td className="text-center">{row.st.population}</td>
-              <td className="text-center">{row.st.sample}</td>
-              <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.st.difference))}`}>
-                {row.st.difference}
-              </td>
-              {/* General+OBC */}
-              <td className="text-center">{row.general_obc.population}</td>
-              <td className="text-center">{row.general_obc.sample}</td>
-              <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.general_obc.difference))}`}>
-                {row.general_obc.difference}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+        ))}
+      </tbody>
+    </Table>
     </div>
   );
   };

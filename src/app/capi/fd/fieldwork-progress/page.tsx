@@ -7,6 +7,7 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
 import { useFieldworkProgress } from '@/hooks/useApi';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 
 interface ProgressSummary {
   details: string;
@@ -26,6 +27,7 @@ interface ACProgress {
 export default function FieldworkProgressPage() {
   const [progressSummaryData, setProgressSummaryData] = useState<ProgressSummary[]>([]);
   const [acProgressData, setAcProgressData] = useState<ACProgress[]>([]);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof ACProgress; direction: 'asc' | 'desc' } | null>(null);
   const { getFieldworkProgress, loading, error } = useFieldworkProgress();
 
   useEffect(() => {
@@ -62,6 +64,35 @@ export default function FieldworkProgressPage() {
     } catch (err) {
       console.error('Error fetching fieldwork progress:', err);
     }
+  };
+
+  const handleSort = (key: keyof ACProgress) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedData = () => {
+    if (!sortConfig) return acProgressData;
+
+    return [...acProgressData].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      return 0;
+    });
   };
 
   const getRowStyle = (completionPercent: number) => {
@@ -117,7 +148,7 @@ export default function FieldworkProgressPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={2} className="text-2xl font-semibold mb-0">
+          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Fieldwork Progress
           </Heading>
         </div>
@@ -174,26 +205,116 @@ export default function FieldworkProgressPage() {
         </div>
         
         <div className="card-body">
-          <div className="summary mb-4">
-            <Text className="text-sm text-gray-600">
-              Total <b>{acProgressData.length}</b> items.
-            </Text>
-          </div>
-          
+            <div className="summary mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <b>{acProgressData.length}</b> items.
+              </Text>
+            </div>
+            
           <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
             <Table className="table table-bordered table-striped table-hover">
               <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
-                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
-                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">District Name</th>
-                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Valid+Under QC</th>
-                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Reject</th>
-                  <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">% of Completion</th>
+                  <th 
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() => handleSort('acCode')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className='text-center d-block w-full'>AC Code</span>
+                      <div className="ml-1 flex flex-col">
+                        <ChevronUp 
+                          className={`h-3 w-3 ${sortConfig?.key === 'acCode' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                        <ChevronDown 
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'acCode' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() => handleSort('acName')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>AC Name</span>
+                      <div className="ml-1 flex flex-col">
+                        <ChevronUp 
+                          className={`h-3 w-3 ${sortConfig?.key === 'acName' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                        <ChevronDown 
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'acName' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() => handleSort('districtName')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>District Name</span>
+                      <div className="ml-1 flex flex-col">
+                        <ChevronUp 
+                          className={`h-3 w-3 ${sortConfig?.key === 'districtName' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                        <ChevronDown 
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'districtName' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() => handleSort('validUnderQc')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className='text-center d-block w-full'>Valid+Under QC</span>
+                      <div className="ml-1 flex flex-col">
+                        <ChevronUp 
+                          className={`h-3 w-3 ${sortConfig?.key === 'validUnderQc' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                        <ChevronDown 
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'validUnderQc' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() => handleSort('reject')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className='text-center d-block w-full'>Reject</span>
+                      <div className="ml-1 flex flex-col">
+                        <ChevronUp 
+                          className={`h-3 w-3 ${sortConfig?.key === 'reject' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                        <ChevronDown 
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'reject' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                      </div>
+                    </div>
+                  </th>
+                  <th 
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    onClick={() => handleSort('completionPercent')}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className='text-center d-block w-full'>% of Completion</span>
+                      <div className="ml-1 flex flex-col">
+                        <ChevronUp 
+                          className={`h-3 w-3 ${sortConfig?.key === 'completionPercent' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                        <ChevronDown 
+                          className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'completionPercent' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`} 
+                        />
+                      </div>
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {acProgressData.map((ac, index) => (
+                {getSortedData().map((ac, index) => (
                   <tr key={ac.acCode} className={getRowStyle(ac.completionPercent)}>
                     <td className="text-center">{ac.acCode}</td>
                     <td>{ac.acName}</td>

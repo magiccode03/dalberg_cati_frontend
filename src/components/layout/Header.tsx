@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGetAgencies } from '@/hooks/useApi';
 import { User, LogOut, Sun, Moon, ChevronDown, UserCheck } from 'lucide-react';
@@ -10,10 +10,35 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user: authUser, logout, getRedirectUrl } = useAuth();
   const user = authUser; // Use auth user instead of Redux user
   const notifications: any[] = []; // Empty notifications array for now
   const { getAgencies } = useGetAgencies();
+
+  // Function to get dynamic title based on current path and user system
+  const getDynamicTitle = () => {
+    // On home page, always show base title without system suffix
+    if (pathname === '/home') {
+      return 'West Bengal Opinion Poll 2025';
+    }
+    
+    // Check if user has a system preference set
+    if (user?.system === 'capi') {
+      return 'West Bengal Opinion Poll 2025 (F2F)';
+    } else if (user?.system === 'cati') {
+      return 'West Bengal Opinion Poll 2025 (CATI)';
+    }
+    
+    // Fallback to pathname-based detection
+    if (pathname.startsWith('/cati/fd')) {
+      return 'West Bengal Opinion Poll 2025 (CATI)';
+    } else if (pathname.startsWith('/capi/fd')) {
+      return 'West Bengal Opinion Poll 2025 (F2F)';
+    }
+    
+    return 'West Bengal Opinion Poll 2025';
+  };
 
   // Helper function to get role display name
   const getRoleDisplayName = (role: string | undefined): string => {
@@ -187,7 +212,7 @@ export default function Header() {
         {/* Center - Project Title */}
         <div className="flex-1 text-center">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            West Bengal Opinion Poll 2025
+            {getDynamicTitle()}
           </h1>
         </div>
 
@@ -345,7 +370,7 @@ export default function Header() {
           <div className="flex flex-col space-y-2">
             {/* Project Title */}
             <h1 className="text-sm font-semibold text-gray-900 dark:text-white text-center">
-              West Bengal Opinion Poll 2025
+              {getDynamicTitle()}
             </h1>
             
             {/* Agency Selector - Mobile */}
