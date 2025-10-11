@@ -11,17 +11,20 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Play, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
-interface InterviewAudioData {
-  id: number;
+interface InterviewData {
+  id: string;
+  server_token: string;
   ac_code: number;
   ac_name: string;
-  audio: string;
   interview_date: string;
+  interview_audio: string | null;
 }
 
 interface APIResponse {
   success: boolean;
-  data: InterviewAudioData[];
+  data: any; // More flexible to handle different response structures
+  message?: string;
+  timestamp?: string;
 }
 
 // Utility function to fix audio URL encoding
@@ -61,23 +64,36 @@ export default function CAPIInterviewAudioPage() {
     acName: '',
     interviewDate: ''
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    serverId: '',
+    acCode: '',
+    acName: '',
+    interviewDate: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
-  const [interviewData, setInterviewData] = useState<InterviewAudioData[]>([]);
+  const [itemsPerPage] = useState(20);
+  const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [acOptions, setAcOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [interviewDateOptions, setInterviewDateOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [showAudioModal, setShowAudioModal] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<InterviewData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, appliedFilters]);
+
+  // Reset to page 1 when applied filters change (but not on initial load)
+  useEffect(() => {
+    if (Object.values(appliedFilters).some(filter => filter !== '')) {
+      setCurrentPage(1);
+    }
+  }, [appliedFilters]);
 
   const fetchData = async () => {
     try {
@@ -89,15 +105,75 @@ export default function CAPIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (filters.serverId) params.server_id = filters.serverId;
-      if (filters.acCode) params.ac_code = filters.acCode;
-      if (filters.acName) params.ac_name = filters.acName;
-      if (filters.interviewDate) params.interview_date = filters.interviewDate;
+      if (appliedFilters.serverId) params.server_id = appliedFilters.serverId;
+      // Priority: AC Name dropdown takes precedence over AC Code input
+      if (appliedFilters.acName) {
+        params.ac_code = appliedFilters.acName; // AC Name dropdown stores AC code as value
+      } else if (appliedFilters.acCode) {
+        params.ac_code = appliedFilters.acCode;
+      }
+      if (appliedFilters.interviewDate) params.interview_date = appliedFilters.interviewDate;
       
       // Use the existing getInterviewAudio method from apiService
-      const response = await apiService.getInterviewAudio(params);
+      console.log('API params:', params);
+      console.log('Applied filters:', appliedFilters);
       
-      console.log('API Response:', response); // Debug log
+      const response = await apiService.getInterviewAudio(params) as APIResponse;
+      console.log('API Response:', response);
+      console.log('Response success:', response.success);
+      console.log('Response data:', response.data);
+
+      // Handle different response structures
+      if (response.success) {
+        // Check if data is directly in response.data or nested
+        const responseData = response.data;
+        
+        if (responseData && (responseData.data || Array.isArray(responseData))) {
+          // Handle nested structure (response.data.data)
+          const interviewData = responseData.data || responseData;
+          const pagination = responseData.pagination;
+          const filters = responseData.filters;
+          
+          console.log('Setting interview data:', interviewData);
+          setInterviewData(interviewData);
+          
+          if (pagination) {
+            setTotalItems(pagination.total);
+            setTotalPages(pagination.total_pages);
+          }
+          
+          // Set filter options from API filters (only when no filters are applied)
+          if (filters && filters.ac_codes && acOptions.length === 0) {
+            const acOptionsData = [
+              { value: '', label: 'Select ACs' },
+              ...filters.ac_codes
+                .sort((a: any, b: any) => a.ac_name.localeCompare(b.ac_name))
+                .map((ac: any) => ({
+                  value: ac.ac_code.toString(),
+                  label: `${ac.ac_name} (${ac.ac_code})`
+                }))
+            ];
+            setAcOptions(acOptionsData);
+          }
+          
+          if (filters && filters.interview_dates) {
+            const dateOptionsData = [
+              { value: '', label: 'Interview Date' },
+              ...filters.interview_dates.map((date: string) => ({
+                value: date.split('T')[0],
+                label: date.split('T')[0]
+              }))
+            ];
+            setInterviewDateOptions(dateOptionsData);
+          }
+        } else {
+          console.error('Unexpected response data structure:', responseData);
+          setError('Unexpected response format from server');
+        }
+      } else {
+        console.error('API response not successful:', response);
+        setError(`Failed to fetch interview audio data: ${response.message || 'Unknown error'}`);
+      }
       
       if (response.success && response.data) {
         const interviewData = response.data.data || [];
@@ -114,21 +190,23 @@ export default function CAPIInterviewAudioPage() {
           setTotalPages(Math.ceil(interviewData.length / itemsPerPage));
         }
         
-        // Extract unique AC codes for filter (only on first load)
-        if (currentPage === 1 && interviewData.length > 0) {
-          const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewAudioData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
+        // Extract unique AC codes and dates for filter (only on first load when options are empty)
+        if (currentPage === 1 && interviewData.length > 0 && acOptions.length === 0) {
+          const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
             .map((str: unknown) => JSON.parse(str as string));
           const acOptionsData = [
-            { value: '', label: 'Select AC' },
-            ...uniqueACs.map((ac: any) => ({
-              value: ac.ac_code.toString(),
-              label: `${ac.ac_name} (${ac.ac_code})`
-            }))
+            { value: '', label: 'Select ACs' },
+            ...uniqueACs
+              .sort((a: any, b: any) => a.ac_name.localeCompare(b.ac_name))
+              .map((ac: any) => ({
+                value: ac.ac_code.toString(),
+                label: `${ac.ac_name} (${ac.ac_code})`
+              }))
           ];
           setAcOptions(acOptionsData);
           
           // Extract unique dates for filter
-          const uniqueDates = Array.from(new Set(interviewData.map((item: InterviewAudioData) => item.interview_date.split('T')[0])));
+          const uniqueDates = Array.from(new Set(interviewData.map((item: InterviewData) => item.interview_date.split('T')[0])));
           const dateOptionsData = [
             { value: '', label: 'Interview Date' },
             ...uniqueDates.map((date: unknown) => ({
@@ -138,8 +216,6 @@ export default function CAPIInterviewAudioPage() {
           ];
           setInterviewDateOptions(dateOptionsData);
         }
-      } else {
-        setError('Failed to fetch interview audio data');
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -155,8 +231,9 @@ export default function CAPIInterviewAudioPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setAppliedFilters(filters); // Apply the current filter values
     setCurrentPage(1);
-    fetchData();
+    // fetchData will be called automatically due to useEffect dependency on appliedFilters
   };
 
   const handleFilterChange = (field: string, value: string) => {
@@ -166,11 +243,12 @@ export default function CAPIInterviewAudioPage() {
     }));
   };
 
-  const handlePlayAudio = (audioData: InterviewAudioData) => {
+
+  const handlePlayAudio = (audioData: InterviewData) => {
     // Fix the audio URL encoding
     const processedAudioData = {
       ...audioData,
-      audio: fixAudioUrl(audioData.audio)
+      audio: fixAudioUrl(audioData.interview_audio || '')
     };
     
     console.log('Playing audio:', processedAudioData);
@@ -213,8 +291,8 @@ export default function CAPIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl font-semibold text-gray-900">
-            Interview Audio (CAPI)
+          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+            Interview Audio (F2F  )
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -237,19 +315,7 @@ export default function CAPIInterviewAudioPage() {
       <form id="interviewsearch-form" onSubmit={handleSearch}>
         <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Server Id
-              </label>
-              <input
-                type="text"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter Server Id"
-              />
-            </div>
-            <div>
+          <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Code
               </label>
@@ -270,10 +336,24 @@ export default function CAPIInterviewAudioPage() {
                 onChange={(value) => handleFilterChange('acName', Array.isArray(value) ? value[0] : value)}
                 options={acOptions}
                 className="w-full"
-                placeholder="Select AC Name"
+                placeholder="Select AC"
                 searchable={true}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Server Id
+              </label>
+              <input
+                type="text"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Server Id"
+              />
+            </div>
+        
+         
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Interview Date
@@ -285,13 +365,31 @@ export default function CAPIInterviewAudioPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <Button
                 type="submit"
-                className="w-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
+                className="flex-1 bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
               >
                 <Search className="h-4 w-4" />
                 <span>Search</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  const emptyFilters = {
+                    serverId: '',
+                    acCode: '',
+                    acName: '',
+                    interviewDate: ''
+                  };
+                  setFilters(emptyFilters); // Clear the form inputs
+                  setAppliedFilters(emptyFilters); // Clear the applied filters
+                  setCurrentPage(1);
+                }}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center space-x-2"
+              >
+                <X className="h-4 w-4" />
+                <span>Clear</span>
               </Button>
             </div>
           </div>
@@ -302,14 +400,19 @@ export default function CAPIInterviewAudioPage() {
       <Card className="">
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center">
+            <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                Interview List (CAPI)
+              <Heading level={4} className="card-title mg-b-0">
+                Interview List (F2F)
               </Heading>
             </div>
             <span className="text-end">
               {/* Empty for now */}
+            </span>
+          </div>
+          <div className="summary mb-4">
+            <span className="text-sm text-gray-600">
+              Total <b>{totalItems}</b> items.
             </span>
           </div>
         </div>
@@ -331,10 +434,10 @@ export default function CAPIInterviewAudioPage() {
                     <p><strong>Total Items:</strong> {totalItems}</p>
                     <p><strong>Total Pages:</strong> {totalPages}</p>
                     <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
-                    <p><strong>Server Id Filter:</strong> {filters.serverId || 'None'}</p>
-                    <p><strong>AC Code Filter:</strong> {filters.acCode || 'None'}</p>
-                    <p><strong>AC Name Filter:</strong> {filters.acName || 'None'}</p>
-                    <p><strong>Interview Date Filter:</strong> {filters.interviewDate || 'None'}</p>
+                    <p><strong>Server Id Filter:</strong> {appliedFilters.serverId || 'None'}</p>
+                    <p><strong>AC Code Filter:</strong> {appliedFilters.acCode || 'None'}</p>
+                    <p><strong>AC Name Filter:</strong> {appliedFilters.acName || 'None'}</p>
+                    <p><strong>Interview Date Filter:</strong> {appliedFilters.interviewDate || 'None'}</p>
                   </div>
                 </details>
               </div>
@@ -380,10 +483,10 @@ export default function CAPIInterviewAudioPage() {
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center gap-2 mx-auto"
+                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center justify-center mx-auto"
+                        title="Play Audio"
                       >
                         <Play className="h-4 w-4" />
-                        Play
                       </Button>
                     </td>
                   </tr>
@@ -475,47 +578,59 @@ export default function CAPIInterviewAudioPage() {
                 </div>
 
                 {!useIframe ? (
-                  <audio
-                    controls
-                    className="w-full"
-                    controlsList="nodownload"
-                    preload="metadata"
-                    onError={handleAudioError}
-                    onLoadStart={() => console.log('Audio loading started')}
-                    onCanPlay={() => console.log('Audio can play')}
-                  >
-                    <source src={currentAudio.audio} type="audio/mpeg" />
-                    <source src={currentAudio.audio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
+                  (currentAudio as any).audio ? (
+                    <audio
+                      controls
+                      className="w-full"
+                      controlsList="nodownload"
+                      preload="metadata"
+                      onError={handleAudioError}
+                      onLoadStart={() => console.log('Audio loading started')}
+                      onCanPlay={() => console.log('Audio can play')}
+                    >
+                      <source src={(currentAudio as any).audio} type="audio/mpeg" />
+                      <source src={(currentAudio as any).audio} type="audio/mp3" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
         ) : (
-          <div className="w-full">
-            <iframe
-              src={currentAudio.audio}
-              className="w-full h-16 border-0 rounded"
-              title="Audio Player"
-              allow="autoplay"
-              onError={handleIframeError}
-              onLoad={() => {
-                // Check if iframe content is just text (not audio player)
-                setTimeout(() => {
-                  try {
-                    const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
-                    if (iframe && iframe.contentDocument) {
-                      const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                      if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                        console.warn('Iframe returned text instead of audio player');
-                        setAudioError(true);
+          (currentAudio as any).audio ? (
+            <div className="w-full">
+              <iframe
+                src={(currentAudio as any).audio}
+                className="w-full h-16 border-0 rounded"
+                title="Audio Player"
+                allow="autoplay"
+                onError={handleIframeError}
+                onLoad={() => {
+                  // Check if iframe content is just text (not audio player)
+                  setTimeout(() => {
+                    try {
+                      const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                      if (iframe && iframe.contentDocument) {
+                        const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                        if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                          console.warn('Iframe returned text instead of audio player');
+                          setAudioError(true);
+                        }
                       }
+                    } catch (e) {
+                      // Cross-origin restrictions, can't access iframe content
+                      console.log('Cannot access iframe content due to CORS');
                     }
-                  } catch (e) {
-                    // Cross-origin restrictions, can't access iframe content
-                    console.log('Cannot access iframe content due to CORS');
-                  }
-                }, 1000);
-              }}
-            />
-          </div>
+                  }, 1000);
+                }}
+              />
+            </div>
+          ) : (
+            <div className="text-center py-4 text-gray-500">
+              No audio file available for this interview.
+            </div>
+          )
         )}
 
                 {/* Error Message for Failed Audio */}
@@ -546,9 +661,10 @@ export default function CAPIInterviewAudioPage() {
                     </button>
                   )}
                   <a
-                    href={currentAudio.audio}
+                    href={(currentAudio as any).audio}
                     download
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    style={{ display: (currentAudio as any).audio ? 'inline' : 'none' }}
                   >
                     Download audio
                   </a>

@@ -33,6 +33,11 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
   // Determine which system we're in based on current pathname
   const isCATISystem = pathname.startsWith('/cati/fd');
   const isCAPISystem = pathname.startsWith('/capi/fd');
+  
+  // Force re-render when pathname changes
+  useEffect(() => {
+    // This will trigger a re-render when pathname changes
+  }, [pathname]);
 
   // CAPI FD menu items
   const capiMenuItems = [
@@ -65,6 +70,13 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/home',
       hasSubmenu: false,
     },
+    {
+      id: 'back',
+      label: 'Go To Cati',
+      icon: Home,
+      href: '/cati/fd/telecaller-progress',
+      hasSubmenu: false,
+    },
   ];
 
   // CATI FD menu items
@@ -91,13 +103,20 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/cati/fd/interview-audio',
       hasSubmenu: false,
     },
-    // {
-    //   id: 'back',
-    //   label: 'Back To Main',
-    //   icon: Home,
-    //   href: '/home',
-    //   hasSubmenu: false,
-    // },
+    {
+      id: 'go-to-capi',
+      label: 'Go To CAPI',
+      icon: GitCompare,
+      href: '/capi/fd/fieldwork-progress',
+      hasSubmenu: false,
+    },
+    {
+      id: 'back-to-main',
+      label: 'Back To Main',
+      icon: Home,
+      href: '/home',
+      hasSubmenu: false,
+    },
   ];
 
   // Select the appropriate menu items based on current system
