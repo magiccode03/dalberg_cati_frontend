@@ -12,7 +12,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2 } from 'lucide-react';
+import { Volume2, MapPin, Loader2, Image, User } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 // TypeScript interfaces for API response
@@ -410,8 +410,11 @@ const InterviewLogPage = () => {
       const data: APIResponse = response.data;
       
       if (data.success && data.data.interviews) {
-        setInterviewData(transformAPIData(data.data.interviews));
-        setTotalCount(data.data.pagination.total_count);
+        const transformedData = transformAPIData(data.data.interviews);
+        setInterviewData(transformedData);
+        // Use the actual count from pagination, or 0 if no data
+        const actualCount = transformedData.length > 0 ? data.data.pagination.total_count : 0;
+        setTotalCount(actualCount);
         setTotalPages(data.data.pagination.total_pages);
         setError(null);
       } else {
@@ -440,7 +443,7 @@ const InterviewLogPage = () => {
         setApiError(`Failed to load interview data: ${err.response?.data?.message || err.message}`);
       }
       
-      // Set empty state on error
+      // Set empty data when API fails
       setInterviewData([]);
       setTotalCount(0);
       setTotalPages(0);
@@ -710,20 +713,29 @@ const InterviewLogPage = () => {
               {/* Audio QC */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio QC</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '0', label: 'NA' },
                     { value: '1', label: 'Pending' },
                     { value: '2', label: 'Completed' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_qc', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_qc_${option.value}`}
+                        checked={filters.audio_qc.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_qc', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_qc_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -731,21 +743,30 @@ const InterviewLogPage = () => {
               {/* Audio QC Status */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio QC Status</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '0', label: 'NA' },
                     { value: '1', label: 'Pass' },
                     { value: '2', label: 'Fail' },
                     { value: '3', label: 'Pending' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc_status.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_qc_status', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_qc_status_${option.value}`}
+                        checked={filters.audio_qc_status.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_qc_status', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_qc_status_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -753,7 +774,7 @@ const InterviewLogPage = () => {
               {/* Audio QC Status (Detailed) */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio QC Status (Detailed)</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '1', label: 'Survey Conversation can be heard' },
                     { value: '2', label: 'No Conversation' },
@@ -762,14 +783,23 @@ const InterviewLogPage = () => {
                     { value: '5', label: 'The interviewer is asking questions mechanically' },
                     { value: '6', label: 'Interviewer acting as respondent' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc_status_detailed.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_qc_status_detailed', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_qc_${option.value}`}
+                        checked={filters.audio_qc_status_detailed.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_qc_status_detailed', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_qc_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -777,21 +807,30 @@ const InterviewLogPage = () => {
               {/* Audio Re-QC */}
               <div>
                 <Text className="text-sm font-medium mb-2">Audio Re-QC</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '0', label: 'NA' },
                     { value: '1', label: 'Pass' },
                     { value: '2', label: 'Fail' },
                     { value: '3', label: 'Pending' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_re_qc_status.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('audio_re_qc_status', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`audio_re_qc_${option.value}`}
+                        checked={filters.audio_re_qc_status.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('audio_re_qc_status', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`audio_re_qc_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -799,7 +838,7 @@ const InterviewLogPage = () => {
               {/* Status */}
               <div>
                 <Text className="text-sm font-medium mb-2">Status</Text>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { value: '0', label: 'Terminated' },
                     { value: '10', label: 'Valid' },
@@ -809,14 +848,23 @@ const InterviewLogPage = () => {
                     { value: '70', label: 'Under Re-QC' },
                     { value: '80', label: 'Re-QC Completed' },
                   ].map(option => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.status.includes(option.value)}
-                      onCheckedChange={(checked) => 
-                        handleCheckboxChange('status', option.value, checked as boolean)
-                      }
-                      label={option.label}
-                    />
+                    <div key={option.value} className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        id={`status_${option.value}`}
+                        checked={filters.status.includes(option.value)}
+                        onChange={(e) => 
+                          handleCheckboxChange('status', option.value, e.target.checked)
+                        }
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
+                      />
+                      <label 
+                        htmlFor={`status_${option.value}`} 
+                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -901,73 +949,110 @@ const InterviewLogPage = () => {
                     </TableHeader>
                     <TableBody>
                       {interviewData.map((interview, index) => (
-                          <TableRow key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
-                          <TableCell className="text-center text-gray-500 font-medium w-16">
-                              {((currentPage - 1) * pageSize) + index + 1}
-                          </TableCell>
-                          <TableCell className="w-32">
+                        <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                            {((currentPage - 1) * pageSize) + index + 1}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200">
                             <span className="font-mono text-sm font-medium text-blue-600">
-                                {interview.server_id}
+                              {interview.server_id}
                             </span>
-                          </TableCell>
-                            <TableCell className="w-32 font-mono text-sm">{interview.interview_date}</TableCell>
-                            <TableCell className="w-24">{interview.sample_type}</TableCell>
-                            <TableCell className="w-48">{interview.ac_name}</TableCell>
-                            <TableCell className="w-64">{interview.ps_name}</TableCell>
-                            <TableCell className="w-40">{interview.device_id}</TableCell>
-                            <TableCell className="w-32">{interview.interviewer_id || '-'}</TableCell>
-                            <TableCell className="w-24">{interview.audio_qc_label}</TableCell>
-                            <TableCell className="w-32">{interview.audio_qc_id || '-'}</TableCell>
-                            <TableCell className="w-40">{interview.audio1_status_label || '-'}</TableCell>
-                          <TableCell className="text-center w-32">
-                              {getQcOutcomeBadge(interview.qc_outcome)}
-                          </TableCell>
-                            <TableCell className="w-48">{interview.status_label}</TableCell>
-                          <TableCell className="text-center w-20">
-                              <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-                                {interview.gender_label || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm">{interview.interview_date}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.sample_type}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.ac_name}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.ps_name}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.device_id}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.interviewer_id || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio_qc_label}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio_qc_id || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio1_status_label || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {getQcOutcomeBadge(interview.qc_outcome)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200">{interview.status_label}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                              {interview.gender_label || '-'}
                             </span>
-                          </TableCell>
-                          <TableCell className="text-center w-24">
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <div className="flex justify-center items-center">
+                              {interview.ps_image_available ? (
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <Image className="w-4 h-4 text-green-600" />
+                                </div>
+                              ) : (
+                                <Image className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <div className="flex justify-center items-center">
+                              {interview.selfie_image_available ? (
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <User className="w-4 h-4 text-green-600" />
+                                </div>
+                              ) : (
+                                <User className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
+                              {interview.gender_label || '-'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
                               <button 
-                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                    interview.audio_playback_available 
-                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                  title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
-                                  disabled={!interview.audio_playback_available}
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.audio_playback_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                                disabled={!interview.audio_playback_available}
                               >
                                 <Volume2 className="w-4 h-4" />
                               </button>
                             </div>
-                          </TableCell>
-                          <TableCell className="text-center w-24">
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
                               <button 
-                                  className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                    interview.gps_available 
-                                      ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  }`}
-                                  title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
-                                  disabled={!interview.gps_available}
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.gps_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                                disabled={!interview.gps_available}
                               >
                                 <MapPin className="w-4 h-4" />
                               </button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </td>
+                        </tr>
                       ))}
                     </TableBody>
                   </Table>
                 </div>
+
+                {/* Empty State */}
+                {interviewData.length === 0 && !loading && (
+                  <div className="text-center py-12">
+                    <Text className="text-gray-500 text-lg">
+                      No interview data found.
+                    </Text>
+                  </div>
+                )}
+
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard
                     currentPage={currentPage}
-                      totalPages={totalPages}
-                      totalItems={totalCount}
+                    totalPages={totalPages}
+                    totalItems={totalCount}
                     itemsPerPage={pageSize}
                     onPageChange={handlePageChange}
                     className="justify-center"

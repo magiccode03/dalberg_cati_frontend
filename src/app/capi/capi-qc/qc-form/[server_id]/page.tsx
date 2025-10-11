@@ -482,6 +482,33 @@ export default function QCFormPage() {
     };
   };
 
+  // Determine QC outcome based on form data
+  const determineQCOutcome = (): number => {
+    const audioStatus = formData.qc_audio_status;
+    
+    // If audio status is 3 (Irrelevant) or 4 (Interviewer more than respondent), it's fail
+    if (audioStatus === '3' || audioStatus === '4') {
+      return 2; // Fail
+    }
+    
+    // If audio status is 1 or 2, check other mandatory questions
+    if (audioStatus === '1' || audioStatus === '2') {
+      // Check if all mandatory questions are answered with "Matched" (value "1")
+      const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
+      
+      for (const question of mandatoryQuestions) {
+        if (formData[question] !== '1') {
+          return 2; // Fail
+        }
+      }
+      
+      return 1; // Pass
+    }
+    
+    // Default to fail
+    return 2;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -526,26 +553,16 @@ export default function QCFormPage() {
     // Clear validation errors if form is valid
     setValidationErrors(new Set());
     
-    showToast('Saving form data...', 'info');
+    // Determine QC outcome
+    const qcOutcome = determineQCOutcome();
+    const outcomeText = qcOutcome === 1 ? 'Pass' : 'Fail';
     
-    const success = await saveFormData(1);
+    showToast(`Processing QC evaluation... (${outcomeText})`, 'info');
     
-    if (success) {
-      showToast('QC approved successfully! Interview marked as Pass.', 'success');
-      
-      setTimeout(() => {
-        router.push(`/capi/capi-qc/new-qc/${qcUserId}`);
-      }, 1500);
-    }
-  };
-
-  const handleReject = async () => {
-    showToast('Saving QC rejection...', 'info');
-    
-    const success = await saveFormData(2);
+    const success = await saveFormData(qcOutcome);
     
     if (success) {
-      showToast('Interview marked as Fail by QC.', 'success');
+      showToast(`QC evaluation completed! Interview marked as ${outcomeText}.`, 'success');
       
       setTimeout(() => {
         router.push(`/capi/capi-qc/new-qc/${qcUserId}`);
@@ -855,27 +872,17 @@ export default function QCFormPage() {
           {currentFormConfig.map((field, index) => renderField(field, index))}
         </Card>
 
-        {/* Submit Buttons */}
+        {/* Submit Button */}
         <Card className="p-3 sm:p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex justify-center">
             <Button 
               type="submit" 
               size="lg"
               disabled={isSubmitting}
-              className="w-full sm:w-auto sm:min-w-[150px] bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base"
+              className="w-full sm:w-auto sm:min-w-[200px] bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
             >
-              <i className="fa fa-check-circle mr-2"></i>
-              {isSubmitting ? 'Submitting...' : 'Approve'}
-            </Button>
-            <Button 
-              type="button"
-              onClick={handleReject}
-              size="lg"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto sm:min-w-[150px] bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base"
-            >
-              <i className="fa fa-times-circle mr-2"></i>
-              {isSubmitting ? 'Saving...' : 'Reject'}
+              <i className="fa fa-paper-plane mr-2"></i>
+              {isSubmitting ? 'Processing...' : 'Submit QC Evaluation'}
             </Button>
           </div>
         </Card>

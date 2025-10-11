@@ -134,7 +134,7 @@ export default function RejectionReportPage() {
     if (!acDropdownData) return [];
     return Object.entries(acDropdownData).map(([code, name]) => ({
       value: code,
-      label: `${name}(${code})`
+      label: `${name} (${code})`
     }));
   }, [acDropdownData]);
 
@@ -406,7 +406,7 @@ export default function RejectionReportPage() {
                   value={filters.acCode}
                   onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
                   options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select AC Code' },
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
                     ...acDropdownOptions
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
@@ -570,7 +570,7 @@ export default function RejectionReportPage() {
                   value={filters.acCode}
                   onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
                   options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select AC Code' },
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
                     ...acDropdownOptions
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
