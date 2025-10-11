@@ -152,8 +152,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-16 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('ac_code')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>AC Code</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">AC Code</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'ac_code' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -200,8 +200,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-24 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('call_attempt')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>Call Attempted</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">Call Attempted</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'call_attempt' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -216,8 +216,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-24 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('call_connected')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>Call Connected</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">Call Connected</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'call_connected' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -232,8 +232,8 @@ export default function CATIACWiseDataPage() {
                     className="border border-gray-300 w-20 cursor-pointer hover:bg-gray-100 bg-white dark:bg-gray-800"
                     onClick={() => handleSort('success')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span>Success</span>
+                    <div className="flex items-center justify-center">
+                      <span className="flex-1 text-center">Success</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'success' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -256,12 +256,12 @@ export default function CATIACWiseDataPage() {
                 ) : (
                   getSortedData().map((item, index) => (
                     <tr key={item.ac_code}>
-                      <td className="border border-gray-300">{item.ac_code}</td>
+                      <td className="border border-gray-300 text-center">{item.ac_code}</td>
                       <td className="border border-gray-300">{item.ac_name}</td>
                       <td className="border border-gray-300">{item.district_name}</td>
-                      <td className="border border-gray-300">{item.call_attempt}</td>
-                      <td className="border border-gray-300">{item.call_connected}</td>
-                      <td className="border border-gray-300">{item.success}</td>
+                      <td className="border border-gray-300 text-center">{item.call_attempt}</td>
+                      <td className="border border-gray-300 text-center">{item.call_connected}</td>
+                      <td className="border border-gray-300 text-center">{item.success}</td>
                     </tr>
                   ))
                 )}
