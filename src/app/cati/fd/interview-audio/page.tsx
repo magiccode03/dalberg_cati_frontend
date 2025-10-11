@@ -399,7 +399,7 @@ export default function CATIInterviewAudioPage() {
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
+              <thead className="bg-gray-50">
                 <tr>
                   <th className="text-center" style={{ width: '2%' }}>S.No</th>
                   <th className="text-center" style={{ width: '10%' }}>Server Id</th>
