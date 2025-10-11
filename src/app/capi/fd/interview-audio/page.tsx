@@ -479,7 +479,7 @@ export default function CAPIInterviewAudioPage() {
                     <td className="text-center">{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
-                    <td>{new Date(row.interview_date).toLocaleDateString()}</td>
+                    <td className="text-center">{new Date(row.interview_date).toLocaleDateString()}</td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}

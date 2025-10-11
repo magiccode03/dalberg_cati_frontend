@@ -808,9 +808,9 @@ export const menuData: MenuItem[] = [
   },
   {
     id: 'capi-go-to-cati',
-    label: 'Go To Cati',
+    label: 'Go To CATI',
     href: '/cati/fd/telecaller-progress',
-    icon: 'Home',
+    icon: 'MapPin',
     roles: ['fd'],
     system: 'capi',
   },
@@ -1441,9 +1441,9 @@ export const menuData: MenuItem[] = [
   },
   {
     id: 'cati-go-to-capi',
-    label: 'Back To Capi',
+    label: 'Back To CAPI',
     href: '/capi/fd/fieldwork-progress',
-    icon: 'Home',
+    icon: 'MapPin',
     roles: ['fd'],
     system: 'cati',
   },

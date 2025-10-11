@@ -7,7 +7,7 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
 import { useFieldworkProgress } from '@/hooks/useApi';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ChevronUp, ChevronDown, Download } from 'lucide-react';
 
 interface ProgressSummary {
   details: string;
@@ -105,6 +105,44 @@ export default function FieldworkProgressPage() {
     }
   };
 
+  const handleDownloadCSV = () => {
+    // Prepare CSV data
+    const csvHeaders = [
+      'AC Code',
+      'AC Name', 
+      'District Name',
+      'Valid+Under QC',
+      'Reject',
+      '% of Completion'
+    ];
+
+    const csvData = getSortedData().map(ac => [
+      ac.acCode,
+      ac.acName,
+      ac.districtName,
+      ac.validUnderQc,
+      ac.reject,
+      ac.completionPercent
+    ]);
+
+    // Create CSV content
+    const csvContent = [
+      csvHeaders.join(','),
+      ...csvData.map(row => row.map(field => `"${field}"`).join(','))
+    ].join('\n');
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `fieldwork-progress-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
@@ -193,14 +231,21 @@ export default function FieldworkProgressPage() {
       {/* AC Wise Progress Card */}
       <Card>
         <div className="card-header pb-0 mb-6">
-          <div className="flex items-center">
-          <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-              AC Wise Progress
-            </Heading>
-            <span className="text-end">
-              {/* Download button can be added here */}
-            </span>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
+                AC Wise Progress
+              </Heading>
+            </div>
+            <button
+              onClick={handleDownloadCSV}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              title="Download AC Wise Progress as CSV"
+            >
+              <Download className="w-4 h-4" />
+              <span>Download</span>
+            </button>
           </div>
         </div>
         

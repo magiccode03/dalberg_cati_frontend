@@ -12,7 +12,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Plus, Edit, Check, Eye } from 'lucide-react';
+import { Search, Plus, Edit, Check, Eye, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
 import CapiQCACAssignModal from '@/components/modals/CapiQCACAssignModal';
@@ -103,12 +103,12 @@ export default function QCUserRegistrationPage() {
     reChecking: false,
   });
 
-  // Applied filters - only updated when Search is clicked
+  // Separate state for applied filters (what actually filters the data)
   const [appliedFilters, setAppliedFilters] = useState({
     qcId: '',
     name: '',
     mobileNumber: '',
-    status: '1', // Default to Active
+    status: '1',
     gps: false,
     audio: false,
     reChecking: false,
@@ -146,7 +146,7 @@ export default function QCUserRegistrationPage() {
         setLoading(true);
         setError(null);
         
-        // Build query parameters from appliedFilters
+        // Build query parameters from applied filters
         const queryParams = new URLSearchParams();
         if (appliedFilters.qcId) queryParams.append('qc_id', appliedFilters.qcId);
         if (appliedFilters.name) queryParams.append('name', appliedFilters.name);
@@ -219,8 +219,25 @@ export default function QCUserRegistrationPage() {
   };
 
   const handleSearch = () => {
-    // Apply filters and reset to first page when searching
+    // Apply the current filter values to trigger the search
     setAppliedFilters(filters);
+    setCurrentPage(1); // Reset to first page when searching
+    console.log('Searching with filters:', filters);
+  };
+
+  const handleClear = () => {
+    // Reset all filters to default values
+    const defaultFilters = {
+      qcId: '',
+      name: '',
+      mobileNumber: '',
+      status: '1', // Default to Active
+      gps: false,
+      audio: false,
+      reChecking: false,
+    };
+    setFilters(defaultFilters);
+    setAppliedFilters(defaultFilters);
     setCurrentPage(1);
   };
 
@@ -401,33 +418,56 @@ export default function QCUserRegistrationPage() {
           <Card>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    QC ID
+                  </label>
                 <Input
                   type="text"
-                  placeholder="QC ID"
+                  placeholder="Enter QC ID"
                   value={filters.qcId}
                   onChange={(e) => handleFilterChange('qcId', e.target.value)}
                 />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Name
+                  </label>
                 <Input
                   type="text"
-                  placeholder="Name"
+                  placeholder="Enter Name"
                   value={filters.name}
                   onChange={(e) => handleFilterChange('name', e.target.value)}
                 />
-                <Input
-                  type="text"
-                  placeholder="Mobile Number"
-                  value={filters.mobileNumber}
-                  onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
-                />
-                <SelectDropdown
-                  value={filters.status}
-                  onChange={(value) => handleFilterChange('status', value as string)}
-                  options={[
-                    { value: '', label: 'Select User Status' },
-                    { value: '1', label: 'Active' },
-                    { value: '2', label: 'Inactive' },
-                  ]}
-                />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Mobile Number
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter Mobile Number"
+                    value={filters.mobileNumber}
+                    onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Status
+                  </label>
+                  <SelectDropdown
+                    value={filters.status}
+                    onChange={(value) => handleFilterChange('status', value as string)}
+                    options={[
+                      { value: '', label: 'Select User Status' },
+                      { value: '1', label: 'Active' },
+                      { value: '2', label: 'Inactive' },
+                    ]}
+                  />
+                </div>
               </div>
               
               <div className="flex flex-wrap items-center gap-6">
@@ -452,6 +492,13 @@ export default function QCUserRegistrationPage() {
                   <Search className="w-4 h-4 mr-2" />
                   Search
                 </Button>
+                <Button
+                  onClick={handleClear}
+                  className="bg-gray-500 text-white hover:bg-gray-600 flex items-center space-x-2"
+                >
+                  <X className="w-4 h-4" />
+                  <span>Clear</span>
+                </Button>
               </div>
             </div>
           </Card>
@@ -461,12 +508,17 @@ export default function QCUserRegistrationPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    QC USER INFO
-                  </Heading>
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col">
+                  <div className="flex items-center">
+                    <div className="w-1 h-6 bg-blue-500 mr-3"></div>
+                    <Heading level={4} className="text-lg font-semibold text-gray-900">
+                      QC USER INFO
+                    </Heading>
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
+                    Total <span className="font-semibold">{totalCount}</span> items.
+                  </div>
                 </div>
                 <Button
                   variant="primary"
@@ -542,9 +594,9 @@ export default function QCUserRegistrationPage() {
             </div>
 
             {/* Table Footer */}
-            <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-              <div className="text-sm text-gray-700">
-                Total <span className="font-semibold">{totalCount}</span> items.
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-6 py-4 border-t border-gray-200">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
               </div>
               <div>
                 <PaginationStandard
