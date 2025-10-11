@@ -61,6 +61,12 @@ export default function CATIInterviewAudioPage() {
     acName: '',
     interviewDate: ''
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    serverId: '',
+    acCode: '',
+    acName: '',
+    interviewDate: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,7 +83,7 @@ export default function CATIInterviewAudioPage() {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, filters]);
+  }, [currentPage, appliedFilters]);
 
   const fetchData = async () => {
     try {
@@ -89,18 +95,18 @@ export default function CATIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (filters.serverId) params.server_id = filters.serverId;
+      if (appliedFilters.serverId) params.server_id = appliedFilters.serverId;
       // Priority: AC Name dropdown takes precedence over AC Code input
-      if (filters.acName) {
-        params.ac_code = filters.acName; // AC Name dropdown stores AC code as value
-      } else if (filters.acCode) {
-        params.ac_code = filters.acCode;
+      if (appliedFilters.acName) {
+        params.ac_code = appliedFilters.acName; // AC Name dropdown stores AC code as value
+      } else if (appliedFilters.acCode) {
+        params.ac_code = appliedFilters.acCode;
       }
-      if (filters.interviewDate) params.interview_date = filters.interviewDate;
+      if (appliedFilters.interviewDate) params.interview_date = appliedFilters.interviewDate;
       
       // Use the existing getInterviewAudio method from apiService
       console.log('API params:', params);
-      console.log('Current filters:', filters);
+      console.log('Applied filters:', appliedFilters);
       
       const response = await apiService.getInterviewAudio(params);
       
@@ -164,8 +170,9 @@ export default function CATIInterviewAudioPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setAppliedFilters(filters); // Apply the current filter values
     setCurrentPage(1);
-    // fetchData will be called automatically due to useEffect dependency on currentPage and filters
+    // fetchData will be called automatically due to useEffect dependency on appliedFilters
   };
 
   const handleFilterChange = (field: string, value: string) => {
@@ -248,18 +255,7 @@ export default function CATIInterviewAudioPage() {
       <form id="interviewsearch-form" onSubmit={handleSearch}>
         <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Server Id
-              </label>
-              <input
-                type="text"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter Server Id"
-              />
-            </div>
+          
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Code
@@ -287,6 +283,18 @@ export default function CATIInterviewAudioPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Server Id
+              </label>
+              <input
+                type="text"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Server Id"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Interview Date
               </label>
               <input
@@ -297,13 +305,31 @@ export default function CATIInterviewAudioPage() {
                 placeholder="yy-mm-dd"
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <Button
                 type="submit"
-                className="w-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
+                className="flex-1 bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
               >
                 <Search className="h-4 w-4" />
                 <span>Search</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  const emptyFilters = {
+                    serverId: '',
+                    acCode: '',
+                    acName: '',
+                    interviewDate: ''
+                  };
+                  setFilters(emptyFilters); // Clear the form inputs
+                  setAppliedFilters(emptyFilters); // Clear the applied filters
+                  setCurrentPage(1);
+                }}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center space-x-2"
+              >
+                <X className="h-4 w-4" />
+                <span>Clear</span>
               </Button>
             </div>
           </div>
@@ -345,10 +371,10 @@ export default function CATIInterviewAudioPage() {
                     <p><strong>Total Items:</strong> {totalItems}</p>
                     <p><strong>Total Pages:</strong> {totalPages}</p>
                     <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
-                    <p><strong>Server Id Filter:</strong> {filters.serverId || 'None'}</p>
-                    <p><strong>AC Code Filter:</strong> {filters.acCode || 'None'}</p>
-                    <p><strong>AC Name Filter:</strong> {filters.acName || 'None'}</p>
-                    <p><strong>Interview Date Filter:</strong> {filters.interviewDate || 'None'}</p>
+                    <p><strong>Server Id Filter:</strong> {appliedFilters.serverId || 'None'}</p>
+                    <p><strong>AC Code Filter:</strong> {appliedFilters.acCode || 'None'}</p>
+                    <p><strong>AC Name Filter:</strong> {appliedFilters.acName || 'None'}</p>
+                    <p><strong>Interview Date Filter:</strong> {appliedFilters.interviewDate || 'None'}</p>
                   </div>
                 </details>
               </div>
