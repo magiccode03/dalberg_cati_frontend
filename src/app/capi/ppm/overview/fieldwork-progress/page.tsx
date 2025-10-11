@@ -132,7 +132,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               Progress <i>Summary</i>
             </Heading>
           </div>
@@ -165,7 +165,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
           <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise Progress
             </Heading>
             <span className="text-end">

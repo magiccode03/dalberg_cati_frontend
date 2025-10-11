@@ -627,17 +627,32 @@ export default function ProgressReportPage() {
               <Text className="text-sm font-medium mb-2">
                 AC Code
               </Text>
-              <SelectDropdown
-                options={acList?.map(ac => ({
-                  value: ac.ac_code.toString(),
-                  label: ac.acnameandcode
-                })) || []}
-                value={searchForm.acCode}
-                onChange={(value) => handleInputChange('acCode', value as string)}
-                placeholder={acListLoading ? "Loading AC list..." : "Select AC Code"}
-                className="w-full"
-                disabled={acListLoading}
-              />
+              <div className="relative">
+                <SelectDropdown
+                  options={acList?.map(ac => ({
+                    value: ac.ac_code.toString(),
+                    label: ac.acnameandcode
+                  })) || []}
+                  value={searchForm.acCode}
+                  onChange={(value) => handleInputChange('acCode', value as string)}
+                  placeholder={acListLoading ? "Loading AC list..." : "Select AC Code"}
+                  className="w-full"
+                  disabled={acListLoading}
+                  searchable={true}
+                />
+                {searchForm.acCode && (
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('acCode', '')}
+                    className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Clear selection"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           )}
           <div className="flex items-end">
@@ -687,12 +702,12 @@ export default function ProgressReportPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4}>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               {searchForm.typeOfReport === 'performance' ? 'PERFORMANCE' : 'QUALITY'} REPORT - {searchForm.level.toUpperCase()} LEVEL
             </Heading>
           </div>
           <Button 
-            variant="outline" 
+            variant="primary" 
             className="bg-blue-600 hover:bg-blue-700 text-white border-0"
             onClick={handleDownload}
             disabled={loading || progressData.length === 0}

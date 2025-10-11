@@ -246,7 +246,7 @@ export default function PSForFormPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               List of Master Poling Station For Field Form
             </Heading>
             </div>
@@ -288,7 +288,7 @@ export default function PSForFormPage() {
                 ) : error ? (
                   <span className="text-red-600">Error: {error}</span>
                 ) : (
-                  `Showing ${psFormData.length} items${totalItems > 0 ? ` of ${totalItems.toLocaleString()}` : ''}${totalPages > 0 ? ` (Page ${currentPage} of ${totalPages})` : ''}.`
+                  <>Total <strong>{totalItems.toLocaleString()}</strong> items.</>
                 )}
               </Text>
             </div>

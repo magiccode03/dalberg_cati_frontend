@@ -1564,7 +1564,7 @@ export default function DemographicPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex justify-between items-center">
             <div></div>
-            <Button variant="outline" onClick={handleDownload}>
+            <Button variant="primary" onClick={handleDownload}>
               <Download className="w-4 h-4 mr-2" />
               Download
             </Button>

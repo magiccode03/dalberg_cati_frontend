@@ -80,7 +80,13 @@ export const API_ENDPOINTS = {
   // Dropdown APIs
   DROPDOWN: {
     AGENCIES: '/dropdown/agencies',
-    AC_LIST: '/dropdown/ac-list'
+    AC_LIST: '/dropdown/ac-list',
+    INTERVIEWERS: '/dropdown/interviewers'
+  },
+
+  // Filter Options APIs
+  FILTER_OPTIONS: {
+    REJECTION_REPORT: '/progress/rejectreport/filter-options'
   },
 
   // QC User Registration
@@ -1276,6 +1282,7 @@ class ApiService {
     server_id?: string;
     mobile_no?: string;
     fail_reason?: string;
+    qualityreportstatus?: string;
     page?: number;
     per_page?: number;
   }): Promise<ApiResponse<{
@@ -1943,6 +1950,19 @@ class ApiService {
 
   async getACDropdownList(): Promise<ApiResponse<Record<string, string>>> {
     return this.request(API_ENDPOINTS.DROPDOWN.AC_LIST);
+  }
+
+  async getInterviewerDropdownList(): Promise<ApiResponse<Record<string, string>>> {
+    return this.request(API_ENDPOINTS.DROPDOWN.INTERVIEWERS);
+  }
+
+  // Filter Options Methods
+  async getRejectionReportFilterOptions(): Promise<ApiResponse<{
+    report_days: Record<string, string>;
+    report_levels: Record<string, string>;
+    quality_statuses: Record<string, string>;
+  }>> {
+    return this.request(API_ENDPOINTS.FILTER_OPTIONS.REJECTION_REPORT);
   }
 
   // QC User Registration Methods

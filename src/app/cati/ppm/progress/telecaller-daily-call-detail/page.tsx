@@ -586,7 +586,7 @@ const TelecallerDailyCallDetailPage = () => {
     <FluidContainer>
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Daily Call Detail
         </Heading>
         <div className="text-sm text-gray-500">
@@ -804,7 +804,7 @@ const TelecallerDailyCallDetailPage = () => {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Caller Performance
             </Heading>
           </div>
@@ -859,7 +859,7 @@ const TelecallerDailyCallDetailPage = () => {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Outcome
             </Heading>
           </div>
@@ -937,7 +937,7 @@ const TelecallerDailyCallDetailPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Detail
             </Heading>
           </div>

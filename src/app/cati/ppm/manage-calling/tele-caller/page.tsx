@@ -261,7 +261,7 @@ const TeleUserInfoPage: React.FC = () => {
         {/* Breadcrumb Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <Heading level={1} className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            <Heading level={2} className="text-2xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
               Tele Caller
             </Heading>
             {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -281,7 +281,7 @@ const TeleUserInfoPage: React.FC = () => {
         )}
 
         {/* Search Form */}
-        <Card className="p-4 md:p-6">
+        <Card className="">
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
               <div className="lg:col-span-1">
@@ -331,11 +331,11 @@ const TeleUserInfoPage: React.FC = () => {
         </Card>
 
         {/* Tele Caller Cards */}
-        <Card className="p-4 md:p-6">
+        <Card className="">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 Tele Caller
               </Heading>
             </div>

@@ -320,7 +320,7 @@ const ACListPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
-            <Heading level={4}>AC List</Heading>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC List</Heading>
           </div>
           <Button variant="primary" className="bg-blue-600 text-white hover:bg-blue-500">
           <Plus className="w-4 h-4 mr-2" />
@@ -330,7 +330,7 @@ const ACListPage = () => {
 
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
-            Showing <strong>{(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}</strong> of <strong>{totalCount}</strong> items.
+            Total <strong>{totalCount}</strong> items.
           </Text>
         </div>
                 

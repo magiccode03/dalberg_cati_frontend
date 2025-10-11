@@ -214,9 +214,9 @@ export default function GPSMapPage() {
         {/* GPS Map Card */}
         <Card>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 GPS Map
-              </h4>
+              </Heading>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"

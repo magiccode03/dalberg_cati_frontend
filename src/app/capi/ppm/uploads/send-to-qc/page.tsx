@@ -342,7 +342,7 @@ export default function SendToQcPage() {
         <div className="card-header mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               List of Previous Requests
             </Heading>
           </div>
@@ -352,7 +352,7 @@ export default function SendToQcPage() {
           <div className="table-responsive">
             <div className="summary mb-4">
               <Text className="text-sm text-gray-600">
-                Showing <b>{startIndex + 1}-{Math.min(endIndex, sendToQcRequests.length)}</b> of <b>{sendToQcRequests.length}</b> items.
+                Total <strong>{sendToQcRequests.length}</strong> items.
               </Text>
             </div>
             

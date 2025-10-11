@@ -25,30 +25,30 @@ interface PerformanceMetrics {
   total_ivr_duration: string;
   total_talk_duration: string;
   call_connected: number;
-  
+
   // Call Dial Status
   call_not_received: number;
   ringing: number;
   not_ringing: number;
   no_response: number;
-  
+
   // Not Ringing Breakdown
   switch_off: number;
   number_not_reachable: number;
   number_does_not_exist: number;
   not_ringing_no_response: number;
-  
+
   // Ringing Breakdown
   picked: number;
   did_not_picked: number;
   ringing_no_response: number;
-  
+
   // Ringing Picked Breakdown
   call_continue: number;
   wrong_number: number;
   reschedule_call: number;
   picked_no_response: number;
-  
+
   // General Metrics
   number_exhausted: number;
   successful_interview: number;
@@ -110,11 +110,11 @@ const TelecallerProgressPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'overall' | 'daywise'>('overall');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
+
   // Telecaller filter states
   const [telecallers, setTelecallers] = useState<Telecaller[]>([]);
   const [loadingTelecallers, setLoadingTelecallers] = useState(false);
-  
+
   // AC filter states
   const [acList, setAcList] = useState<ACData[]>([]);
   const [loadingACs, setLoadingACs] = useState(false);
@@ -124,7 +124,8 @@ const TelecallerProgressPage: React.FC = () => {
     serverId: '',
     acCode: '',
     callingDates: '',
-    customDate: '',
+    customDateFrom: '',
+    customDateTo: '',
     telecaller: '',
     phone: '',
     callOutcome: '',
@@ -195,8 +196,132 @@ const TelecallerProgressPage: React.FC = () => {
     { value: 'l7', label: 'Last 7 Days' },
     { value: 'l15', label: 'Last 15 Days' },
     { value: 'currentmonth', label: 'Current Month' },
-    { value: 'custom', label: 'Custom Date' },
+    { value: 'custom', label: 'Custom Date Range' },
   ];
+
+  // Helper function to convert date range to actual dates for performance API
+  const getDateRangeForPerformanceAPI = (dateValue: string, customDateFrom?: string, customDateTo?: string) => {
+    if (dateValue === 'custom' && customDateFrom && customDateTo) {
+      return {
+        start_date: customDateFrom,
+        end_date: customDateTo
+      };
+    } else if (dateValue && dateValue !== 'custom') {
+      // Convert predefined ranges to actual date strings
+      const today = new Date();
+      let startDate: string;
+      let endDate: string;
+
+      switch (dateValue) {
+        case 'today':
+          startDate = endDate = today.toISOString().split('T')[0];
+          break;
+        case 'yesterday':
+          const yesterday = new Date(today);
+          yesterday.setDate(today.getDate() - 1);
+          startDate = endDate = yesterday.toISOString().split('T')[0];
+          break;
+        case 'dby': // Day Before Yesterday
+          const dby = new Date(today);
+          dby.setDate(today.getDate() - 2);
+          startDate = endDate = dby.toISOString().split('T')[0];
+          break;
+        case 'l3': // Last 3 Days
+          const l3Start = new Date(today);
+          l3Start.setDate(today.getDate() - 2);
+          startDate = l3Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l7': // Last 7 Days
+          const l7Start = new Date(today);
+          l7Start.setDate(today.getDate() - 6);
+          startDate = l7Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l15': // Last 15 Days
+          const l15Start = new Date(today);
+          l15Start.setDate(today.getDate() - 14);
+          startDate = l15Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'currentmonth':
+          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          startDate = firstDayOfMonth.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        default:
+          return {};
+      }
+
+      return {
+        start_date: startDate,
+        end_date: endDate
+      };
+    }
+    return {};
+  };
+
+  // Helper function to convert date range to actual dates for other APIs (telecaller-wise)
+  const getDateRangeForOtherAPI = (dateValue: string, customDateFrom?: string, customDateTo?: string) => {
+    if (dateValue === 'custom' && customDateFrom && customDateTo) {
+      return {
+        date_from: customDateFrom,
+        date_to: customDateTo
+      };
+    } else if (dateValue && dateValue !== 'custom') {
+      // Convert predefined ranges to actual date strings
+      const today = new Date();
+      let startDate: string;
+      let endDate: string;
+
+      switch (dateValue) {
+        case 'today':
+          startDate = endDate = today.toISOString().split('T')[0];
+          break;
+        case 'yesterday':
+          const yesterday = new Date(today);
+          yesterday.setDate(today.getDate() - 1);
+          startDate = endDate = yesterday.toISOString().split('T')[0];
+          break;
+        case 'dby': // Day Before Yesterday
+          const dby = new Date(today);
+          dby.setDate(today.getDate() - 2);
+          startDate = endDate = dby.toISOString().split('T')[0];
+          break;
+        case 'l3': // Last 3 Days
+          const l3Start = new Date(today);
+          l3Start.setDate(today.getDate() - 2);
+          startDate = l3Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l7': // Last 7 Days
+          const l7Start = new Date(today);
+          l7Start.setDate(today.getDate() - 6);
+          startDate = l7Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'l15': // Last 15 Days
+          const l15Start = new Date(today);
+          l15Start.setDate(today.getDate() - 14);
+          startDate = l15Start.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        case 'currentmonth':
+          const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+          startDate = firstDayOfMonth.toISOString().split('T')[0];
+          endDate = today.toISOString().split('T')[0];
+          break;
+        default:
+          return {};
+      }
+
+      return {
+        date_from: startDate,
+        date_to: endDate
+      };
+    }
+    return {};
+  };
 
   // Filter change handler
   const handleFilterChange = (field: string, value: string | string[]) => {
@@ -211,7 +336,11 @@ const TelecallerProgressPage: React.FC = () => {
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
     // Trigger API calls with current filters
+    if (viewMode === 'overall') {
     fetchPerformanceData();
+    } else {
+      fetchDayWiseData();
+    }
     fetchTelecallerWiseData(); // Fetch all data when filtering
   };
 
@@ -228,36 +357,37 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build URL with filters
       const params = new URLSearchParams();
-      
+
       // Apply filters from UI
       // Telecaller filter
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       // AC Code filter
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
       
-      // Date filter
-      if (filters.callingDates && filters.callingDates !== '') {
-        if (filters.callingDates === 'custom' && filters.customDate) {
-          params.append('date', filters.customDate);
-        } else if (filters.callingDates !== 'custom') {
-        params.append('date', filters.callingDates);
-        }
-      }
+      // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
+      const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       
       // Legacy date parameter (for backward compatibility)
       if (date) {
         params.append('date', date);
       }
-      
+
       const url = `${apiUrl}/api/cati/telecaller-performance${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      // Debug log for API calls
+      console.log('Performance API URL:', url);
+      console.log('Date range:', dateRange);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -288,7 +418,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching performance data:', err);
-      
+
       if (err.message.includes('Failed to fetch')) {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else {
@@ -303,7 +433,7 @@ const TelecallerProgressPage: React.FC = () => {
   const fetchDayWiseData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -312,33 +442,34 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build URL with filters for day-wise data
       const params = new URLSearchParams();
-      
+
       // Apply filters from UI
       // Telecaller filter
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       // AC Code filter
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
       
-      // Date filter
-      if (filters.callingDates && filters.callingDates !== '') {
-        if (filters.callingDates === 'custom' && filters.customDate) {
-          params.append('date', filters.customDate);
-        } else if (filters.callingDates !== 'custom') {
-        params.append('date', filters.callingDates);
-        }
-      }
+      // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
+      const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       
       params.append('days', '7'); // Default to 7 days
-      
+
       const url = `${apiUrl}/api/cati/telecaller-performance/daywise${params.toString() ? `?${params.toString()}` : ''}`;
+      
+      // Debug log for day-wise API calls
+      console.log('Day-wise API URL:', url);
+      console.log('Date range:', dateRange);
       
       const response = await fetch(url, {
         method: 'GET',
@@ -365,7 +496,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching day-wise data:', err);
-      
+
       if (err.message.includes('Failed to fetch')) {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else {
@@ -452,7 +583,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Fetch all data by making multiple API calls
       let allData: TelecallerWiseData[] = [];
       let currentPage = 1;
@@ -464,35 +595,60 @@ const TelecallerProgressPage: React.FC = () => {
       const params = new URLSearchParams({
           page: currentPage.toString(),
           limit: limit.toString(),
-      });
-      
-      // Add filters (only if they have values)
-      if (filters.acCode && filters.acCode !== '') {
-        params.append('ac_code', filters.acCode);
-      }
-      
-      if (filters.telecaller && filters.telecaller !== '') {
-        params.append('teleform_user_id', filters.telecaller);
-      }
-      
-      if (filters.callingDates && filters.callingDates !== '') {
-          if (filters.callingDates === 'custom' && filters.customDate) {
-            params.append('date_from', filters.customDate);
-            params.append('date_to', filters.customDate);
-          } else if (filters.callingDates !== 'custom') {
-        params.append('date_from', filters.callingDates);
-        params.append('date_to', filters.callingDates);
-          }
-      }
-      
-      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+        });
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
+        // Add filters (only if they have values)
+        if (filters.acCode && filters.acCode !== '') {
+          params.append('ac_code', filters.acCode);
+        }
+        
+        if (filters.telecaller && filters.telecaller !== '') {
+          params.append('teleform_user_id', filters.telecaller);
+        }
+        
+        // Date filter - handle custom dates and predefined ranges
+        const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+        Object.entries(dateRange).forEach(([key, value]) => {
+          if (value) params.append(key, value);
+        });
+        
+        const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        // Add filters (only if they have values)
+        if (filters.acCode && filters.acCode !== '') {
+          params.append('ac_code', filters.acCode);
+        }
+
+        if (filters.telecaller && filters.telecaller !== '') {
+          params.append('teleform_user_id', filters.telecaller);
+        }
+        
+        // Date filter - handle custom dates and predefined ranges (telecaller-wise API uses date_from/date_to)
+        const dateRange = getDateRangeForOtherAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+        Object.entries(dateRange).forEach(([key, value]) => {
+          if (value) params.append(key, value);
+        });
+        
+        const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+
+        // Debug log for telecaller-wise API calls
+        console.log('Telecaller-wise API URL:', url);
+        console.log('Date range:', dateRange);
+
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+>>>>>>> 859c22ac26d21fde3d4865ab339a411a79e95e61
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -503,7 +659,7 @@ const TelecallerProgressPage: React.FC = () => {
       if (result.success && result.data) {
           const pageData = result.data.data || [];
           allData = [...allData, ...pageData];
-          
+
           // Check if there are more pages
           const pagination = result.data.pagination;
           hasMoreData = pagination && currentPage < pagination.totalPages;
@@ -569,31 +725,27 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
         limit: '100', // API maximum limit
       });
-      
+
       // Add filters (only if they have values)
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
       
-      if (filters.callingDates && filters.callingDates !== '') {
-        if (filters.callingDates === 'custom' && filters.customDate) {
-          params.append('date_from', filters.customDate);
-          params.append('date_to', filters.customDate);
-        } else if (filters.callingDates !== 'custom') {
-        params.append('date_from', filters.callingDates);
-        params.append('date_to', filters.callingDates);
-        }
-      }
+      // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
+      const dateRange = getDateRangeForOtherAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
       
       const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
 
@@ -612,7 +764,7 @@ const TelecallerProgressPage: React.FC = () => {
 
       if (result.success && result.data && result.data.data) {
         const data = result.data.data;
-        
+
         // Convert to CSV
         const headers = [
           'Sr. No.',
@@ -663,7 +815,7 @@ const TelecallerProgressPage: React.FC = () => {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const csvUrl = URL.createObjectURL(blob);
-        
+
         link.setAttribute('href', csvUrl);
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
@@ -732,7 +884,7 @@ const TelecallerProgressPage: React.FC = () => {
       <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
         {icon}
       </div>
-      <Heading level={2} className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
+      <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
         {title}
       </Heading>
     </div>
@@ -973,7 +1125,7 @@ const TelecallerProgressPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             {/* Title Section */}
             <div className="flex-1">
-              <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+              <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Caller Performance Dashboard
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
@@ -981,7 +1133,7 @@ const TelecallerProgressPage: React.FC = () => {
               </p> */}
             </div>
 
-            
+
             {/* View Mode Toggle and Refresh - Responsive */}
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
               {/* View Mode Toggle Buttons */}
@@ -1007,7 +1159,7 @@ const TelecallerProgressPage: React.FC = () => {
                   <span className="xs:hidden">Day</span>
                 </Button>
               </div> */}
-              
+
               {/* Refresh Button */}
               {/* <Button
                 variant="outline"
@@ -1031,7 +1183,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         </div>
 
-        
+
         {/* Search Filters */}
         <Card className="mb-4">
           <div className="flex flex-wrap items-end gap-4">
@@ -1062,25 +1214,39 @@ const TelecallerProgressPage: React.FC = () => {
                 onChange={(value) => handleFilterChange('callingDates', value)}
                 options={callingDatesOptions}
                 placeholder="Select Date Range"
-                searchable={true}
+                searchable={false}
                 clearable={true}
                 maxHeight={300}
               />
             </div>
 
-            {/* Custom Date Input - Only show when "Custom Date" is selected */}
+            {/* Custom Date Range Inputs - Only show when "Custom Date Range" is selected */}
             {filters.callingDates === 'custom' && (
-              <div className="flex-1 min-w-[200px]">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Custom Date
-              </label>
-              <Input
-                type="date"
-                  value={filters.customDate}
-                  onChange={(e) => handleFilterChange('customDate', e.target.value)}
-                  placeholder="Select Custom Date"
-              />
-            </div>
+              <>
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    From Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.customDateFrom}
+                    onChange={(e) => handleFilterChange('customDateFrom', e.target.value)}
+                    placeholder="Select From Date"
+                  />
+                </div>
+                
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    To Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={filters.customDateTo}
+                    onChange={(e) => handleFilterChange('customDateTo', e.target.value)}
+                    placeholder="Select To Date"
+                  />
+                </div>
+              </>
             )}
 
             {/* Telecaller */}
@@ -1099,7 +1265,7 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            
+
 
             {/* Call Outcome */}
             <div className="flex-1 min-w-[200px]">
@@ -1117,16 +1283,39 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            {/* View Button */}
-            <div className="flex-shrink-0">
+            {/* View and Clear Buttons */}
+            <div className="flex-shrink-0 flex gap-2">
               <Button 
                 variant="primary" 
                 onClick={handleSearch}
                 className="flex items-center"
               >
                 <Search className="w-4 h-4 mr-2" />
-                View
+                Search
               </Button>
+              
+              {/* Clear Filters Button */}
+              {/* <Button 
+                variant="outline" 
+                onClick={() => {
+                  setFilters({
+                    serverId: '',
+                    acCode: '',
+                    callingDates: '',
+                    customDateFrom: '',
+                    customDateTo: '',
+                    telecaller: '',
+                    phone: '',
+                    callOutcome: '',
+                    talkDuration: '',
+                  });
+                }}
+                className="flex items-center"
+                title="Clear all filters"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Clear
+              </Button> */}
             </div>
           </div>
         </Card>
@@ -1182,7 +1371,7 @@ const TelecallerProgressPage: React.FC = () => {
                 </div>
               </Alert>
             )} */}
-            
+
             {dayWiseData.length > 0 && viewMode === 'daywise' && (
               <Alert type="success" className="mb-4">
                 <div className="flex items-center gap-2">
@@ -1244,22 +1433,22 @@ const TelecallerProgressPage: React.FC = () => {
           </>
         )}
       </div>
-      
+
       {/* Telecaller Wise Data Table */}
       <Card className="mt-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
-              Telecaller Wise Data
-            </Heading>
+              <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+                Telecaller Wise Data
+              </Heading>
               <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Total {telecallerWiseData.length} items.
               </div>
             </div>
           </div>
-          
+
           {/* Download Button */}
           <Button
             variant="primary"
@@ -1275,6 +1464,10 @@ const TelecallerProgressPage: React.FC = () => {
             </span>
             {/* <span className="sm:hidden">CSV</span> */}
           </Button>
+        </div>
+
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-1">
+          Total <strong>{telecallerWiseData.length}</strong> items.
         </div>
 
         {/* Error Alert */}
@@ -1314,7 +1507,7 @@ const TelecallerProgressPage: React.FC = () => {
               <TableHeader className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
                 <TableRow>
                   <TableHead className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300">#</TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('caller_name')}
                   >
@@ -1326,7 +1519,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('number_of_dials')}
                   >
@@ -1338,7 +1531,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('ivr_duration')}
                   >
@@ -1350,7 +1543,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('talk_duration')}
                   >
@@ -1362,7 +1555,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('caller_did_not_pick')}
                   >
@@ -1374,7 +1567,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('number_does_not_exist')}
                   >
@@ -1386,7 +1579,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('respondent_picked_call')}
                   >
@@ -1398,7 +1591,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('picked_and_refused')}
                   >
@@ -1410,7 +1603,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('number_exhausted')}
                   >
@@ -1422,7 +1615,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('successful_interviews')}
                   >
@@ -1434,7 +1627,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('rejected_interviews')}
                   >
@@ -1446,7 +1639,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('incomplete_interviews')}
                   >
@@ -1458,7 +1651,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('number_picked_the_call')}
                   >
@@ -1470,7 +1663,7 @@ const TelecallerProgressPage: React.FC = () => {
                       </div>
                     </div>
                   </TableHead>
-                  <TableHead 
+                  <TableHead
                     className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('number_does_not_working')}
                   >

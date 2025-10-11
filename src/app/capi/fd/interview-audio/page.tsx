@@ -285,7 +285,7 @@ export default function CAPIInterviewAudioPage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
           <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            Interview Audio (F2F)
+            Interview Audio (CAPI)
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -378,7 +378,7 @@ export default function CAPIInterviewAudioPage() {
             <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>
               <Heading level={4} className="card-title mg-b-0">
-                Interview List (F2F)
+                Interview List (CAPI)
               </Heading>
             </div>
             <span className="text-end">

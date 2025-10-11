@@ -128,18 +128,14 @@ const MasterInterviewerContent = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4}>Master Interviewers List</Heading>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Master Interviewers List</Heading>
           </div>
         </div>
 
         {/* Data Summary */}
         <div className="mb-4">
           <Text className="text-sm text-gray-600">
-            Showing{' '}
-            <strong>
-              {(currentPage-1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}
-            </strong>{' '}
-            of <strong>{totalCount}</strong> master interviewers.
+            Total <strong>{totalCount}</strong> items.
           </Text>
         </div>
 

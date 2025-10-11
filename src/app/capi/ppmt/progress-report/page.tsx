@@ -589,17 +589,32 @@ export default function ProgressReportPage() {
               <Text className="text-sm font-medium mb-2">
                 AC Code
               </Text>
-              <SelectDropdown
-                options={acList?.map(ac => ({
-                  value: ac.ac_code.toString(),
-                  label: ac.acnameandcode
-                })) || []}
-                value={searchForm.acCode}
-                onChange={(value) => handleInputChange('acCode', value as string)}
-                placeholder={acListLoading ? "Loading AC list..." : "Select AC Code"}
-                className="w-full"
-                disabled={acListLoading}
-              />
+              <div className="relative">
+                <SelectDropdown
+                  options={acList?.map(ac => ({
+                    value: ac.ac_code.toString(),
+                    label: ac.acnameandcode
+                  })) || []}
+                  value={searchForm.acCode}
+                  onChange={(value) => handleInputChange('acCode', value as string)}
+                  placeholder={acListLoading ? "Loading AC list..." : "Select AC Code"}
+                  className="w-full"
+                  disabled={acListLoading}
+                  searchable={true}
+                />
+                {searchForm.acCode && (
+                  <button
+                    type="button"
+                    onClick={() => handleInputChange('acCode', '')}
+                    className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    title="Clear selection"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
           )}
           <div className="flex items-end">
