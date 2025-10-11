@@ -11,7 +11,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download, Play, Map, Loader2 } from 'lucide-react';
+import { Search, Download, Play, Map, Loader2, Volume2 } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
 
 interface RejectionData {
@@ -642,18 +642,14 @@ export default function RejectionReportPage() {
                     <td>{row.audioQcId || '-'}</td>
                     <td>{row.audioFailReason || '-'}</td>
                     <td>
-                      {row.hasAudio ? (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="bg-blue-500 hover:bg-blue-600 text-white border-0"
-                          title="Play Audio"
-                        >
-                          <Play className="w-3 h-3" />
-                        </Button>
-                      ) : (
-                        '-'
-                      )}
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                        title="Play Audio"
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </Button>
                     </td>
                     <td>
                       <Button 
