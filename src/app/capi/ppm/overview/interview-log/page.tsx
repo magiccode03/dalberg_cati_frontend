@@ -562,11 +562,6 @@ const InterviewLogPage = () => {
     }
   };
 
-  const handlePlayAudio = (interview: DisplayInterviewData) => {
-    console.log('Play audio for interview:', interview.server_id);
-    // Add audio playback logic here
-  };
-
   const handleGpsMap = (interview: DisplayInterviewData) => {
     console.log('Show GPS map for interview:', interview.server_id);
     // Add GPS map logic here
