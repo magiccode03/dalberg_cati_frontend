@@ -763,6 +763,16 @@ export const menuData: MenuItem[] = [
     system: 'capi',
   },
 
+  // CAPI QC Menu
+  {
+    id: 'capi-qc-auth',
+    label: 'QC Authentication',
+    href: '/capi/capi-qc/qc-auth',
+    icon: 'Shield',
+    roles: ['capi_qc'],
+    system: 'capi',
+  },
+
   // CAPI Findings Dashboard Menu
   {
     id: 'capi-fd-fieldwork-progress',
