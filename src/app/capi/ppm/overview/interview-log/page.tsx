@@ -12,7 +12,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2 } from 'lucide-react';
+import { Volume2, MapPin, Loader2, Image, User } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
@@ -562,11 +562,6 @@ const InterviewLogPage = () => {
     }
   };
 
-  const handlePlayAudio = (interview: DisplayInterviewData) => {
-    console.log('Play audio for interview:', interview.server_id);
-    // Add audio playback logic here
-  };
-
   const handleGpsMap = (interview: DisplayInterviewData) => {
     console.log('Show GPS map for interview:', interview.server_id);
     // Add GPS map logic here
@@ -1052,7 +1047,7 @@ const InterviewLogPage = () => {
                               variant="outline"
                               size="sm"
                               className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                              onClick={() => handlePlayAudio(interview)}
+                              onClick={() => handlePlayAudio(interview.server_id, interview.audio1)}
                               title="Play Audio"
                             >
                               <Volume2 className="h-4 w-4" />
