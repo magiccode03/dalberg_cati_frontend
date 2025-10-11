@@ -17,6 +17,7 @@ interface InterviewData {
   ac_name: string;
   interview_date: string;
   interview_audio: string;
+  audio_url: string;
 }
 
 interface APIResponse {
@@ -26,35 +27,6 @@ interface APIResponse {
   timestamp?: string;
 }
 
-// Utility function to fix audio URL encoding
-const fixAudioUrl = (url: string): string => {
-  if (!url) return url;
-  
-  // Check if URL contains unencoded JSON in query parameter
-  if (url.includes('data={')) {
-    try {
-      // Extract base URL and JSON part
-      const parts = url.split('data=');
-      if (parts.length === 2) {
-        const baseUrl = parts[0] + 'data=';
-        const jsonStr = parts[1];
-        
-        // URL encode the JSON part
-        const encoded = encodeURIComponent(jsonStr);
-        const fixedUrl = baseUrl + encoded;
-        
-        console.log('Original URL:', url);
-        console.log('Fixed URL:', fixedUrl);
-        
-        return fixedUrl;
-      }
-    } catch (e) {
-      console.error('Error fixing audio URL:', e);
-    }
-  }
-  
-  return url;
-};
 
 export default function CAPIInterviewAudioPage() {
   const [filters, setFilters] = useState({
@@ -200,17 +172,14 @@ export default function CAPIInterviewAudioPage() {
 
 
   const handlePlayAudio = (audioData: InterviewData) => {
-    // Construct the full audio URL from the filename
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    const audioUrl = `${baseUrl}/api/fd/interviewaudio/audio/${audioData.interview_audio}`;
-    
+    // Use the audio_url directly from the API response
     const processedAudioData = {
       ...audioData,
-      audio: audioUrl
+      audio: audioData.audio_url
     };
     
     console.log('Playing audio:', processedAudioData);
-    console.log('Audio URL:', audioUrl);
+    console.log('Audio URL:', audioData.audio_url);
     
     setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
@@ -435,7 +404,7 @@ export default function CAPIInterviewAudioPage() {
                 {paginatedData.map((row, index) => (
                   <tr key={row.server_id}>
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.server_id}</td>
+                    <td className="text-center">{row.server_id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
                     <td className="text-center">{new Date(row.interview_date).toLocaleDateString()}</td>
