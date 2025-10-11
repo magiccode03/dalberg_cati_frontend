@@ -8,8 +8,9 @@ import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Play, X, Volume2, Download } from 'lucide-react';
+import { Search, Play, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
+import DateFormatter from '@/components/ui/DateFormatter';
 
 interface InterviewAudioData {
   id: number;
@@ -61,10 +62,16 @@ export default function CATIInterviewAudioPage() {
     acName: '',
     interviewDate: ''
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    serverId: '',
+    acCode: '',
+    acName: '',
+    interviewDate: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(20);
   const [interviewData, setInterviewData] = useState<InterviewAudioData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -74,14 +81,10 @@ export default function CATIInterviewAudioPage() {
   const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof InterviewAudioData | null;
-    direction: 'asc' | 'desc';
-  }>({ key: null, direction: 'asc' });
 
   useEffect(() => {
     fetchData();
-  }, [currentPage]);
+  }, [currentPage, appliedFilters]);
 
   const fetchData = async () => {
     try {
@@ -93,12 +96,19 @@ export default function CATIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (filters.serverId) params.server_id = filters.serverId;
-      if (filters.acCode) params.ac_code = filters.acCode;
-      if (filters.acName) params.ac_name = filters.acName;
-      if (filters.interviewDate) params.interview_date = filters.interviewDate;
+      if (appliedFilters.serverId) params.server_id = appliedFilters.serverId;
+      // Priority: AC Name dropdown takes precedence over AC Code input
+      if (appliedFilters.acName) {
+        params.ac_code = appliedFilters.acName; // AC Name dropdown stores AC code as value
+      } else if (appliedFilters.acCode) {
+        params.ac_code = appliedFilters.acCode;
+      }
+      if (appliedFilters.interviewDate) params.interview_date = appliedFilters.interviewDate;
       
       // Use the existing getInterviewAudio method from apiService
+      console.log('API params:', params);
+      console.log('Applied filters:', appliedFilters);
+      
       const response = await apiService.getInterviewAudio(params);
       
       console.log('API Response:', response); // Debug log
@@ -118,10 +128,10 @@ export default function CATIInterviewAudioPage() {
           setTotalPages(Math.ceil(interviewData.length / itemsPerPage));
         }
         
-        // Extract unique AC codes for filter (only on first load)
-        if (currentPage === 1 && interviewData.length > 0) {
-          const uniqueACs = Array.from(new Set(interviewData.map(item => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
-            .map(str => JSON.parse(str));
+        // Extract unique AC codes for filter (only on first load when options are empty)
+        if (currentPage === 1 && interviewData.length > 0 && acOptions.length === 0) {
+          const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewAudioData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
+            .map((str: unknown) => JSON.parse(str as string) as { ac_code: number; ac_name: string });
           const acOptionsData = [
             { value: '', label: 'Select ACs' },
             ...uniqueACs
@@ -134,7 +144,7 @@ export default function CATIInterviewAudioPage() {
           setAcOptions(acOptionsData);
           
           // Extract unique dates for filter
-          const uniqueDates = Array.from(new Set(interviewData.map(item => item.interview_date.split('T')[0])));
+          const uniqueDates = Array.from(new Set(interviewData.map((item: InterviewAudioData) => item.interview_date.split('T')[0])));
           const dateOptionsData = [
             { value: '', label: 'Interview Date' },
             ...uniqueDates.map(date => ({
@@ -161,8 +171,9 @@ export default function CATIInterviewAudioPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setAppliedFilters(filters); // Apply the current filter values
     setCurrentPage(1);
-    fetchData();
+    // fetchData will be called automatically due to useEffect dependency on appliedFilters
   };
 
   const handleFilterChange = (field: string, value: string) => {
@@ -211,71 +222,17 @@ export default function CATIInterviewAudioPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSort = (key: keyof InterviewAudioData) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
 
-  const getSortedData = () => {
-    if (!sortConfig.key) return interviewData;
-    
-    return [...interviewData].sort((a, b) => {
-      const aValue = a[sortConfig.key!];
-      const bValue = b[sortConfig.key!];
-      
-      if (aValue < bValue) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  };
+  // Use original data
+  const paginatedData = interviewData;
 
-  // Use sorted data
-  const paginatedData = getSortedData();
-
-  const handleDownload = () => {
-    if (paginatedData.length === 0) return;
-
-    const headers = ['Sr.No.', 'Server Id', 'AC Code', 'AC Name', 'Interview Date'];
-    
-    const csvContent = [
-      headers.join(','),
-      ...paginatedData.map((item, index) => [
-        (currentPage - 1) * itemsPerPage + index + 1,
-        item.id,
-        item.ac_code,
-        `"${item.ac_name}"`,
-        new Date(item.interview_date).toLocaleDateString()
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    
-    const currentDate = new Date().toISOString().split('T')[0];
-    const filename = `Interview-Audio-CATI-${currentDate}.csv`;
-    
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Interview Audio (CATI)
           </Heading>
         </div>
@@ -299,18 +256,7 @@ export default function CATIInterviewAudioPage() {
       <form id="interviewsearch-form" onSubmit={handleSearch}>
         <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Server Id
-              </label>
-              <input
-                type="text"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter Server Id"
-              />
-            </div>
+          
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Code
@@ -338,6 +284,18 @@ export default function CATIInterviewAudioPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Server Id
+              </label>
+              <input
+                type="text"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter Server Id"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Interview Date
               </label>
               <input
@@ -345,16 +303,33 @@ export default function CATIInterviewAudioPage() {
                 value={filters.interviewDate}
                 onChange={(e) => handleFilterChange('interviewDate', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="yy-mm-dd"
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <Button
                 type="submit"
-                className="w-full bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
+                className="flex-1 bg-blue-600 text-white hover:bg-blue-700 flex items-center justify-center space-x-2"
               >
                 <Search className="h-4 w-4" />
                 <span>Search</span>
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  const emptyFilters = {
+                    serverId: '',
+                    acCode: '',
+                    acName: '',
+                    interviewDate: ''
+                  };
+                  setFilters(emptyFilters); // Clear the form inputs
+                  setAppliedFilters(emptyFilters); // Clear the applied filters
+                  setCurrentPage(1);
+                }}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 flex items-center justify-center space-x-2"
+              >
+                <X className="h-4 w-4" />
+                <span>Clear</span>
               </Button>
             </div>
           </div>
@@ -376,18 +351,6 @@ export default function CATIInterviewAudioPage() {
                 Total {totalItems} items.
               </div>
             </div>
-            <span className="text-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownload}
-                disabled={loading || paginatedData.length === 0}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600"
-              >
-                <Download className="w-4 h-4" />
-                Download
-              </Button>
-            </span>
           </div>
         </div>
         
@@ -408,10 +371,10 @@ export default function CATIInterviewAudioPage() {
                     <p><strong>Total Items:</strong> {totalItems}</p>
                     <p><strong>Total Pages:</strong> {totalPages}</p>
                     <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
-                    <p><strong>Server Id Filter:</strong> {filters.serverId || 'None'}</p>
-                    <p><strong>AC Code Filter:</strong> {filters.acCode || 'None'}</p>
-                    <p><strong>AC Name Filter:</strong> {filters.acName || 'None'}</p>
-                    <p><strong>Interview Date Filter:</strong> {filters.interviewDate || 'None'}</p>
+                    <p><strong>Server Id Filter:</strong> {appliedFilters.serverId || 'None'}</p>
+                    <p><strong>AC Code Filter:</strong> {appliedFilters.acCode || 'None'}</p>
+                    <p><strong>AC Name Filter:</strong> {appliedFilters.acName || 'None'}</p>
+                    <p><strong>Interview Date Filter:</strong> {appliedFilters.interviewDate || 'None'}</p>
                   </div>
                 </details>
               </div>
@@ -434,64 +397,16 @@ export default function CATIInterviewAudioPage() {
               </button>
             </div>
           ) : (
-          <div className="table-responsive max-h-[600px] overflow-y-auto">
+          <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
+              <thead>
                 <tr>
-                  <th className="text-center bg-white dark:bg-gray-800" style={{ width: '2%' }}>#</th>
-                  <th 
-                    style={{ width: '10%' }} 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('id')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Server Id</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'id' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'id' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </th>
-                  <th 
-                    className="text-center cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300" 
-                    style={{ width: '10%' }}
-                    onClick={() => handleSort('ac_code')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="flex-1 text-center">AC Code</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'ac_code' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'ac_code' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </th>
-                  <th 
-                    style={{ width: '10%' }} 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('ac_name')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>AC Name</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'ac_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'ac_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </th>
-                  <th 
-                    style={{ width: '10%' }} 
-                    className="cursor-pointer hover:bg-gray-200 select-none bg-white dark:bg-gray-800 font-semibold text-gray-700 border-b-2 border-gray-300"
-                    onClick={() => handleSort('interview_date')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Interview Date</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'interview_date' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'interview_date' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </th>
-                  <th className="text-center bg-white dark:bg-gray-800" style={{ width: '8%' }}>Interview Audio</th>
+                  <th style={{ width: '2%' }}>#</th>
+                  <th style={{ width: '10%' }}>Server Id</th>
+                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
+                  <th style={{ width: '10%' }}>AC Name</th>
+                  <th style={{ width: '10%' }}>Interview Date</th>
+                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
               </thead>
               <tbody>
@@ -501,14 +416,14 @@ export default function CATIInterviewAudioPage() {
                     <td>{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
-                    <td>{new Date(row.interview_date).toLocaleDateString()}</td>
+                    <td><DateFormatter date={row.interview_date} format="dd/mm/yyyy" /></td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center gap-2 mx-auto"
+                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center justify-center mx-auto"
+                        title="Play Audio"
                       >
                         <Play className="h-4 w-4" />
-                        Play
                       </Button>
                     </td>
                   </tr>
@@ -572,7 +487,7 @@ export default function CATIInterviewAudioPage() {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">
-                      {new Date(currentAudio.interview_date).toLocaleDateString()}
+                      <DateFormatter date={currentAudio.interview_date} format="dd/mm/yyyy" />
                     </p>
                   </div>
                   <div>
