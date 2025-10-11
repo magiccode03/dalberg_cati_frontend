@@ -7,9 +7,10 @@ import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2, Eye } from 'lucide-react';
+import { Loader2, Eye, Search } from 'lucide-react';
 import { apiService, InterviewMaster, InterviewMastersResponse } from '@/lib/api';
 
 const MasterInterviewerContent = () => {
@@ -22,24 +23,28 @@ const MasterInterviewerContent = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    fullName: '',
+    loginId: '',
+  });
 
-  // Fetch data from API
+  // Fetch data from API with comprehensive filtering
   const fetchInterviewerData = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await apiService.getInterviewMasters({
-        page: currentPage,
-        limit: pageSize
-      });
+      // Check if we need comprehensive filtering
+      const needsComprehensiveFiltering = filters.fullName.trim() !== '' || filters.loginId.trim() !== '';
       
-      if (response.success && response.data) {
-        setInterviewerData(response.data.data);
-        setTotalCount(response.data.total);
-        setTotalPages(response.data.total_pages);
+      if (needsComprehensiveFiltering) {
+        // Fetch multiple pages to get comprehensive results
+        await fetchAllDataForFiltering();
       } else {
-        setError('Failed to fetch interviewer data');
+        // Normal pagination
+        await fetchPageData();
       }
     } catch (err) {
       console.error('Error fetching interviewer data:', err);
@@ -49,12 +54,112 @@ const MasterInterviewerContent = () => {
     }
   };
 
+  // Fetch data for a specific page
+  const fetchPageData = async () => {
+    const apiParams = {
+      page: currentPage,
+      limit: pageSize
+    };
+    
+    console.log('Fetching page data:', apiParams);
+    
+    const response = await apiService.getInterviewMasters(apiParams);
+    
+    if (response.success && response.data) {
+      setInterviewerData(response.data.data);
+      setTotalCount(response.data.total);
+      setTotalPages(response.data.total_pages);
+    } else {
+      console.error('API Error:', response);
+      setError('Failed to fetch interviewer data');
+    }
+  };
+
+  // Fetch all data for comprehensive filtering
+  const fetchAllDataForFiltering = async () => {
+    console.log('Fetching all data for filtering...');
+    
+    let allData: any[] = [];
+    let currentPageNum = 1;
+    let hasMoreData = true;
+    const maxPages = 10; // Limit to prevent infinite loops
+    
+    while (hasMoreData && currentPageNum <= maxPages) {
+      try {
+        const apiParams = {
+          page: currentPageNum,
+          limit: pageSize
+        };
+        
+        console.log(`Fetching page ${currentPageNum}:`, apiParams);
+        
+        const response = await apiService.getInterviewMasters(apiParams);
+        
+        if (response.success && response.data) {
+          allData = [...allData, ...response.data.data];
+          
+          // Check if there are more pages
+          hasMoreData = currentPageNum < response.data.total_pages;
+          currentPageNum++;
+        } else {
+          hasMoreData = false;
+        }
+      } catch (err) {
+        console.error(`Error fetching page ${currentPageNum}:`, err);
+        hasMoreData = false;
+      }
+    }
+    
+    console.log(`Fetched ${allData.length} total records`);
+    
+    // Remove duplicates based on id
+    const uniqueData = allData.filter((item, index, self) => 
+      index === self.findIndex(t => t.id === item.id)
+    );
+    
+    console.log(`After removing duplicates: ${uniqueData.length} records`);
+    
+    // Apply filtering
+    let filteredData = uniqueData;
+    
+    if (filters.fullName.trim() !== '') {
+      filteredData = filteredData.filter(item => 
+        item.fullname.toLowerCase().includes(filters.fullName.toLowerCase())
+      );
+    }
+    
+    if (filters.loginId.trim() !== '') {
+      filteredData = filteredData.filter(item => 
+        item.login_id.toLowerCase().includes(filters.loginId.toLowerCase())
+      );
+    }
+    
+    console.log(`Filtered to ${filteredData.length} records`);
+    
+    setInterviewerData(filteredData);
+    setTotalCount(filteredData.length);
+    setTotalPages(1); // Show all filtered results
+  };
+
   useEffect(() => {
     fetchInterviewerData();
-  }, [currentPage]);
+  }, [currentPage, filters]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCurrentPage(1); // Reset to first page when searching
+    fetchInterviewerData();
   };
 
 
@@ -123,6 +228,38 @@ const MasterInterviewerContent = () => {
         </Card>
       )}
 
+      {/* Search Form */}
+      <Card className="mb-3">
+        <form onSubmit={handleSearch} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Text className="text-sm font-medium mb-2">Full Name</Text>
+              <Input
+                type="text"
+                placeholder="Search by full name"
+                value={filters.fullName}
+                onChange={(e) => handleFilterChange('fullName', e.target.value)}
+              />
+            </div>
+            <div>
+              <Text className="text-sm font-medium mb-2">Mobile Number</Text>
+              <Input
+                type="text"
+                placeholder="Search by Mobile Number"
+                value={filters.loginId}
+                onChange={(e) => handleFilterChange('loginId', e.target.value)}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button type="submit" className="w-full">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
+          </div>
+        </form>
+      </Card>
+
       <Card>
         {/* Card Header */}
         <div className="flex justify-between items-center mb-6">
@@ -153,7 +290,7 @@ const MasterInterviewerContent = () => {
             </thead>
             <tbody>
               {interviewerData.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
+                <tr key={`${item.id}-${index}`} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b border-gray-200 font-medium">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
