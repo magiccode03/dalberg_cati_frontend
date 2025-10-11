@@ -12,25 +12,67 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Image, User, Loader2 } from 'lucide-react';
+import { Volume2, MapPin, Loader2 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 // TypeScript interfaces for API response
 interface InterviewData {
   server_id: number;
+  server_time: string;
+  server_date: string;
+  user_id: number;
+  form_id: number;
+  agency_id: number;
+  agency_name: string | null;
+  interviewer_id: string;
+  supervisor_id: string;
   interview_date: string;
-  sample_type: string;
+  device_id: string;
+  collect_device_id: string;
+  start_time: string;
+  end_time: string;
+  total_duration: number | null;
   ac_code: number;
   ac_name: string;
+  district_name: string;
+  pc_name: string;
+  ps_code: string;
   ps_name: string;
-  device_id: string;
-  interviewer_id: string;
-  audio_qc_label: string;
-  audio_qc_id: string;
-  audio1_status_label: string;
-  qc_outcome: string;
-  status_label: string;
+  respondent_name: string;
+  mobile_no: string | null;
+  gender: number | null;
   gender_label: string;
+  age: number | null;
+  religion: number | null;
+  social_category: number | null;
+  locality_type: number;
+  gps: string;
+  gps_accuracy: string;
+  photo_ps: string | null;
+  photo_selfie: string | null;
+  status: number;
+  status_label: string;
+  status_reason_reject: number | null;
+  audio_qc: number;
+  audio_qc_label: string;
+  audio_qc_status: number;
+  audio_qc_status_label: string;
+  audio_qc_id: string | null;
+  audio1_status: number;
+  audio1_status_label: string;
+  qc_recheck_status_audio: number | null;
+  qc_recheck_status_audio_label: string;
+  tele_qc: number;
+  tele_qc_status: number;
+  tele_qc_id: string | null;
+  gps_qc_status: number;
+  qc_outcome: string;
+  qc_id: string | null;
+  sample_type: number;
+  weight: string;
+  over_achievement: number;
+  created_at: number;
+  updated_at: number;
   gps_available: boolean;
   ps_image_available: boolean;
   selfie_image_available: boolean;
@@ -112,6 +154,216 @@ const InterviewLogPage = () => {
   // API state management
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  // Agencies dropdown state
+  const [agencies, setAgencies] = useState<{ value: string; label: string }[]>([]);
+  const [agenciesLoading, setAgenciesLoading] = useState(false);
+
+  // AC dropdown state
+  const [acList, setAcList] = useState<{ value: string; label: string }[]>([]);
+  const [acLoading, setAcLoading] = useState(false);
+
+  // Interviewer dropdown state
+  const [interviewers, setInterviewers] = useState<{ value: string; label: string }[]>([]);
+  const [interviewersLoading, setInterviewersLoading] = useState(false);
+
+  // Users dropdown state
+  const [users, setUsers] = useState<{ value: string; label: string }[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+
+  // Polling stations dropdown state
+  const [pollingStations, setPollingStations] = useState<{ value: string; label: string }[]>([]);
+  const [pollingStationsLoading, setPollingStationsLoading] = useState(false);
+
+  // Fetch polling stations from API based on selected AC code
+  const fetchPollingStations = async (acCode?: string) => {
+    try {
+      setPollingStationsLoading(true);
+      
+      // If no AC code is provided, clear the polling stations
+      if (!acCode) {
+        setPollingStations([{ value: '', label: 'Select Polling Station' }]);
+        setPollingStationsLoading(false);
+        return;
+      }
+      
+      console.log('🔍 Fetching polling stations for AC code:', acCode);
+      
+      const response = await apiClient.get(`/dropdown/polling-stations?ac_code=${acCode}`);
+      console.log('📊 Polling Stations API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const pollingStationData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: name as string,
+        }));
+        
+        // Add the default "Select Polling Station" option
+        const pollingStationsWithDefault = [
+          { value: '', label: 'Select Polling Station' },
+          ...pollingStationData,
+        ];
+        
+        setPollingStations(pollingStationsWithDefault);
+        console.log('✅ Polling stations loaded successfully for AC', acCode, ':', pollingStationsWithDefault);
+      } else {
+        console.error('❌ Invalid polling stations API response:', response.data);
+        setPollingStations([{ value: '', label: 'Select Polling Station' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching polling stations:', err);
+      setPollingStations([{ value: '', label: 'Select Polling Station' }]);
+    } finally {
+      setPollingStationsLoading(false);
+    }
+  };
+
+  // Fetch users from API
+  const fetchUsers = async () => {
+    try {
+      setUsersLoading(true);
+      console.log('🔍 Fetching users from API...');
+      
+      const response = await apiClient.get('/dropdown/users');
+      console.log('📊 Users API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const userData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: String(name),
+        }));
+        
+        // Add the default "Select Enumerator ID" option
+        const usersWithDefault = [
+          { value: '', label: 'Select Enumerator ID' },
+          ...userData,
+        ];
+        
+        setUsers(usersWithDefault);
+        console.log('✅ Users loaded successfully:', usersWithDefault);
+      } else {
+        console.error('❌ Invalid users API response:', response.data);
+        setUsers([{ value: '', label: 'Select Enumerator ID' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching users:', err);
+      setUsers([{ value: '', label: 'Select Enumerator ID' }]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // Fetch interviewers from API
+  const fetchInterviewers = async () => {
+    try {
+      setInterviewersLoading(true);
+      console.log('🔍 Fetching interviewers from API...');
+      
+      const response = await apiClient.get('/dropdown/interviewers');
+      console.log('📊 Interviewers API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const interviewerData = Object.entries(response.data.data)
+          .filter(([id, name]) => id !== '') // Filter out empty ID
+          .map(([id, name]) => ({
+            value: id,
+            label: name as string,
+          }));
+        
+        // Add the default "Select Interviewer ID" option
+        const interviewersWithDefault = [
+          { value: '', label: 'Select Interviewer ID' },
+          ...interviewerData,
+        ];
+        
+        setInterviewers(interviewersWithDefault);
+        console.log('✅ Interviewers loaded successfully:', interviewersWithDefault);
+      } else {
+        console.error('❌ Invalid interviewers API response:', response.data);
+        setInterviewers([{ value: '', label: 'Select Interviewer ID' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching interviewers:', err);
+      setInterviewers([{ value: '', label: 'Select Interviewer ID' }]);
+    } finally {
+      setInterviewersLoading(false);
+    }
+  };
+
+  // Fetch AC list from API
+  const fetchAcList = async () => {
+    try {
+      setAcLoading(true);
+      console.log('🔍 Fetching AC list from API...');
+      
+      const response = await apiClient.get('/dropdown/ac-list');
+      console.log('📊 AC List API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const acData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: `${name} (${id})`,
+        }));
+        
+        // Add the default "Select AC" option
+        const acWithDefault = [
+          { value: '', label: 'Select AC' },
+          ...acData,
+        ];
+        
+        setAcList(acWithDefault);
+        console.log('✅ AC list loaded successfully:', acWithDefault);
+      } else {
+        console.error('❌ Invalid AC list API response:', response.data);
+        setAcList([{ value: '', label: 'Select AC' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching AC list:', err);
+      setAcList([{ value: '', label: 'Select AC' }]);
+    } finally {
+      setAcLoading(false);
+    }
+  };
+
+  // Fetch agencies from API
+  const fetchAgencies = async () => {
+    try {
+      setAgenciesLoading(true);
+      console.log('🔍 Fetching agencies from API...');
+      
+      const response = await apiClient.get('/dropdown/agencies');
+      console.log('📊 Agencies API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const agenciesData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: name as string,
+        }));
+        
+        // Add the default "Select State Teams" option
+        const agenciesWithDefault = [
+          { value: '', label: 'Select State Teams' },
+          ...agenciesData,
+        ];
+        
+        setAgencies(agenciesWithDefault);
+        console.log('✅ Agencies loaded successfully:', agenciesWithDefault);
+      } else {
+        console.error('❌ Invalid agencies API response:', response.data);
+        setAgencies([{ value: '', label: 'Select State Teams' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching agencies:', err);
+      setAgencies([{ value: '', label: 'Select State Teams' }]);
+    } finally {
+      setAgenciesLoading(false);
+    }
+  };
 
   // Fetch interview logs from API
   const fetchInterviewLogs = async () => {
@@ -200,136 +452,8 @@ const InterviewLogPage = () => {
     }
   };
 
-  // Sample data for dropdowns
-  const agencyOptions = [
-    { value: '', label: 'Select State Teams' },
-    { value: '1', label: 'Kadence' },
-    { value: '2', label: 'Chandan' },
-    { value: '3', label: 'Rohit' },
-    { value: '4', label: 'Parbhat' },
-    { value: '5', label: 'Navin' },
-    { value: '6', label: 'Aeon' },
-    { value: '7', label: 'Abhinav' },
-    { value: '8', label: 'Inhouse' },
-  ];
+  // Sample data for dropdowns (other dropdowns remain hardcoded for now)
 
-  const acOptions = [
-    { value: '', label: 'Select AC' },
-    { value: '4', label: 'Bagaha (4)' },
-    { value: '8', label: 'Bettiah (8)' },
-    { value: '7', label: 'Chanpatia (7)' },
-    { value: '5', label: 'Lauriya (5)' },
-    { value: '3', label: 'Narkatiaganj (3)' },
-    { value: '6', label: 'Nautan (6)' },
-    { value: '2', label: 'Ramnagar (SC) (2)' },
-    { value: '10', label: 'Raxaul (10)' },
-    { value: '9', label: 'Sikta (9)' },
-    { value: '1', label: 'Valmiki Nagar (1)' },
-  ];
-
-  // Sample data fallback for when API fails
-  const sampleInterviewData = [
-    {
-      server_id: 302275,
-      interview_date: '2025-06-17',
-      sample_type: 'Sample',
-      ac_code: 141,
-      ac_name: 'Cheria Bariarpur (141)',
-      ps_name: '111. Utkramit Madhya Vidyalaya,Shekha Tola',
-      device_id: '9b565985d11c4d77',
-      interviewer_id: '',
-      audio_qc_label: 'NA',
-      audio_qc_id: '',
-      audio1_status_label: '',
-      qc_outcome: 'Fail',
-      status_label: 'Terminated',
-      gender_label: '',
-      gps_available: true,
-      ps_image_available: false,
-      selfie_image_available: false,
-      audio_playback_available: true,
-    },
-    {
-      server_id: 301767,
-      interview_date: '2025-06-15',
-      sample_type: 'Booster',
-      ac_code: 207,
-      ac_name: 'Chenari (SC) (207)',
-      ps_name: '100. Primary School, Kekai',
-      device_id: '5e47ae85d3f83fa7',
-      interviewer_id: '935',
-      audio_qc_label: 'NA',
-      audio_qc_id: '',
-      audio1_status_label: '',
-      qc_outcome: 'Fail',
-      status_label: 'Rejected (N+W+RTA)',
-      gender_label: 'Male',
-      gps_available: true,
-      ps_image_available: false,
-      selfie_image_available: false,
-      audio_playback_available: true,
-    },
-    {
-      server_id: 301745,
-      interview_date: '2025-06-15',
-      sample_type: 'Booster',
-      ac_code: 207,
-      ac_name: 'Chenari (SC) (207)',
-      ps_name: '100. Primary School, Kekai',
-      device_id: '5e47ae85d3f83fa7',
-      interviewer_id: '935',
-      audio_qc_label: 'NA',
-      audio_qc_id: '',
-      audio1_status_label: '',
-      qc_outcome: 'Fail',
-      status_label: 'Rejected (Short Interview - 0 sec)',
-      gender_label: 'Male',
-      gps_available: true,
-      ps_image_available: false,
-      selfie_image_available: false,
-      audio_playback_available: true,
-    },
-    {
-      server_id: 301739,
-      interview_date: '2025-06-15',
-      sample_type: 'Booster',
-      ac_code: 207,
-      ac_name: 'Chenari (SC) (207)',
-      ps_name: '100. Primary School, Kekai',
-      device_id: '5e47ae85d3f83fa7',
-      interviewer_id: '721',
-      audio_qc_label: 'NA',
-      audio_qc_id: '',
-      audio1_status_label: '',
-      qc_outcome: 'Fail',
-      status_label: 'Rejected (Short Interview - 0 sec)',
-      gender_label: 'Male',
-      gps_available: true,
-      ps_image_available: false,
-      selfie_image_available: false,
-      audio_playback_available: true,
-    },
-    {
-      server_id: 301705,
-      interview_date: '2025-06-15',
-      sample_type: 'Booster',
-      ac_code: 207,
-      ac_name: 'Chenari (SC) (207)',
-      ps_name: '100. Primary School, Kekai',
-      device_id: '5e47ae85d3f83fa7',
-      interviewer_id: '935',
-      audio_qc_label: 'NA',
-      audio_qc_id: '',
-      audio1_status_label: '',
-      qc_outcome: 'Fail',
-      status_label: 'Rejected (N+W+RTA)',
-      gender_label: 'Female',
-      gps_available: true,
-      ps_image_available: false,
-      selfie_image_available: false,
-      audio_playback_available: true,
-    },
-  ];
 
   // Format date to YYYY-MM-DD format
   const formatDate = (dateString: string) => {
@@ -344,20 +468,57 @@ const InterviewLogPage = () => {
   // Transform API data to match UI expectations
   const transformAPIData = (apiData: InterviewData[]): DisplayInterviewData[] => {
     return apiData.map(item => ({
-      ...item,
-      // Convert numbers to strings for display
       server_id: item.server_id.toString(),
-      interviewer_id: item.interviewer_id?.toString() || '',
+      interview_date: formatDate(item.server_date), // Use server_date instead of interview_date
+      sample_type: getSampleTypeLabel(item.sample_type),
+      ac_code: item.ac_code,
+      ac_name: item.ac_name,
+      ps_name: item.ps_name,
+      device_id: item.device_id,
+      interviewer_id: item.interviewer_id || '',
+      audio_qc_label: item.audio_qc_status_label,
       audio_qc_id: item.audio_qc_id || '',
-      // Ensure date is in YYYY-MM-DD format
-      interview_date: formatDate(item.interview_date),
+      audio1_status_label: item.audio1_status_label || '',
+      qc_outcome: item.qc_outcome,
+      status_label: item.status_label,
+      gender_label: item.gender_label,
+      gps_available: item.gps_available,
+      ps_image_available: item.ps_image_available,
+      selfie_image_available: item.selfie_image_available,
+      audio_playback_available: item.audio_playback_available,
     }));
+  };
+
+  // Helper function to convert sample type number to label
+  const getSampleTypeLabel = (sampleType: number): string => {
+    switch (sampleType) {
+      case 1: return 'Sample';
+      case 2: return 'Booster';
+      default: return 'Unknown';
+    }
   };
 
   // Load data on component mount and when pagination changes
   useEffect(() => {
     fetchInterviewLogs();
   }, [currentPage, pageSize]);
+
+  // Load agencies, AC list, interviewers, and users on component mount
+  useEffect(() => {
+    fetchAgencies();
+    fetchAcList();
+    fetchInterviewers();
+    fetchUsers();
+  }, []);
+
+  // Fetch polling stations when AC code changes
+  useEffect(() => {
+    fetchPollingStations(filters.ac_code);
+    // Reset polling station selection when AC changes
+    if (filters.ps_code) {
+      setFilters(prev => ({ ...prev, ps_code: '' }));
+    }
+  }, [filters.ac_code]);
 
   // Debounced filter update
   useEffect(() => {
@@ -424,10 +585,13 @@ const InterviewLogPage = () => {
               <div>
                 <Text className="text-sm font-medium mb-2">State Teams</Text>
                 <SelectDropdown
-                  options={agencyOptions}
+                  options={agencies}
                   value={filters.agency_id}
                   onChange={(value) => handleFilterChange('agency_id', value)}
-                  placeholder="Select State Teams"
+                  placeholder={agenciesLoading ? "Loading teams..." : "Select State Teams"}
+                  disabled={agenciesLoading}
+                  searchable={true}
+                  clearable={true}
                 />
               </div>
 
@@ -458,6 +622,7 @@ const InterviewLogPage = () => {
                   onChange={(value) => handleFilterChange('interview_date', value)}
                   placeholder="Search or select date"
                   searchable={true}
+                  clearable={true}
                 />
               </div>
 
@@ -465,11 +630,13 @@ const InterviewLogPage = () => {
               <div>
                 <Text className="text-sm font-medium mb-2">AC Code</Text>
                 <SelectDropdown
-                  options={acOptions}
+                  options={acList}
                   value={filters.ac_code}
                   onChange={(value) => handleFilterChange('ac_code', value)}
-                  placeholder="Search or select AC"
+                  placeholder={acLoading ? "Loading AC list..." : "Search or select AC"}
                   searchable={true}
+                  clearable={true}
+                  disabled={acLoading}
                 />
               </div>
 
@@ -477,11 +644,19 @@ const InterviewLogPage = () => {
               <div>
                 <Text className="text-sm font-medium mb-2">Poling Station</Text>
                 <SelectDropdown
-                  options={[{ value: '', label: 'Select Poling Station' }]}
+                  options={pollingStations}
                   value={filters.ps_code}
                   onChange={(value) => handleFilterChange('ps_code', value)}
-                  placeholder="Search or select polling station"
+                  placeholder={
+                    pollingStationsLoading 
+                      ? "Loading polling stations..." 
+                      : !filters.ac_code 
+                        ? "Select AC first" 
+                        : "Search or select polling station"
+                  }
                   searchable={true}
+                  clearable={true}
+                  disabled={pollingStationsLoading || !filters.ac_code}
                 />
               </div>
 
@@ -489,18 +664,13 @@ const InterviewLogPage = () => {
               <div>
                 <Text className="text-sm font-medium mb-2">Enumerator ID</Text>
                 <SelectDropdown
-                  options={[
-                    { value: '', label: 'Select Enumerator ID' },
-                    { value: '1146', label: '1146' },
-                    { value: '1147', label: '1147' },
-                    { value: '1148', label: '1148' },
-                    { value: '1149', label: '1149' },
-                    { value: '1150', label: '1150' },
-                  ]}
+                  options={users}
                   value={filters.user_id}
                   onChange={(value) => handleFilterChange('user_id', value)}
-                  placeholder="Search or select enumerator ID"
+                  placeholder={usersLoading ? "Loading enumerators..." : "Search or select enumerator ID"}
                   searchable={true}
+                  clearable={true}
+                  disabled={usersLoading}
                 />
               </div>
 
@@ -508,18 +678,13 @@ const InterviewLogPage = () => {
               <div>
                 <Text className="text-sm font-medium mb-2">Interviewer ID</Text>
                 <SelectDropdown
-                  options={[
-                    { value: '', label: 'Select Interviewer ID' },
-                    { value: '1001', label: '1001' },
-                    { value: '1002', label: '1002' },
-                    { value: '1003', label: '1003' },
-                    { value: '1004', label: '1004' },
-                    { value: '101', label: '101' },
-                  ]}
+                  options={interviewers}
                   value={filters.interviewer_id}
                   onChange={(value) => handleFilterChange('interviewer_id', value)}
-                  placeholder="Search or select interviewer ID"
+                  placeholder={interviewersLoading ? "Loading interviewers..." : "Search or select interviewer ID"}
                   searchable={true}
+                  clearable={true}
+                  disabled={interviewersLoading}
                 />
               </div>
 
@@ -550,9 +715,9 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">Audio QC</Text>
                 <div className="space-y-3">
                   {[
+                    { value: '0', label: 'NA' },
                     { value: '1', label: 'Pending' },
                     { value: '2', label: 'Completed' },
-                    { value: '0', label: 'NA' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -580,10 +745,10 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">Audio QC Status</Text>
                 <div className="space-y-3">
                   {[
+                    { value: '0', label: 'NA' },
                     { value: '1', label: 'Pass' },
                     { value: '2', label: 'Fail' },
                     { value: '3', label: 'Pending' },
-                    { value: '0', label: 'NA' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -614,9 +779,9 @@ const InterviewLogPage = () => {
                     { value: '1', label: 'Survey Conversation can be heard' },
                     { value: '2', label: 'No Conversation' },
                     { value: '3', label: 'Irrelevant Conversation' },
-                    { value: '6', label: 'Interviewer acting as respondent' },
                     { value: '4', label: 'Can hear the interviewer more than the respondent' },
                     { value: '5', label: 'The interviewer is asking questions mechanically' },
+                    { value: '6', label: 'Interviewer acting as respondent' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -644,10 +809,10 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">Audio Re-QC</Text>
                 <div className="space-y-3">
                   {[
+                    { value: '0', label: 'NA' },
                     { value: '1', label: 'Pass' },
                     { value: '2', label: 'Fail' },
                     { value: '3', label: 'Pending' },
-                    { value: '0', label: 'NA' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -675,13 +840,13 @@ const InterviewLogPage = () => {
                 <Text className="text-sm font-medium mb-2">Status</Text>
                 <div className="space-y-3">
                   {[
+                    { value: '0', label: 'Terminated' },
+                    { value: '10', label: 'Valid' },
+                    { value: '20', label: 'Rejected' },
                     { value: '40', label: 'Under QC' },
                     { value: '60', label: 'QC Completed' },
                     { value: '70', label: 'Under Re-QC' },
                     { value: '80', label: 'Re-QC Completed' },
-                    { value: '10', label: 'Valid' },
-                    { value: '20', label: 'Rejected' },
-                    { value: '0', label: 'Terminated' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -784,7 +949,7 @@ const InterviewLogPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">GPS Map</th>
                       </tr>
                     </thead>
-                    {/* <tbody>
+                    <tbody>
                       {interviewData.map((interview, index) => (
                         <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium">
@@ -831,43 +996,35 @@ const InterviewLogPage = () => {
                             </div>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
-                              {interview.gender_label || '-'}
-                            </span>
+                            <Badge variant={getGenderBadgeVariant(interview.gender)}>
+                              {interview.gender_label}
+                            </Badge>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              <button 
-                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                  interview.audio_playback_available 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                                title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
-                                disabled={!interview.audio_playback_available}
-                              >
-                                <Volume2 className="w-4 h-4" />
-                              </button>
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                              onClick={() => handlePlayAudio(interview)}
+                              title="Play Audio"
+                            >
+                              <Volume2 className="h-4 w-4" />
+                            </Button>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              <button 
-                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                  interview.gps_available 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                                title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
-                                disabled={!interview.gps_available}
-                              >
-                                <MapPin className="w-4 h-4" />
-                              </button>
-                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="p-2 bg-green-600 hover:bg-green-700 text-white border-green-600"
+                              onClick={() => handleGpsMap(interview)}
+                              title="View GPS Map"
+                            >
+                              <MapPin className="h-4 w-4" />
+                            </Button>
                           </td>
                         </tr>
                       ))}
-                    </tbody> */}
+                    </tbody>
                   </Table>
                 </div>
 
@@ -880,7 +1037,7 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
-                {/* <div className="mt-6 pt-4 border-t border-gray-200">
+                <div className="mt-6 pt-4 border-t border-gray-200">
                   <PaginationStandard
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -889,7 +1046,7 @@ const InterviewLogPage = () => {
                     onPageChange={handlePageChange}
                     className="justify-center"
                   />
-                </div> */}
+                </div>
               </div>
             </div>
             )}

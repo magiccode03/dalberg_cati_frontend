@@ -10,6 +10,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Play, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
+import DateFormatter from '@/components/ui/DateFormatter';
 
 interface InterviewAudioData {
   id: number;
@@ -302,7 +303,6 @@ export default function CATIInterviewAudioPage() {
                 value={filters.interviewDate}
                 onChange={(e) => handleFilterChange('interviewDate', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="yy-mm-dd"
               />
             </div>
             <div className="flex items-end gap-2">
@@ -416,7 +416,7 @@ export default function CATIInterviewAudioPage() {
                     <td>{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
-                    <td>{row.interview_date.split('T')[0]}</td>
+                    <td><DateFormatter date={row.interview_date} format="dd/mm/yyyy" /></td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
@@ -487,7 +487,7 @@ export default function CATIInterviewAudioPage() {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">
-                      {new Date(currentAudio.interview_date).toLocaleDateString()}
+                      <DateFormatter date={currentAudio.interview_date} format="dd/mm/yyyy" />
                     </p>
                   </div>
                   <div>

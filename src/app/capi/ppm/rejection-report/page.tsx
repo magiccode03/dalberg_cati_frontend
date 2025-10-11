@@ -596,10 +596,6 @@ export default function RejectionReportPage() {
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
               <Heading level={4}>Rejection Report</Heading>
             </div>
-            <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
-              <Download className="w-4 h-4 mr-2" />
-              Download Data
-            </Button>
           </div>
 
           <div className="table-responsive">
