@@ -30,7 +30,7 @@
   {
     "type": "radio",
     "label": {"en": "2. Gender of the Respondent Matching?", "hi": "2. उत्तरदाता का लिंग मेल खाता है?", "bn": "2. উত্তরদাতার লিঙ্গ কি মেলানো হয়েছে?"},
-    "survey_q_tag": "resp_gender",
+    "survey_q_tag": {"tag": "resp_gender", "options": [{"value": 1, "lable":{"en": "Male", "hi": "मिलान हुआ", "bn": "মিলে গেছে"}}, {"value": 1, "lable": {"en": "Female", "hi": "मिलान हुआ", "bn": "মিলে গেছে"}}]},
     "hint": {"en": "Checker Instruction: Please verify if the Respondent's Gender was mentioned as per the audio", "hi": "जाँचकर्ता निर्देश: कृपया सत्यापित करें कि क्या प्रतिवादी का लिंग ऑडियो के अनुसार उल्लिखित था", "bn": "পরীক্ষকের নির্দেশনা: অডিও অনুসারে উত্তরদাতার লিঙ্গ উল্লেখ করা হয়েছে কিনা তা যাচাই করুন।"},
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
     "options": [
