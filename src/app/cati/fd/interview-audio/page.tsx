@@ -105,11 +105,11 @@ export default function CATIInterviewAudioPage() {
       }
       if (appliedFilters.interviewDate) params.interview_date = appliedFilters.interviewDate;
       
-      // Use the existing getInterviewAudio method from apiService
+      // Use the CATI-specific getCatiInterviewAudio method from apiService
       console.log('API params:', params);
       console.log('Applied filters:', appliedFilters);
       
-      const response = await apiService.getInterviewAudio(params);
+      const response = await apiService.getCatiInterviewAudio(params);
       
       console.log('API Response:', response); // Debug log
       
@@ -120,8 +120,8 @@ export default function CATIInterviewAudioPage() {
         
         // Handle pagination from API response
         if (response.data.pagination) {
-          setTotalItems(response.data.pagination.total);
-          setTotalPages(response.data.pagination.totalPages);
+          setTotalItems(response.data.pagination.total_count);
+          setTotalPages(response.data.pagination.total_pages);
         } else {
           // Fallback to client-side calculation if no pagination info
           setTotalItems(interviewData.length);
