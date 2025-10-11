@@ -789,7 +789,7 @@ export const menuData: MenuItem[] = [
     system: 'capi',
   },
   {
-    id: 'back',
+    id: 'capi-back-to-home',
     label: 'Back To Home',
     href: '/home',
     icon: 'Home',
@@ -797,7 +797,7 @@ export const menuData: MenuItem[] = [
     system: 'capi',
   },
   {
-    id: 'back',
+    id: 'capi-go-to-cati',
     label: 'Go To Cati',
     href: '/cati/fd/telecaller-progress',
     icon: 'Home',
@@ -1422,7 +1422,7 @@ export const menuData: MenuItem[] = [
     system: 'cati',
   },
   {
-    id: 'back',
+    id: 'cati-back-to-home',
     label: 'Back To Home',
     href: '/home',
     icon: 'Home',
@@ -1430,7 +1430,7 @@ export const menuData: MenuItem[] = [
     system: 'cati',
   },
   {
-    id: 'back',
+    id: 'cati-go-to-capi',
     label: 'Back To Capi',
     href: '/capi/fd/fieldwork-progress',
     icon: 'Home',

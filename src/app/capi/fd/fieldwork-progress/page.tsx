@@ -148,7 +148,7 @@ export default function FieldworkProgressPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Fieldwork Progress
           </Heading>
         </div>

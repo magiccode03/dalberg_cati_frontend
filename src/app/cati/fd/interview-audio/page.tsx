@@ -224,7 +224,7 @@ export default function CATIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Interview Audio (CATI)
           </Heading>
         </div>
@@ -390,7 +390,7 @@ export default function CATIInterviewAudioPage() {
                     <td>{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
-                    <td>{new Date(row.interview_date).toLocaleDateString()}</td>
+                    <td>{row.interview_date.split('T')[0]}</td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}

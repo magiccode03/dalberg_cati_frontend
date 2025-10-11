@@ -67,7 +67,7 @@ export default function CAPIInterviewAudioPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(20);
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -285,7 +285,7 @@ export default function CAPIInterviewAudioPage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
           <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            Interview Audio (CAPI)
+            Interview Audio (F2F  )
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -378,7 +378,7 @@ export default function CAPIInterviewAudioPage() {
             <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>
               <Heading level={4} className="card-title mg-b-0">
-                Interview List (CAPI)
+                Interview List (F2F)
               </Heading>
             </div>
             <span className="text-end">
