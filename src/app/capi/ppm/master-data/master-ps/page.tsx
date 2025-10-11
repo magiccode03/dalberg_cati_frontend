@@ -275,30 +275,30 @@ export default function MasterPSPage() {
             <Table className="table table-striped table-bordered">
               <thead>
                 <tr>
-                  <th>S.No</th>
-                  <th>Ac Code</th>
-                  <th>Polling Station No</th>
-                  <th>Polling Station Name</th>
-                  <th>Polling Station Name L2</th>
-                  <th>Gps</th>
-                  <th>Gps Lat</th>
-                  <th>Gps Lng</th>
-                  <th>Valid Interview</th>
-                  <th className="action-column">Actions</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Ac Code</th>
+                  <th className="text-center">Polling Station No</th>
+                  <th className="text-left">Polling Station Name</th>
+                  <th className="text-left">Polling Station Name L2</th>
+                  <th className="text-center">Gps</th>
+                  <th className="text-center">Gps Lat</th>
+                  <th className="text-center">Gps Lng</th>
+                  <th className="text-center">Valid Interview</th>
+                  <th className="text-center action-column">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {data.polling_stations.map((ps, index) => (
                   <tr key={ps.id}>
-                    <td>{startIndex + index + 1}</td>
-                    <td>{ps.ac_code}</td>
-                    <td>{ps.polling_station_no}</td>
-                    <td>{ps.polling_station_name}</td>
-                    <td>{ps.polling_station_name_l2}</td>
-                    <td>{ps.gps}</td>
-                    <td>{ps.gps_lat}</td>
-                    <td>{ps.gps_lng}</td>
-                    <td>-</td>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{ps.ac_code}</td>
+                    <td className="text-center">{ps.polling_station_no}</td>
+                    <td className="text-left">{ps.polling_station_name}</td>
+                    <td className="text-left">{ps.polling_station_name_l2}</td>
+                    <td className="text-center">{ps.gps}</td>
+                    <td className="text-center">{ps.gps_lat}</td>
+                    <td className="text-center">{ps.gps_lng}</td>
+                    <td className="text-center">-</td>
                     <td className="text-center">
                       <div className="flex gap-1">
                         <Button

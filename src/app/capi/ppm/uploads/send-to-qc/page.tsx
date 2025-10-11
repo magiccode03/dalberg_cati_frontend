@@ -289,7 +289,7 @@ export default function SendToQcPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
                 Send to QC
               </Heading>
             </div>
@@ -359,31 +359,31 @@ export default function SendToQcPage() {
             <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
               <thead>
                 <tr>
-                  <th>S.No</th>
-                  <th>Cron ID</th>
-                  <th>Action/Route</th>
-                  <th>Planned At</th>
-                  <th>Executed At</th>
-                  <th>Execution</th>
-                  <th>Errors</th>
-                  <th>Status</th>
-                  <th className="action-column">Actions</th>
-                  <th className="action-column">UploadedFile</th>
-                  <th>Params</th>
-                  <th>CRON Info</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Cron ID</th>
+                  <th className="text-left">Action/Route</th>
+                  <th className="text-center">Planned At</th>
+                  <th className="text-center">Executed At</th>
+                  <th className="text-center">Execution</th>
+                  <th className="text-left">Errors</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center action-column">Actions</th>
+                  <th className="text-center action-column">UploadedFile</th>
+                  <th className="text-left">Params</th>
+                  <th className="text-left">CRON Info</th>
                 </tr>
               </thead>
               <tbody>
                 {currentRequests.map((request, index) => (
                   <tr key={request.id}>
-                    <td>{startIndex + index + 1}</td>
-                    <td>{request.cronId}</td>
-                    <td>{request.actionRoute}</td>
-                    <td>{request.plannedAt}</td>
-                    <td>{request.executedAt}</td>
-                    <td>{request.execution}</td>
-                    <td>{request.errors}</td>
-                    <td>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{request.cronId}</td>
+                    <td className="text-left">{request.actionRoute}</td>
+                    <td className="text-center">{request.plannedAt}</td>
+                    <td className="text-center">{request.executedAt}</td>
+                    <td className="text-center">{request.execution}</td>
+                    <td className="text-left">{request.errors}</td>
+                    <td className="text-center">
                       {getStatusBadge(request.status)}
                     </td>
                     <td className="text-center">
@@ -406,8 +406,8 @@ export default function SendToQcPage() {
                         <Download className="w-4 h-4" />
                       </Button>
                     </td>
-                    <td>{request.params}</td>
-                    <td>{request.cronInfo}</td>
+                    <td className="text-left">{request.params}</td>
+                    <td className="text-left">{request.cronInfo}</td>
                   </tr>
                 ))}
               </tbody>

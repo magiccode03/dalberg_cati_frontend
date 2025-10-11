@@ -293,20 +293,20 @@ export default function PSForFormPage() {
               </Text>
             </div>
             
-            <Table className="table table-striped table-bordered">
+            <Table className="table table-striped table-bordered border border-gray-300">
               <thead>
                 <tr>
-                  <th>S.No</th>
-                  <th>Ac Code</th>
-                  <th>Lot No</th>
-                  <th>Ac Lot</th>
-                  <th>Polling Station No</th>
-                  <th>Polling Station Name</th>
-                  <th>Polling Station Name L2</th>
-                  <th>Polling Station Location</th>
-                  <th>Valid Interview</th>
-                  <th>Valid Interview Limit</th>
-                  <th className="action-column">Actions</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Ac Code</th>
+                  <th className="text-center">Lot No</th>
+                  <th className="text-center">Ac Lot</th>
+                  <th className="text-center">Polling Station No</th>
+                  <th className="text-left">Polling Station Name</th>
+                  <th className="text-left">Polling Station Name L2</th>
+                  <th className="text-left">Polling Station Location</th>
+                  <th className="text-center">Valid Interview</th>
+                  <th className="text-center">Valid Interview Limit</th>
+                  <th className="text-center action-column">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -331,29 +331,29 @@ export default function PSForFormPage() {
                 ) : (
                   psFormData.map((ps, index) => (
                     <tr key={`${ps.ac_code}-${ps.polling_station_no}`}>
-                      <td>{startIndex + index + 1}</td>
-                      <td>{ps.ac_code}</td>
-                      <td>{ps.lot_no}</td>
-                      <td>{ps.ac_lot}</td>
-                      <td>{ps.polling_station_no}</td>
-                      <td>{ps.polling_station_name}</td>
-                      <td>{ps.polling_station_name_l2 || '-'}</td>
-                      <td>{ps.polling_station_location || '-'}</td>
-                      <td>{ps.valid_interview}</td>
-                      <td>{ps.valid_interview_limit}</td>
-                    <td className="text-center">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                          onClick={() => handleEditPS(ps.ac_code)}
-                        className="text-white bg-blue-500 hover:bg-blue-600 border-0"
-                          title="Edit PS"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                  ))
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center">{ps.ac_code}</td>
+                      <td className="text-center">{ps.lot_no}</td>
+                      <td className="text-center">{ps.ac_lot}</td>
+                      <td className="text-center">{ps.polling_station_no}</td>
+                      <td className="text-left">{ps.polling_station_name}</td>
+                      <td className="text-left">{ps.polling_station_name_l2 || '-'}</td>
+                      <td className="text-left">{ps.polling_station_location || '-'}</td>
+                      <td className="text-center">{ps.valid_interview}</td>
+                      <td className="text-center">{ps.valid_interview_limit}</td>
+                      <td className="text-center">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                            onClick={() => handleEditPS(ps.ac_code)}
+                          className="text-white bg-blue-500 hover:bg-blue-600 border-0"
+                            title="Edit PS"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                    ))
                 )}
               </tbody>
             </Table>

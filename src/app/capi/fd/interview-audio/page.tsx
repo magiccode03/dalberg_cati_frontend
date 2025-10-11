@@ -291,7 +291,7 @@ export default function CAPIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
             Interview Audio (F2F  )
           </Heading>
         </div>
@@ -402,7 +402,7 @@ export default function CAPIInterviewAudioPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center mb-3">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900">
                 Interview List (F2F)
               </Heading>
             </div>
@@ -462,13 +462,13 @@ export default function CAPIInterviewAudioPage() {
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
-                  <th style={{ width: '10%' }}>Server Id</th>
+                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
+                  <th className="text-center" style={{ width: '10%' }}>Server Id</th>
                   <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
-                  <th style={{ width: '10%' }}>Interview Date</th>
+                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
+                  <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
                   <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
               </thead>
@@ -476,7 +476,7 @@ export default function CAPIInterviewAudioPage() {
                 {paginatedData.map((row, index) => (
                   <tr key={row.id}>
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.id}</td>
+                    <td className="text-center">{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
                     <td>{row.ac_name}</td>
                     <td>{new Date(row.interview_date).toLocaleDateString()}</td>
@@ -500,9 +500,6 @@ export default function CAPIInterviewAudioPage() {
           {!loading && !error && interviewData.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
-                </div>
                 {totalPages > 1 && (
                   <PaginationStandard
                     currentPage={currentPage}

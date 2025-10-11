@@ -12,7 +12,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2 } from 'lucide-react';
+import { Volume2, MapPin, Loader2, Image, User } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 // TypeScript interfaces for API response
@@ -542,6 +542,27 @@ const InterviewLogPage = () => {
     }
   };
 
+  const getGenderBadgeVariant = (gender: string) => {
+    switch (gender) {
+      case 'Male':
+        return 'primary';
+      case 'Female':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const handlePlayAudio = (interview: DisplayInterviewData) => {
+    console.log('Play audio for interview:', interview.server_id);
+    // Add audio playback logic here
+  };
+
+  const handleGpsMap = (interview: DisplayInterviewData) => {
+    console.log('Show GPS map for interview:', interview.server_id);
+    // Add GPS map logic here
+  };
+
   const handleFilterChange = (field: string, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -929,19 +950,19 @@ const InterviewLogPage = () => {
                   <Table className="table table-bordered table-striped table-hover">
                     <thead className="sticky-header bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Server ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Interview Date</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Sample Type</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">PS Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Device ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Interviewer ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Audio QC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Audio QC ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Audio Fail Reason</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interview Date</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Sample Type</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">PS Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Device ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interviewer ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio QC</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio QC ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio Fail Reason</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Outcome</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700">Status</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Status</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">PS Image</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Selfie Image</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Gender</th>
@@ -952,27 +973,27 @@ const InterviewLogPage = () => {
                     <tbody>
                       {interviewData.map((interview, index) => (
                         <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {((currentPage - 1) * pageSize) + index + 1}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <span className="font-mono text-sm font-medium text-blue-600">
                               {interview.server_id}
                             </span>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm">{interview.interview_date}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.sample_type}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.ac_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.ps_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.device_id}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.interviewer_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio_qc_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio_qc_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.audio1_status_label || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm text-center">{interview.interview_date}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.sample_type}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ac_name}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ps_name}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.device_id}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.interviewer_id || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio_qc_label}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.audio_qc_id || '-'}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio1_status_label || '-'}</td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {getQcOutcomeBadge(interview.qc_outcome)}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200">{interview.status_label}</td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.status_label}</td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <div className="flex justify-center items-center">
                               {interview.ps_image_available ? (
@@ -996,7 +1017,7 @@ const InterviewLogPage = () => {
                             </div>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <Badge variant={getGenderBadgeVariant(interview.gender)}>
+                            <Badge variant={getGenderBadgeVariant(interview.gender_label)}>
                               {interview.gender_label}
                             </Badge>
                           </td>

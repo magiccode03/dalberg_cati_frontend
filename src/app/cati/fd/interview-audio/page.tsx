@@ -232,7 +232,7 @@ export default function CATIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
             Interview Audio (CATI)
           </Heading>
         </div>
@@ -348,7 +348,7 @@ export default function CATIInterviewAudioPage() {
                 </Heading>
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
-                Total {totalItems} items.
+                Total <strong>{totalItems}</strong> items.
               </div>
             </div>
           </div>
@@ -401,11 +401,11 @@ export default function CATIInterviewAudioPage() {
             <Table className="table table-striped table-bordered table-hover" id="export_table">
               <thead>
                 <tr>
-                  <th style={{ width: '2%' }}>#</th>
-                  <th style={{ width: '10%' }}>Server Id</th>
+                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
+                  <th className="text-center" style={{ width: '10%' }}>Server Id</th>
                   <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
-                  <th style={{ width: '10%' }}>Interview Date</th>
+                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
+                  <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
                   <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
               </thead>
@@ -413,10 +413,10 @@ export default function CATIInterviewAudioPage() {
                 {paginatedData.map((row, index) => (
                   <tr key={row.id}>
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.id}</td>
+                    <td className="text-center">{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
-                    <td>{row.ac_name}</td>
-                    <td><DateFormatter date={row.interview_date} format="dd/mm/yyyy" /></td>
+                    <td className="text-left">{row.ac_name}</td>
+                    <td className="text-center"><DateFormatter date={row.interview_date} format="dd/mm/yyyy" /></td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}

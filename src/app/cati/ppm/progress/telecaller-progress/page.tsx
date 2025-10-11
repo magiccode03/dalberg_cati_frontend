@@ -11,7 +11,7 @@ import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Act
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import TelecallerList from '@/components/telecaller/TelecallerList';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Text from '@/components/ui/Text';
 
@@ -1415,12 +1415,9 @@ const TelecallerProgressPage: React.FC = () => {
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Telecaller Wise Data
             </Heading>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Total {telecallerWiseData.length} items.
-              </div>
             </div>
           </div>
           
@@ -1441,7 +1438,7 @@ const TelecallerProgressPage: React.FC = () => {
           </Button>
         </div>
 
-        <div className="text-sm text-gray-600 dark:text-gray-400 my-1">
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
           Total <strong>{telecallerWiseData.length}</strong> items.
         </div>
 
@@ -1478,232 +1475,80 @@ const TelecallerProgressPage: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Try adjusting your filters</p>
             </div>
           ) : (
-            <Table striped bordered hover>
-              <TableHeader className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
-                <TableRow>
-                  <TableHead className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300">#</TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('caller_name')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Caller Name</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_of_dials')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number of Dials</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_of_dials' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_of_dials' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('ivr_duration')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>IVR Duration</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('talk_duration')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Talk Duration</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('caller_did_not_pick')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Caller Did Not Pick</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'caller_did_not_pick' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'caller_did_not_pick' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_does_not_exist')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number Does Not Exist</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_exist' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_exist' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('respondent_picked_call')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Respondent Picked Call</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'respondent_picked_call' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'respondent_picked_call' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('picked_and_refused')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Picked and Refused</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'picked_and_refused' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'picked_and_refused' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_exhausted')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number Exhausted</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_exhausted' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_exhausted' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('successful_interviews')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Successful Interviews</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'successful_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'successful_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('rejected_interviews')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Rejected Interviews</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'rejected_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'rejected_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('incomplete_interviews')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Incomplete Interviews</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'incomplete_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'incomplete_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_picked_the_call')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number: Picked The Call</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_picked_the_call' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_picked_the_call' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_does_not_working')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number: Does Not Working</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_working' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_working' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getSortedData().map((item, index) => (
-                  <TableRow key={item.telecaller_id}>
-                    <TableCell>
-                      {index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium text-gray-900 dark:text-white">
-                      {item.caller_name || '-'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_of_dials?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.ivr_duration || '00:00:00'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.talk_duration || '00:00:00'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.caller_did_not_pick?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_does_not_exist?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.respondent_picked_call?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.picked_and_refused?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_exhausted?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-green-600 dark:text-green-400 font-semibold">
-                      {item.successful_interviews?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-red-600 dark:text-red-400 font-semibold">
-                      {item.rejected_interviews?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-amber-600 dark:text-amber-400 font-semibold">
-                      {item.incomplete_interviews?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_picked_the_call?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_does_not_working?.toLocaleString() || 0}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                <div className="table-responsive">
+                  <Table className="table table-bordered table-striped table-hover">
+                    <thead className="sticky-header bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Did Not Pick</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Does Not Exist</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Respondent Picked Call</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Picked and Refused</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Exhausted</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Successful Interviews</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Rejected Interviews</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incomplete Interviews</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number: Picked The Call</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number: Does Not Working</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getSortedData().map((item, index) => (
+                        <tr key={item.telecaller_id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {index + 1}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
+                            {item.caller_name || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_of_dials?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {item.ivr_duration || '00:00:00'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {item.talk_duration || '00:00:00'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.caller_did_not_pick?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_does_not_exist?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.respondent_picked_call?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.picked_and_refused?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_exhausted?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                            {item.successful_interviews?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                            {item.rejected_interviews?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
+                            {item.incomplete_interviews?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_picked_the_call?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_does_not_working?.toLocaleString() || 0}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
           )}
         </div>
 

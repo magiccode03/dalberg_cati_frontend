@@ -100,16 +100,20 @@ const TelecallerPendingDataPage = () => {
           </div>
         </div>
 
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+            Total <strong>{pendingData.length + qcPendingData.length + reQCPendingData.length}</strong> items.
+          </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
           {/* Left Column - Pending Data */}
           <div>
-            <Table striped bordered hover>
-              <thead>
+            <Table className="table table-bordered table-striped table-hover">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Sr. No.</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Telecaller Name</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Telecaller ID</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Pending Data (0)</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Sr. No.</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left">Telecaller Name</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Telecaller ID</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Pending Data (0)</th>
                 </tr>
               </thead>
               <tbody>
@@ -122,10 +126,10 @@ const TelecallerPendingDataPage = () => {
                 ) : (
                   pendingData.map((item, index) => (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.telecallerName}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.telecallerId}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.pendingData}</td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">{index + 1}</td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-left">{item.telecallerName}</td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">{item.telecallerId}</td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">{item.pendingData}</td>
                     </tr>
                   ))
                 )}
