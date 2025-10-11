@@ -13,6 +13,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2 } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
 interface RejectionData {
   srNo: number;
@@ -30,6 +31,7 @@ interface RejectionData {
   reAudioFailReason: string;
   hasAudio: boolean;
   hasGps: boolean;
+  audio1: string;
 }
 
 export default function RejectionReportPage() {
@@ -52,6 +54,11 @@ export default function RejectionReportPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25);
+
+  // Audio modal state
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [selectedServerId, setSelectedServerId] = useState<string>('');
+  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
   
   // Memoize the API parameters to prevent infinite re-renders
   const apiParams = React.useMemo(() => {
@@ -214,7 +221,8 @@ export default function RejectionReportPage() {
       audioFailReason: item.audio_fail_reason || '',
       reAudioFailReason: item.qc_recheck_status_audio_label || '',
       hasAudio: item.audio_available,
-      hasGps: item.gps_available
+      hasGps: item.gps_available,
+      audio1: item.audio1 || ''
     }));
   };
 
@@ -251,6 +259,18 @@ export default function RejectionReportPage() {
   const handleSearch = () => {
     setCurrentPage(1); // Reset to first page when searching
     refetch();
+  };
+
+  const handlePlayAudio = (serverId: string, audioFile: string) => {
+    setSelectedServerId(serverId);
+    setSelectedAudioFile(audioFile);
+    setAudioModalOpen(true);
+  };
+
+  const handleCloseAudioModal = () => {
+    setAudioModalOpen(false);
+    setSelectedServerId('');
+    setSelectedAudioFile('');
   };
 
   const getFailReasonBadge = (reason: string) => {
@@ -642,14 +662,13 @@ export default function RejectionReportPage() {
                     <td>{row.audioQcId || '-'}</td>
                     <td>{row.audioFailReason || '-'}</td>
                     <td>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                      <button 
+                        className="w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white"
                         title="Play Audio"
+                        onClick={() => handlePlayAudio(row.serverId, row.audio1)}
                       >
                         <Volume2 className="w-4 h-4" />
-                      </Button>
+                      </button>
                     </td>
                     <td>
                       <Button 
@@ -678,6 +697,14 @@ export default function RejectionReportPage() {
             />
           </div>
         </Card>
+
+        {/* Audio Player Modal */}
+        <AudioPlayerModal
+          isOpen={audioModalOpen}
+          onClose={handleCloseAudioModal}
+          serverId={selectedServerId}
+          audioFileName={selectedAudioFile}
+        />
       </Container>
   );
 }
