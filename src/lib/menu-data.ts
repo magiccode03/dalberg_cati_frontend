@@ -1441,7 +1441,7 @@ export const menuData: MenuItem[] = [
   },
   {
     id: 'cati-go-to-capi',
-    label: 'Back To CAPI',
+    label: 'Back To F2F',
     href: '/capi/fd/fieldwork-progress',
     icon: 'MapPin',
     roles: ['fd'],
