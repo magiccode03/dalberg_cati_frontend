@@ -23,17 +23,26 @@ export default function Header() {
       return 'West Bengal Opinion Poll 2025';
     }
     
-    // Check if user has a system preference set
+    // For FD role users, prioritize pathname-based detection for dynamic switching
+    if (user?.role === 'fd') {
+      if (pathname.startsWith('/cati/fd')) {
+        return 'West Bengal Opinion Poll 2025 (CATI)';
+      } else if (pathname.startsWith('/capi/fd')) {
+        return 'West Bengal Opinion Poll 2025 (F2F)';
+      }
+    }
+    
+    // For other roles, check if user has a system preference set
     if (user?.system === 'capi') {
       return 'West Bengal Opinion Poll 2025 (F2F)';
     } else if (user?.system === 'cati') {
       return 'West Bengal Opinion Poll 2025 (CATI)';
     }
     
-    // Fallback to pathname-based detection
-    if (pathname.startsWith('/cati/fd')) {
+    // Fallback to pathname-based detection for other roles
+    if (pathname.startsWith('/cati/')) {
       return 'West Bengal Opinion Poll 2025 (CATI)';
-    } else if (pathname.startsWith('/capi/fd')) {
+    } else if (pathname.startsWith('/capi/')) {
       return 'West Bengal Opinion Poll 2025 (F2F)';
     }
     
