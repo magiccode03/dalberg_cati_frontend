@@ -539,6 +539,22 @@ export default function QCFormPage() {
         }
       }
       
+      // Check for "Cannot hear the response clearly" condition
+      // Count how many questions have value "3" (Cannot hear the response clearly)
+      const allQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6'];
+      let cannotHearCount = 0;
+      
+      allQuestions.forEach(question => {
+        if (formData[question] === '3') {
+          cannotHearCount++;
+        }
+      });
+      
+      // If more than 3 questions have "Cannot hear the response clearly", it's fail
+      if (cannotHearCount > 3) {
+        return { outcome: 2, rejectionLevel: 6 }; // Fail due to too many "cannot hear clearly" responses
+      }
+      
       return { outcome: 1, rejectionLevel: 0 }; // Pass
     }
     
