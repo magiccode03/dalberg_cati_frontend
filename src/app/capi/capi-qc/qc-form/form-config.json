@@ -1,5 +1,6 @@
 [
   {
+    "key": 1,
     "type": "radio",
     "label": {
       "en": "Audio status",
@@ -48,6 +49,7 @@
     "tag": "qc_audio_status"
   },
   {
+    "key": 2,
     "type": "radio",
     "label": {
       "en": "2. Gender of the Respondent Matching?",
@@ -105,6 +107,7 @@
     "tag": "qc_q2"
   },
   {
+    "key": 3,
     "type": "radio",
     "label": {
       "en": "3. Is the Response Matching for the Upcoming Elections preference?",
@@ -235,6 +238,7 @@
     "tag": "qc_q3"
   },
   {
+    "key": 4,
     "type": "radio",
     "label": {
       "en": "4. Is the Response Matching for the Previous 2021 Assembly Election?",
@@ -373,6 +377,7 @@
     "tag": "qc_q4"
   },
   {
+    "key": 5,
     "type": "radio",
     "label": {
       "en": "5. Is the Response Matching for the Previous 2024 Loksabha Election?",
@@ -503,6 +508,7 @@
     "tag": "qc_q5"
   },
   {
+    "key": 6,
     "type": "radio",
     "label": {
       "en": "6. Name of the Respondent Matching?",
@@ -544,6 +550,7 @@
     "tag": "qc_q6"
   },
   {
+    "key": 7,
     "type": "radio",
     "label": {
       "en": "7. Is the Age matching?",
@@ -576,6 +583,7 @@
     "tag": "qc_q7"
   },
   {
+    "key": 8,
     "type": "radio",
     "label": {
       "en": "8. Did the interviewer ask the phone number of the respondent?",
