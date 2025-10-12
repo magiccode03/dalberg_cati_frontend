@@ -318,181 +318,181 @@ export default function QCUserProgressPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* breadcrumb */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              QC User Progress
-            </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
-        </div>
-        {/* /breadcrumb */}
-
-        {/* Search Form */}
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
+        {/* Page Header */}
         <div className="mb-6">
-          <Card>
-            <div className="p-6">
-              <div className="flex flex-wrap items-end gap-4">
-                <div className="flex-1 min-w-[180px]">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Start Date
-                  </label>
-                  <input
-                    type="date"
-                    value={filters.startDate}
-                    onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-
-                <div className="flex-1 min-w-[180px]">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={filters.endDate}
-                    onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                  />
-                </div>
-
-                <div className="flex-1 min-w-[180px]">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    QC User Status
-                  </label>
-                  <SelectDropdown
-                    value={filters.qcUserStatus}
-                    onChange={(value) => handleFilterChange('qcUserStatus', value as string)}
-                    options={[
-                      { value: '1', label: 'Active' },
-                      { value: '2', label: 'Inactive' },
-                    ]}
-                    placeholder="Select Status"
-                  />
-                </div>
-
-                <div className="flex-1 min-w-[200px]">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    QC User
-                  </label>
-                  <SelectDropdown
-                    value={filters.qcId}
-                    onChange={(value) => handleFilterChange('qcId', value as string)}
-                    options={generateQCUserDropdownOptions()}
-                    placeholder="Select QC User"
-                    searchable={true}
-                    clearable={true}
-                    maxHeight={300}
-                    disabled={qcUserOptionsLoading}
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <Button
-                    variant="primary"
-                    onClick={handleSearch}
-                    className="flex items-center px-4 py-2"
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
-                  </Button>
-                  <Button
-                    onClick={handleClear}
-                    className="bg-gray-500 text-white hover:bg-gray-600 flex items-center px-4 py-2"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Clear
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            QC User Progress
+          </Heading>
         </div>
+
+        {/* Search Filters */}
+        <Card className="p-4 mb-5">
+          <div className="flex flex-wrap items-end gap-4">
+            {/* Start Date Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+
+            {/* End Date Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                End Date
+              </label>
+              <input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+
+            {/* QC User Status Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                QC User Status
+              </label>
+              <SelectDropdown
+                value={filters.qcUserStatus}
+                onChange={(value) => handleFilterChange('qcUserStatus', value as string)}
+                options={[
+                  { value: '1', label: 'Active' },
+                  { value: '2', label: 'Inactive' },
+                ]}
+                placeholder="Select Status"
+              />
+            </div>
+
+            {/* QC User Filter */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                QC User
+              </label>
+              <SelectDropdown
+                value={filters.qcId}
+                onChange={(value) => handleFilterChange('qcId', value as string)}
+                options={generateQCUserDropdownOptions()}
+                placeholder="Select QC User"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
+                disabled={qcUserOptionsLoading}
+              />
+            </div>
+
+            {/* AC Code Filter */}
+            {/* <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                AC Code
+              </label>
+              <input
+                type="text"
+                value={filters.acCode}
+                onChange={(e) => handleFilterChange('acCode', e.target.value)}
+                placeholder="Enter AC Code"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              />
+            </div> */}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                onClick={handleSearch}
+                className="flex items-center"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+              <Button
+                onClick={handleClear}
+                className="bg-gray-500 text-white hover:bg-gray-600 flex items-center"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
+              </Button>
+            </div>
+          </div>
+        </Card>
 
         {/* QC User Progress Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                  <Heading level={2} className="text-xl font-semibold text-gray-900">
-                    QC User Progress Summary
-                  </Heading>
-                </div>
-                <div className="flex items-center">
-                  <Button
-                    variant="primary"
-                    onClick={handleDownload}
-                    className="text-white border-blue-600 hover:bg-blue-500"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                QC User Progress Summary
+              </Heading>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : Completed
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : Pass
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : Fail
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {qcUserProgressData.map((user, index) => (
-                      <tr key={`${user.qc_id}-${index}`} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.caller_name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                          {/* <button
-                            onClick={() => handleViewDetail(user.qc_id)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            {user.qc_id}
-                            <ExternalLink className="w-3 h-3 ml-1 inline" />
-                          </button> */}
-                          {user.qc_id}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.audio_qc_completed.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.audio_qc_pass.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.audio_qc_fail.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
+            <div className="flex items-center">
+              <Button
+                variant="primary"
+                onClick={handleDownload}
+                className="flex items-center"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </div>
 
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{qcUserProgressData.length}</span> results.
-                </div>
-              </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+            Total <strong>{qcUserProgressData.length}</strong> QC users.
+          </div>
+
+          <div className="overflow-x-auto">
+            <Table
+              striped
+              bordered
+              hover
+              className="w-full border-collapse"
+            >
+              <thead className="sticky-header bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Audio QC : Completed
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Audio QC : Pass
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Audio QC : Fail
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {qcUserProgressData.map((user, index) => (
+                  <tr key={`${user.qc_id}-${index}`} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.caller_name || '-'}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                      {user.qc_id}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_completed.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_pass.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_fail.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Table Footer */}
+          <div className="flex justify-between items-center mt-4 px-4 pb-4">
+            <div className="text-sm text-gray-700">
+              Showing <span className="font-semibold">{qcUserProgressData.length}</span> results.
             </div>
-          </Card>
-        </div>
+          </div>
+        </Card>
       </Container>
     </div>
   );
