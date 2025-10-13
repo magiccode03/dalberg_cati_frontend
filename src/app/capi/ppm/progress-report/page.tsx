@@ -203,9 +203,9 @@ export default function ProgressReportPage() {
             { key: 'under_qc', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
             { key: 'female_per', label: '% Of Female Interviews', width: 'w-48', align: 'center' },
             { key: 'without_phone_per', label: '% of interviews without Phone Number', width: 'w-48', align: 'center' },
-            { key: 'actual_sc', label: 'Actual % of SC', width: 'w-32', align: 'center' },
+            // { key: 'actual_sc', label: 'Actual % of SC', width: 'w-32', align: 'center' },
             { key: 'mentioned_sc', label: '% of Interviews mentioned as SC', width: 'w-44', align: 'center' },
-            { key: 'actual_muslim', label: 'Actual % of Muslims', width: 'w-40', align: 'center' },
+            // { key: 'actual_muslim', label: 'Actual % of Muslims', width: 'w-40', align: 'center' },
             { key: 'mentioned_muslim', label: '% of Interviews mentioned as Muslims', width: 'w-48', align: 'center' },
             { key: 'age_18_24', label: '% of Interviews under the age of (18-24)', width: 'w-48', align: 'center' },
             { key: 'age_50_plus', label: '% of Interviews under the age of (50+)', width: 'w-48', align: 'center' }
