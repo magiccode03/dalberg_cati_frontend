@@ -11,7 +11,7 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download, Play, Map, Loader2, Volume2 } from 'lucide-react';
+import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
@@ -54,75 +54,76 @@ export default function RejectionReportPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25);
+  const [appliedFilters, setAppliedFilters] = useState(filters); // Track applied filters separately
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
   
-  // Memoize the API parameters to prevent infinite re-renders
+  // Memoize the API parameters based on applied filters (not current filters)
   const apiParams = React.useMemo(() => {
     const params: any = {
-      report_days: filters.reportDays,
-      report_level: filters.reportLevel,
-      interviewer_id: filters.interviewerId,
-      enumerator_id: filters.enumeratorId,
-      district_code: filters.districtCode,
-      pc_code: filters.pcCode,
-      supervisor_id: filters.supervisorId,
-      server_id: filters.serverId,
-      mobile_no: filters.mobileNo,
-      fail_reason: filters.failReason,
-      qualityreportstatus: filters.qualityreportstatus,
+      report_days: appliedFilters.reportDays,
+      report_level: appliedFilters.reportLevel,
+      interviewer_id: appliedFilters.interviewerId,
+      enumerator_id: appliedFilters.enumeratorId,
+      district_code: appliedFilters.districtCode,
+      pc_code: appliedFilters.pcCode,
+      supervisor_id: appliedFilters.supervisorId,
+      server_id: appliedFilters.serverId,
+      mobile_no: appliedFilters.mobileNo,
+      fail_reason: appliedFilters.failReason,
+      qualityreportstatus: appliedFilters.qualityreportstatus,
       page: currentPage,
       per_page: pageSize
     };
 
     // Only include custom_date and custom_date_end if report_days is 'custom' and they have values
-    if (filters.reportDays === 'custom') {
-      if (filters.customDate && filters.customDate.trim() !== '') {
-        params.custom_date = filters.customDate;
+    if (appliedFilters.reportDays === 'custom') {
+      if (appliedFilters.customDate && appliedFilters.customDate.trim() !== '') {
+        params.custom_date = appliedFilters.customDate;
       }
-      if (filters.customDateEnd && filters.customDateEnd.trim() !== '') {
-        params.custom_date_end = filters.customDateEnd;
+      if (appliedFilters.customDateEnd && appliedFilters.customDateEnd.trim() !== '') {
+        params.custom_date_end = appliedFilters.customDateEnd;
       }
     }
 
     // Only include ac_code if it has a value
-    if (filters.acCode && filters.acCode.trim() !== '') {
-      params.ac_code = filters.acCode;
+    if (appliedFilters.acCode && appliedFilters.acCode.trim() !== '') {
+      params.ac_code = appliedFilters.acCode;
     }
 
     return params;
-  }, [filters, currentPage, pageSize]);
+  }, [appliedFilters, currentPage, pageSize]);
   
   // Check if we should make the API call based on required parameters for each level
   const shouldMakeApiCall = React.useMemo(() => {
     // For custom date range: both custom_date and custom_date_end are required
-    if (filters.reportDays === 'custom') {
-      if (!filters.customDate || filters.customDate.trim() === '' || 
-          !filters.customDateEnd || filters.customDateEnd.trim() === '') {
+    if (appliedFilters.reportDays === 'custom') {
+      if (!appliedFilters.customDate || appliedFilters.customDate.trim() === '' || 
+          !appliedFilters.customDateEnd || appliedFilters.customDateEnd.trim() === '') {
         return false;
       }
     }
     
     // For AC level: ac_code is required
-    if ((filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (!filters.acCode || filters.acCode.trim() === '')) {
+    if ((appliedFilters.reportLevel === 'ac' || appliedFilters.reportLevel === 'polingstation') && (!appliedFilters.acCode || appliedFilters.acCode.trim() === '')) {
       return false;
     }
     
     // For Poling Station level: ac_code is required
-    if (filters.reportLevel === 'polingstation' && (!filters.acCode || filters.acCode.trim() === '')) {
+    if (appliedFilters.reportLevel === 'polingstation' && (!appliedFilters.acCode || appliedFilters.acCode.trim() === '')) {
       return false;
     }
     
     // For Interviewer level: interviewer_id is required
-    if (filters.reportLevel === 'interviewer' && (!filters.interviewerId || filters.interviewerId.trim() === '')) {
+    if (appliedFilters.reportLevel === 'interviewer' && (!appliedFilters.interviewerId || appliedFilters.interviewerId.trim() === '')) {
       return false;
     }
     
     return true;
-  }, [filters.reportDays, filters.customDate, filters.customDateEnd, filters.reportLevel, filters.acCode, filters.interviewerId]);
+  }, [appliedFilters.reportDays, appliedFilters.customDate, appliedFilters.customDateEnd, appliedFilters.reportLevel, appliedFilters.acCode, appliedFilters.interviewerId]);
 
   // Fetch rejection report data from API
   const { data, loading, error, refetch } = useRejectionReport(shouldMakeApiCall ? apiParams : null);
@@ -258,7 +259,30 @@ export default function RejectionReportPage() {
 
   const handleSearch = () => {
     setCurrentPage(1); // Reset to first page when searching
+    setAppliedFilters(filters); // Apply current filters
     refetch();
+  };
+
+  const handleClear = () => {
+    const defaultFilters = {
+      reportDays: 'all',
+      customDate: '',
+      customDateEnd: '',
+      reportLevel: '0',
+      interviewerId: '',
+      enumeratorId: '',
+      acCode: '',
+      districtCode: '',
+      pcCode: '',
+      supervisorId: '',
+      serverId: '',
+      mobileNo: '',
+      failReason: '',
+      qualityreportstatus: ''
+    };
+    setFilters(defaultFilters);
+    setAppliedFilters(defaultFilters); // Also clear applied filters
+    setCurrentPage(1);
   };
 
   const handlePlayAudio = (serverId: string, audioFile: string) => {
@@ -316,10 +340,11 @@ export default function RejectionReportPage() {
     );
   }
 
+
   // Show message when required parameters are missing for specific levels
   if (
-    ((filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (!filters.acCode || filters.acCode.trim() === '')) ||
-    (filters.reportLevel === 'interviewer' && (!filters.interviewerId || filters.interviewerId.trim() === ''))
+    ((appliedFilters.reportLevel === 'ac' || appliedFilters.reportLevel === 'polingstation') && (!appliedFilters.acCode || appliedFilters.acCode.trim() === '')) ||
+    (appliedFilters.reportLevel === 'interviewer' && (!appliedFilters.interviewerId || appliedFilters.interviewerId.trim() === ''))
   ) {
     return (
       <Container maxWidth="full">
@@ -436,10 +461,18 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            <div className="flex items-end">
-              <Button onClick={handleSearch} className="w-full">
+            <div className="flex items-end gap-2">
+              <Button onClick={handleSearch} className="flex-1">
                 <Search className="w-4 h-4 mr-2" />
                 Search
+              </Button>
+              <Button 
+                onClick={handleClear}
+                variant="outline"
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
             </div>
           </div>
@@ -600,10 +633,18 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            <div className="flex items-end">
-              <Button onClick={handleSearch} className="w-full">
+            <div className="flex items-end gap-2">
+              <Button onClick={handleSearch} className="flex-1">
                 <Search className="w-4 h-4 mr-2" />
                 Search
+              </Button>
+              <Button 
+                onClick={handleClear}
+                variant="outline"
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
             </div>
           </div>
