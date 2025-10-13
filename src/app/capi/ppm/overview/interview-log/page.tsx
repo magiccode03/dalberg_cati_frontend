@@ -979,8 +979,6 @@ const InterviewLogPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio Fail Reason</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Outcome</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">Status</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">PS Image</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Selfie Image</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Gender</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Play Audio</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">GPS Map</th>
@@ -1014,33 +1012,6 @@ const InterviewLogPage = () => {
                             <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
                               {interview.gender_label || '-'}
                             </span>
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              {interview.ps_image_available ? (
-                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                  <Image className="w-4 h-4 text-green-600" />
-                                </div>
-                              ) : (
-                                <Image className="w-5 h-5 text-gray-400" />
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              {interview.selfie_image_available ? (
-                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                  <User className="w-4 h-4 text-green-600" />
-                                </div>
-                              ) : (
-                                <User className="w-5 h-5 text-gray-400" />
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <Badge variant={getGenderBadgeVariant(interview.gender_label)}>
-                              {interview.gender_label}
-                            </Badge>
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             <Button

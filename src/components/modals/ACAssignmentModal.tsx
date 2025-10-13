@@ -3,7 +3,8 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Alert from '@/components/ui/Alert';
-import { MapPin, User, Users } from 'lucide-react';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
+import { MapPin, User, Users, X } from 'lucide-react';
 import { apiService } from '@/lib/api-service';
 
 interface ACData {
@@ -51,6 +52,11 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   const listRef = React.useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Unassign functionality state
+  const [showUnassignModal, setShowUnassignModal] = useState(false);
+  const [acToUnassign, setAcToUnassign] = useState<ACData | null>(null);
+  const [unassigning, setUnassigning] = useState(false);
 
   // Fetch AC details and user statistics on modal open
   useEffect(() => {
@@ -241,6 +247,54 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     setSelectedAcs(selectedAcs.filter(selected => selected.ac_code !== ac.ac_code));
   };
 
+  const handleUnassignClick = (ac: ACData) => {
+    setAcToUnassign(ac);
+    setShowUnassignModal(true);
+  };
+
+  const handleUnassignConfirm = async () => {
+    if (!acToUnassign) return;
+
+    setUnassigning(true);
+    setError(null);
+    setShowUnassignModal(false);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured');
+      }
+
+      const response = await fetch(`${apiUrl}/api/cati/ac-details/unassign-data`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          teleform_user_id: teleformUserId,
+          ac_code: acToUnassign.ac_code,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the data after successful unassignment
+        fetchUserStatistics();
+        onSuccess(); // This will trigger refresh on the main page
+        setError(null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Failed to unassign AC');
+      }
+    } catch (err: any) {
+      console.error('Error unassigning AC:', err);
+      setError(err.message || 'Error unassigning AC');
+    } finally {
+      setUnassigning(false);
+      setAcToUnassign(null);
+    }
+  };
+
   const handleSubmit = async () => {
     if (selectedAcs.length === 0) {
       setError('Please select at least one Assembly Constituency');
@@ -326,12 +380,12 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {/* Already Assigned ACs - Can't remove */}
+              {/* Already Assigned ACs - Can unassign */}
               {assignedACs.map((ac: any) => (
                 <div
                   key={`assigned-${ac.ac_code}`}
-                  className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full px-2 py-1"
-                  title="Already assigned"
+                  className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full px-2 py-1 group"
+                  title="Click to unassign"
                 >
                   <span className="text-xs font-medium text-green-700 dark:text-green-300">
                     {ac.ac_name}
@@ -339,6 +393,13 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                   <span className="text-xs text-green-600 dark:text-green-400">
                     #{ac.ac_code}
                   </span>
+                  <button
+                    onClick={() => handleUnassignClick(ac)}
+                    className="ml-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Unassign AC"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
               ))}
               
@@ -526,6 +587,22 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Unassign Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showUnassignModal}
+        onClose={() => {
+          setShowUnassignModal(false);
+          setAcToUnassign(null);
+        }}
+        onConfirm={handleUnassignConfirm}
+        title="Unassign Assembly Constituency"
+        message={`Are you sure you want to unassign ${acToUnassign?.ac_name} (${acToUnassign?.ac_code}) from ${telecallerName}?`}
+        confirmText="Unassign"
+        cancelText="Cancel"
+        variant="danger"
+        loading={unassigning}
+      />
     </Modal>
   );
 };

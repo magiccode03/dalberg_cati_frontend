@@ -3,6 +3,7 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Alert from '@/components/ui/Alert';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import { MapPin, User, Users } from 'lucide-react';
 import { apiService } from '@/lib/api-service';
 
@@ -45,6 +46,10 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [userStats, setUserStats] = useState<any>(null);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  
+  // Confirmation modal state
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [acToUnassign, setAcToUnassign] = useState<any>(null);
 
   // Fetch AC details and user statistics on modal open
   useEffect(() => {
@@ -176,10 +181,6 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
   const handleACSelect = (ac: ACData) => {
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
-    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
-    
-    // Don't allow deselecting already assigned ACs
-    if (isAssigned) return;
     
     if (isAlreadySelected) {
       setSelectedAcs(selectedAcs.filter(selected => selected.ac_code !== ac.ac_code));
@@ -241,6 +242,59 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     }
   };
 
+  const handleUnassignClick = (ac: any) => {
+    setAcToUnassign(ac);
+    setShowConfirmModal(true);
+  };
+
+  const handleUnassignConfirm = async () => {
+    if (!acToUnassign) return;
+
+    setSubmitting(true);
+    setError(null);
+    setShowConfirmModal(false);
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured');
+      }
+
+      const response = await fetch(`${apiUrl}/api/capi/qc/unassign-ac`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          qc_id: teleformUserId,
+          ac_code: acToUnassign.ac_code,
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh the data after successful unassignment
+        fetchUserStatistics();
+        onSuccess(); // This will trigger refresh on the main page
+        setError(null);
+      } else {
+        const errorData = await response.json();
+        setError(errorData.message || 'Failed to unassign AC');
+      }
+    } catch (err: any) {
+      console.error('Error unassigning AC:', err);
+      setError(err.message || 'Error unassigning AC');
+    } finally {
+      setSubmitting(false);
+      setAcToUnassign(null);
+    }
+  };
+
+  const handleUnassignCancel = () => {
+    setShowConfirmModal(false);
+    setAcToUnassign(null);
+  };
+
   const handleClose = () => {
     setSelectedAcs([]);
     setSearchTerm('');
@@ -277,12 +331,12 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
-              {/* Already Assigned ACs - Can't remove */}
+              {/* Already Assigned ACs - Show as reference but can be reselected */}
               {assignedACs.map((ac: any) => (
                 <div
                   key={`assigned-${ac.ac_code}`}
-                  className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full px-2 py-1"
-                  title="Already assigned"
+                  className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full px-2 py-1 group"
+                  title="Currently assigned - click X to unassign"
                 >
                   <span className="text-xs font-medium text-green-700 dark:text-green-300">
                     {ac.ac_name}
@@ -290,6 +344,19 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                   <span className="text-xs text-green-600 dark:text-green-400">
                     #{ac.ac_code}
                   </span>
+                  <span className="text-xs text-green-600 dark:text-green-400">
+                    (Assigned)
+                  </span>
+                  <button
+                    onClick={() => handleUnassignClick(ac)}
+                    className="ml-1 text-green-600 hover:text-red-600 dark:text-green-400 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Unassign this AC"
+                    disabled={submitting}
+                  >
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
                 </div>
               ))}
               
@@ -376,7 +443,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                         isSelected
                           ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                           : isAssigned
-                          ? 'bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400'
+                          ? 'bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400 hover:bg-green-100 dark:hover:bg-green-900/20'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                       onClick={() => handleACSelect(ac)}
@@ -402,7 +469,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
                         {/* Right: Available Count & Status */}
                         <div className="flex items-center gap-3 flex-shrink-0">
-                          {isAssigned && (
+                          {isAssigned && !isSelected && (
                             <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full whitespace-nowrap">
                               Assigned
                             </span>
@@ -454,6 +521,19 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           </Button>
         </div>
       </div>
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={handleUnassignCancel}
+        onConfirm={handleUnassignConfirm}
+        title="Unassign Assembly Constituency"
+        message={`Are you sure you want to unassign ${acToUnassign?.ac_name} (${acToUnassign?.ac_code}) from this QC user? This action cannot be undone.`}
+        confirmText="Unassign"
+        cancelText="Cancel"
+        variant="danger"
+        loading={submitting}
+      />
     </Modal>
   );
 };
