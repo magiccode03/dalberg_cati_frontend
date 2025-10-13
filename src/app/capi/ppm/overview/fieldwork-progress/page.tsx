@@ -219,21 +219,11 @@ export default function FieldworkProgressPage() {
       {/* Progress Summary Card */}
       <Card className="mb-6">
         <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                Progress <i>Summary</i>
-              </Heading>
-            </div>
-            <button
-              onClick={handleDownloadSummaryCSV}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              title="Download Progress Summary as CSV"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download</span>
-            </button>
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
+              Progress <i>Summary</i>
+            </Heading>
           </div>
         </div>
         
