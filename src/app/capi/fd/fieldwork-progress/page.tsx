@@ -264,8 +264,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('acCode')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>AC Code</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>AC Code</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'acCode' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -280,7 +280,7 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('acName')}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center">
                       <span>AC Name</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
@@ -296,7 +296,7 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('districtName')}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center">
                       <span>District Name</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
@@ -312,8 +312,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('validUnderQc')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>Valid+Under QC</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>Valid+Under QC</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'validUnderQc' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -328,8 +328,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('reject')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>Reject</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>Reject</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'reject' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -344,8 +344,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('completionPercent')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>% of Completion</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>% of Completion</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'completionPercent' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 

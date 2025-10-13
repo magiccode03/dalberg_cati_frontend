@@ -481,7 +481,7 @@ export default function CATIInterviewAudioPage() {
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Token</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.id}</p>
                   </div>
                   <div>
