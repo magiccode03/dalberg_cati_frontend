@@ -55,15 +55,18 @@ interface PerformanceMetrics {
   totalIvrDuration: string;
   callerDidNotPick: number;
   totalTalkDuration: string;
+  numberNotReachable: number;
+  switchedOff: number;
+  ringingNoResponse: number;
+  pickedUp: number;
 }
 
 interface CallOutcomeMetrics {
-  numberDoesNotExist: number;
-  respondentDidNotPick: number;
-  respondentPickedCall: number;
   pickedAndRefused: number;
-  totalNumberExhausted: number;
-  pickedAndCallContinue: number;
+  completedInterview: number;
+  incompleteInterview: number;
+  successfulInterview: number;
+  rejected: number;
 }
 
 interface Telecaller {
@@ -107,15 +110,18 @@ const TelecallerDailyCallDetailPage = () => {
     totalIvrDuration: '00:00:00',
     callerDidNotPick: 0,
     totalTalkDuration: '00:00:00',
+    numberNotReachable: 0,
+    switchedOff: 0,
+    ringingNoResponse: 0,
+    pickedUp: 0,
   });
 
   const [callOutcomeMetrics, setCallOutcomeMetrics] = useState<CallOutcomeMetrics>({
-    numberDoesNotExist: 0,
-    respondentDidNotPick: 0,
-    respondentPickedCall: 0,
     pickedAndRefused: 0,
-    totalNumberExhausted: 0,
-    pickedAndCallContinue: 0,
+    completedInterview: 0,
+    incompleteInterview: 0,
+    successfulInterview: 0,
+    rejected: 0,
   });
 
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -377,16 +383,19 @@ const TelecallerDailyCallDetailPage = () => {
           totalIvrDuration: result.data.total_ivr_duration || '00:00:00',
           callerDidNotPick: result.data.caller_did_not_pick || 0,
           totalTalkDuration: result.data.total_talk_duration || '00:00:00',
+          numberNotReachable: result.data.number_not_reachable || 0,
+          switchedOff: result.data.switched_off || 0,
+          ringingNoResponse: result.data.ringing_no_response || 0,
+          pickedUp: result.data.picked_up || 0,
         });
 
         // Update call outcome metrics
         setCallOutcomeMetrics({
-          numberDoesNotExist: result.data.number_does_not_exist || 0,
-          respondentDidNotPick: result.data.respondent_did_not_pick || 0,
-          respondentPickedCall: result.data.respondent_picked_call || 0,
           pickedAndRefused: result.data.picked_and_refused || 0,
-          totalNumberExhausted: result.data.total_number_exhausted || 0,
-          pickedAndCallContinue: result.data.picked_and_call_continue || 0,
+          completedInterview: result.data.completed_interview || 0,
+          incompleteInterview: result.data.incomplete_interview || 0,
+          successfulInterview: result.data.successful_interview || 0,
+          rejected: result.data.rejected || 0,
         });
       } else {
         throw new Error(result.message || 'Failed to fetch dashboard metrics');
@@ -897,12 +906,12 @@ const TelecallerDailyCallDetailPage = () => {
 
       {/* Performance Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
-        {/* Caller Performance */}
+        {/* Number of Dials */}
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Caller Performance
+              Number of Dials: {performanceMetrics.callerDidNotPick + performanceMetrics.numberNotReachable + performanceMetrics.switchedOff + performanceMetrics.ringingNoResponse + performanceMetrics.pickedUp}
             </Heading>
           </div>
           {metricsLoading ? (
@@ -913,39 +922,33 @@ const TelecallerDailyCallDetailPage = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MetricCard
-                icon={Users}
-                title="Total Callers"
-                value={performanceMetrics.totalCallers}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Days till now"
-                value={performanceMetrics.daysTillNow}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Number of dials"
-                value={performanceMetrics.numberOfDials}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Total IVR Duration"
-                value={performanceMetrics.totalIvrDuration}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
                 icon={PhoneOff}
-                title="Caller did not pick"
+                title="Caller Did not Pick"
                 value={performanceMetrics.callerDidNotPick}
                 bgColor="bg-blue-500"
               />
               <MetricCard
+                icon={PhoneOff}
+                title="Number not Reachable"
+                value={performanceMetrics.numberNotReachable}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Switched/off"
+                value={performanceMetrics.switchedOff}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Ringing but no response/Respondent did not pick up"
+                value={performanceMetrics.ringingNoResponse}
+                bgColor="bg-blue-500"
+              />
+              <MetricCard
                 icon={PhoneCall}
-                title="Total Talk Duration"
-                value={performanceMetrics.totalTalkDuration}
+                title="Respondent Picked Up"
+                value={performanceMetrics.pickedUp}
                 bgColor="bg-blue-500"
               />
             </div>
@@ -957,7 +960,7 @@ const TelecallerDailyCallDetailPage = () => {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
             <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Call Outcome
+              Respondent Picked Up: {callOutcomeMetrics.pickedAndRefused + callOutcomeMetrics.incompleteInterview + callOutcomeMetrics.completedInterview}
             </Heading>
           </div>
           {metricsLoading ? (
@@ -966,43 +969,52 @@ const TelecallerDailyCallDetailPage = () => {
               <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={PhoneOff}
-                title="Number does not exist"
-                value={callOutcomeMetrics.numberDoesNotExist}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Respondent did not pick"
-                value={callOutcomeMetrics.respondentDidNotPick}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Respondent Picked the call"
-                value={callOutcomeMetrics.respondentPickedCall}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Picked and Refused"
-                value={callOutcomeMetrics.pickedAndRefused}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Total Number Exhausted"
-                value={callOutcomeMetrics.totalNumberExhausted}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Picked and Call Continue"
-                value={callOutcomeMetrics.pickedAndCallContinue}
-                bgColor="bg-green-500"
-              />
+            <div className="space-y-6">
+              {/* First Section */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <MetricCard
+                  icon={PhoneOff}
+                  title="Picked and Refused"
+                  value={callOutcomeMetrics.pickedAndRefused}
+                  bgColor="bg-green-500"
+                />
+                <MetricCard
+                  icon={PhoneCall}
+                  title="Completed Interview"
+                  value={callOutcomeMetrics.completedInterview}
+                  bgColor="bg-green-500"
+                />
+                <MetricCard
+                  icon={PhoneOff}
+                  title="Incomplete Interview"
+                  value={callOutcomeMetrics.incompleteInterview}
+                  bgColor="bg-green-500"
+                />
+              </div>
+              
+              {/* Second Section */}
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="flex items-center mb-4">
+                  <div className="w-1 h-6 bg-orange-600 mr-3"></div>
+                  <Heading level={5} className="text-md font-semibold text-gray-900 dark:text-white">
+                    Completed Interview: {callOutcomeMetrics.successfulInterview + callOutcomeMetrics.rejected}
+                  </Heading>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <MetricCard
+                    icon={CheckCircle}
+                    title="Successful"
+                    value={callOutcomeMetrics.successfulInterview}
+                    bgColor="bg-orange-500"
+                  />
+                  <MetricCard
+                    icon={PhoneOff}
+                    title="Rejected"
+                    value={callOutcomeMetrics.rejected}
+                    bgColor="bg-orange-500"
+                  />
+                </div>
+              </div>
             </div>
           )}
         </Card>

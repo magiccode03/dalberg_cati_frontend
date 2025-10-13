@@ -429,7 +429,7 @@ export default function QCFormPage() {
 
 
   // Save form data
-  const saveFormData = async (finalSubmit: number) => {
+  const saveFormData = async (qcOutcome: number, rejectionLevel: number) => {
     try {
       setIsSubmitting(true);
       
@@ -440,28 +440,28 @@ export default function QCFormPage() {
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const currentTime = new Date().toLocaleString();
+      const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
       
-      // Determine QC status
-      // audio_qc_status: 1 = Pass, 2 = Fail, 3 = Pending
-      let audio_qc_status = 3; // Default to pending
-      if (finalSubmit === 1) {
-        audio_qc_status = 1; // Pass
-      } else if (finalSubmit === 2) {
-        audio_qc_status = 2; // Fail
-      }
-      
-      // Transform form data to match backend expectations
-      const transformedData = transformFormDataForSubmission(formData);
-      
-      const submissionData = {
-        ...transformedData,
-        audio_qc_status: audio_qc_status,
-        language_used: language,
-        user_timezone: timezone,
-        user_localdatetime: currentTime,
+      // Build request body with all form data
+      const requestBody: Record<string, any> = {
+        audio_qc_status: qcOutcome, // 1 = Pass, 2 = Fail
+        audio_qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
+        audio_qc_complete_date: currentDate, // Date of submission
       };
+      
+      // Add form field values if they exist
+      const formFields = ['qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8'];
+      
+      formFields.forEach(fieldTag => {
+        const fieldValue = formData[fieldTag];
+        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+          // Convert to integer for API
+          const numValue = parseInt(fieldValue);
+          requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
+        }
+      });
+      
+      console.log('Submitting QC data:', requestBody);
       
       const response = await fetch(`${apiBaseUrl}/api/capi/interviews/${serverId}`, {
         method: 'PUT',
@@ -469,9 +469,7 @@ export default function QCFormPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          audio_qc_status: audio_qc_status
-        })
+        body: JSON.stringify(requestBody)
       });
       
       const data = await response.json();
@@ -520,30 +518,48 @@ export default function QCFormPage() {
   };
 
   // Determine QC outcome based on form data
-  const determineQCOutcome = (): number => {
-    const audioStatus = formData.qc_audio_status;
+  const determineQCOutcome = (): { outcome: number; rejectionLevel: number } => {
+    const qcAudioStatus = formData.qc_audio_status; // This is the question answer (1, 2, 3, 4)
     
-    // If audio status is 2 (No Conversation) or 3 (Irrelevant), it's fail
-    if (audioStatus === '2' || audioStatus === '3') {
-      return 2; // Fail
+    // If qc_audio_status is 2 (No Conversation) or 3 (Irrelevant), it's fail
+    if (qcAudioStatus === '2' || qcAudioStatus === '3') {
+      return { outcome: 2, rejectionLevel: 1 }; // Fail at audio status level
     }
     
-    // If audio status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
-    if (audioStatus === '1' || audioStatus === '4') {
+    // If qc_audio_status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
+    if (qcAudioStatus === '1' || qcAudioStatus === '4') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
       const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
       
       for (const question of mandatoryQuestions) {
         if (formData[question] !== '1') {
-          return 2; // Fail
+          // Find which question failed and set rejection level
+          const questionKey = parseInt(question.replace('qc_q', ''));
+          return { outcome: 2, rejectionLevel: questionKey }; // Fail at specific question level
         }
       }
       
-      return 1; // Pass
+      // Check for "Cannot hear the response clearly" condition
+      // Count how many questions have value "3" (Cannot hear the response clearly)
+      const allQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6'];
+      let cannotHearCount = 0;
+      
+      allQuestions.forEach(question => {
+        if (formData[question] === '3') {
+          cannotHearCount++;
+        }
+      });
+      
+      // If more than 3 questions have "Cannot hear the response clearly", it's fail
+      if (cannotHearCount > 3) {
+        return { outcome: 2, rejectionLevel: 6 }; // Fail due to too many "cannot hear clearly" responses
+      }
+      
+      return { outcome: 1, rejectionLevel: 0 }; // Pass
     }
     
     // Default to fail
-    return 2;
+    return { outcome: 2, rejectionLevel: 1 };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -591,12 +607,12 @@ export default function QCFormPage() {
     setValidationErrors(new Set());
     
     // Determine QC outcome
-    const qcOutcome = determineQCOutcome();
-    const outcomeText = qcOutcome === 1 ? 'Pass' : 'Fail';
+    const { outcome, rejectionLevel } = determineQCOutcome();
+    const outcomeText = outcome === 1 ? 'Pass' : 'Fail';
     
     showToast(`Processing QC evaluation... (${outcomeText})`, 'info');
     
-    const success = await saveFormData(qcOutcome);
+    const success = await saveFormData(outcome, rejectionLevel);
     
     if (success) {
       showToast(`QC evaluation completed! Interview marked as ${outcomeText}.`, 'success');
