@@ -1890,10 +1890,12 @@ class ApiService {
       interview_date: string;
     }>;
     pagination?: {
-      current_page: number;
-      per_page: number;
-      total_count: number;
-      total_pages: number;
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
     };
     filters?: {
       ac_codes?: Array<{
