@@ -103,7 +103,7 @@ export default function QCUserPendingDataPage() {
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               QC User - Pending Data
             </Heading>
           </div>
@@ -156,17 +156,17 @@ export default function QCUserPendingDataPage() {
                 >
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.map((qcUser, index) => (
                       <tr key={qcUser.qc_id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{qcUser.qc_id}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{qcUser.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{qcUser.pending_interview}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{qcUser.qc_id}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{qcUser.name}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{qcUser.pending_interview}</td>
                       </tr>
                     ))}
                   </tbody>

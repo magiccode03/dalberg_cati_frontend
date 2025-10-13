@@ -57,6 +57,10 @@ const MasterInterviewerContent = () => {
     setCurrentPage(page);
   };
 
+  const handleRefresh = () => {
+    fetchInterviewerData();
+  };
+
   const handleViewACs = async (userId: string) => {
     try {
       setLoadingUserId(userId);
@@ -96,7 +100,7 @@ const MasterInterviewerContent = () => {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
-      <Heading level={3} className="mb-6 text-gray-800">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Master Interviewers
       </Heading>
 
@@ -147,9 +151,9 @@ const MasterInterviewerContent = () => {
           <Table className="table table-bordered table-striped table-hover">
             <thead className="sticky-header bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Login Id</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Full Name</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Login Id</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Data Submit</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Assigned ACS</th>
               </tr>
@@ -157,13 +161,13 @@ const MasterInterviewerContent = () => {
             <tbody>
               {interviewerData.map((item, index) => (
                 <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200 font-medium">
+                  <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                     {(currentPage - 1) * pageSize + index + 1}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
+                  <td className="px-4 py-3 border-b border-gray-200 text-left">
                     {item.fullname}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200 font-mono">
+                  <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">
                     {item.login_id}
                   </td>
                   <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">

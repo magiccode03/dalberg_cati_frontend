@@ -102,7 +102,7 @@ export default function StartGPSQCPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
             Pending GPS QC
           </Heading>
         </div>
@@ -194,12 +194,12 @@ export default function StartGPSQCPage() {
           <Table className="table table-centered table-striped dt-responsive nowrap w-100">
             <thead className="table-light dark:bg-gray-800">
               <tr>
-                <th className="text-center">#</th>
-                <th>Ac Name</th>
+                <th className="text-center">S.No</th>
+                <th className="text-left">Ac Name</th>
                 <th className="text-center">Enumerator ID</th>
                 <th className="text-center">Interviewer ID</th>
-                <th>Interview Date</th>
-                <th>Device ID</th>
+                <th className="text-left">Interview Date</th>
+                <th className="text-center">Device ID</th>
                 <th className="text-center">Total Interview</th>
                 <th className="text-center">Actions</th>
               </tr>
@@ -209,11 +209,11 @@ export default function StartGPSQCPage() {
                 pendingGPSQCData.map((row) => (
                   <tr key={row.srNo} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="text-center">{row.srNo}</td>
-                    <td className="font-medium text-gray-900 dark:text-white">{row.acName}</td>
+                    <td className="font-medium text-gray-900 dark:text-white text-left">{row.acName}</td>
                     <td className="text-center font-mono text-blue-600 dark:text-blue-400">{row.enumeratorId}</td>
                     <td className="text-center font-mono text-gray-700 dark:text-gray-300">{row.interviewerId}</td>
-                    <td className="text-gray-700 dark:text-gray-300">{row.interviewDate}</td>
-                    <td className="font-mono text-gray-700 dark:text-gray-300">{row.deviceId}</td>
+                    <td className="text-gray-700 dark:text-gray-300 text-left">{row.interviewDate}</td>
+                    <td className="font-mono text-gray-700 dark:text-gray-300 text-center">{row.deviceId}</td>
                     <td className="text-center">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                         {row.totalInterview}

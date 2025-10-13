@@ -5,6 +5,7 @@ import Container from '@/components/ui/Container';
 import Heading from '@/components/ui/Heading';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { apiService } from '@/lib/api';
+import { Table } from 'lucide-react';
 
 interface ConstituencyData {
   ac_code: number;
@@ -108,7 +109,7 @@ export default function ClientComparisonPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900">
             Client Comparison
           </Heading>
         </div>
@@ -172,7 +173,7 @@ export default function ClientComparisonPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300">
+            <Table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr>
                   <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
@@ -222,7 +223,7 @@ export default function ClientComparisonPage() {
                   <td className="text-center border border-gray-300 py-2">{totals.difference.toLocaleString()}</td>
                 </tr>
               </tfoot>
-            </table>
+            </Table>
           </div>
         )}
         

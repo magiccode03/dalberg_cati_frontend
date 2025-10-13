@@ -211,7 +211,7 @@ export default function QCUserProgressPage() {
         {/* breadcrumb */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               QC User Progress
             </Heading>
           </div>
@@ -302,7 +302,7 @@ export default function QCUserProgressPage() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-                  <Heading level={2} className="text-xl font-semibold text-gray-900">
+                  <Heading level={4} className="text-lg font-semibold text-gray-900">
                     Telecaller Progress Summary
                   </Heading>
                 </div>
@@ -327,14 +327,14 @@ export default function QCUserProgressPage() {
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Caller Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                         Audio QC : <br />Completed
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                         Audio QC : <br />Pass
                       </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                         Audio QC : <br />Fail
                       </th>
                     </tr>
@@ -342,8 +342,8 @@ export default function QCUserProgressPage() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.map((user, index) => (
                       <tr key={user.qc_id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{user.name}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
                           <button
                             onClick={() => handleViewDetail(user.qc_id)}
                             className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -352,9 +352,9 @@ export default function QCUserProgressPage() {
                             <ExternalLink className="w-3 h-3 ml-1 inline" />
                           </button>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_completed.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_pass.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_fail.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.statistics.audio_qc_completed.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.statistics.audio_qc_pass.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.statistics.audio_qc_fail.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>

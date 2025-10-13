@@ -115,11 +115,22 @@ export default function FieldworkProgressPage() {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
-      <div className="breadcrumb-header justify-content-between mb-6">
+      {/* <div className="breadcrumb-header justify-content-between mb-6">
         <div className="justify-content-center mt-2">
         </div>
         <div className="right-content">
           <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
+        </div>
+      </div> */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex-1">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Fieldwork Progress
+          </Heading>
+        </div>
+        <div className="flex-1"></div>
+        <div className="flex-1">
+          <span></span>
         </div>
       </div>
 
@@ -128,7 +139,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title mg-b-0 text-lg font-semibold text-gray-900 dark:text-white">
               Progress <i>Summary</i>
             </Heading>
           </div>
@@ -161,7 +172,7 @@ export default function FieldworkProgressPage() {
         <div className="card-header pb-0 mb-6">
           <div className="flex items-center">
           <div className="w-1 h-6 bg-green-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title mg-b-0 text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise Progress
             </Heading>
             <span className="text-end">
@@ -182,8 +193,8 @@ export default function FieldworkProgressPage() {
               <thead>
                 <tr>
                   <th className="text-center">AC Code</th>
-                  <th>AC Name</th>
-                  <th>District Name</th>
+                  <th className="text-left">AC Name</th>
+                  <th className="text-left">District Name</th>
                   <th className="text-center">Valid+Under QC</th>
                   <th className="text-center">Reject</th>
                   <th className="text-center">% of Completion</th>
@@ -193,8 +204,8 @@ export default function FieldworkProgressPage() {
                 {acProgressData.map((ac, index) => (
                   <tr key={ac.acCode} className={getRowStyle(ac.completionPercent)}>
                     <td className="text-center">{ac.acCode}</td>
-                    <td>{ac.acName}</td>
-                    <td>{ac.districtName}</td>
+                    <td className="text-left">{ac.acName}</td>
+                    <td className="text-left">{ac.districtName}</td>
                     <td className="text-center">{ac.validUnderQc}</td>
                     <td className="text-center">{ac.reject}</td>
                     <td className="text-center">{ac.completionPercent}</td>

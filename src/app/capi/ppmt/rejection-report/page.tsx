@@ -131,9 +131,9 @@ export default function PPMTRejectionReportPage() {
   };
 
   // Extract data from API response
-  const rejectionData = data?.interviews ? transformAPIData(data.interviews) : [];
-  const totalPages = data?.pagination?.total_pages || 0;
-  const totalCount = data?.pagination?.total_count || 0;
+  const rejectionData = (data as any)?.interviews ? transformAPIData((data as any).interviews) : [];
+  const totalPages = (data as any)?.pagination?.total_pages || 0;
+  const totalCount = (data as any)?.pagination?.total_count || 0;
 
   // Debug logging
   console.log('API Response:', { data, loading, error });
@@ -172,7 +172,7 @@ export default function PPMTRejectionReportPage() {
   return (
     <Container maxWidth="full">
         {/* Page Title */}
-        <Heading level={1} className="text-2xl font-bold mb-6">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
           Rejection Report
         </Heading>
 
@@ -264,7 +264,7 @@ export default function PPMTRejectionReportPage() {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-              <Heading level={4}>Rejection Report</Heading>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
             </div>
             <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
               <Download className="w-4 h-4 mr-2" />
@@ -276,28 +276,28 @@ export default function PPMTRejectionReportPage() {
             <Table className="table table-centered table-striped dt-responsive nowrap w-100">
               <thead className="table-light">
                 <tr>
-                  <th>Sr. No</th>
-                  <th>Server ID</th>
-                  <th>Ac Name</th>
-                  <th>PS Code</th>
-                  <th>Interview Date</th>
-                  <th>Interviewer ID</th>
-                  <th>Interview Duration</th>
-                  <th>Respondent Name</th>
-                  <th>Respondent Mobile</th>
-                  <th>Fail Reason</th>
-                  <th>Audio QC ID</th>
-                  <th>Audio Fail Reason</th>
-                  <th>Re-Audio Fail Reason</th>
-                  <th>Audio</th>
-                  <th>GPS</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Server ID</th>
+                  <th className="text-left">Ac Name</th>
+                  <th className="text-center">PS Code</th>
+                  <th className="text-left">Interview Date</th>
+                  <th className="text-center">Interviewer ID</th>
+                  <th className="text-center">Interview Duration</th>
+                  <th className="text-left">Respondent Name</th>
+                  <th className="text-center">Respondent Mobile</th>
+                  <th className="text-left">Fail Reason</th>
+                  <th className="text-center">Audio QC ID</th>
+                  <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-left">Re-Audio Fail Reason</th>
+                  <th className="text-center">Audio</th>
+                  <th className="text-center">GPS</th>
                 </tr>
               </thead>
               <tbody>
                 {rejectionData.map((row) => (
                   <tr key={row.srNo}>
-                    <td>{row.srNo}</td>
-                    <td>
+                    <td className="text-center">{row.srNo}</td>
+                    <td className="text-center">
                       <a 
                         href={`/interview-detail?server_id=${row.serverId}`}
                         target="_blank"
@@ -306,20 +306,20 @@ export default function PPMTRejectionReportPage() {
                         {row.serverId}
                       </a>
                     </td>
-                    <td>{row.acName}</td>
-                    <td className="font-mono">{row.psCode}</td>
-                    <td>{row.interviewDate}</td>
-                    <td>{row.interviewerId}</td>
-                    <td className="font-mono">{row.interviewDuration}</td>
-                    <td>{row.respondentName}</td>
-                    <td>{row.respondentMobile || '-'}</td>
-                    <td>
+                    <td className="text-left">{row.acName}</td>
+                    <td className="font-mono text-center">{row.psCode}</td>
+                    <td className="text-left">{row.interviewDate}</td>
+                    <td className="text-center">{row.interviewerId}</td>
+                    <td className="font-mono text-center">{row.interviewDuration}</td>
+                    <td className="text-left">{row.respondentName}</td>
+                    <td className="text-center">{row.respondentMobile || '-'}</td>
+                    <td className="text-left">
                       {getFailReasonBadge(row.failReason)}
                     </td>
-                    <td>{row.audioQcId || '-'}</td>
-                    <td>{row.audioFailReason || '-'}</td>
-                    <td>{row.reAudioFailReason || '-'}</td>
-                    <td>
+                    <td className="text-center">{row.audioQcId || '-'}</td>
+                    <td className="text-left">{row.audioFailReason || '-'}</td>
+                    <td className="text-left">{row.reAudioFailReason || '-'}</td>
+                    <td className="text-center">
                       {row.hasAudio ? (
                         <Button 
                           variant="outline" 
@@ -333,7 +333,7 @@ export default function PPMTRejectionReportPage() {
                         '-'
                       )}
                     </td>
-                    <td>
+                    <td className="text-center">
                       <Button 
                         variant="outline" 
                         size="sm"

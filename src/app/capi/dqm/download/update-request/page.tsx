@@ -33,7 +33,7 @@ export default function UpdateRequestPage() {
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               Update Request
             </Heading>
           </div>
@@ -116,15 +116,15 @@ export default function UpdateRequestPage() {
               <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
                 <thead>
                   <tr>
-                    <th className="text-center font-semibold text-gray-800">#</th>
+                    <th className="text-center font-semibold text-gray-800">S.No</th>
                     <th className="text-center font-semibold text-gray-800">Cron ID</th>
-                    <th className="text-center font-semibold text-gray-800">Action/Route</th>
-                    <th className="text-center font-semibold text-gray-800">Action Type</th>
-                    <th className="text-center font-semibold text-gray-800">CRON Info</th>
+                    <th className="text-left font-semibold text-gray-800">Action/Route</th>
+                    <th className="text-left font-semibold text-gray-800">Action Type</th>
+                    <th className="text-left font-semibold text-gray-800">CRON Info</th>
                     <th className="text-center font-semibold text-gray-800">Planned At</th>
-                    <th className="text-center font-semibold text-gray-800">Executed At</th>
-                    <th className="text-center font-semibold text-gray-800">Execution</th>
-                    <th className="text-center font-semibold text-gray-800">Errors</th>
+                    <th className="text-left font-semibold text-gray-800">Executed At</th>
+                    <th className="text-left font-semibold text-gray-800">Execution</th>
+                    <th className="text-left font-semibold text-gray-800">Errors</th>
                     <th className="text-center font-semibold text-gray-800">Status</th>
                     <th className="text-center font-semibold text-gray-800">Actions</th>
                   </tr>

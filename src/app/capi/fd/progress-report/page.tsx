@@ -214,7 +214,7 @@ export default function CAPIFDProgressReportPage() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
             Progress Report
           </Heading>
         </div>
@@ -294,7 +294,7 @@ export default function CAPIFDProgressReportPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-green-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
                 PROGRESS REPORT - AC LEVEL
               </Heading>
             </div>
@@ -326,30 +326,30 @@ export default function CAPIFDProgressReportPage() {
               <Table className="table table-centered table-striped dt-responsive nowrap w-100">
                 <thead className="table-light">
                   <tr>
-                    <th>Sr.No.</th>
-                    <th>AC Code</th>
-                    <th>AC Name</th>
-                    <th>PC Name</th>
-                    <th>Target Sample</th>
-                    <th>No Of Interviewers Worked</th>
-                    <th>PS Covered</th>
-                    <th>Completed Interviews</th>
-                    <th>Terminated Interviews</th>
-                    <th>System Rejections</th>
-                    <th>Counts After Terminated And System Rejection</th>
-                    <th>GPS Pending</th>
-                    <th>GPS Fail</th>
-                    <th className="bg-green-500 text-white">Passed</th>
-                    <th className="bg-red-500 text-white">Failed</th>
-                    <th className="bg-blue-500 text-white">Under QC</th>
-                    <th>% Of Female Interviews</th>
-                    <th>% Of Interviews Without Phone Number</th>
-                    <th>Actual % Of SC</th>
-                    <th>% Of Interviews Mentioned As SC</th>
-                    <th>Actual % Of Muslims</th>
-                    <th>% Of Interviews Mentioned As Muslims</th>
-                    <th>% Of Interviews Under The Age Of (18-24)</th>
-                    <th>% Of Interviews Under The Age Of (50+)</th>
+                    <th className="text-center">Sr.No.</th>
+                    <th className="text-center">AC Code</th>
+                    <th className="text-left">AC Name</th>
+                    <th className="text-left">PC Name</th>
+                    <th className="text-center">Target Sample</th>
+                    <th className="text-center">No Of Interviewers Worked</th>
+                    <th className="text-center">PS Covered</th>
+                    <th className="text-center">Completed Interviews</th>
+                    <th className="text-center">Terminated Interviews</th>
+                    <th className="text-center">System Rejections</th>
+                    <th className="text-center">Counts After Terminated And System Rejection</th>
+                    <th className="text-center">GPS Pending</th>
+                    <th className="text-center">GPS Fail</th>
+                    <th className="bg-green-500 text-white text-center">Passed</th>
+                    <th className="bg-red-500 text-white text-center">Failed</th>
+                    <th className="bg-blue-500 text-white text-center">Under QC</th>
+                    <th className="text-center">% Of Female Interviews</th>
+                    <th className="text-center">% Of Interviews Without Phone Number</th>
+                    <th className="text-center">Actual % Of SC</th>
+                    <th className="text-center">% Of Interviews Mentioned As SC</th>
+                    <th className="text-center">Actual % Of Muslims</th>
+                    <th className="text-center">% Of Interviews Mentioned As Muslims</th>
+                    <th className="text-center">% Of Interviews Under The Age Of (18-24)</th>
+                    <th className="text-center">% Of Interviews Under The Age Of (50+)</th>
                   </tr>
                 </thead>
                 {/* <tbody>
@@ -358,42 +358,42 @@ export default function CAPIFDProgressReportPage() {
                       key={item.id} 
                       className={item.isSummary ? 'bg-gray-100 font-bold' : ''}
                     >
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.srNo || 'TOTAL'}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.acCode}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.acName}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.pcName}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.targetSample}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.interviewersWorked}</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} text-blue-600`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.srNo || 'TOTAL'}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.acCode}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-left`}>{item.acName}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-left`}>{item.pcName}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.targetSample}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.interviewersWorked}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-blue-600 text-center`}>
                         {item.psCovered}
                       </td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.completedInterviews}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.terminatedInterviews}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.systemRejections}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.countsAfterTerminated}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.gpsPending}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.gpsFail}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.passed}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.failed}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.underQc}</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.femaleInterviewsPercent, 'femaleInterviewsPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.completedInterviews}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.terminatedInterviews}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.systemRejections}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.countsAfterTerminated}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.gpsPending}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.gpsFail}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.passed}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.failed}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.underQc}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.femaleInterviewsPercent, 'femaleInterviewsPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.femaleInterviewsPercent}%
                       </td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.withoutPhonePercent, 'withoutPhonePercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.withoutPhonePercent, 'withoutPhonePercent') ? 'text-red-600' : ''} text-center`}>
                         {item.withoutPhonePercent}%
                       </td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.actualScPercent}%</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedScPercent, 'mentionedScPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.actualScPercent}%</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedScPercent, 'mentionedScPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.mentionedScPercent}%
                       </td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.actualMuslimPercent}%</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedMuslimPercent, 'mentionedMuslimPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.actualMuslimPercent}%</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedMuslimPercent, 'mentionedMuslimPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.mentionedMuslimPercent}%
                       </td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age18to24Percent, 'age18to24Percent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age18to24Percent, 'age18to24Percent') ? 'text-red-600' : ''} text-center`}>
                         {item.age18to24Percent}%
                       </td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age50PlusPercent, 'age50PlusPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age50PlusPercent, 'age50PlusPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.age50PlusPercent}%
                       </td>
                     </tr>

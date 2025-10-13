@@ -75,7 +75,7 @@ export default function ACWisePendingDataPage() {
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               AC Wise - Pending Data
             </Heading>
           </div>
@@ -111,19 +111,19 @@ export default function ACWisePendingDataPage() {
                 >
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr. No</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr. No</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.map((acData) => (
                       <tr key={acData.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.srNo}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{acData.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.pendingInterview}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{acData.srNo}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{acData.acCode}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{acData.acName}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{acData.pendingInterview}</td>
                       </tr>
                     ))}
                   </tbody>

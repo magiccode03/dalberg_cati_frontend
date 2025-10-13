@@ -229,7 +229,7 @@ export default function QCTeamRegistrationPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={2} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-semibold mb-0">
             QC Team Registration List
           </Heading>
         </div>

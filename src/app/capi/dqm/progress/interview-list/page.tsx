@@ -597,7 +597,7 @@ export default function InterviewListPage() {
                   >
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
                         <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Server ID</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Interview<br />Date

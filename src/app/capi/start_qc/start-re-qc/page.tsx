@@ -124,7 +124,7 @@ export default function StartReQCPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
             Audio QC-Rechecking
           </Heading>
         </div>
@@ -188,11 +188,11 @@ export default function StartReQCPage() {
           <Table className="table table-centered table-striped dt-responsive nowrap w-100">
             <thead className="table-light dark:bg-gray-800">
               <tr>
-                <th className="text-center">#</th>
-                <th>Server ID</th>
+                <th className="text-center">S.No</th>
+                <th className="text-center">Server ID</th>
                 <th className="text-center">Interviewer ID</th>
-                <th>Ac Code</th>
-                <th>Interview Date</th>
+                <th className="text-center">Ac Code</th>
+                <th className="text-left">Interview Date</th>
                 <th className="text-center">Check Audio</th>
               </tr>
             </thead>
@@ -201,7 +201,7 @@ export default function StartReQCPage() {
                 audioQCRecheckingData.map((row) => (
                   <tr key={row.srNo} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                     <td className="text-center">{row.srNo}</td>
-                    <td>
+                    <td className="text-center">
                       <a 
                         href={`/interview-detail?server_id=${row.serverId}`}
                         target="_blank"
@@ -211,8 +211,8 @@ export default function StartReQCPage() {
                       </a>
                     </td>
                     <td className="text-center font-mono text-gray-700 dark:text-gray-300">{row.interviewerId}</td>
-                    <td className="font-mono text-gray-700 dark:text-gray-300">{row.acCode}</td>
-                    <td className="text-gray-700 dark:text-gray-300">{row.interviewDate}</td>
+                    <td className="font-mono text-gray-700 dark:text-gray-300 text-center">{row.acCode}</td>
+                    <td className="text-gray-700 dark:text-gray-300 text-left">{row.interviewDate}</td>
                     <td className="text-center">
                       <div className="flex justify-center space-x-2">
                         <Button

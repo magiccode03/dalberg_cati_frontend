@@ -195,7 +195,7 @@ export default function AssignedACPage() {
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               Assigned AC
             </Heading>
           </div>
@@ -258,21 +258,21 @@ export default function AssignedACPage() {
                 >
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer ID</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer ID</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.map((data) => (
                       <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{data.qcUserName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.interviewerId}</td>
+                        <td className="px-4 py-4 text-center whitespace-nowrap text-sm font-mono text-gray-900">{data.qcId}</td>
+                        <td className="px-4 py-4 text-left whitespace-nowrap text-sm text-gray-900 font-medium">{data.qcUserName}</td>
+                        <td className="px-4 py-4 text-center whitespace-nowrap text-sm font-mono text-gray-900">{data.acCode}</td>
+                        <td className="px-4 py-4 text-left whitespace-nowrap text-sm text-gray-900">{data.acName}</td>
+                        <td className="px-4 py-4 text-center whitespace-nowrap text-sm font-mono text-gray-900">{data.interviewerId}</td>
                       </tr>
                     ))}
                   </tbody>
