@@ -408,7 +408,7 @@ export default function QCUserRegistrationPage() {
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
         {/* Page Header */}
         <div className="mb-6">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
             QC User Registration
             </Heading>
         </div>
@@ -593,7 +593,7 @@ export default function QCUserRegistrationPage() {
                               variant="primary"
                               size="sm"
                               onClick={() => handleEditUser(user.id)}
-                        className="flex items-center justify-center"
+                        // className="flex items-center justify-center"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -603,7 +603,7 @@ export default function QCUserRegistrationPage() {
                                 variant="primary"
                                 size="sm"
                                 onClick={() => handleAssignAC(user.id)}
-                        className="flex items-center justify-center"
+                        // className="flex items-center justify-center"
                               >
                                 <Check className="w-4 h-4" />
                               </Button>

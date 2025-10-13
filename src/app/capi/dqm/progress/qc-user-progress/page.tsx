@@ -321,7 +321,7 @@ export default function QCUserProgressPage() {
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
         {/* Page Header */}
         <div className="mb-6">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900">
             QC User Progress
           </Heading>
         </div>
@@ -473,7 +473,7 @@ export default function QCUserProgressPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {qcUserProgressData.map((user, index) => (
                   <tr key={`${user.qc_id}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.caller_name || '-'}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-left text-gray-900">{user.caller_name || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
                       {user.qc_id}
                     </td>

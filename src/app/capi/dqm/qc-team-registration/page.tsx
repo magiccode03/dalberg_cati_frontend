@@ -229,7 +229,7 @@ export default function QCTeamRegistrationPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl font-bold mb-0">
+          <Heading level={2} className="text-2xl font-bold mb-0">
             QC Team Registration List
           </Heading>
         </div>
@@ -246,7 +246,7 @@ export default function QCTeamRegistrationPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-              <Heading level={4} className="card-title mg-b-0">
+              <Heading level={4} className="card-title text-lg font-semibold text-gray-900">
                 QC Team Registration List
               </Heading>
             </div>
@@ -268,23 +268,23 @@ export default function QCTeamRegistrationPage() {
             <Table className="table table-vcenter text-nowrap table-bordered">
               <thead>
                 <tr>
-                  <th>Qc Team ID</th>
-                  <th>Qc Team Name</th>
-                  <th>Supervisior Username</th>
-                  <th>Total User</th>
-                  <th>Status</th>
-                  <th>Action</th>
+                  <th className="text-gray-900 text-center">Qc Team ID</th>
+                  <th className="text-gray-900 text-left">Qc Team Name</th>
+                  <th className="text-gray-900 text-left">Supervisior Username</th>
+                  <th className="text-gray-900 text-center">Total User</th>
+                  <th className="text-gray-900 text-center">Status</th>
+                  <th className="text-gray-900 text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {qcAgencyData.map((agency) => (
                   <tr key={agency.id}>
-                    <td>{agency.agencyId}</td>
-                    <td>{agency.agencyName}</td>
-                    <td>{agency.supervisorUsername}</td>
-                    <td>{agency.totalUser}</td>
-                    <td>{agency.status}</td>
-                    <td>
+                    <td className="text-center">{agency.agencyId}</td>
+                    <td className="text-left">{agency.agencyName}</td>
+                    <td className="text-left">{agency.supervisorUsername}</td>
+                    <td className="text-center">{agency.totalUser}</td>
+                    <td className="text-center">{agency.status}</td>
+                    <td className="text-center">
                       <div className="relative group">
                         <Button
                           variant="outline"
