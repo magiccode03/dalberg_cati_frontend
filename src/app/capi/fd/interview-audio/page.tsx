@@ -428,6 +428,9 @@ export default function CAPIInterviewAudioPage() {
           {!loading && !error && interviewData.length > 0 && (
             <div className="mt-6 pt-4 border-t border-gray-200">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
+                </div>
                 {totalPages > 1 && (
                   <PaginationStandard
                     currentPage={currentPage}
