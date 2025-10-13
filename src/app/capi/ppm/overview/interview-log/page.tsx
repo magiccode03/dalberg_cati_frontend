@@ -596,11 +596,6 @@ const InterviewLogPage = () => {
     setCurrentPage(page);
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
-    setAudioModalOpen(true);
-  };
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
