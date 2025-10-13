@@ -108,7 +108,7 @@ export default function CATIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (appliedFilters.serverId) params.server_id = appliedFilters.serverId;
+      if (appliedFilters.serverId) params.id = appliedFilters.serverId;
       // Priority: AC Name dropdown takes precedence over AC Code input
       if (appliedFilters.acName) {
         params.ac_code = appliedFilters.acName; // AC Name dropdown stores AC code as value
