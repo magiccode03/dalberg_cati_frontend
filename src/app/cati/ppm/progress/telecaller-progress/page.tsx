@@ -1103,7 +1103,7 @@ const TelecallerProgressPage: React.FC = () => {
             />
             <MetricCard
               title="No response by Telecaller"
-              value={getValue(Math.max(0, (data?.caller_performance?.number_of_dials_attempted || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
+              value={getValue(Math.max(0, (data?.call_status?.continue || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
@@ -1599,7 +1599,7 @@ const TelecallerProgressPage: React.FC = () => {
                             {item.incompleted?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
+                            {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
