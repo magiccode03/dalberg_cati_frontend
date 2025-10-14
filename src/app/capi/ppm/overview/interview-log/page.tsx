@@ -963,10 +963,55 @@ const InterviewLogPage = () => {
             {!loading && (
             <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-6">
-                <div className="mb-4">
+                <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <Text className="text-sm text-gray-600">
                       Total <strong>{totalCount.toLocaleString()}</strong> items.
                   </Text>
+                  
+                  {/* Quick Page Navigation */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center gap-2">
+                      <Text className="text-sm text-gray-600">Quick jump:</Text>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(1)}
+                          disabled={currentPage === 1}
+                          className="px-2 py-1 text-xs"
+                        >
+                          First
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="px-2 py-1 text-xs"
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="px-2 py-1 text-xs"
+                        >
+                          Next
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(totalPages)}
+                          disabled={currentPage === totalPages}
+                          className="px-2 py-1 text-xs"
+                        >
+                          Last
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="table-responsive">
@@ -1057,15 +1102,68 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
+                {/* Pagination Controls */}
                 <div className="mt-6 pt-4 border-t border-gray-200">
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                    className="justify-center"
-                  />
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    {/* Page Size Selector */}
+                    <div className="flex items-center gap-2">
+                      <Text className="text-sm text-gray-600">Show:</Text>
+                      <SelectDropdown
+                        options={[
+                          { value: '25', label: '25 per page' },
+                          { value: '50', label: '50 per page' },
+                          { value: '100', label: '100 per page' },
+                          { value: '200', label: '200 per page' },
+                        ]}
+                        value={pageSize.toString()}
+                        onChange={(value) => {
+                          const pageSizeValue = Array.isArray(value) ? value[0] : value;
+                          setPageSize(parseInt(pageSizeValue));
+                          setCurrentPage(1); // Reset to first page when changing page size
+                        }}
+                        placeholder="Select page size"
+                        className="w-32"
+                      />
+                    </div>
+
+                    {/* Pagination Info */}
+                    <div className="text-sm text-gray-600">
+                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()} entries
+                    </div>
+
+                    {/* Pagination Component */}
+                    <div className="flex items-center gap-4">
+                      <PaginationStandard
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalCount}
+                        itemsPerPage={pageSize}
+                        onPageChange={handlePageChange}
+                        className="justify-center"
+                      />
+                      
+                      {/* Go to Page Input */}
+                      {totalPages > 5 && (
+                        <div className="flex items-center gap-2">
+                          <Text className="text-sm text-gray-600">Go to:</Text>
+                          <Input
+                            type="number"
+                            min="1"
+                            max={totalPages}
+                            value={currentPage}
+                            onChange={(e) => {
+                              const page = parseInt(e.target.value);
+                              if (page >= 1 && page <= totalPages) {
+                                setCurrentPage(page);
+                              }
+                            }}
+                            className="w-16 text-center"
+                            placeholder="Page"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
