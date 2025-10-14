@@ -26,10 +26,12 @@ interface PerformanceMetrics {
     switch_off: number;
     number_not_reachable: number;
     number_does_not_exist: number;
+    call_not_ring_no_response: number;
   };
   call_ring_status: {
     picked: number;
     did_not_picked: number;
+    call_ring_no_response: number;
   };
   call_status: {
     continue: number;
@@ -46,6 +48,12 @@ interface PerformanceMetrics {
     successful: number;
     terminated: number;
     incompleted: number;
+  };
+  status_metrics: {
+    tele_no_response: number;
+    partial_system: number;
+    partial_tele: number;
+    submitted: number;
   };
 }
 
@@ -75,6 +83,7 @@ interface TelecallerWiseData {
   caller_name: string;
   caller_mobile_no: string;
   number_of_dials: number;
+  number_of_calls_connected: number;
   talk_duration: string;
   call_not_received_to_telecaller: number;
   ringing: number;
@@ -746,21 +755,27 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller Name',
           'Caller Mobile No.',
           'Number of Dials',
+          'Number of Calls Connected',
           'Talk Duration',
           'Call Not Received to Telecaller',
           'Ringing',
           'Not Ringing',
+          'No response by Telecaller (Number Status)',
           'Switch Off',
           'Number Not Reachable',
           'Number Does Not Exist',
+          'No response by Telecaller (Call Not Ring)',
           'Picked',
           'Did Not Picked',
+          'No response by Telecaller (Call Ring)',
           'Continue',
           'Refuse to Respond',
           'Call Back Later',
+          'No response by Telecaller (Call Status)',
           'Successful',
           'Terminated',
           'Incompleted',
+          'No response by Telecaller (Interview)',
           'Less Than 180 (Sec)',
           'Greater Than 180 (Sec)',
         ];
@@ -773,21 +788,27 @@ const TelecallerProgressPage: React.FC = () => {
             `"${item.caller_name || '-'}"`,
             `"${item.caller_mobile_no || '-'}"`,
             item.number_of_dials || 0,
+            item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
             item.call_not_received_to_telecaller || 0,
             item.ringing || 0,
             item.not_ringing || 0,
+            Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)),
             item.switch_off || 0,
             item.number_not_reachable || 0,
             item.number_does_not_exist || 0,
+            Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)),
             item.picked || 0,
             item.did_not_picked || 0,
+            Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)),
             item.continue || 0,
             item.refuse_to_respond || 0,
             item.call_back_later || 0,
+            Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)),
             item.successful || 0,
             item.terminated || 0,
             item.incompleted || 0,
+            Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)),
             item.less_than_180_sec || 0,
             item.greater_than_180_sec || 0,
           ].join(','))
@@ -925,13 +946,13 @@ const TelecallerProgressPage: React.FC = () => {
         {/* Number Status Section */}
         <div className="mb-8">
           <SectionHeader title="NUMBER STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Call Not Received to Telecaller"
               value={getValue(data?.number_status?.call_not_received_to_telecaller)}
-              icon={<Phone className="h-6 w-6 text-amber-600" />}
-              color="border-amber-500"
-              bgColor="bg-amber-500"
+              icon={<Phone className="h-6 w-6 text-gray-500" />}
+              color="border-gray-400"
+              bgColor="bg-gray-400"
             />
             <MetricCard
               title="Ringing"
@@ -947,13 +968,20 @@ const TelecallerProgressPage: React.FC = () => {
               color="border-red-500"
               bgColor="bg-red-500"
             />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.caller_performance?.number_of_dials_attempted || 0) - (data?.number_status?.ringing || 0) - (data?.number_status?.not_ringing || 0) - (data?.number_status?.call_not_received_to_telecaller || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
           </div>
         </div>
 
         {/* Call Not Ring Status Section */}
         <div className="mb-8">
           <SectionHeader title="CALL NOT RING STATUS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Switch Off"
               value={getValue(data?.call_not_ring_status?.switch_off)}
@@ -975,26 +1003,40 @@ const TelecallerProgressPage: React.FC = () => {
               color="border-red-500"
               bgColor="bg-red-500"
             />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.number_status?.not_ringing || 0) - (data?.call_not_ring_status?.switch_off || 0) - (data?.call_not_ring_status?.number_not_reachable || 0) - (data?.call_not_ring_status?.number_does_not_exist || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
           </div>
         </div>
 
         {/* Call Ring Status Section */}
         <div className="mb-8">
           <SectionHeader title="CALL RING STATUS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             <MetricCard
-              title="Picked"
+              title="Number of Calls Connected"
               value={getValue(data?.call_ring_status?.picked)}
               icon={<Phone className="h-6 w-6 text-green-600" />}
               color="border-green-500"
               bgColor="bg-green-500"
             />
             <MetricCard
-              title="Did Not Picked"
+              title="Number of Calls Not Connected"
               value={getValue(data?.call_ring_status?.did_not_picked)}
               icon={<Phone className="h-6 w-6 text-green-600" />}
               color="border-green-500"
               bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.number_status?.ringing || 0) - (data?.call_ring_status?.picked || 0) - (data?.call_ring_status?.did_not_picked || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
             />
           </div>
         </div>
@@ -1002,7 +1044,7 @@ const TelecallerProgressPage: React.FC = () => {
         {/* Call Status Section */}
         <div className="mb-8">
           <SectionHeader title="CALL STATUS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Continue"
               value={getValue(data?.call_status?.continue)}
@@ -1024,33 +1066,47 @@ const TelecallerProgressPage: React.FC = () => {
               color="border-teal-500"
               bgColor="bg-teal-500"
             />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.call_ring_status?.picked || 0) - (data?.call_status?.continue || 0) - (data?.call_status?.refuse_to_respond || 0) - (data?.call_status?.call_back_later || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
           </div>
         </div>
 
         {/* Interview Metrics Section */}
         <div className="mb-8">
           <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Completed"
               value={getValue(data?.interview_metrics?.successful)}
-              icon={<TrendingUp className="h-6 w-6 text-green-600" />}
-              color="border-green-500"
-              bgColor="bg-green-500"
+              icon={<TrendingUp className="h-6 w-6 text-cyan-600" />}
+              color="border-cyan-500"
+              bgColor="bg-cyan-500"
             />
             <MetricCard
               title="Terminated"
               value={getValue(data?.interview_metrics?.terminated)}
-              icon={<TrendingDown className="h-6 w-6 text-red-600" />}
-              color="border-red-500"
-              bgColor="bg-red-500"
+              icon={<TrendingDown className="h-6 w-6 text-fuchsia-600" />}
+              color="border-fuchsia-500"
+              bgColor="bg-fuchsia-500"
             />
             <MetricCard
               title="Incompleted"
               value={getValue(data?.interview_metrics?.incompleted)}
-              icon={<TrendingDown className="h-6 w-6 text-amber-600" />}
-              color="border-amber-500"
-              bgColor="bg-amber-500"
+              icon={<TrendingDown className="h-6 w-6 text-sky-600" />}
+              color="border-sky-500"
+              bgColor="bg-sky-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.caller_performance?.number_of_dials_attempted || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
             />
           </div>
         </div>
@@ -1068,7 +1124,7 @@ const TelecallerProgressPage: React.FC = () => {
             {/* Title Section */}
             <div className="flex-1">
               <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Caller Performance Dashboard
+              Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
@@ -1439,21 +1495,27 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Not Received to Telecaller</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Number Status)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Switch Off</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Not Reachable</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Does Not Exist</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Picked</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Did Not Picked</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Not Ring)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Not Connected</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Ring)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Continue</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Refuse to Respond</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Back Later</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Status)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Successful</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th>
                       </tr>
@@ -1476,6 +1538,9 @@ const TelecallerProgressPage: React.FC = () => {
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_dials?.toLocaleString() || 0}
                           </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_of_calls_connected?.toLocaleString() || 0}
+                          </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.talk_duration || '00:00:00'}
                           </td>
@@ -1489,6 +1554,9 @@ const TelecallerProgressPage: React.FC = () => {
                             {item.not_ringing?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.switch_off?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
@@ -1498,10 +1566,16 @@ const TelecallerProgressPage: React.FC = () => {
                             {item.number_does_not_exist?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.picked?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.did_not_picked?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)).toLocaleString()}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.continue?.toLocaleString() || 0}
@@ -1512,6 +1586,9 @@ const TelecallerProgressPage: React.FC = () => {
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.call_back_later?.toLocaleString() || 0}
                           </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)).toLocaleString()}
+                          </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
                             {item.successful?.toLocaleString() || 0}
                           </td>
@@ -1520,6 +1597,9 @@ const TelecallerProgressPage: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
                             {item.incompleted?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
