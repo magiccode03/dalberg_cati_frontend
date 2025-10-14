@@ -115,13 +115,11 @@ interface APIResponse {
   success: boolean;
   data: {
     interviews: InterviewData[];
-    pagination: PaginationData;
     filters_applied: Record<string, any>;
     sorting: {
       field: string;
       direction: string;
     };
-    message: string;
   };
   message: string;
   timestamp: string;
@@ -149,6 +147,7 @@ const InterviewLogPage = () => {
   const [pageSize, setPageSize] = useState(50);
 
   // API state management
+  const [allInterviewData, setAllInterviewData] = useState<DisplayInterviewData[]>([]);
   const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -409,9 +408,7 @@ const InterviewLogPage = () => {
       if (filters.audio_re_qc_status.length > 0) queryParams.append('audio_re_qc_status', filters.audio_re_qc_status.join(','));
       if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
       
-      // Add pagination
-      queryParams.append('page', currentPage.toString());
-      queryParams.append('per_page', pageSize.toString());
+      // Note: Backend no longer supports pagination parameters
 
       console.log('🔍 Making API request to:', `/overview/interview-log?${queryParams.toString()}`);
       
@@ -422,14 +419,13 @@ const InterviewLogPage = () => {
       
       if (data.success && data.data.interviews) {
         const transformedData = transformAPIData(data.data.interviews);
-        setInterviewData(transformedData);
-        // Use the actual count from pagination, or 0 if no data
-        const actualCount = transformedData.length > 0 ? data.data.pagination.total_count : 0;
-        setTotalCount(actualCount);
-        setTotalPages(data.data.pagination.total_pages);
+        setAllInterviewData(transformedData);
+        setTotalCount(transformedData.length);
+        setTotalPages(Math.ceil(transformedData.length / pageSize));
         setError(null);
       } else {
         console.error('API did not return interview data:', data);
+        setAllInterviewData([]);
         setInterviewData([]);
         setTotalCount(0);
         setTotalPages(0);
@@ -455,6 +451,7 @@ const InterviewLogPage = () => {
       }
       
       // Set empty data when API fails
+      setAllInterviewData([]);
       setInterviewData([]);
       setTotalCount(0);
       setTotalPages(0);
@@ -510,10 +507,19 @@ const InterviewLogPage = () => {
     }
   };
 
-  // Load data on component mount and when pagination changes
+  // Load data on component mount (pagination is now handled client-side)
   useEffect(() => {
     fetchInterviewLogs();
-  }, [currentPage, pageSize]);
+  }, []);
+
+  // Handle client-side pagination
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = allInterviewData.slice(startIndex, endIndex);
+    setInterviewData(paginatedData);
+    setTotalPages(Math.ceil(allInterviewData.length / pageSize));
+  }, [allInterviewData, currentPage, pageSize]);
 
   // Load agencies, AC list, interviewers, and users on component mount
   useEffect(() => {
@@ -535,6 +541,7 @@ const InterviewLogPage = () => {
   // Debounced filter update
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      setCurrentPage(1); // Reset to first page when filters change
       fetchInterviewLogs();
     }, 500);
 
@@ -1049,15 +1056,24 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
+                {/* Pagination Controls */}
                 <div className="mt-6 pt-4 border-t border-gray-200">
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                    className="justify-center"
-                  />
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    {/* Pagination Info */}
+                    <div className="text-sm text-gray-600">
+                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()} entries
+                    </div>
+
+                    {/* Pagination Component */}
+                    <PaginationStandard
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalCount}
+                      itemsPerPage={pageSize}
+                      onPageChange={handlePageChange}
+                      className="justify-center"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
