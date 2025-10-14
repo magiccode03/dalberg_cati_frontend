@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -39,12 +39,12 @@ const TelecallingGroupPage: React.FC = () => {
   const totalItems = telecallingGroupData.length;
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <div className="space-y-6">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center">
           <div>
-            <Heading level={1} className="text-2xl font-bold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               Calling Group
             </Heading>
           </div>
@@ -58,7 +58,7 @@ const TelecallingGroupPage: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-xl font-semibold text-gray-900">
+              <Heading level={4} className="text-lg font-semibold text-gray-900">
                 Calling Group
               </Heading>
             </div>
@@ -122,7 +122,7 @@ const TelecallingGroupPage: React.FC = () => {
           </div>
         </Card>
       </div>
-    </FluidContainer>
+    </Container>
   );
 };
 

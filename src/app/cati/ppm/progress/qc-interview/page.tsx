@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -178,10 +178,10 @@ const QCInterviewPage = () => {
   const showCustomDates = filters.reportDays === 'custom';
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           QC Interview
         </Heading>
       </div>
@@ -303,7 +303,7 @@ const QCInterviewPage = () => {
         <div className="mb-4">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
+            <Heading level={4} className="text-lg font-semibold text-gray-900">
               QC Interview
             </Heading>
           </div>
@@ -313,7 +313,7 @@ const QCInterviewPage = () => {
           <Table striped bordered hover>
             <thead>
               <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
+                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">S.No.</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Server ID</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Telecaller ID</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Checker ID</th>
@@ -363,7 +363,7 @@ const QCInterviewPage = () => {
           />
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

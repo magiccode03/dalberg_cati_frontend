@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -49,10 +49,10 @@ const ActiveACProgressPage = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Active AC Progress
         </Heading>
       </div>
@@ -65,7 +65,7 @@ const ActiveACProgressPage = () => {
             <div className="mb-4">
               <div className="flex items-center">
                 <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-                <Heading level={3} className="text-lg font-semibold text-gray-900">
+                <Heading level={4} className="text-lg font-semibold text-gray-900">
                   Number Summary
                 </Heading>
               </div>
@@ -136,7 +136,7 @@ const ActiveACProgressPage = () => {
           {/* Call Outcome */}
           <div>
             <div className="mb-4">
-              <Heading level={3} className="text-lg font-semibold text-gray-900">
+              <Heading level={4} className="text-lg font-semibold text-gray-900">
                 Call Outcome
               </Heading>
             </div>
@@ -210,7 +210,7 @@ const ActiveACProgressPage = () => {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
+            <Heading level={4} className="text-lg font-semibold text-gray-900">
               Master AC Progress
             </Heading>
           </div>
@@ -272,7 +272,7 @@ const ActiveACProgressPage = () => {
           </Table>
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

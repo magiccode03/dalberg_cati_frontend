@@ -244,7 +244,7 @@ export default function CATIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
             Interview Audio (CATI)
           </Heading>
         </div>

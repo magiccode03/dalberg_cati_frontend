@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -656,7 +656,7 @@ const TelecallerDailyCallDetailPage = () => {
   );
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
@@ -1222,7 +1222,7 @@ const TelecallerDailyCallDetailPage = () => {
           </div>
         </div>
       )}
-    </FluidContainer>
+    </Container>
   );
 };
 

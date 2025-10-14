@@ -320,14 +320,14 @@ export default function BasicDemographicsPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Page Title */}
       <div className="mb-8">
-        <Heading level={4}>Demographic</Heading>
+        <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">Demographic</Heading>
       </div>
 
         {/* First Row - 3 Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {/* Gender Coverage */}
           <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+            <Heading level={4} align="center" className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Gender Coverage
             </Heading>
             <ReactECharts option={genderChartOptions} style={{ height: '400px' }} />
@@ -335,7 +335,7 @@ export default function BasicDemographicsPage() {
 
           {/* Locality Coverage */}
           <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+            <Heading level={4} align="center" className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Locality Coverage
             </Heading>
             <ReactECharts option={localityChartOptions} style={{ height: '400px' }} />
@@ -343,7 +343,7 @@ export default function BasicDemographicsPage() {
 
           {/* Social Category Coverage */}
           <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+            <Heading level={4} align="center" className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Social Category Coverage
             </Heading>
             <ReactECharts option={socialCategoryChartOptions} style={{ height: '400px' }} />
@@ -354,7 +354,7 @@ export default function BasicDemographicsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Age Coverage */}
           <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+            <Heading level={4} align="center" className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Age Coverage
             </Heading>
             <ReactECharts option={ageChartOptions} style={{ height: '400px' }} />
@@ -362,7 +362,7 @@ export default function BasicDemographicsPage() {
 
           {/* Religion Coverage */}
           <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+            <Heading level={4} align="center" className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
               Religion Coverage
             </Heading>
             <ReactECharts option={religionChartOptions} style={{ height: '400px' }} />

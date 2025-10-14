@@ -71,7 +71,7 @@ export default function CATIACWiseDataPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         AC-Wise Report
       </Heading>
 

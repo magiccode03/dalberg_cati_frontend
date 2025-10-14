@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -507,10 +507,10 @@ const CompletedNumbersPage = () => {
   const currentItems = completedNumbersData.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Completed Numbers
         </Heading>
         <div className="text-sm text-gray-500">
@@ -541,7 +541,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.acCode}
-              onChange={(value) => handleFilterChange('acCode', value)}
+              onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
               options={acCodeOptions}
               placeholder="Select AC"
             />
@@ -567,7 +567,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.telecaller}
-              onChange={(value) => handleFilterChange('telecaller', value)}
+              onChange={(value) => handleFilterChange('telecaller', Array.isArray(value) ? value[0] : value)}
               options={telecallerOptions}
               placeholder="Select Telecaller"
             />
@@ -593,7 +593,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.callOutcome}
-              onChange={(value) => handleFilterChange('callOutcome', value)}
+              onChange={(value) => handleFilterChange('callOutcome', Array.isArray(value) ? value[0] : value)}
               options={callOutcomeOptions}
               placeholder="Select Call Outcome"
             />
@@ -606,7 +606,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.talkDuration}
-              onChange={(value) => handleFilterChange('talkDuration', value)}
+              onChange={(value) => handleFilterChange('talkDuration', Array.isArray(value) ? value[0] : value)}
               options={talkDurationOptions}
               placeholder="Select Talk Duration Range"
             />
@@ -775,7 +775,7 @@ const CompletedNumbersPage = () => {
           />
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -212,12 +212,12 @@ const TelecallerDailyProgressPage: React.FC = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <div className="space-y-6">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center">
           <div>
-            <Heading level={1} className="text-2xl font-bold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               Telecaller Daily Progress
             </Heading>
           </div>
@@ -384,7 +384,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
           <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Caller Performance
             </Heading>
           </div>
@@ -432,7 +432,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
           <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Outcome
             </Heading>
           </div>
@@ -474,7 +474,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
           <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Number Summary
             </Heading>
           </div>
@@ -536,7 +536,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-xl font-semibold text-gray-900">
+              <Heading level={4} className="text-lg font-semibold text-gray-900">
                 Caller Summary
               </Heading>
             </div>
@@ -550,7 +550,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
             <Table striped bordered hover>
               <thead>
                 <tr>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">S.No.</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Caller Name</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number of dials</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">IVR Duration</th>
@@ -621,7 +621,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
           )}
         </Card>
       </div>
-    </FluidContainer>
+    </Container>
   );
 };
 

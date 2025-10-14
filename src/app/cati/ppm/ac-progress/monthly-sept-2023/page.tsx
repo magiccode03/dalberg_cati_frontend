@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -157,10 +157,10 @@ const MonthlySept2023Page = () => {
   );
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Monthly: Sept 2023
         </Heading>
       </div>
@@ -170,7 +170,7 @@ const MonthlySept2023Page = () => {
         <div className="mb-4">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900">
+            <Heading level={4} className="text-lg font-semibold text-gray-900">
               Call Outcome
             </Heading>
           </div>
@@ -232,7 +232,7 @@ const MonthlySept2023Page = () => {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
+            <Heading level={4} className="text-lg font-semibold text-gray-900">
               Sept 2023 Month Progress
             </Heading>
           </div>
@@ -299,7 +299,7 @@ const MonthlySept2023Page = () => {
           Showing <span className="font-semibold">1</span> - <span className="font-semibold">{monthlyACProgressData.length}</span> of <span className="font-semibold">{monthlyACProgressData.length}</span> results
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 
