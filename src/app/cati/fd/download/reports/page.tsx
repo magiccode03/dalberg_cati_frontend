@@ -12,7 +12,7 @@ export default function ReportsPage() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-3">
-          <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
             Reports
           </Heading>
         </div>
@@ -22,7 +22,7 @@ export default function ReportsPage() {
           {/* Card Header */}
           <div className="flex items-center mb-3">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-            <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="font-semibold text-gray-900 dark:text-white">
               Report Files
             </Heading>
           </div>
