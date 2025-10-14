@@ -1881,7 +1881,7 @@ class ApiService {
     return this.request(`${API_ENDPOINTS.FD.INTERVIEW_AUDIO_SEARCH_CAPI}${queryString}`);
   }
 
-  async getCatiInterviewAudio(params?: { page?: number; limit?: number; server_id?: string; ac_code?: string; interview_date?: string }): Promise<ApiResponse<{
+  async getCatiInterviewAudio(params?: { page?: number; limit?: number; id?: string; ac_code?: string; interview_date?: string }): Promise<ApiResponse<{
     data: Array<{
       id: number;
       ac_code: number;
