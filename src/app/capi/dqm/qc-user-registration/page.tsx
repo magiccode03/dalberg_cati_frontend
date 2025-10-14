@@ -11,7 +11,6 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Plus, Edit, Check, Eye, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
@@ -114,8 +113,6 @@ export default function QCUserRegistrationPage() {
     reChecking: false,
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
   const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +124,6 @@ export default function QCUserRegistrationPage() {
     gps_qc_users: '0',
     rechecking_users: '0'
   });
-  const [totalCount, setTotalCount] = useState(0);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,9 +151,10 @@ export default function QCUserRegistrationPage() {
         if (appliedFilters.gps) queryParams.append('gps', '1');
         if (appliedFilters.audio) queryParams.append('audio', '1');
         if (appliedFilters.reChecking) queryParams.append('clientaudiocheck', '1');
+        queryParams.append('limit', '1000'); // Fetch all users at once
         
         const queryString = queryParams.toString();
-        const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
+        const endpoint = `/qc-user-registration?${queryString}`;
         
         const response = await apiClient.get(endpoint);
         const data: APIResponse = response.data;
@@ -180,12 +177,9 @@ export default function QCUserRegistrationPage() {
             }));
             setQcUserData(userData);
           
-          // Set statistics and pagination data
+          // Set statistics
           if (data.data.statistics) {
             setStatistics(data.data.statistics);
-          }
-          if (data.data.pagination) {
-            setTotalCount(data.data.pagination.total_count);
           }
         } else {
           setError(data.error || 'No data received from server');
@@ -221,7 +215,6 @@ export default function QCUserRegistrationPage() {
   const handleSearch = () => {
     // Apply the current filter values to trigger the search
     setAppliedFilters(filters);
-    setCurrentPage(1); // Reset to first page when searching
     console.log('Searching with filters:', filters);
   };
 
@@ -238,7 +231,6 @@ export default function QCUserRegistrationPage() {
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters);
-    setCurrentPage(1);
   };
 
   const handleAddNewUser = () => {
@@ -281,9 +273,10 @@ export default function QCUserRegistrationPage() {
         if (appliedFilters.gps) queryParams.append('gps', '1');
         if (appliedFilters.audio) queryParams.append('audio', '1');
         if (appliedFilters.reChecking) queryParams.append('clientaudiocheck', '1');
+        queryParams.append('limit', '1000'); // Fetch all users at once
         
         const queryString = queryParams.toString();
-        const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
+        const endpoint = `/qc-user-registration?${queryString}`;
         
         const response = await apiClient.get(endpoint);
         const data: APIResponse = response.data;
@@ -307,9 +300,6 @@ export default function QCUserRegistrationPage() {
           
           if (data.data.statistics) {
             setStatistics(data.data.statistics);
-          }
-          if (data.data.pagination) {
-            setTotalCount(data.data.pagination.total_count);
           }
         }
       } catch (err: any) {
@@ -357,10 +347,6 @@ export default function QCUserRegistrationPage() {
       <span className="text-black text-lg">✗</span>
     );
   };
-
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = qcUserData.slice(startIndex, startIndex + pageSize);
 
   if (loading) {
     return (
@@ -547,7 +533,7 @@ export default function QCUserRegistrationPage() {
             </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-            Total <strong>{totalCount}</strong> QC users.
+            Total <strong>{qcUserData.length}</strong> QC users.
           </div>
 
               <div className="overflow-x-auto">
@@ -571,9 +557,9 @@ export default function QCUserRegistrationPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {currentData.map((user, index) => (
+                      {qcUserData.map((user, index) => (
                         <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{startIndex + index + 1}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{index + 1}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.qcId}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobileNumber}</td>
@@ -614,21 +600,6 @@ export default function QCUserRegistrationPage() {
                   </Table>
                 </div>
 
-                {/* Table Footer */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-4 pb-4">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
-                  </div>
-                  <div>
-                    <PaginationStandard
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                totalItems={totalCount}
-                      itemsPerPage={pageSize}
-                      onPageChange={setCurrentPage}
-                    />
-                </div>
-            </div>
           </Card>
       </Container>
 
