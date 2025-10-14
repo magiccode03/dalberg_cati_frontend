@@ -315,7 +315,7 @@ const TelecallerDailyCallDetailPage = () => {
     <FluidContainer>
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-bold text-gray-900">
           Daily Call Detail <span className='text-5xl'>(coming soon)</span>
         </Heading>
         <div className="text-sm text-gray-500">

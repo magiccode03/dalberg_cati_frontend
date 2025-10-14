@@ -123,7 +123,7 @@ export default function SecondChoicePage() {
   }
 
   const renderTable = (title: string, data: SecondChoiceData[]) => (
-    <Card className="p-6 mb-6">
+    <Card className="mb-6">
       <div className="w-full">
         <h4 className="text-center mb-4 text-lg font-semibold">{title}</h4>
         <div className="overflow-x-auto">
@@ -197,14 +197,9 @@ export default function SecondChoicePage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900">
             {apiData?.page_info.page_title || 'Second Choice'}
           </Heading>
-          {apiData?.page_info.total_interviews && (
-            <Text className="text-sm text-gray-600 mt-1">
-              Total Interviews: {apiData.page_info.total_interviews.toLocaleString()}
-            </Text>
-          )}
         </div>
         <div className="flex-1"></div>
         <div className="flex-1">
