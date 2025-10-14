@@ -10,7 +10,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import { Search, Download } from 'lucide-react';
+import { Search, Download, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
 import PSDetailsModal from '@/components/modals/PSDetailsModal';
@@ -111,6 +111,20 @@ export default function ProgressReportPage() {
     }
     
     fetchProgressReport(false);
+  };
+
+  const handleClear = () => {
+    const defaultForm = {
+      reportDays: 'all',
+      typeOfReport: 'performance',
+      level: 'ac',
+      acCode: '',
+      customDate: '',
+      customDateEnd: ''
+    };
+    setSearchForm(defaultForm);
+    setError(null);
+    setProgressData([]);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -835,10 +849,18 @@ export default function ProgressReportPage() {
               </div>
             </div>
           )}
-          <div className="flex items-end">
-            <Button onClick={handleSearch} className="w-full">
+          <div className="flex items-end gap-2">
+            <Button onClick={handleSearch} className="flex-1">
               <Search className="w-4 h-4 mr-2" />
               Search
+            </Button>
+            <Button 
+              onClick={handleClear}
+              variant="outline"
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear
             </Button>
           </div>
         </div>
