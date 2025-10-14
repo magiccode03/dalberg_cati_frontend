@@ -959,13 +959,23 @@ export default function ProgressReportPage() {
                         const value = getDataValue(summaryItem, header.key, 0);
                         const isHighlighted = typeof value === 'number' && shouldHighlightRed(value, header.key);
                         
+                        // Check if this is a clickable PS field in summary row
+                        const isSummaryPS = (header.key === 'ps_covered' || header.key === 'pscovered') && value !== '-';
+                        const isClickableSummaryPS = isSummaryPS && searchForm.typeOfReport === 'performance' && ['ac', 'pc'].includes(searchForm.level);
                         
                         return (
                           <td 
                             key={header.key}
-                            className={`border border-gray-300 text-${header.align || 'left'} ${isHighlighted ? 'text-red-600 font-bold' : ''} bg-blue-50 font-semibold`}
+                            className={`border border-gray-300 text-${header.align || 'left'} ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isSummaryPS ? 'text-blue-600' : ''} ${isClickableSummaryPS ? 'cursor-pointer hover:bg-blue-50' : ''} bg-blue-50 font-semibold`}
+                            onClick={isClickableSummaryPS ? () => handlePSClick('all') : undefined}
                           >
-                            {value}
+                            {isClickableSummaryPS ? (
+                              <span className="underline hover:no-underline">
+                                {value}
+                              </span>
+                            ) : (
+                              value
+                            )}
                           </td>
                         );
                       })}
