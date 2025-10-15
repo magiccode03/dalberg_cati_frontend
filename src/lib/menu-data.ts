@@ -1600,12 +1600,31 @@ export const menuData: MenuItem[] = [
   // CATI Start Survey (SS) Menu
   {
     id: 'cati-ss-start-form-filling',
-    label: 'Start Form Filling',
+    label: 'Authentication',
     href: '/cati/ss/start-form-filling',
-    icon: 'Edit',
+    icon: 'Securitysss',
     roles: ['ss'],
     system: 'cati',
   },
+  {
+    id: 'cati-ss-fill-form',
+    label: 'Start Form Filling',
+    href: '/cati/ss/new-call',
+    icon: 'Edit',
+    roles: ['ss'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on teleform user data
+  },
+  {
+    id: 'cati-ss-qc',
+    label: 'Start QC',
+    href: '/cati/ss/qc-call',
+    icon: 'CheckCircle',
+    roles: ['ss'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on teleform user data
+  },
+  
 
 ];
 

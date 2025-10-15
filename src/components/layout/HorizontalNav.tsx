@@ -93,9 +93,88 @@ export default function HorizontalNav() {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [isSticky, setIsSticky] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [teleformUserData, setTeleformUserData] = useState<any>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = user ? getMenuByRole(user.role, user.system) : [];
+  // Listen for teleform user data updates
+  useEffect(() => {
+    const handleTeleformUserUpdate = () => {
+      const savedData = localStorage.getItem('teleform_user_data');
+      if (savedData) {
+        try {
+          setTeleformUserData(JSON.parse(savedData));
+        } catch (err) {
+          console.error('Error parsing teleform user data:', err);
+          setTeleformUserData(null);
+        }
+      } else {
+        setTeleformUserData(null);
+      }
+    };
+
+    // Initial load
+    handleTeleformUserUpdate();
+
+    // Listen for updates
+    window.addEventListener('teleformUserUpdated', handleTeleformUserUpdate);
+    
+    return () => {
+      window.removeEventListener('teleformUserUpdated', handleTeleformUserUpdate);
+    };
+  }, []);
+
+  // Filter menu items based on teleform user data for SS role
+  const getFilteredMenuItems = () => {
+    if (!user) return [];
+    
+    // For SS role, force system to 'cati' to ensure menu items are loaded
+    const systemToUse = user.role === 'ss' ? 'cati' : user.system;
+    let baseMenuItems = getMenuByRole(user.role, systemToUse);
+    
+    // Debug logging
+    console.log('User role:', user.role);
+    console.log('User system:', user.system);
+    console.log('System to use:', systemToUse);
+    console.log('Teleform user data:', teleformUserData);
+    console.log('Base menu items:', baseMenuItems);
+    
+    // For SS role, filter dynamic menu items based on teleform user data
+    if (user.role === 'ss') {
+      if (teleformUserData) {
+        const fillForm = teleformUserData.fill_form === 1;
+        const qc = teleformUserData.qc === 1;
+        
+        console.log('Fill form permission:', fillForm);
+        console.log('QC permission:', qc);
+        
+        baseMenuItems = baseMenuItems.filter(item => {
+          // Always show non-dynamic items
+          if (!item.dynamic) return true;
+          
+          // Filter dynamic items based on permissions
+          if (item.id === 'cati-ss-fill-form') {
+            return fillForm;
+          }
+          if (item.id === 'cati-ss-qc') {
+            return qc;
+          }
+          
+          return false;
+        });
+        
+        console.log('Filtered menu items:', baseMenuItems);
+      } else {
+        // If no teleform user data, show all non-dynamic items only
+        console.log('No teleform user data, showing non-dynamic items only');
+        baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
+        console.log('Non-dynamic menu items:', baseMenuItems);
+      }
+    }
+    
+    return baseMenuItems;
+  };
+
+  const menuItems = getFilteredMenuItems();
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => {
@@ -159,6 +238,22 @@ export default function HorizontalNav() {
     return <IconComponent className="h-4 w-4" />;
   };
 
+  // Helper function to get dynamic href based on teleform user data
+  const getDynamicHref = (item: any) => {
+    if (!item.dynamic || !teleformUserData) return item.href;
+    
+    const teleformUserId = teleformUserData.teleform_user_id;
+    
+    if (item.id === 'cati-ss-fill-form') {
+      return `/cati/ss/new-call/${teleformUserId}`;
+    }
+    if (item.id === 'cati-ss-qc') {
+      return `/cati/ss/qc-call/${teleformUserId}`;
+    }
+    
+    return item.href;
+  };
+
   return (
     <>
       {/* Desktop Navigation */}
@@ -212,9 +307,9 @@ export default function HorizontalNav() {
                   </div>
                 ) : (
                   <Link
-                    href={item.href}
+                    href={getDynamicHref(item)}
                     className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      pathname === item.href 
+                      pathname === getDynamicHref(item)
                         ? 'bg-blue-600 text-white shadow-sm' 
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400'
                     }`}
@@ -306,9 +401,9 @@ export default function HorizontalNav() {
                     </div>
                   ) : (
                     <Link
-                      href={item.href}
+                      href={getDynamicHref(item)}
                       className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        pathname === item.href 
+                        pathname === getDynamicHref(item)
                           ? 'bg-blue-600 text-white shadow-sm' 
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
