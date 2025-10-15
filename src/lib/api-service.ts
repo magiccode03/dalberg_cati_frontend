@@ -439,6 +439,53 @@ class ApiService {
     
     return this.request<any>('GET', url);
   }
+
+  // Wisdom of Crowds API
+  async getWisdomOfCrowds(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      party_likely_to_win: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+        title: string;
+      };
+    };
+  }>> {
+    return this.request<{
+      page_info: {
+        page_name: string;
+        page_title: string;
+        total_interviews: number;
+      };
+      charts: {
+        party_likely_to_win: {
+          chart_type: string;
+          chart_id: string;
+          question_id: string;
+          total_sample: number;
+          data: Array<{
+            name: string;
+            y: number;
+            count: string;
+          }>;
+          colors: string[];
+          title: string;
+        };
+      };
+    }>('GET', '/dashboard/findings/wisdom-of-crowds');
+  }
 }
 
 // Export singleton instance

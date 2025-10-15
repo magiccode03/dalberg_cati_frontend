@@ -856,6 +856,14 @@ export const menuData: MenuItem[] = [
         roles: ['fd'],
         system: 'capi',
       },
+      {
+        id: 'capi-fd-wisdom-of-crowds',
+        label: 'Wisdom of Crowds',
+        href: '/capi/fd/findings/wisdom-of-crowds',
+        icon: 'BarChart3',
+        roles: ['fd'],
+        system: 'capi',
+      },
     ],
   },
  
