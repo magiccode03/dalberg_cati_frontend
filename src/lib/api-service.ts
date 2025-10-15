@@ -321,6 +321,52 @@ class ApiService {
     });
     return this.request<any>('GET', `/dashboard/team-registration?${params}`);
   }
+
+  // Gain and Losses API
+  async getGainAndLosses(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/gain-and-losses');
+  }
 }
 
 // Export singleton instance
