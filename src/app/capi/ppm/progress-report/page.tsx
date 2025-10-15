@@ -919,17 +919,17 @@ export default function ProgressReportPage() {
           </Button>
         </div>
 
-        <div className="table-responsive">
+        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <Table 
             key={`${searchForm.typeOfReport}-${searchForm.level}-${searchForm.acCode}`}
-            className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300"
+            className="table table-bordered table-striped table-hover"
           >
-            <thead className="table-light bg-gray-50">
+            <thead className="sticky top-0 z-10 table-light bg-gray-50">
               <tr>
                 {getTableHeaders().map((header) => (
                   <th 
                     key={header.key}
-                    className={`border border-gray-300 ${header.width} ${header.className || ''} text-${header.align || 'left'}`}
+                    className={`sticky top-0 z-10 border border-gray-300 ${header.width} ${header.className || ''} text-${header.align || 'left'}`}
                   >
                     {header.label}
                   </th>
@@ -966,7 +966,7 @@ export default function ProgressReportPage() {
                         return (
                           <td 
                             key={header.key}
-                            className={`border border-gray-300 text-${header.align || 'left'} ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isSummaryPS ? 'text-blue-600' : ''} ${isClickableSummaryPS ? 'cursor-pointer hover:bg-blue-50' : ''} bg-blue-50 font-semibold`}
+                            className={`px-3 py-3 border-b border-gray-200 text-${header.align || 'left'} ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isSummaryPS ? 'text-blue-600' : ''} ${isClickableSummaryPS ? 'cursor-pointer hover:bg-blue-50' : ''} bg-blue-50 font-semibold`}
                             onClick={isClickableSummaryPS ? () => handlePSClick('all') : undefined}
                           >
                             {isClickableSummaryPS ? (
@@ -1004,7 +1004,7 @@ export default function ProgressReportPage() {
                         return (
                           <td 
                             key={header.key}
-                            className={`border border-gray-300 text-${header.align || 'left'} ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isPS ? 'text-blue-600' : ''} ${isClickablePS ? 'cursor-pointer hover:bg-blue-50' : ''}`}
+                            className={`px-3 py-3 border-b border-gray-200 text-${header.align || 'left'} ${isHighlighted ? 'text-red-600 font-bold' : ''} ${isPS ? 'text-blue-600' : ''} ${isClickablePS ? 'cursor-pointer hover:bg-blue-50' : ''}`}
                             onClick={isClickablePS ? () => handlePSClick(codeToPass || 'all') : undefined}
                           >
                             {isClickablePS ? (
