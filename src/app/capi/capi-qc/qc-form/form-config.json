@@ -44,6 +44,24 @@
         },
         "value": "4",
         "tag": "opt_hear_inter_more_than_resp"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से सुनाई नहीं दे रही है",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "7",
+        "tag": "opt_cannot_hear_response"
+      },
+      {
+        "label": {
+          "en": "Duplicate Audio",
+          "hi": "दोहराया गया ऑडियो",
+          "bn": "ডুপ্লিকেট অডিও"
+        },
+        "value": "8",
+        "tag": "opt_duplicate_audio"
       }
     ],
     "tag": "qc_audio_status"
@@ -102,6 +120,15 @@
         },
         "value": "2",
         "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Male answering on behalf of female",
+          "hi": "पुरुष महिला की ओर से उत्तर दे रहा है",
+          "bn": "মহিলার পক্ষ থেকে পুরুষ উত্তর দিচ্ছেন।"
+        },
+        "value": "3",
+        "tag": "opt_male_answer_behalf_female"
       }
     ],
     "tag": "qc_q2"
@@ -233,6 +260,15 @@
         },
         "value": "3",
         "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
       }
     ],
     "tag": "qc_q3"
@@ -344,6 +380,7 @@
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "enable_condition": "resp_age>=22",
     "required": true,
     "options": [
       {
@@ -372,6 +409,15 @@
         },
         "value": "3",
         "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
       }
     ],
     "tag": "qc_q4"
@@ -475,6 +521,7 @@
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
     "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "enable_condition": "resp_age>=19",
     "required": true,
     "options": [
       {
@@ -503,6 +550,15 @@
         },
         "value": "3",
         "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
       }
     ],
     "tag": "qc_q5"
@@ -545,6 +601,15 @@
         },
         "value": "3",
         "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
       }
     ],
     "tag": "qc_q6"
@@ -578,6 +643,15 @@
         },
         "value": "2",
         "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
       }
     ],
     "tag": "qc_q7"
@@ -622,5 +696,18 @@
       }
     ],
     "tag": "qc_q8"
+  },
+  {
+    "key": 9,
+    "type": "text",
+    "label": {
+      "en": "9. Remark",
+      "hi": "9. Remark",
+      "bn": "9. Remark"
+    },
+    "tag": "qc_q9",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "required": false,
+    "maxLength": 500
   }
 ]
