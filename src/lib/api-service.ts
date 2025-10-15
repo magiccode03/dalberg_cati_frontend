@@ -423,6 +423,22 @@ class ApiService {
   }>> {
     return this.request<any>('GET', '/dashboard/findings/second-choice');
   }
+
+  // Fieldwork Progress API (FD - Field Data)
+  async getFDFieldworkProgress(progressType?: number, progressSubType?: number, progressSubTypeCode?: string): Promise<ApiResponse<any>> {
+    let url = '/fd/fieldwork-progress';
+    const params = new URLSearchParams();
+    
+    if (progressType) params.append('progress_type', progressType.toString());
+    if (progressSubType) params.append('progress_sub_type', progressSubType.toString());
+    if (progressSubTypeCode) params.append('progress_sub_type_code', progressSubTypeCode);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    return this.request<any>('GET', url);
+  }
 }
 
 // Export singleton instance
