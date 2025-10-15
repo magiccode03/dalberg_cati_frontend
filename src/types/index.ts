@@ -3,7 +3,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality' | 'ppm' | 'ppmt' | 'dqm' | 'dqmt' | 'fd' | 'portal_admin' | 'capi_qc';
+  role: 'super_admin' | 'admin' | 'pmt' | 'qc' | 'quality-analyst' | 'start-qc' | 'data-quality' | 'ppm' | 'ppmt' | 'dqm' | 'dqmt' | 'fd' | 'portal_admin' | 'capi_qc' | 'ss';
   avatar?: string;
   permissions: string[];
   system?: 'capi' | 'cati'; // System assignment for CAPI/CATI users
@@ -69,6 +69,7 @@ export interface MenuItem {
   children?: MenuItem[];
   roles: string[];
   system?: 'capi' | 'cati' | 'common'; // System identifier for menu filtering
+  dynamic?: boolean; // For dynamic menu items based on user data
 }
 
 // Table Types
