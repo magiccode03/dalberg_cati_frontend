@@ -94,12 +94,12 @@ export default function GainAndLossesPage() {
             <thead>
               <tr>
                 <th className="bg-blue-100 border border-gray-300"></th>
-                <th colSpan={8} className="text-center bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
+                <th colSpan={9} className="text-center bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <th rowSpan={8} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">2021 AE</th>
+                <th rowSpan={9} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">2021 AE</th>
                 <th className="bg-blue-100 border border-gray-300 font-semibold">Party Name</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
