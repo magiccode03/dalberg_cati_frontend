@@ -8,9 +8,10 @@ import { z } from 'zod';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import SelectDropdown from '@/components/ui/SelectDropdown';
+import Checkbox from '@/components/ui/Checkbox';
 import Alert from '@/components/ui/Alert';
 import { ArrowLeft, UserPlus } from 'lucide-react';
-import { apiService } from '@/lib/api-service';
 
 // Form validation schema
 const teleCallerSchema = z.object({
@@ -24,13 +25,15 @@ const teleCallerSchema = z.object({
     .min(10, 'Mobile number must be at least 10 digits')
     .max(10, 'Mobile number must be 10 digits')
     .regex(/^[0-9]+$/, 'Mobile number must contain only digits'),
+  status: z.string().min(1, 'Status is required'),
+  fill_form: z.boolean(),
+  qc: z.boolean(),
 });
 
 type TeleCallerFormData = z.infer<typeof teleCallerSchema>;
 
 export default function CreateTeleCallerPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -39,60 +42,77 @@ export default function CreateTeleCallerPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    watch,
+    setValue,
   } = useForm<TeleCallerFormData>({
     resolver: zodResolver(teleCallerSchema),
     defaultValues: {
       teleform_user_id: '',
       name: '',
       mobile_number: '',
+      status: '1', // Default to Active
+      fill_form: false,
+      qc: false,
     },
   });
 
-  const onSubmit = async (data: TeleCallerFormData) => {
-    setLoading(true);
+  const onSubmit = async (data: TeleCallerFormData): Promise<void> => {
     setError(null);
     setSuccess(null);
 
+    // Check API URL configuration
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      setError('API URL not configured');
+      return;
+    }
+
+    // Get auth token (with SSR guard)
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      setError('Authentication required');
+      return;
+    }
+
+    // Prepare the payload with form values
+    const payload = {
+      teleform_user_id: parseInt(data.teleform_user_id),
+      name: data.name,
+      mobile_number: data.mobile_number,
+      form_id: 1,
+      fill_form: data.fill_form ? 1 : 0,
+      form_data: 0,
+      qc: data.qc ? 1 : 0,
+      qc_recheck: 0,
+      supervisor_id: 1,
+      agency_id: 1,
+      telecalling_group_id: 1,
+      under_training: 0,
+      status: parseInt(data.status),
+    };
+
     try {
-      // Prepare the payload with hardcoded values
-      const payload = {
-        teleform_user_id: parseInt(data.teleform_user_id),
-        name: data.name,
-        mobile_number: data.mobile_number,
-        form_id: 1,
-        fill_form: 0,
-        form_data: 0,
-        qc: 0,
-        qc_recheck: 0,
-        supervisor_id: 1,
-        agency_id: 1,
-        telecalling_group_id: 1,
-        under_training: 0,
-        status: 1,
-      };
-
-      // Get auth token
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
-
       // Call the API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users`, {
+      const response = await fetch(`${apiUrl}/api/teleform-users`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          'Accept': 'application/json',
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
+      // Safe JSON parsing
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
 
-      if (response.ok && result.success) {
-        setSuccess('Telecaller created successfully!');
+      if (response.ok) {
+        setSuccess(result.message || 'Telecaller created successfully!');
         reset();
         
         // Redirect to the list page after 1.5 seconds
@@ -100,13 +120,11 @@ export default function CreateTeleCallerPage() {
           router.push('/cati/ppm/manage-calling/tele-caller');
         }, 1500);
       } else {
-        setError(result.message || 'Failed to create telecaller');
+        setError(result.error || 'Failed to create telecaller');
       }
     } catch (err: any) {
-      setError(err.message || 'Error creating telecaller. Please try again.');
       console.error('Error creating telecaller:', err);
-    } finally {
-      setLoading(false);
+      setError(err.message || 'Error creating telecaller. Please try again.');
     }
   };
 
@@ -198,6 +216,61 @@ export default function CreateTeleCallerPage() {
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Enter 10-digit mobile number without country code
                   </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Settings Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                Settings
+              </h3>
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Status *
+                  </label>
+                  <SelectDropdown
+                    value={watch('status')}
+                    onChange={(value) => setValue('status', value as string)}
+                    options={[
+                      { value: '1', label: 'Active' },
+                      { value: '0', label: 'Inactive' },
+                    ]}
+                    placeholder="Select Status"
+                  />
+                  {errors.status && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.status.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Permissions
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="fill_form"
+                        checked={watch('fill_form')}
+                        onCheckedChange={(checked) => setValue('fill_form', checked === true)}
+                      />
+                      <label htmlFor="fill_form" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Can Fill Form
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="qc"
+                        checked={watch('qc')}
+                        onCheckedChange={(checked) => setValue('qc', checked === true)}
+                      />
+                      <label htmlFor="qc" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        QC User
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

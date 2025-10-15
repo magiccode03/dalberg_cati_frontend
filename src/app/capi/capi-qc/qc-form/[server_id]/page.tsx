@@ -30,6 +30,7 @@ interface FormField {
   tag: string;
   required?: boolean;
   conditional?: string;
+  enable_condition?: string;
   options?: FormOption[];
   placeholder?: string;
   hint?: string | { en?: string; hi?: string; bn?: string };
@@ -239,17 +240,20 @@ export default function QCFormPage() {
   const audioUrl = getAudioUrl();
 
   // Evaluate conditional expressions
-  const evaluateCondition = (condition: string): boolean => {
+  const evaluateCondition = (condition: string, useInstanceData: boolean = false): boolean => {
     if (!condition) return true;
     
     try {
       // Replace field names with their values
       let expr = condition;
       
+      // Choose data source based on flag
+      const dataSource = useInstanceData ? instanceData : formData;
+      
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
-        const fieldValue = formData[field];
+        const fieldValue = dataSource[field];
         if (fieldValue === undefined || fieldValue === '' || fieldValue === null) {
           return 'false';
         }
@@ -269,7 +273,7 @@ export default function QCFormPage() {
       // Handle string comparisons (===, !==)
       const stringPattern = /(\w+)\s*(===|!==)\s*'(\d+)'/g;
       expr = expr.replace(stringPattern, (match, field, operator, value) => {
-        const fieldValue = formData[field];
+        const fieldValue = dataSource[field];
         if (fieldValue === undefined || fieldValue === null) {
           return operator === '!==' ? 'true' : 'false';
         }
@@ -285,7 +289,7 @@ export default function QCFormPage() {
       // Handle array includes
       const includesPattern = /(\w+)\.includes\('(\d+)'\)/g;
       expr = expr.replace(includesPattern, (match, field, value) => {
-        const fieldValue = formData[field];
+        const fieldValue = dataSource[field];
         if (!Array.isArray(fieldValue)) return 'false';
         return fieldValue.includes(value).toString();
       });
@@ -303,8 +307,18 @@ export default function QCFormPage() {
 
   // Check if field should be visible
   const isFieldVisible = (field: FormField): boolean => {
-    if (!field.conditional) return true;
-    return evaluateCondition(field.conditional);
+    // Check enable_condition first (based on instance/survey data)
+    if (field.enable_condition) {
+      const isEnabled = evaluateCondition(field.enable_condition, true);
+      if (!isEnabled) return false;
+    }
+    
+    // Check conditional (based on form data)
+    if (field.conditional) {
+      return evaluateCondition(field.conditional, false);
+    }
+    
+    return true;
   };
 
   // Handle input change
@@ -450,14 +464,19 @@ export default function QCFormPage() {
       };
       
       // Add form field values if they exist
-      const formFields = ['qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8'];
+      const formFields = ['qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8', 'qc_remark'];
       
       formFields.forEach(fieldTag => {
         const fieldValue = formData[fieldTag];
         if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-          // Convert to integer for API
-          const numValue = parseInt(fieldValue);
-          requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
+          // For text fields (like qc_remark), keep as string
+          // For other fields, convert to integer
+          if (fieldTag === 'qc_remark') {
+            requestBody[fieldTag] = fieldValue;
+          } else {
+            const numValue = parseInt(fieldValue);
+            requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
+          }
         }
       });
       
@@ -519,10 +538,10 @@ export default function QCFormPage() {
 
   // Determine QC outcome based on form data
   const determineQCOutcome = (): { outcome: number; rejectionLevel: number } => {
-    const qcAudioStatus = formData.qc_audio_status; // This is the question answer (1, 2, 3, 4)
+    const qcAudioStatus = formData.qc_audio_status; // This is the question answer (1, 2, 3, 4, 7, 8)
     
-    // If qc_audio_status is 2 (No Conversation) or 3 (Irrelevant), it's fail
-    if (qcAudioStatus === '2' || qcAudioStatus === '3') {
+    // If qc_audio_status is 2 (No Conversation), 3 (Irrelevant), 7, or 8, it's fail
+    if (qcAudioStatus === '2' || qcAudioStatus === '3' || qcAudioStatus === '7' || qcAudioStatus === '8') {
       return { outcome: 2, rejectionLevel: 1 }; // Fail at audio status level
     }
     
