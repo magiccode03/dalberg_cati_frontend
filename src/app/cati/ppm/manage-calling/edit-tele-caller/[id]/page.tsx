@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
+import Checkbox from '@/components/ui/Checkbox';
 import Alert from '@/components/ui/Alert';
 import { ArrowLeft, UserPlus, Save } from 'lucide-react';
 
@@ -24,8 +25,9 @@ const teleCallerSchema = z.object({
     .min(10, 'Mobile number must be at least 10 digits')
     .max(10, 'Mobile number must be 10 digits')
     .regex(/^[0-9]+$/, 'Mobile number must contain only digits'),
-  status: z.string()
-    .min(1, 'Status is required'),
+  status: z.string().min(1, 'Status is required'),
+  fill_form: z.boolean(),
+  qc: z.boolean(),
 });
 
 type TeleCallerFormData = z.infer<typeof teleCallerSchema>;
@@ -59,6 +61,8 @@ export default function EditTeleCallerPage() {
       name: '',
       mobile_number: '',
       status: '1',
+      fill_form: false,
+      qc: false,
     },
   });
 
@@ -93,6 +97,8 @@ export default function EditTeleCallerPage() {
         setValue('name', data.name);
         setValue('mobile_number', data.mobile_number);
         setValue('status', data.status.toString());
+        setValue('fill_form', data.fill_form === 1);
+        setValue('qc', data.qc === 1);
       } else {
         setError(result.message || 'Failed to fetch telecaller data');
       }
@@ -116,10 +122,13 @@ export default function EditTeleCallerPage() {
     setSuccess(null);
 
     try {
-      // Prepare the payload - only send updatable fields
+      // Prepare the payload with all updatable fields
       const payload = {
         name: data.name,
         mobile_number: data.mobile_number,
+        status: parseInt(data.status),
+        fill_form: data.fill_form ? 1 : 0,
+        qc: data.qc ? 1 : 0,
       };
 
       // Get auth token
@@ -266,6 +275,15 @@ export default function EditTeleCallerPage() {
                     Enter 10-digit mobile number without country code
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Settings Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                Settings
+              </h3>
+              <div className="grid grid-cols-1 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Status *
@@ -276,9 +294,33 @@ export default function EditTeleCallerPage() {
                     onChange={(value) => setValue('status', Array.isArray(value) ? value[0] : value as string)}
                     error={errors.status?.message}
                   />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Select the status of the telecaller
-                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Permissions
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="fill_form"
+                        checked={watch('fill_form')}
+                        onCheckedChange={(checked) => setValue('fill_form', checked === true)}
+                      />
+                      <label htmlFor="fill_form" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Can Fill Form
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="qc"
+                        checked={watch('qc')}
+                        onCheckedChange={(checked) => setValue('qc', checked === true)}
+                      />
+                      <label htmlFor="qc" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        QC User
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

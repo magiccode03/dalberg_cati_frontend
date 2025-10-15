@@ -1621,6 +1621,264 @@
   },
   {
     "type": "radio",
+    "label": "22. Could you please tell me your caste?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+        {
+          "label": "Aguri",
+          "value": "1",
+          "tag": "opt_aguri"
+        },
+        {
+          "label": "Kansabanik",
+          "value": "2",
+          "tag": "opt_kansabanik"
+        },
+        {
+          "label": "Sadgop",
+          "value": "3",
+          "tag": "opt_sadgop"
+        },
+        {
+          "label": "Shunri",
+          "value": "4",
+          "tag": "opt_shunri"
+        },
+        {
+          "label": "Yadav",
+          "value": "5",
+          "tag": "opt_yadav"
+        },
+        {
+          "label": "Santal",
+          "value": "6",
+          "tag": "opt_santal"
+        },
+        {
+          "label": "Pod",
+          "value": "7",
+          "tag": "opt_pod"
+        },
+        {
+          "label": "Tanti",
+          "value": "8",
+          "tag": "opt_tanti"
+        },
+        {
+          "label": "Namaseej",
+          "value": "9",
+          "tag": "opt_namaseej"
+        },
+        {
+          "label": "Brahmins",
+          "value": "10",
+          "tag": "opt_brahmins"
+        },
+        {
+          "label": "Kayasthas",
+          "value": "11",
+          "tag": "opt_kayasthas"
+        },
+        {
+          "label": "Baidyas",
+          "value": "12",
+          "tag": "opt_baidyas"
+        },
+        {
+          "label": "Rajputs",
+          "value": "13",
+          "tag": "opt_rajputs"
+        },
+        {
+          "label": "Kshatriyas",
+          "value": "14",
+          "tag": "opt_kshatriyas"
+        },
+        {
+          "label": "Barui",
+          "value": "15",
+          "tag": "opt_barui"
+        },
+        {
+          "label": "Gandha Banik",
+          "value": "16",
+          "tag": "opt_gandha_banik"
+        },
+        {
+          "label": "Kulin Kayasthas",
+          "value": "17",
+          "tag": "opt_kulin_kayasthas"
+        },
+        {
+          "label": "Mahishya",
+          "value": "18",
+          "tag": "opt_mahishya"
+        },
+        {
+          "label": "Namasudra",
+          "value": "19",
+          "tag": "opt_namasudra"
+        },
+        {
+          "label": "Rajbanshi",
+          "value": "20",
+          "tag": "opt_rajbanshi"
+        },
+        {
+          "label": "Poundra",
+          "value": "21",
+          "tag": "opt_poundra"
+        },
+        {
+          "label": "Dom",
+          "value": "22",
+          "tag": "opt_dom"
+        },
+        {
+          "label": "Bagdi",
+          "value": "23",
+          "tag": "opt_bagdi"
+        },
+        {
+          "label": "Chamar",
+          "value": "24",
+          "tag": "opt_chamar"
+        },
+        {
+          "label": "Muchi",
+          "value": "25",
+          "tag": "opt_muchi"
+        },
+        {
+          "label": "Kori",
+          "value": "26",
+          "tag": "opt_kori"
+        },
+        {
+          "label": "Haldar",
+          "value": "27",
+          "tag": "opt_haldar"
+        },
+        {
+          "label": "Santhal",
+          "value": "28",
+          "tag": "opt_santhal"
+        },
+        {
+          "label": "Munda",
+          "value": "29",
+          "tag": "opt_munda"
+        },
+        {
+          "label": "Oraon",
+          "value": "30",
+          "tag": "opt_oraon"
+        },
+        {
+          "label": "Bhumij",
+          "value": "31",
+          "tag": "opt_bhumij"
+        },
+        {
+          "label": "Ho",
+          "value": "32",
+          "tag": "opt_ho"
+        },
+        {
+          "label": "Lodha",
+          "value": "33",
+          "tag": "opt_lodha"
+        },
+        {
+          "label": "Bhil",
+          "value": "34",
+          "tag": "opt_bhil"
+        },
+        {
+          "label": "Birhor",
+          "value": "35",
+          "tag": "opt_birhor"
+        },
+        {
+          "label": "Mahali",
+          "value": "36",
+          "tag": "opt_mahali"
+        },
+        {
+          "label": "Teli/Teli Sahu",
+          "value": "37",
+          "tag": "opt_teli_teli_sahu"
+        },
+        {
+          "label": "Napit",
+          "value": "38",
+          "tag": "opt_napit"
+        },
+        {
+          "label": "Karmakar",
+          "value": "39",
+          "tag": "opt_karmakar"
+        },
+        {
+          "label": "Rajak",
+          "value": "40",
+          "tag": "opt_rajak"
+        },
+        {
+          "label": "Dhoba",
+          "value": "41",
+          "tag": "opt_dhoba"
+        },
+        {
+          "label": "Hela",
+          "value": "42",
+          "tag": "opt_hela"
+        },
+        {
+          "label": "Kahar",
+          "value": "43",
+          "tag": "opt_kahar"
+        },
+        {
+          "label": "Kurmi",
+          "value": "45",
+          "tag": "opt_kurmi"
+        },
+        {
+          "label": "Pasi",
+          "value": "46",
+          "tag": "opt_pasi"
+        },
+        {
+          "label": "Keot",
+          "value": "47",
+          "tag": "opt_keot"
+        },
+        {
+          "label": "Others (Specify)",
+          "value": "44",
+          "tag": "opt_others_specify"
+        },
+        {
+          "label": "Refused to respond",
+          "value": "88",
+          "tag": "opt_refused_to_respond"
+        }
+    ],
+    "tag": "resp_caste_jati"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "resp_caste_jati === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "resp_caste_jati_oth"
+  },
+  {
+    "type": "radio",
     "label": "23. Could you please tell me the highest educational level of the most educated female of the household?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
