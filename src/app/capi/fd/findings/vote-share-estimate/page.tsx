@@ -7,12 +7,6 @@ import Heading from '@/components/ui/Heading';
 import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 
-interface VoteShareData {
-  party: string;
-  percentage: number;
-  count: string;
-  color: string;
-}
 
 interface DemographicData {
   category: string;
@@ -33,35 +27,6 @@ interface DemographicData {
 export default function VoteShareEstimatePage() {
   const [progressType, setProgressType] = useState('ac');
 
-  // 2025 Preference Data
-  const voteShare2025: VoteShareData[] = [
-    { party: 'Bhartiya Janta Party (BJP)', percentage: 49, count: '24,729', color: '#e97132' },
-    { party: 'Janta Dal (United) (JDU)', percentage: 10, count: '4,907', color: '#92d050' },
-    { party: 'Hindustani Awam Morcha (Secular) (HAMS)', percentage: 0, count: '112', color: '#dce119' },
-    { party: 'Vikassheel Insaan Party (VSIP)', percentage: 0, count: '139', color: '#275317' },
-    { party: 'Lok Janshakti Party (Ram Vilas)', percentage: 2, count: '1,131', color: '#7030a0' },
-    { party: 'Indian National Congress (INC)', percentage: 5, count: '2,713', color: '#00b0f0' },
-    { party: 'Rashtriya Janta Dal (RJD)', percentage: 28, count: '14,198', color: '#548235' },
-    { party: 'CPI-MaLe', percentage: 1, count: '502', color: '#ff0000' },
-    { party: 'JSP', percentage: 2, count: '757', color: '#ffff00' },
-    { party: 'Others', percentage: 1, count: '360', color: '#aeaeae' },
-    { party: 'NOTA/NWR', percentage: 1, count: '477', color: '#aeaeae' },
-  ];
-
-  // 2020 AE Data
-  const voteShare2020: VoteShareData[] = [
-    { party: 'Bhartiya Janta Party (BJP)', percentage: 26, count: '12,826', color: '#e97132' },
-    { party: 'Janta Dal (United) (JDU)', percentage: 24, count: '12,051', color: '#92d050' },
-    { party: 'Hindustani Awam Morcha (Secular) (HAMS)', percentage: 1, count: '309', color: '#dce119' },
-    { party: 'Vikassheel Insaan Party (VSIP)', percentage: 1, count: '693', color: '#275317' },
-    { party: 'Lok Janshakti Party (Ram Vilas)', percentage: 4, count: '1,913', color: '#7030a0' },
-    { party: 'Indian National Congress (INC)', percentage: 8, count: '3,803', color: '#00b0f0' },
-    { party: 'Rashtriya Janta Dal (RJD)', percentage: 19, count: '9,376', color: '#548235' },
-    { party: 'CPI-MaLe', percentage: 2, count: '1,091', color: '#ff0000' },
-    { party: 'JSP', percentage: 0, count: '0', color: '#ffff00' },
-    { party: 'Others', percentage: 2, count: '815', color: '#aeaeae' },
-    { party: 'NOTA/NWR', percentage: 14, count: '7,091', color: '#aeaeae' },
-  ];
 
   // Demographic Data
   const demographicData: DemographicData[] = [
@@ -96,45 +61,6 @@ export default function VoteShareEstimatePage() {
     console.log('Progress type changed to:', type);
   };
 
-  const renderBarChart = (data: VoteShareData[], title: string, interviews: number) => (
-    <div className="card-border p-3">
-      <h4 className="text-center mb-4">{title}</h4>
-      <div className="d-flex justify-content-end mb-4">
-        <h6 className="text-sm text-gray-600">Interviews Achieved - {interviews.toLocaleString()}</h6>
-      </div>
-      
-      {/* Bar Chart Visualization */}
-      <div className="chart-container" style={{ height: '450px', position: 'relative' }}>
-        <div className="chart-bars">
-          {data.map((item, index) => (
-            <div key={index} className="chart-bar-item mb-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700" style={{ width: '180px', textAlign: 'right', paddingRight: '15px' }}>
-                  {item.party}
-                </span>
-                <div className="flex items-center">
-                  <span className="text-sm font-bold text-gray-900 mr-2">{item.percentage}%</span>
-                  <span className="text-xs text-gray-500">({item.count})</span>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-8 relative">
-                <div
-                  className="h-8 rounded-full flex items-center justify-end pr-3"
-                  style={{
-                    width: `${item.percentage}%`,
-                    backgroundColor: item.color,
-                    color: item.color === '#275317' || item.color === '#7030a0' || item.color === '#548235' ? 'white' : 'black'
-                  }}
-                >
-                  <span className="text-sm font-bold">{item.percentage}%</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 
   const renderDemographicTable = () => {
     const categories = [...new Set(demographicData.map(item => item.category))];
@@ -266,20 +192,9 @@ export default function VoteShareEstimatePage() {
         </div>
       </div>
 
-      {/* Charts Section */}
-      <Card className="p-6 mb-6">
-        <div className="row">
-          <div className="col-md-6 mb-4">
-            {renderBarChart(voteShare2025, '2025 Preference', 50025)}
-          </div>
-          <div className="col-md-6 mb-4">
-            {renderBarChart(voteShare2020, '2020 AE', 49968)}
-          </div>
-        </div>
-      </Card>
 
       {/* Demographic Table Section */}
-      <Card className="p-6">
+      <Card className="">
         <div className="row">
           <div className="col-md-12">
             {renderDemographicTable()}

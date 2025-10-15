@@ -52,7 +52,7 @@ export default function GainAndLossesPage() {
     const getPreference = (row: GainLossData) => row['2025_preference'];
     
     return (
-    <Card className="p-6 mb-6">
+    <Card className="mb-6">
       <div className="w-full">
         <h4 className="text-center mb-4 text-lg font-semibold">{title}</h4>
         <div className="overflow-x-auto">
@@ -134,11 +134,6 @@ export default function GainAndLossesPage() {
           <Heading level={2} className="text-2xl font-semibold text-gray-900">
             Gain and Losses
           </Heading>
-          {pageInfo && (
-            <Text className="text-sm text-gray-600 mt-1">
-              Total Interviews: {pageInfo.total_interviews.toLocaleString()}
-            </Text>
-          )}
         </div>
         <div className="flex-1"></div>
         <div className="flex-1">

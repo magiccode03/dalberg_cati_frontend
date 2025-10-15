@@ -132,7 +132,7 @@ export default function CATIProgressPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
             Progress
           </Heading>
         </div>
@@ -208,7 +208,7 @@ export default function CATIProgressPage() {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
               Caller Performance
             </Heading>
           </div>
@@ -256,7 +256,7 @@ export default function CATIProgressPage() {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Outcome
             </Heading>
           </div>
@@ -305,7 +305,7 @@ export default function CATIProgressPage() {
       <Card>
         <div className="flex items-center mb-4">
           <div className="w-1 h-6 bg-green-500 mr-3"></div>
-          <Heading level={4} className="text-base font-semibold text-gray-900 dark:text-white">
+          <Heading level={3} className="text-base font-semibold text-gray-900 dark:text-white">
             Daily Call Outcome
           </Heading>
         </div>

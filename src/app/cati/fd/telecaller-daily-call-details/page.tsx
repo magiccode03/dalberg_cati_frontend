@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Container from '@/components/ui/Container';
+import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -312,10 +312,10 @@ const TelecallerDailyCallDetailPage = () => {
   );
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+    <FluidContainer>
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={2} className="text-2xl font-semibold text-gray-900">
+        <Heading level={2} className="text-2xl font-bold text-gray-900">
           Daily Call Detail <span className='text-5xl'>(coming soon)</span>
         </Heading>
         <div className="text-sm text-gray-500">
@@ -454,7 +454,7 @@ const TelecallerDailyCallDetailPage = () => {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
               Caller Performance (coming soon)
             </Heading>
           </div>
@@ -502,7 +502,7 @@ const TelecallerDailyCallDetailPage = () => {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Outcome (coming soon)
             </Heading>
           </div>
@@ -573,7 +573,7 @@ const TelecallerDailyCallDetailPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
               Call Detail
             </Heading>
           </div>
@@ -591,36 +591,37 @@ const TelecallerDailyCallDetailPage = () => {
               <p className="text-gray-600 dark:text-gray-400">No call details found</p>
             </div>
           ) : (
-            <Table className="table table-bordered table-striped table-hover">
-              <thead className="sticky-header bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-left">Call Time</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Received</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Response</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">API Response</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
-                  <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio file</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table striped bordered hover>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Caller Name</TableHead>
+                  <TableHead>Caller ID</TableHead>
+                  <TableHead>Call Time</TableHead>
+                  <TableHead>Call Received</TableHead>
+                  <TableHead>Caller Response</TableHead>
+                  <TableHead>API Response</TableHead>
+                  <TableHead>IVR Duration</TableHead>
+                  <TableHead>Talk Duration</TableHead>
+                  <TableHead>Audio file</TableHead>
+                  {/* <TableHead>Update</TableHead> */}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {callDetailData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">{(pagination.page - 1) * pagination.limit + index + 1}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 text-left">{item.caller_name || '-'}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{item.caller_id || '-'}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 text-left">{formatDateTime(item.call_time)}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 text-center">
+                  <TableRow key={item.id}>
+                    <TableCell>{(pagination.page - 1) * pagination.limit + index + 1}</TableCell>
+                    <TableCell>{item.caller_name || '-'}</TableCell>
+                    <TableCell>{item.caller_id || '-'}</TableCell>
+                    <TableCell>{formatDateTime(item.call_time)}</TableCell>
+                    <TableCell>
                       {item.call_received === 1 ? 'Yes' : item.call_received === 0 ? 'No' : '-'}
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200 text-center">-</td>
-                    <td className="px-4 py-3 border-b border-gray-200 text-center">-</td>
-                    <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{formatDuration(item.ivr_duration)}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{formatDuration(item.talk_duration)}</td>
-                    <td className="px-4 py-3 border-b border-gray-200 text-center">
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>{formatDuration(item.ivr_duration)}</TableCell>
+                    <TableCell>{formatDuration(item.talk_duration)}</TableCell>
+                    <TableCell>
                       {item.audio ? (
                         <Button
                           size="sm"
@@ -633,10 +634,16 @@ const TelecallerDailyCallDetailPage = () => {
                       ) : (
                         '-'
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                    {/* <TableCell>
+                      <Button variant="outline" size="sm">
+                        <i className="fa fa-edit mr-1"></i>
+                        Update
+                      </Button>
+                    </TableCell> */}
+                  </TableRow>
                 ))}
-              </tbody>
+              </TableBody>
             </Table>
           )}
         </div>
@@ -755,7 +762,7 @@ const TelecallerDailyCallDetailPage = () => {
           </div>
         </div>
       )}
-    </Container>
+    </FluidContainer>
   );
 };
 
