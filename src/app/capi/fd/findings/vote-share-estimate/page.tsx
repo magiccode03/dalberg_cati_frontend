@@ -43,7 +43,19 @@ interface VoteShareData {
       }>;
       colors: string[];
     };
-    '2020_ae': {
+    '2021_ae'?: {
+      chart_type: string;
+      chart_id: string;
+      question_id: string;
+      total_sample: number;
+      data: Array<{
+        name: string;
+        y: number;
+        count: string;
+      }>;
+      colors: string[];
+    };
+    '2020_ae'?: {
       chart_type: string;
       chart_id: string;
       question_id: string;
@@ -74,7 +86,7 @@ interface VoteShareData {
     region_name?: string;
     sample: string;
     years: {
-      '2020_ae'?: Record<string, number>;
+      '2021_ae'?: Record<string, number>;
       '2025_preference': Record<string, number>;
     };
   }>;
@@ -122,7 +134,10 @@ export default function VoteShareEstimatePage() {
   };
 
   const preference2025Data = voteShareData?.charts ? getChartData(voteShareData.charts['2025_preference']) : null;
-  const ae2020Data = voteShareData?.charts ? getChartData(voteShareData.charts['2020_ae']) : null;
+  // Try both 2021_ae and 2020_ae for backward compatibility
+  const ae2021Data = voteShareData?.charts ? 
+    (getChartData(voteShareData.charts['2021_ae']) || getChartData(voteShareData.charts['2020_ae'])) : null;
+  
 
 
   // Transform API demographic data to table format
@@ -230,20 +245,20 @@ export default function VoteShareEstimatePage() {
             <tbody>
               {voteShareData.ac_data.map((ac, index) => (
                 <React.Fragment key={ac.ac_code || `ac-${index}`}>
-                  {/* 2020 AE Row */}
+                  {/* 2021 AE Row */}
                   <tr>
                     <td rowSpan={2} className="text-center">{ac.ac_code}</td>
                     <td rowSpan={2}>{ac.ac_name}</td>
                     <td rowSpan={2} className="text-center">{ac.sample}</td>
-                    <td className="text-center">2020 AE</td>
-                    <td className="number">{ac.years['2020_ae']?.['AITC']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['BJP']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['INC']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['Left Front']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['Independent']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['AJSU']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['Others']?.toFixed(1) || '0.0'}</td>
-                    <td className="number">{ac.years['2020_ae']?.['NOTA']?.toFixed(1) || '0.0'}</td>
+                    <td className="text-center">2021 AE</td>
+                    <td className="number">{ac.years['2021_ae']?.['AITC']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['BJP']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['INC']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['Left Front']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['Independent']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['AJSU']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['Others']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['NOTA']?.toFixed(1) || '0.0'}</td>
                   </tr>
                   {/* 2025 Preference Row */}
                   <tr>
@@ -604,7 +619,7 @@ export default function VoteShareEstimatePage() {
         /* Default: Charts and Demographic Table */
         <>
           {/* Charts Section */}
-          {preference2025Data && ae2020Data && (
+          {preference2025Data && ae2021Data && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <HorizontalBarChart
                 title="2025 Preference"
@@ -612,8 +627,8 @@ export default function VoteShareEstimatePage() {
                 height={450}
               />
               <HorizontalBarChart
-                title="2020 AE"
-                data={ae2020Data}
+                title="2021 AE"
+                data={ae2021Data}
                 height={450}
               />
             </div>

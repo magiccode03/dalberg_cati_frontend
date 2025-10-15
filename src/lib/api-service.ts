@@ -240,7 +240,19 @@ class ApiService {
         }>;
         colors: string[];
       };
-      '2020_ae': {
+      '2021_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2020_ae'?: {
         chart_type: string;
         chart_id: string;
         question_id: string;
@@ -265,7 +277,7 @@ class ApiService {
       ac_name: string;
       sample: string;
       years: {
-        '2020_ae': Record<string, number>;
+        '2021_ae': Record<string, number>;
         '2025_preference': Record<string, number>;
       };
     }>;
