@@ -219,6 +219,61 @@ class ApiService {
     return this.request<any>('GET', '/dashboard/sample-statistics');
   }
 
+  // Vote Share Estimates Methods
+  async getVoteShareEstimates(progressType?: string): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+      progress_type?: string;
+    };
+    charts?: {
+      '2025_preference': {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2020_ae': {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    demographic_breakdown?: {
+      gender: Record<string, Record<string, number>>;
+      locality: Record<string, Record<string, number>>;
+      social_category: Record<string, Record<string, number>>;
+      age_group: Record<string, Record<string, number>>;
+      religion: Record<string, Record<string, number>>;
+    };
+    ac_data?: Array<{
+      ac_code: number;
+      ac_name: string;
+      sample: string;
+      years: {
+        '2020_ae': Record<string, number>;
+        '2025_preference': Record<string, number>;
+      };
+    }>;
+  }>> {
+    const queryString = progressType ? `?progress_type=${progressType}` : '';
+    return this.request<any>('GET', `/dashboard/findings/vote-share-estimates${queryString}`);
+  }
+
   // PMT Methods
   async getQCFailReport(page: number = 1): Promise<ApiResponse<any>> {
     return this.request<any>('GET', `/pmt/qc-fail-report?page=${page}`);
