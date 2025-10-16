@@ -15,9 +15,11 @@ import apiClient from '@/lib/api-client';
 interface QCUserProgressData {
   caller_name: string;
   qc_id: number;
+  audio_qc_total: number;
   audio_qc_completed: number;
   audio_qc_pass: number;
   audio_qc_fail: number;
+  audio_qc_pending: number;
 }
 
 interface APIResponse {
@@ -230,9 +232,11 @@ export default function QCUserProgressPage() {
       const headers = [
         'QC User Name',
         'QC ID', 
+        'Total Assigned',
         'Audio QC Completed',
         'Audio QC Pass',
-        'Audio QC Fail'
+        'Audio QC Fail',
+        'Audio QC Pending'
       ];
 
       // Create CSV rows
@@ -241,9 +245,11 @@ export default function QCUserProgressPage() {
         ...qcUserProgressData.map(user => [
           `"${user.caller_name}"`,
           user.qc_id,
+          user.audio_qc_total,
           user.audio_qc_completed,
           user.audio_qc_pass,
-          user.audio_qc_fail
+          user.audio_qc_fail,
+          user.audio_qc_pending
         ].join(','))
       ];
 
@@ -460,6 +466,9 @@ export default function QCUserProgressPage() {
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Total Assigned
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     Audio QC : Completed
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
@@ -467,6 +476,9 @@ export default function QCUserProgressPage() {
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     Audio QC : Fail
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Audio QC : Pending
                   </th>
                 </tr>
               </thead>
@@ -477,9 +489,11 @@ export default function QCUserProgressPage() {
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
                       {user.qc_id}
                     </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_total.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_completed.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_pass.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_fail.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_pending.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
