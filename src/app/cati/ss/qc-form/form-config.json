@@ -615,48 +615,6 @@
     "tag": "qc_q6"
   },
   {
-    "key": 7,
-    "type": "radio",
-    "label": {
-      "en": "7. Is the Age matching?",
-      "hi": "7. क्या आयु मेल खा रही है?",
-      "bn": "7. বয়স কি মিলে গেছে?"
-    },
-    "survey_q_tag": "resp_age",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
-    "required": true,
-    "options": [
-      {
-        "label": {
-          "en": "Matched",
-          "hi": "मिलान हुआ",
-          "bn": "মিলে গেছে"
-        },
-        "value": "1",
-        "tag": "opt_matched"
-      },
-      {
-        "label": {
-          "en": "Not Matched",
-          "hi": "मिलान नहीं हुआ",
-          "bn": "মেলেনি"
-        },
-        "value": "2",
-        "tag": "opt_not_matched"
-      },
-      {
-        "label": {
-          "en": "Did not ask",
-          "hi": "नहीं पूछा",
-          "bn": "জিজ্ঞাসা করা হয়নি"
-        },
-        "value": "4",
-        "tag": "opt_did_not_ask"
-      }
-    ],
-    "tag": "qc_q7"
-  },
-  {
     "key": 8,
     "type": "radio",
     "label": {
