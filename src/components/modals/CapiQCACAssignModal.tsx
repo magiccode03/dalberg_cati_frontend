@@ -45,7 +45,6 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [userStats, setUserStats] = useState<any>(null);
-  const [showNoDataPopup, setShowNoDataPopup] = useState(false);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   
   // Confirmation modal state
@@ -129,6 +128,18 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
       const data = await response.json();
       console.log('AC Details API Response:', data);
+      
+      // Debug first few ACs to see data_available values
+      if (data.success && data.data && data.data.length > 0) {
+        console.log('First 5 ACs data_available values:', 
+          data.data.slice(0, 5).map((ac: any) => ({
+            ac_code: ac.ac_code,
+            ac_name: ac.ac_name,
+            data_available: ac.data_available,
+            data_available_type: typeof ac.data_available
+          }))
+        );
+      }
 
       if (data.success) {
         // Transform API response to match our interface
@@ -194,10 +205,22 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   };
 
   const handleACSelect = (ac: ACData) => {
-    // Check if AC has no data available
-    if (ac.data_available === 0) {
-      setShowNoDataPopup(true);
-      return;
+    console.log('AC Selected:', {
+      ac_code: ac.ac_code,
+      ac_name: ac.ac_name,
+      data_available: ac.data_available,
+      data_available_type: typeof ac.data_available
+    });
+    
+    // Check if AC has no data available (handle both number 0 and string "0")
+    const dataAvailable = typeof ac.data_available === 'string' ? parseInt(ac.data_available) : ac.data_available;
+    if (isNaN(dataAvailable) || dataAvailable <= 0) {
+      console.log('No data available, AC disabled', {
+        original_value: ac.data_available,
+        parsed_value: dataAvailable,
+        is_nan: isNaN(dataAvailable)
+      });
+      return; // Just return without showing popup
     }
     
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
@@ -466,7 +489,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                   {acList.map((ac) => {
                     const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
-                    const hasNoData = ac.data_available === 0;
+                    const dataAvailable = typeof ac.data_available === 'string' ? parseInt(ac.data_available) : ac.data_available;
+                    const hasNoData = isNaN(dataAvailable) || dataAvailable <= 0;
                     
                     return (
                     <div
@@ -569,18 +593,6 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         loading={submitting}
       />
       
-      {/* No Data Available Popup */}
-      <ConfirmationModal
-        isOpen={showNoDataPopup}
-        onClose={() => setShowNoDataPopup(false)}
-        onConfirm={() => setShowNoDataPopup(false)}
-        title="No Data Available"
-        message="This Assembly Constituency has no data available for assignment. Please select an AC that has available data."
-        confirmText="OK"
-        cancelText=""
-        variant="info"
-        loading={false}
-      />
     </Modal>
   );
 };
