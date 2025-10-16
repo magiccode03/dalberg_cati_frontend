@@ -45,6 +45,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [userStats, setUserStats] = useState<any>(null);
+  const [showNoDataPopup, setShowNoDataPopup] = useState(false);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   
   // Confirmation modal state
@@ -162,6 +163,19 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           });
         }
         
+        // Sort ACs: data_available > 0 first, then by data_available descending
+        acData.sort((a: any, b: any) => {
+          // First priority: ACs with data_available > 0
+          const aHasData = a.data_available > 0;
+          const bHasData = b.data_available > 0;
+          
+          if (aHasData && !bHasData) return -1; // a comes first
+          if (!aHasData && bHasData) return 1;  // b comes first
+          
+          // If both have same data availability status, sort by data_available descending
+          return b.data_available - a.data_available;
+        });
+        
         // Display all filtered ACs (no pagination)
         setAcList(acData);
         
@@ -180,6 +194,12 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   };
 
   const handleACSelect = (ac: ACData) => {
+    // Check if AC has no data available
+    if (ac.data_available === 0) {
+      setShowNoDataPopup(true);
+      return;
+    }
+    
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
     
     if (isAlreadySelected) {
@@ -446,16 +466,19 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                   {acList.map((ac) => {
                     const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
+                    const hasNoData = ac.data_available === 0;
                     
                     return (
                     <div
                       key={ac.ac_code}
-                      className={`p-2 cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                      className={`p-2 transition-colors ${
+                        hasNoData
+                          ? 'cursor-not-allowed opacity-60 bg-gray-100 dark:bg-gray-800/50'
+                          : isSelected
+                          ? 'cursor-pointer bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                           : isAssigned
-                          ? 'bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400 hover:bg-green-100 dark:hover:bg-green-900/20'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                          ? 'cursor-pointer bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400 hover:bg-green-100 dark:hover:bg-green-900/20'
+                          : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                       onClick={() => handleACSelect(ac)}
                     >
@@ -544,6 +567,19 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         cancelText="Cancel"
         variant="danger"
         loading={submitting}
+      />
+      
+      {/* No Data Available Popup */}
+      <ConfirmationModal
+        isOpen={showNoDataPopup}
+        onClose={() => setShowNoDataPopup(false)}
+        onConfirm={() => setShowNoDataPopup(false)}
+        title="No Data Available"
+        message="This Assembly Constituency has no data available for assignment. Please select an AC that has available data."
+        confirmText="OK"
+        cancelText=""
+        variant="info"
+        loading={false}
       />
     </Modal>
   );
