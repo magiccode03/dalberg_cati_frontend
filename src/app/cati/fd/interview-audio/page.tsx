@@ -22,7 +22,19 @@ interface InterviewAudioData {
 
 interface APIResponse {
   success: boolean;
-  data: InterviewAudioData[];
+  data: {
+    data: InterviewAudioData[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  };
+  message: string;
+  timestamp: string;
 }
 
 // Utility function to fix audio URL encoding
@@ -96,7 +108,7 @@ export default function CATIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (appliedFilters.serverId) params.server_id = appliedFilters.serverId;
+      if (appliedFilters.serverId) params.id = appliedFilters.serverId;
       // Priority: AC Name dropdown takes precedence over AC Code input
       if (appliedFilters.acName) {
         params.ac_code = appliedFilters.acName; // AC Name dropdown stores AC code as value
@@ -120,8 +132,8 @@ export default function CATIInterviewAudioPage() {
         
         // Handle pagination from API response
         if (response.data.pagination) {
-          setTotalItems(response.data.pagination.total_count);
-          setTotalPages(response.data.pagination.total_pages);
+          setTotalItems(response.data.pagination.total);
+          setTotalPages(response.data.pagination.totalPages);
         } else {
           // Fallback to client-side calculation if no pagination info
           setTotalItems(interviewData.length);
@@ -133,7 +145,7 @@ export default function CATIInterviewAudioPage() {
           const uniqueACs = Array.from(new Set(interviewData.map((item: InterviewAudioData) => JSON.stringify({ ac_code: item.ac_code, ac_name: item.ac_name }))))
             .map((str: unknown) => JSON.parse(str as string) as { ac_code: number; ac_name: string });
           const acOptionsData = [
-            { value: '', label: 'Select ACs' },
+            { value: '', label: 'All ACs' },
             ...uniqueACs
               .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
               .map(ac => ({
@@ -257,7 +269,7 @@ export default function CATIInterviewAudioPage() {
         <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Code
               </label>
@@ -268,7 +280,7 @@ export default function CATIInterviewAudioPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter AC Code"
               />
-            </div>
+            </div> */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Name
@@ -481,7 +493,7 @@ export default function CATIInterviewAudioPage() {
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Token</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.id}</p>
                   </div>
                   <div>

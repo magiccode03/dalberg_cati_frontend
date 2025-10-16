@@ -12,7 +12,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2, Image, User } from 'lucide-react';
+import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
@@ -115,13 +115,11 @@ interface APIResponse {
   success: boolean;
   data: {
     interviews: InterviewData[];
-    pagination: PaginationData;
     filters_applied: Record<string, any>;
     sorting: {
       field: string;
       direction: string;
     };
-    message: string;
   };
   message: string;
   timestamp: string;
@@ -149,6 +147,7 @@ const InterviewLogPage = () => {
   const [pageSize, setPageSize] = useState(50);
 
   // API state management
+  const [allInterviewData, setAllInterviewData] = useState<DisplayInterviewData[]>([]);
   const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -182,6 +181,9 @@ const InterviewLogPage = () => {
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
+
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: 'interview_date'; direction: 'asc' | 'desc' } | null>(null);
 
   // Fetch polling stations from API based on selected AC code
   const fetchPollingStations = async (acCode?: string) => {
@@ -406,9 +408,7 @@ const InterviewLogPage = () => {
       if (filters.audio_re_qc_status.length > 0) queryParams.append('audio_re_qc_status', filters.audio_re_qc_status.join(','));
       if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
       
-      // Add pagination
-      queryParams.append('page', currentPage.toString());
-      queryParams.append('per_page', pageSize.toString());
+      // Note: Backend no longer supports pagination parameters
 
       console.log('🔍 Making API request to:', `/overview/interview-log?${queryParams.toString()}`);
       
@@ -419,14 +419,13 @@ const InterviewLogPage = () => {
       
       if (data.success && data.data.interviews) {
         const transformedData = transformAPIData(data.data.interviews);
-        setInterviewData(transformedData);
-        // Use the actual count from pagination, or 0 if no data
-        const actualCount = transformedData.length > 0 ? data.data.pagination.total_count : 0;
-        setTotalCount(actualCount);
-        setTotalPages(data.data.pagination.total_pages);
+        setAllInterviewData(transformedData);
+        setTotalCount(transformedData.length);
+        setTotalPages(Math.ceil(transformedData.length / pageSize));
         setError(null);
       } else {
         console.error('API did not return interview data:', data);
+        setAllInterviewData([]);
         setInterviewData([]);
         setTotalCount(0);
         setTotalPages(0);
@@ -452,6 +451,7 @@ const InterviewLogPage = () => {
       }
       
       // Set empty data when API fails
+      setAllInterviewData([]);
       setInterviewData([]);
       setTotalCount(0);
       setTotalPages(0);
@@ -507,10 +507,19 @@ const InterviewLogPage = () => {
     }
   };
 
-  // Load data on component mount and when pagination changes
+  // Load data on component mount (pagination is now handled client-side)
   useEffect(() => {
     fetchInterviewLogs();
-  }, [currentPage, pageSize]);
+  }, []);
+
+  // Handle client-side pagination
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginatedData = allInterviewData.slice(startIndex, endIndex);
+    setInterviewData(paginatedData);
+    setTotalPages(Math.ceil(allInterviewData.length / pageSize));
+  }, [allInterviewData, currentPage, pageSize]);
 
   // Load agencies, AC list, interviewers, and users on component mount
   useEffect(() => {
@@ -532,6 +541,7 @@ const InterviewLogPage = () => {
   // Debounced filter update
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      setCurrentPage(1); // Reset to first page when filters change
       fetchInterviewLogs();
     }, 500);
 
@@ -567,6 +577,12 @@ const InterviewLogPage = () => {
     // Add GPS map logic here
   };
 
+  const handlePlayAudio = (serverId: string, audioFile: string) => {
+    setSelectedServerId(serverId);
+    setSelectedAudioFile(audioFile);
+    setAudioModalOpen(true);
+  };
+
   const handleFilterChange = (field: string, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -591,16 +607,32 @@ const InterviewLogPage = () => {
     setCurrentPage(page);
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
-    setAudioModalOpen(true);
-  };
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
     setSelectedServerId('');
     setSelectedAudioFile('');
+  };
+
+  const handleSort = (key: 'interview_date') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedData = () => {
+    if (!sortConfig) return interviewData;
+    
+    return [...interviewData].sort((a, b) => {
+      const aValue = new Date(a.interview_date).getTime();
+      const bValue = new Date(b.interview_date).getTime();
+      
+      return sortConfig.direction === 'asc' 
+        ? aValue - bValue
+        : bValue - aValue;
+    });
   };
 
   return (
@@ -646,20 +678,10 @@ const InterviewLogPage = () => {
               {/* Interview Date */}
               <div>
                 <Text className="text-sm font-medium mb-2">Interview Date</Text>
-                <SelectDropdown
-                  options={[
-                    { value: '', label: 'Select Interview Date' },
-                    { value: '2025-06-17', label: '2025-06-17' },
-                    { value: '2025-06-15', label: '2025-06-15' },
-                    { value: '2025-06-14', label: '2025-06-14' },
-                    { value: '2025-06-13', label: '2025-06-13' },
-                    { value: '2025-06-12', label: '2025-06-12' },
-                  ]}
+                <Input
+                  type="date"
                   value={filters.interview_date}
-                  onChange={(value) => handleFilterChange('interview_date', value)}
-                  placeholder="Search or select date"
-                  searchable={true}
-                  clearable={true}
+                  onChange={(e) => handleFilterChange('interview_date', e.target.value)}
                 />
               </div>
 
@@ -817,8 +839,8 @@ const InterviewLogPage = () => {
                     { value: '2', label: 'No Conversation' },
                     { value: '3', label: 'Irrelevant Conversation' },
                     { value: '4', label: 'Can hear the interviewer more than the respondent' },
-                    { value: '5', label: 'The interviewer is asking questions mechanically' },
-                    { value: '6', label: 'Interviewer acting as respondent' },
+                    // { value: '5', label: 'The interviewer is asking questions mechanically' },
+                    // { value: '6', label: 'Interviewer acting as respondent' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -841,37 +863,6 @@ const InterviewLogPage = () => {
                 </div>
               </div>
 
-              {/* Audio Re-QC */}
-              <div>
-                <Text className="text-sm font-medium mb-2">Audio Re-QC</Text>
-                <div className="space-y-3">
-                  {[
-                    { value: '0', label: 'NA' },
-                    { value: '1', label: 'Pass' },
-                    { value: '2', label: 'Fail' },
-                    { value: '3', label: 'Pending' },
-                  ].map(option => (
-                    <div key={option.value} className="flex items-start space-x-3">
-                      <input
-                        type="checkbox"
-                        id={`audio_re_qc_${option.value}`}
-                        checked={filters.audio_re_qc_status.includes(option.value)}
-                        onChange={(e) => 
-                          handleCheckboxChange('audio_re_qc_status', option.value, e.target.checked)
-                        }
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none cursor-pointer flex-shrink-0 mt-0.5"
-                      />
-                      <label 
-                        htmlFor={`audio_re_qc_${option.value}`} 
-                        className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer leading-5"
-                      >
-                        {option.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Status */}
               <div>
                 <Text className="text-sm font-medium mb-2">Status</Text>
@@ -882,8 +873,8 @@ const InterviewLogPage = () => {
                     { value: '20', label: 'Rejected' },
                     { value: '40', label: 'Under QC' },
                     { value: '60', label: 'QC Completed' },
-                    { value: '70', label: 'Under Re-QC' },
-                    { value: '80', label: 'Re-QC Completed' },
+                    // { value: '70', label: 'Under Re-QC' },
+                    // { value: '80', label: 'Re-QC Completed' },
                   ].map(option => (
                     <div key={option.value} className="flex items-start space-x-3">
                       <input
@@ -968,7 +959,22 @@ const InterviewLogPage = () => {
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interview Date</th>
+                        <th 
+                          className="px-4 py-3 font-semibold text-gray-700 text-center cursor-pointer hover:bg-gray-100"
+                          onClick={() => handleSort('interview_date')}
+                        >
+                          <div className="flex items-center justify-center">
+                            <span>Interview Date</span>
+                            <div className="ml-1 flex flex-col">
+                              <ChevronUp
+                                className={`h-3 w-3 ${sortConfig?.key === 'interview_date' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                              />
+                              <ChevronDown
+                                className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'interview_date' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                              />
+                            </div>
+                          </div>
+                        </th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">Sample Type</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">PS Name</th>
@@ -985,7 +991,7 @@ const InterviewLogPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {interviewData.map((interview, index) => (
+                      {getSortedData().map((interview, index) => (
                         <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {((currentPage - 1) * pageSize) + index + 1}
@@ -1042,7 +1048,7 @@ const InterviewLogPage = () => {
                 </div>
 
                 {/* Empty State */}
-                {interviewData.length === 0 && !loading && (
+                {getSortedData().length === 0 && !loading && (
                   <div className="text-center py-12">
                     <Text className="text-gray-500 text-lg">
                       No interview data found.
@@ -1050,15 +1056,24 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
+                {/* Pagination Controls */}
                 <div className="mt-6 pt-4 border-t border-gray-200">
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                    className="justify-center"
-                  />
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    {/* Pagination Info */}
+                    <div className="text-sm text-gray-600">
+                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()} entries
+                    </div>
+
+                    {/* Pagination Component */}
+                    <PaginationStandard
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalCount}
+                      itemsPerPage={pageSize}
+                      onPageChange={handlePageChange}
+                      className="justify-center"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

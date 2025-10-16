@@ -65,16 +65,22 @@ export default function BasicDemographicsPage() {
         type: 'shadow'
       }
     },
-    legend: {
-      data: ['Universal Coverage', 'Baseline Coverage']
-    },
     xAxis: {
       type: 'category',
       data: ['Male', 'Female']
     },
     yAxis: {
       type: 'value',
-      max: 100
+      max: 100,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        show: false
+      }
     },
     series: [
       {
@@ -116,16 +122,22 @@ export default function BasicDemographicsPage() {
         type: 'shadow'
       }
     },
-    legend: {
-      data: ['Universal Coverage', 'Baseline Coverage']
-    },
     xAxis: {
       type: 'category',
       data: ['Urban', 'Rural']
     },
     yAxis: {
       type: 'value',
-      max: 100
+      max: 100,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        show: false
+      }
     },
     series: [
       {
@@ -167,16 +179,22 @@ export default function BasicDemographicsPage() {
         type: 'shadow'
       }
     },
-    legend: {
-      data: ['Universal Coverage', 'Baseline Coverage']
-    },
     xAxis: {
       type: 'category',
       data: ['General+OBC+EBC', 'SC', 'ST']
     },
     yAxis: {
       type: 'value',
-      max: 100
+      max: 100,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        show: false
+      }
     },
     series: [
       {
@@ -219,16 +237,22 @@ export default function BasicDemographicsPage() {
         type: 'shadow'
       }
     },
-    legend: {
-      data: ['Universal Coverage', 'Baseline Coverage']
-    },
     xAxis: {
       type: 'category',
       data: ['18-24 Years', '25-34 Years', '35-50 Years', '50+ Years']
     },
     yAxis: {
       type: 'value',
-      max: 100
+      max: 100,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        show: false
+      }
     },
     series: [
       {
@@ -272,16 +296,22 @@ export default function BasicDemographicsPage() {
         type: 'shadow'
       }
     },
-    legend: {
-      data: ['Universal Coverage', 'Baseline Coverage']
-    },
     xAxis: {
       type: 'category',
       data: ['Hindu', 'Muslim', 'Others']
     },
     yAxis: {
       type: 'value',
-      max: 100
+      max: 100,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      splitLine: {
+        show: false
+      }
     },
     series: [
       {
@@ -317,33 +347,33 @@ export default function BasicDemographicsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6">
       {/* Page Title */}
       <div className="mb-8">
-        <Heading level={4}>Demographic</Heading>
+        <Heading level={2}className='text-2xl font-semibold text-gray-900'>Demographic</Heading>
       </div>
 
         {/* First Row - 3 Charts */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {/* Gender Coverage */}
-          <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+          <Card className="p-0 border border-black">
+            <Heading level={3} align="center" className="mb-0">
               Gender Coverage
             </Heading>
             <ReactECharts option={genderChartOptions} style={{ height: '400px' }} />
           </Card>
 
           {/* Locality Coverage */}
-          <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+          <Card className="p-0 border border-black">
+            <Heading level={3} align="center" className="mb-0">
               Locality Coverage
             </Heading>
             <ReactECharts option={localityChartOptions} style={{ height: '400px' }} />
           </Card>
 
           {/* Social Category Coverage */}
-          <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+          <Card className="p-0 border border-black">
+            <Heading level={3} align="center" className="mb-0">
               Social Category Coverage
             </Heading>
             <ReactECharts option={socialCategoryChartOptions} style={{ height: '400px' }} />
@@ -353,16 +383,16 @@ export default function BasicDemographicsPage() {
         {/* Second Row - 2 Charts (50%-50%) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Age Coverage */}
-          <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+          <Card className="p-0 border border-black">
+            <Heading level={3} align="center" className="mb-0">
               Age Coverage
             </Heading>
             <ReactECharts option={ageChartOptions} style={{ height: '400px' }} />
           </Card>
 
           {/* Religion Coverage */}
-          <Card className="p-6">
-            <Heading level={4} align="center" className="mb-4">
+          <Card className="p-0 border border-black">
+            <Heading level={3} align="center" className="mb-0">
               Religion Coverage
             </Heading>
             <ReactECharts option={religionChartOptions} style={{ height: '400px' }} />
