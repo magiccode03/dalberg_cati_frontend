@@ -173,7 +173,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       }
     } catch (err: any) {
       console.error('Error fetching AC details:', err);
-      setError(err.message || 'Error fetching AC details');
+      setError(err.error || 'Error fetching AC details');
     } finally {
       setLoading(false);
     }
@@ -232,11 +232,22 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         setSelectedAcs([]);
         setSearchTerm('');
       } else {
-        setError('Some assignments failed. Please try again.');
+        // Get error message from first failed response
+        const failedResponse = responses.find(r => !r.ok);
+        if (failedResponse) {
+          try {
+            const errorData = await failedResponse.json();
+            setError(errorData.error || errorData.message || 'Some assignments failed. Please try again.');
+          } catch (parseError) {
+            setError('Some assignments failed. Please try again.');
+          }
+        } else {
+          setError('Some assignments failed. Please try again.');
+        }
       }
     } catch (err: any) {
       console.error('Error assigning data:', err);
-      setError(err.message || 'Error assigning data');
+      setError(err.error || 'Error assigning data');
     } finally {
       setSubmitting(false);
     }
@@ -279,7 +290,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         setError(null);
       } else {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to unassign AC');
+        setError(errorData.error || 'Failed to unassign AC');
       }
     } catch (err: any) {
       console.error('Error unassigning AC:', err);
@@ -482,7 +493,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                           <div className="text-right">
                             <div className="text-xs text-gray-500 dark:text-gray-400">Available</div>
                             <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {ac.total_data}
+                              {ac.data_available}
                             </div>
                           </div>
                         </div>
