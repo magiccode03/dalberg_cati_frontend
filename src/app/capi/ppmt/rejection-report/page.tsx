@@ -54,7 +54,7 @@ export default function RejectionReportPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25);
-  const [appliedFilters, setAppliedFilters] = useState(filters); // Track applied filters separately
+  const [appliedFilters, setAppliedFilters] = useState<any>(null); // Track applied filters separately - start with null to prevent initial API call
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
@@ -63,6 +63,10 @@ export default function RejectionReportPage() {
   
   // Memoize the API parameters based on applied filters (not current filters)
   const apiParams = React.useMemo(() => {
+    if (!appliedFilters) {
+      return null;
+    }
+
     const params: any = {
       report_days: appliedFilters.reportDays,
       report_level: appliedFilters.reportLevel,
@@ -99,6 +103,11 @@ export default function RejectionReportPage() {
   
   // Check if we should make the API call based on required parameters for each level
   const shouldMakeApiCall = React.useMemo(() => {
+    // Don't make API call if no filters have been applied yet
+    if (!appliedFilters) {
+      return false;
+    }
+
     // For custom date range: both custom_date and custom_date_end are required
     if (appliedFilters.reportDays === 'custom') {
       if (!appliedFilters.customDate || appliedFilters.customDate.trim() === '' || 
@@ -123,7 +132,7 @@ export default function RejectionReportPage() {
     }
     
     return true;
-  }, [appliedFilters.reportDays, appliedFilters.customDate, appliedFilters.customDateEnd, appliedFilters.reportLevel, appliedFilters.acCode, appliedFilters.interviewerId]);
+  }, [appliedFilters]);
 
   // Fetch rejection report data from API
   const { data, loading, error, refetch } = useRejectionReport(shouldMakeApiCall ? apiParams : null);
@@ -198,12 +207,27 @@ export default function RejectionReportPage() {
     ];
   }, [filterOptionsData]);
 
+  // Auto-load data with default parameters when component mounts
+  useEffect(() => {
+    // Only auto-load if no filters have been applied yet
+    if (!appliedFilters) {
+      setAppliedFilters(filters); // Apply default filters to load initial data
+    }
+  }, []); // Empty dependency array - only run once on mount
+
   // Handle page changes
   useEffect(() => {
     if (currentPage > 1) {
       refetch();
     }
   }, [currentPage, refetch]);
+
+  // Handle applied filters changes - trigger refetch when filters are applied
+  useEffect(() => {
+    if (shouldMakeApiCall) {
+      refetch();
+    }
+  }, [appliedFilters, refetch, shouldMakeApiCall]);
 
   // Transform API data to UI format
   const transformAPIData = (apiData: any[]): RejectionData[] => {
@@ -260,7 +284,7 @@ export default function RejectionReportPage() {
   const handleSearch = () => {
     setCurrentPage(1); // Reset to first page when searching
     setAppliedFilters(filters); // Apply current filters
-    refetch();
+    // The refetch will be triggered automatically by the useEffect when appliedFilters changes
   };
 
   const handleClear = () => {
@@ -281,7 +305,7 @@ export default function RejectionReportPage() {
       qualityreportstatus: ''
     };
     setFilters(defaultFilters);
-    setAppliedFilters(defaultFilters); // Also clear applied filters
+    setAppliedFilters(defaultFilters); // Apply default filters to reload data
     setCurrentPage(1);
   };
 
@@ -340,6 +364,157 @@ export default function RejectionReportPage() {
     );
   }
 
+
+  // Show message when no search has been performed yet
+  if (!appliedFilters) {
+    return (
+      <Container maxWidth="full">
+        <Heading level={2} className="text-2xl font-semibold mb-6">
+          Rejection Report
+        </Heading>
+
+        {/* Search Filters */}
+        <Card className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div>
+              <Text className="block text-sm font-medium mb-2">Report Days</Text>
+              <SelectDropdown
+                value={filters.reportDays}
+                onChange={(value) => handleFilterChange('reportDays', Array.isArray(value) ? value[0] : value)}
+                options={reportDaysOptions}
+                disabled={filterOptionsLoading}
+              />
+            </div>
+
+            {filters.reportDays === 'custom' && (
+              <>
+                <div>
+                  <Text className="block text-sm font-medium mb-2">Start Date</Text>
+                  <Input
+                    type="date"
+                    value={filters.customDate}
+                    onChange={(e) => handleFilterChange('customDate', e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Text className="block text-sm font-medium mb-2">End Date</Text>
+                  <Input
+                    type="date"
+                    value={filters.customDateEnd}
+                    onChange={(e) => handleFilterChange('customDateEnd', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Level</Text>
+              <SelectDropdown
+                value={filters.reportLevel}
+                onChange={(value) => handleFilterChange('reportLevel', Array.isArray(value) ? value[0] : value)}
+                options={reportLevelsOptions}
+                disabled={filterOptionsLoading}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
+              <Input
+                type="text"
+                placeholder="Search by Mobile Number"
+                value={filters.mobileNo}
+                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
+              />
+            </div>
+
+            {filters.reportLevel === 'interviewer' && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
+                <SelectDropdown
+                  value={filters.interviewerId}
+                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
+                    ...interviewerDropdownOptions
+                  ]}
+                  disabled={interviewerDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
+            <div className="flex items-end gap-2">
+              <Button onClick={handleSearch} className="flex-1">
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+              <Button 
+                onClick={handleClear}
+                variant="outline"
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Message when no search has been performed */}
+        <Card>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Text className="text-blue-600 mb-4 text-lg">
+                Please configure your filters and click Search to view the rejection report
+              </Text>
+              <Text className="text-gray-600">
+                Use the filters above to specify the criteria for your rejection report search.
+              </Text>
+            </div>
+          </div>
+        </Card>
+      </Container>
+    );
+  }
 
   // Show message when required parameters are missing for specific levels
   if (
@@ -652,10 +827,13 @@ export default function RejectionReportPage() {
 
         {/* Rejection Report Table */}
         <Card className="">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
+          <div className="mb-6">
+            <div className="flex items-center mb-2">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
               <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400 ml-4">
+              Total <span className="font-bold text-black dark:text-white">{totalCount.toLocaleString()}</span> items
             </div>
           </div>
           

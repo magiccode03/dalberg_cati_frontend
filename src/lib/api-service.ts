@@ -96,12 +96,20 @@ class ApiService {
     config?: any
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await apiClient.request({
+      const requestConfig: any = {
         method,
         url: endpoint,
-        data,
         ...config,
-      });
+      };
+
+      // For GET requests, use params instead of data
+      if (method === 'GET' && data) {
+        requestConfig.params = data;
+      } else if (data) {
+        requestConfig.data = data;
+      }
+
+      const response = await apiClient.request(requestConfig);
 
       return {
         success: response.data.success || true,
@@ -485,6 +493,195 @@ class ApiService {
         };
       };
     }>('GET', '/dashboard/findings/wisdom-of-crowds');
+  }
+
+  // Basic Demographics API
+  async getBasicDemographics(progressType?: number): Promise<ApiResponse<{
+    view_type: string;
+    demographic_charts: {
+      gender_coverage: {
+        male: string;
+        female: string;
+        male_achievement: string;
+        female_achievement: string;
+        male_difference: string;
+        female_difference: string;
+      };
+      locality_coverage: {
+        urban: string;
+        rural: string;
+        urban_achievement: string;
+        rural_achievement: string;
+        urban_difference: string;
+        rural_difference: string;
+      };
+      social_category_coverage: {
+        general: string;
+        obc: string;
+        sc: string;
+        st: string;
+        general_achievement: number;
+        obc_achievement: number;
+        sc_achievement: string;
+        st_achievement: string;
+        general_obc_achievement: string;
+      };
+      age_coverage: {
+        age_18_24: string;
+        age_25_34: string;
+        age_35_50: string;
+        age_50_above: string;
+        age_18_24_achievement: string;
+        age_25_34_achievement: string;
+        age_35_50_achievement: string;
+        age_50_above_achievement: string;
+      };
+      religion_coverage: {
+        hindu: string;
+        muslim: string;
+        sikh: string;
+        christian: string;
+        other: string;
+        hindu_achievement: string;
+        muslim_achievement: string;
+        sikh_achievement: number;
+        christian_achievement: number;
+        other_achievement: string;
+      };
+    };
+    navigation_tiles: {
+      total_ac_count: number;
+      total_pc_count: number;
+      total_district_count: number;
+      total_zone_count: number;
+    };
+  }>> {
+    return this.request<{
+      view_type: string;
+      demographic_charts: {
+        gender_coverage: {
+          male: string;
+          female: string;
+          male_achievement: string;
+          female_achievement: string;
+          male_difference: string;
+          female_difference: string;
+        };
+        locality_coverage: {
+          urban: string;
+          rural: string;
+          urban_achievement: string;
+          rural_achievement: string;
+          urban_difference: string;
+          rural_difference: string;
+        };
+        social_category_coverage: {
+          general: string;
+          obc: string;
+          sc: string;
+          st: string;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: string;
+          st_achievement: string;
+          general_obc_achievement: string;
+        };
+        age_coverage: {
+          age_18_24: string;
+          age_25_34: string;
+          age_35_50: string;
+          age_50_above: string;
+          age_18_24_achievement: string;
+          age_25_34_achievement: string;
+          age_35_50_achievement: string;
+          age_50_above_achievement: string;
+        };
+        religion_coverage: {
+          hindu: string;
+          muslim: string;
+          sikh: string;
+          christian: string;
+          other: string;
+          hindu_achievement: string;
+          muslim_achievement: string;
+          sikh_achievement: number;
+          christian_achievement: number;
+          other_achievement: string;
+        };
+      };
+      navigation_tiles: {
+        total_ac_count: number;
+        total_pc_count: number;
+        total_district_count: number;
+        total_zone_count: number;
+      };
+      data_provider?: Array<{
+        ac_code: number;
+        ac_name: string;
+        pc_code: number;
+        pc_name: string;
+        district_code: number;
+        district_name: string;
+        region_code: number | null;
+        region_name: string | null;
+        sample_target: number;
+        valid_underqc_achived: number;
+        demographics: {
+          male: number;
+          female: number;
+          male_achievement: number;
+          female_achievement: number;
+          male_difference: number;
+          female_difference: number;
+          age_18_24: number;
+          age_25_34: number;
+          age_35_50: number;
+          age_50_above: number;
+          age_18_24_achievement: number;
+          age_25_34_achievement: number;
+          age_35_50_achievement: number;
+          age_50_above_achievement: number;
+          age_18_24_difference: number;
+          age_25_34_difference: number;
+          age_35_50_difference: number;
+          age_50_above_difference: number;
+          urban: number;
+          rural: number;
+          urban_achievement: number;
+          rural_achievement: number;
+          urban_difference: number;
+          rural_difference: number;
+          hindu: number;
+          muslim: number;
+          sikh: number;
+          christian: number;
+          religion_others: number;
+          hindu_achievement: number;
+          muslim_achievement: number;
+          sikh_achievement: number;
+          christian_achievement: number;
+          religion_others_achievement: number;
+          hindu_difference: number;
+          muslim_difference: number;
+          sikh_difference: number;
+          christian_difference: number;
+          religion_others_difference: number;
+          general: number;
+          obc: number;
+          sc: number;
+          st: number;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: number;
+          st_achievement: number;
+          general_difference: number;
+          obc_difference: number;
+          sc_difference: number;
+          st_difference: number;
+          general_obc_difference: number;
+        };
+      }>;
+    }>('GET', '/demographics/basic-demographics', progressType ? { progress_type: progressType } : {});
   }
 }
 

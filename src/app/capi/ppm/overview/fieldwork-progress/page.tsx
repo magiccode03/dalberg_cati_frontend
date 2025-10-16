@@ -56,7 +56,7 @@ export default function FieldworkProgressPage() {
           acName: ac.ac_name,
           districtName: ac.district_name,
           validUnderQc: ac.total_achieved,
-          reject: ac.rejected_interviews,
+          reject: ((ac as any).reject || 0) - ((ac as any).reject_auto || 0), // Subtract reject_auto from reject
           completionPercent: parseFloat(ac.completion_percentage)
         }));
         setAcProgressData(acData);

@@ -477,7 +477,7 @@ const InterviewLogPage = () => {
   const transformAPIData = (apiData: InterviewData[]): DisplayInterviewData[] => {
     return apiData.map(item => ({
       server_id: item.server_id.toString(),
-      interview_date: formatDate(item.server_date), // Use server_date instead of interview_date
+      interview_date: formatDate(item.interview_date), // Use interview_date from API
       sample_type: getSampleTypeLabel(item.sample_type),
       ac_code: item.ac_code,
       ac_name: item.ac_name,
