@@ -400,6 +400,12 @@ export default function RejectionReportPage() {
     let qcQuestion;
     let qcAnswer;
     
+    console.log('Debug Audio Fail Reason:', {
+      levelStr,
+      qcData: row.qcData,
+      serverId: row.serverId
+    });
+    
     if (levelStr === '1') {
       qcQuestion = formConfig.find(q => q.tag === 'qc_audio_status');
       qcAnswer = row.qcData?.qc_audio_status;
@@ -411,15 +417,35 @@ export default function RejectionReportPage() {
       qcAnswer = (row.qcData as any)?.[`qc_q${levelStr}`];
     }
     
-    if (qcQuestion && qcAnswer) {
+    console.log('Debug QC Question and Answer:', {
+      qcQuestion: qcQuestion ? { key: qcQuestion.key, tag: qcQuestion.tag, label: qcQuestion.label } : null,
+      qcAnswer,
+      hasOptions: qcQuestion?.options ? qcQuestion.options.length : 0
+    });
+    
+    if (qcQuestion && qcAnswer !== undefined && qcAnswer !== null) {
+      // Handle special case where qcAnswer is 0 (not answered)
+      if (qcAnswer === 0) {
+        console.log('Debug QC Answer is 0 - Not answered');
+        return 'Not Answered';
+      }
+      
       const selectedOption = qcQuestion.options?.find((opt: any) => opt.value === qcAnswer.toString());
+      console.log('Debug Selected Option:', {
+        selectedOption,
+        qcAnswerString: qcAnswer.toString(),
+        allOptions: qcQuestion.options?.map(opt => ({ value: opt.value, label: opt.label }))
+      });
+      
       if (selectedOption) {
         const optionLabel = typeof selectedOption.label === 'string' ? selectedOption.label : selectedOption.label?.en || '';
+        console.log('Debug Final Label:', optionLabel);
         return optionLabel;
       }
     }
     
     // Fallback to raw value
+    console.log('Debug Fallback to raw value:', row.audioFailReason?.toString());
     return row.audioFailReason?.toString() || '-';
   };
 
@@ -560,8 +586,13 @@ export default function RejectionReportPage() {
         return `Level ${levelStr}`;
       }
 
-      if (!qcAnswer) {
+      if (qcAnswer === undefined || qcAnswer === null) {
         return `Level ${levelStr}`;
+      }
+
+      // Handle special case where qcAnswer is 0 (not answered)
+      if (qcAnswer === 0) {
+        return `Level ${levelStr} - Not Answered`;
       }
 
       // Find the selected QC option
