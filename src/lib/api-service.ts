@@ -486,6 +486,129 @@ class ApiService {
       };
     }>('GET', '/dashboard/findings/wisdom-of-crowds');
   }
+
+  // Basic Demographics API
+  async getBasicDemographics(): Promise<ApiResponse<{
+    view_type: string;
+    demographic_charts: {
+      gender_coverage: {
+        male: string;
+        female: string;
+        male_achievement: string;
+        female_achievement: string;
+        male_difference: string;
+        female_difference: string;
+      };
+      locality_coverage: {
+        urban: string;
+        rural: string;
+        urban_achievement: string;
+        rural_achievement: string;
+        urban_difference: string;
+        rural_difference: string;
+      };
+      social_category_coverage: {
+        general: string;
+        obc: string;
+        sc: string;
+        st: string;
+        general_achievement: number;
+        obc_achievement: number;
+        sc_achievement: string;
+        st_achievement: string;
+        general_obc_achievement: string;
+      };
+      age_coverage: {
+        age_18_24: string;
+        age_25_34: string;
+        age_35_50: string;
+        age_50_above: string;
+        age_18_24_achievement: string;
+        age_25_34_achievement: string;
+        age_35_50_achievement: string;
+        age_50_above_achievement: string;
+      };
+      religion_coverage: {
+        hindu: string;
+        muslim: string;
+        sikh: string;
+        christian: string;
+        other: string;
+        hindu_achievement: string;
+        muslim_achievement: string;
+        sikh_achievement: number;
+        christian_achievement: number;
+        other_achievement: string;
+      };
+    };
+    navigation_tiles: {
+      total_ac_count: number;
+      total_pc_count: number;
+      total_district_count: number;
+      total_zone_count: number;
+    };
+  }>> {
+    return this.request<{
+      view_type: string;
+      demographic_charts: {
+        gender_coverage: {
+          male: string;
+          female: string;
+          male_achievement: string;
+          female_achievement: string;
+          male_difference: string;
+          female_difference: string;
+        };
+        locality_coverage: {
+          urban: string;
+          rural: string;
+          urban_achievement: string;
+          rural_achievement: string;
+          urban_difference: string;
+          rural_difference: string;
+        };
+        social_category_coverage: {
+          general: string;
+          obc: string;
+          sc: string;
+          st: string;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: string;
+          st_achievement: string;
+          general_obc_achievement: string;
+        };
+        age_coverage: {
+          age_18_24: string;
+          age_25_34: string;
+          age_35_50: string;
+          age_50_above: string;
+          age_18_24_achievement: string;
+          age_25_34_achievement: string;
+          age_35_50_achievement: string;
+          age_50_above_achievement: string;
+        };
+        religion_coverage: {
+          hindu: string;
+          muslim: string;
+          sikh: string;
+          christian: string;
+          other: string;
+          hindu_achievement: string;
+          muslim_achievement: string;
+          sikh_achievement: number;
+          christian_achievement: number;
+          other_achievement: string;
+        };
+      };
+      navigation_tiles: {
+        total_ac_count: number;
+        total_pc_count: number;
+        total_district_count: number;
+        total_zone_count: number;
+      };
+    }>('GET', '/demographics/basic-demographics');
+  }
 }
 
 // Export singleton instance
