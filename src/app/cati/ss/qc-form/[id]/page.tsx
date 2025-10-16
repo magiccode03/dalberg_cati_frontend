@@ -63,7 +63,7 @@ export default function QCFormPage() {
   const [instanceData, setInstanceData] = useState<Record<string, any>>({});
   const [toasts, setToasts] = useState<any[]>([]);
   const [qcUserName, setQcUserName] = useState<string>('');
-  const [qcUserId, setQcUserId] = useState<string>('');
+  const [qcTeleformUserId, setQcTeleformUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
@@ -96,7 +96,7 @@ export default function QCFormPage() {
       try {
         const userData = JSON.parse(savedData);
         setQcUserName(userData.name || '');
-        setQcUserId(userData.id || '');
+        setQcTeleformUserId(userData.teleform_user_id || '');
       } catch (err) {
         console.error('Error loading teleform user data:', err);
       }
@@ -649,7 +649,7 @@ export default function QCFormPage() {
       showToast(`QC evaluation completed! Interview marked as ${outcomeText}.`, 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/qc-call/${qcUserId}`);
+        router.push(`/cati/ss/qc-call/${qcTeleformUserId}`);
       }, 1500);
     }
   };
@@ -941,7 +941,7 @@ export default function QCFormPage() {
                 {/* {instanceData.district_name && (
                   <div>District: <span className="font-semibold">{instanceData.district_name}</span></div>
                 )}
-                <div>QC User: <span className="font-semibold">{qcUserName} (ID: {qcUserId})</span></div> */}
+                <div>QC User: <span className="font-semibold">{qcUserName} (ID: {qcTeleformUserId})</span></div> */}
               </div>
             </div>
             

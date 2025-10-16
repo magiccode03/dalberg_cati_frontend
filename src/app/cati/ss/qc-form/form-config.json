@@ -564,57 +564,6 @@
     "tag": "qc_q5"
   },
   {
-    "key": 6,
-    "type": "radio",
-    "label": {
-      "en": "6. Name of the Respondent Matching?",
-      "hi": "6. प्रत्युत्तरदाता का नाम मेल खाता है?",
-      "bn": "6. উত্তরদাতার নাম কি মিলে গেছে?"
-    },
-    "survey_q_tag": "resp_name",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
-    "required": true,
-    "options": [
-      {
-        "label": {
-          "en": "Matched",
-          "hi": "मिलान हुआ",
-          "bn": "মিলে গেছে"
-        },
-        "value": "1",
-        "tag": "opt_matched"
-      },
-      {
-        "label": {
-          "en": "Not Matched",
-          "hi": "मिलान नहीं हुआ",
-          "bn": "মেলেনি"
-        },
-        "value": "2",
-        "tag": "opt_not_matched"
-      },
-      {
-        "label": {
-          "en": "Cannot hear the response clearly",
-          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
-          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
-        },
-        "value": "3",
-        "tag": "opt_not_hear_clearly"
-      },
-      {
-        "label": {
-          "en": "Did not ask",
-          "hi": "नहीं पूछा",
-          "bn": "জিজ্ঞাসা করা হয়নি"
-        },
-        "value": "4",
-        "tag": "opt_did_not_ask"
-      }
-    ],
-    "tag": "qc_q6"
-  },
-  {
     "key": 7,
     "type": "radio",
     "label": {
