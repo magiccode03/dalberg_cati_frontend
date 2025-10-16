@@ -461,6 +461,8 @@ export default function QCFormPage() {
         audio_qc_status: qcOutcome, // 1 = Pass, 2 = Fail
         audio_qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
         audio_qc_complete_date: currentDate, // Date of submission
+        status: qcOutcome == 1 ? 10 : 20,
+        status_reason_reject: qcOutcome == 2 ? 25 : null,
       };
       
       // Add form field values if they exist
