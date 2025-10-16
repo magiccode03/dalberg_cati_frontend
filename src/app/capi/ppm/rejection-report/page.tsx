@@ -827,13 +827,13 @@ export default function RejectionReportPage() {
 
         {/* Rejection Report Table */}
         <Card className="">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
+          <div className="mb-6">
+            <div className="flex items-center mb-2">
               <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
               <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              Total Records: <span className="font-semibold text-blue-600 dark:text-blue-400">{totalCount.toLocaleString()}</span>
+            <div className="text-sm text-gray-600 dark:text-gray-400 ml-4">
+              Total <span className="font-bold text-black dark:text-white">{totalCount.toLocaleString()}</span> items
             </div>
           </div>
           
