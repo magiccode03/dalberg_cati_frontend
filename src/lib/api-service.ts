@@ -219,6 +219,73 @@ class ApiService {
     return this.request<any>('GET', '/dashboard/sample-statistics');
   }
 
+  // Vote Share Estimates Methods
+  async getVoteShareEstimates(progressType?: string): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+      progress_type?: string;
+    };
+    charts?: {
+      '2025_preference': {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2021_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2020_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    demographic_breakdown?: {
+      gender: Record<string, Record<string, number>>;
+      locality: Record<string, Record<string, number>>;
+      social_category: Record<string, Record<string, number>>;
+      age_group: Record<string, Record<string, number>>;
+      religion: Record<string, Record<string, number>>;
+    };
+    ac_data?: Array<{
+      ac_code: number;
+      ac_name: string;
+      sample: string;
+      years: {
+        '2021_ae': Record<string, number>;
+        '2025_preference': Record<string, number>;
+      };
+    }>;
+  }>> {
+    const queryString = progressType ? `?progress_type=${progressType}` : '';
+    return this.request<any>('GET', `/dashboard/findings/vote-share-estimates${queryString}`);
+  }
+
   // PMT Methods
   async getQCFailReport(page: number = 1): Promise<ApiResponse<any>> {
     return this.request<any>('GET', `/pmt/qc-fail-report?page=${page}`);
@@ -265,6 +332,159 @@ class ApiService {
       limit: limit.toString(),
     });
     return this.request<any>('GET', `/dashboard/team-registration?${params}`);
+  }
+
+  // Gain and Losses API
+  async getGainAndLosses(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/gain-and-losses');
+  }
+
+  // Second Choice API
+  async getSecondChoiceData(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        upcoming: string;
+        second_choice: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        upcoming: string;
+        second_choice: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/second-choice');
+  }
+
+  // Fieldwork Progress API (FD - Field Data)
+  async getFDFieldworkProgress(progressType?: number, progressSubType?: number, progressSubTypeCode?: string): Promise<ApiResponse<any>> {
+    let url = '/fd/fieldwork-progress';
+    const params = new URLSearchParams();
+    
+    if (progressType) params.append('progress_type', progressType.toString());
+    if (progressSubType) params.append('progress_sub_type', progressSubType.toString());
+    if (progressSubTypeCode) params.append('progress_sub_type_code', progressSubTypeCode);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    return this.request<any>('GET', url);
+  }
+
+  // Wisdom of Crowds API
+  async getWisdomOfCrowds(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      party_likely_to_win: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+        title: string;
+      };
+    };
+  }>> {
+    return this.request<{
+      page_info: {
+        page_name: string;
+        page_title: string;
+        total_interviews: number;
+      };
+      charts: {
+        party_likely_to_win: {
+          chart_type: string;
+          chart_id: string;
+          question_id: string;
+          total_sample: number;
+          data: Array<{
+            name: string;
+            y: number;
+            count: string;
+          }>;
+          colors: string[];
+          title: string;
+        };
+      };
+    }>('GET', '/dashboard/findings/wisdom-of-crowds');
   }
 }
 

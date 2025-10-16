@@ -782,11 +782,96 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
+  {
+    id: 'capi-fd-fieldwork-progress-2',
+    label: 'Fieldwork Progress2',
+    href: '/capi/fd/fieldwork-progress2',
+    icon: 'TrendingUp',
+    roles: ['fd'],
+    system: 'capi',
+  },
+  {
+    id: 'demographics',
+    label: 'Demographics',
+    href: '/capi/fd/demographics',
+    icon: 'BarChart3',
+    roles: ['fd'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-fd-demographics-basic',
+        label: 'Basic Demographics',
+        href: '/capi/fd/demographics/basic-demographics',
+        icon: 'Users',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      // {
+      //   id: 'capi-fd-demographics-caste',
+      //   label: 'Caste',
+      //   href: '/capi/fd/demographics/caste',
+      //   icon: 'Database',
+      //   roles: ['fd'],
+      //   system: 'capi',
+      // },
+    ],
+  },
   // {
   //   id: 'capi-fd-progress-report',
   //   label: 'Progress Report',
   //   href: '/capi/fd/progress-report',
   //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'capi',
+  // },
+  {
+    id: 'findings',
+    label: 'Findings',
+    href: '/capi/fd/findings',
+    icon: 'BarChart3',
+    roles: ['fd'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-fd-findings-gain-losses',
+        label: 'Gain and Losses',
+        href: '/capi/fd/findings/gain-and-losses',
+        icon: 'TrendingUp',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-findings-second-choice',
+        label: 'Second Choice',
+        href: '/capi/fd/findings/second-choice',
+        icon: 'Users',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-findings-vote-share',
+        label: 'Vote Share Estimate',
+        href: '/capi/fd/findings/vote-share-estimate',
+        icon: 'BarChart3',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-wisdom-of-crowds',
+        label: 'Wisdom of Crowds',
+        href: '/capi/fd/findings/wisdom-of-crowds',
+        icon: 'BarChart3',
+        roles: ['fd'],
+        system: 'capi',
+      },
+    ],
+  },
+ 
+  // {
+  //   id: 'capi-fd-client-comparison',
+  //   label: 'Client Comparison',
+  //   href: '/capi/fd/client-comparison',
+  //   icon: 'BarChart3',
   //   roles: ['fd'],
   //   system: 'capi',
   // },
@@ -1415,6 +1500,48 @@ export const menuData: MenuItem[] = [
     system: 'cati',
   },
   // {
+  //   id: 'progress',
+  //   label: 'progress',
+  //   href: '/cati/fd/progress',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
+  // {
+  //   id: 'cati-fd-data-analysis',
+  //   label: 'Data Analysis',
+  //   href: '/cati/fd/data-analysis',
+  //   icon: 'BarChart3',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
+  // {
+  //   id: 'cati-fd-download-data',
+  //   label: 'Download',
+  //   href: '/cati/fd/download',
+  //   icon: 'Download',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  //   children: [
+  //     {
+  //       id: 'cati-fd-download-raw-data',
+  //       label: 'Raw Data',
+  //       href: '/cati/fd/download/raw-data',
+  //       icon: 'Database',
+  //       roles: ['fd'],
+  //       system: 'cati',
+  //     },
+  //     {
+  //       id: 'cati-fd-download-reports',
+  //       label: 'Reports',
+  //       href: '/cati/fd/download/reports',
+  //       icon: 'FileText',
+  //       roles: ['fd'],
+  //       system: 'cati',
+  //     },
+  //   ],
+  // },
+  // {
   //   id: 'cati-fd-telecaller-dailycall-details',
   //   label: 'Telecaller Daily Call Details',
   //   href: '/cati/fd/telecaller-daily-call-details',
@@ -1422,7 +1549,6 @@ export const menuData: MenuItem[] = [
   //   roles: ['fd'],
   //   system: 'cati',
   // },
-  
   {
     id: 'cati-fd-interview-audio',
     label: 'Interview Audio',
@@ -1431,6 +1557,15 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
+  
+  // {
+  //   id: 'tracking-dashboard',
+  //   label: 'Tracking Dashboard',
+  //   href: '/cati/fd/tracking-dashboard',
+  //   icon: 'BarChart3',
+  //   roles: ['fd'],
+  //   system: 'cati',
+  // },
   // {
   //   id: 'cati-back-to-home',
   //   label: 'Back To Home',
@@ -1450,12 +1585,31 @@ export const menuData: MenuItem[] = [
   // CATI Start Survey (SS) Menu
   {
     id: 'cati-ss-start-form-filling',
-    label: 'Start Form Filling',
+    label: 'Authentication',
     href: '/cati/ss/start-form-filling',
-    icon: 'Edit',
+    icon: 'Securitysss',
     roles: ['ss'],
     system: 'cati',
   },
+  {
+    id: 'cati-ss-fill-form',
+    label: 'Start Form Filling',
+    href: '/cati/ss/new-call',
+    icon: 'Edit',
+    roles: ['ss'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on teleform user data
+  },
+  {
+    id: 'cati-ss-qc',
+    label: 'Start QC',
+    href: '/cati/ss/qc-call',
+    icon: 'CheckCircle',
+    roles: ['ss'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on teleform user data
+  },
+  
 
 ];
 

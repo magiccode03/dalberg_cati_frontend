@@ -56,7 +56,7 @@ interface FormField {
 export default function QCFormPage() {
   const router = useRouter();
   const params = useParams();
-  const serverId = params.server_id as string;
+  const interviewId = params.id as string;
   
   const [language, setLanguage] = useState<string>('en');
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -89,16 +89,16 @@ export default function QCFormPage() {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  // Load QC user data and interview data on mount
+  // Load teleform user data and interview data on mount
   useEffect(() => {
-    const savedData = localStorage.getItem('qc_user_data');
+    const savedData = localStorage.getItem('teleform_user_data');
     if (savedData) {
       try {
         const userData = JSON.parse(savedData);
         setQcUserName(userData.name || '');
-        setQcUserId(userData.qc_id || '');
+        setQcUserId(userData.id || '');
       } catch (err) {
-        console.error('Error loading QC user data:', err);
+        console.error('Error loading teleform user data:', err);
       }
     }
     
@@ -146,11 +146,11 @@ export default function QCFormPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
-      if (!token || !serverId) return;
+      if (!token || !interviewId) return;
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
-      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${serverId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -214,13 +214,25 @@ export default function QCFormPage() {
 
   // Get audio URL from instance data
   const getAudioUrl = (): string | null => {
-    if (!instanceData.audio1) return null;
+    console.log('Instance data for audio:', instanceData);
+    console.log('Audio URL field:', instanceData.audio_url);
+    console.log('Audio file field:', instanceData.audio_file);
     
-    // Get first audio file if comma-separated
-    const audioFile = instanceData.audio1.split(',')[0].trim();
-    if (!audioFile) return null;
+    // For CATI, use the audio_url field directly
+    if (instanceData.audio_url) {
+      console.log('Using audio_url:', instanceData.audio_url);
+      return instanceData.audio_url;
+    }
     
-    return `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`;
+    // Fallback to audio_file if audio_url is not available
+    if (instanceData.audio_file) {
+      const constructedUrl = `https://s-ct3.sarv.com/Audio/v1/recording?data={"userId":"50345024","token":"6JExgLsg6Vlsp5424S9U","file":"${instanceData.audio_file}"}`;
+      console.log('Using constructed audio URL:', constructedUrl);
+      return constructedUrl;
+    }
+    
+    console.log('No audio URL available');
+    return null;
   };
 
   // Format duration in hh:mm:ss format
@@ -458,9 +470,9 @@ export default function QCFormPage() {
       
       // Build request body with all form data
       const requestBody: Record<string, any> = {
-        audio_qc_status: qcOutcome, // 1 = Pass, 2 = Fail
-        audio_qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
-        audio_qc_complete_date: currentDate, // Date of submission
+        qc_status: qcOutcome, // 1 = Pass, 2 = Fail
+        qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
+        qc_complete_date: currentDate, // Date of submission
       };
       
       // Add form field values if they exist
@@ -482,7 +494,7 @@ export default function QCFormPage() {
       
       console.log('Submitting QC data:', requestBody);
       
-      const response = await fetch(`${apiBaseUrl}/api/capi/interviews/${serverId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -637,7 +649,7 @@ export default function QCFormPage() {
       showToast(`QC evaluation completed! Interview marked as ${outcomeText}.`, 'success');
       
       setTimeout(() => {
-        router.push(`/capi/capi-qc/new-qc/${qcUserId}`);
+        router.push(`/cati/ss/qc-call/${qcUserId}`);
       }, 1500);
     }
   };
@@ -860,42 +872,57 @@ export default function QCFormPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
+      {/* Debug Audio URL */}
+      {(() => { console.log('Audio URL for rendering:', audioUrl); return null; })()}
+      
+      {/* Debug Info Card */}
+      {/* <Card className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+        <div className="text-sm">
+          <div><strong>Audio URL:</strong> {audioUrl || 'No audio URL'}</div>
+          <div><strong>Instance Data Keys:</strong> {Object.keys(instanceData).join(', ')}</div>
+          <div><strong>Audio URL Field:</strong> {instanceData.audio_url || 'Not found'}</div>
+          <div><strong>Audio File Field:</strong> {instanceData.audio_file || 'Not found'}</div>
+        </div>
+      </Card> */}
+      
       {/* Sticky Audio Player */}
-      {audioUrl && (
-        <>
-          <div
-            ref={audioPlayerRef}
-            className={`${
-              isSticky 
-                ? 'fixed top-16 left-0 right-0 z-[60] shadow-lg transform translate-y-0' 
-                : 'relative mb-4'
-            } transition-transform duration-200 ease-out`}
-          >
-            <Card className={`${isSticky ? 'rounded-none' : ''}`}>
-              <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                <div className="flex items-center gap-4 max-w-7xl mx-auto">
-                  <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <audio 
-                      controls 
-                      className="w-full max-w-full h-8"
-                      style={{ maxHeight: '32px' }}
-                    >
-                      <source src={audioUrl} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
+      <div
+        ref={audioPlayerRef}
+        className={`${
+          isSticky 
+            ? 'fixed top-16 left-0 right-0 z-[60] shadow-lg transform translate-y-0' 
+            : 'relative mb-4'
+        } transition-transform duration-200 ease-out`}
+      >
+        <Card className={`${isSticky ? 'rounded-none' : ''}`}>
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <div className="flex items-center gap-4 max-w-7xl mx-auto">
+              <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                {audioUrl ? (
+                  <audio 
+                    controls 
+                    className="w-full max-w-full h-8"
+                    style={{ maxHeight: '32px' }}
+                  >
+                    <source src={audioUrl} type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                  </audio>
+                ) : (
+                  <div className="text-red-500 text-sm">
+                    No audio file available
                   </div>
-                  {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                    Duration: {formatDuration(instanceData.audio1_duration)}
-                  </Text> */}
-                </div>
+                )}
               </div>
-            </Card>
+              {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                Duration: {formatDuration(instanceData.audio1_duration)}
+              </Text> */}
+            </div>
           </div>
-          {/* Spacer to prevent content jump when sticky */}
-          {isSticky && <div style={{ height: '64px' }} />}
-        </>
-      )}
+        </Card>
+      </div>
+      {/* Spacer to prevent content jump when sticky */}
+      {isSticky && <div style={{ height: '64px' }} />}
 
       {/* Header and Language Selector */}
       <div className="mb-3 sm:mb-4 md:mb-6">
@@ -904,12 +931,12 @@ export default function QCFormPage() {
             <div>
               <Heading level={4} className="text-base sm:text-lg md:text-xl">Audio QC Form</Heading>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
-                <div>Server ID: <span className="font-mono font-semibold">{serverId}</span></div>
+                <div>Interview ID: <span className="font-mono font-semibold">{interviewId}</span></div>
                 {instanceData.ac_name && (
                   <div>AC: <span className="font-semibold">{instanceData.ac_code} - {instanceData.ac_name}</span></div>
                 )}
-                {instanceData.interviewer_id && (
-                  <div>Interviewer ID: <span className="font-semibold">{instanceData.interviewer_id} - {instanceData.interviewer_name}</span></div>
+                {instanceData.teleform_user_id && (
+                  <div>Teleform User ID: <span className="font-semibold">{instanceData.teleform_user_id}</span></div>
                 )}
                 {/* {instanceData.district_name && (
                   <div>District: <span className="font-semibold">{instanceData.district_name}</span></div>
