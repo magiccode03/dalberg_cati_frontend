@@ -650,8 +650,8 @@ const InterviewLogPage = () => {
               Filters
             </Heading>
             <div className="space-y-4">
-              {/* State Teams */}
-              <div>
+              {/* State Teams - Commented out for PPMT */}
+              {/* <div>
                 <Text className="text-sm font-medium mb-2">State Teams</Text>
                 <SelectDropdown
                   options={agencies}
@@ -662,7 +662,7 @@ const InterviewLogPage = () => {
                   searchable={true}
                   clearable={true}
                 />
-              </div>
+              </div> */}
 
               {/* Server ID */}
               <div>
