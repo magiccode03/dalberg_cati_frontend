@@ -496,8 +496,20 @@ class ApiService {
   }
 
   // Basic Demographics API
-  async getBasicDemographics(progressType?: number): Promise<ApiResponse<{
+  async getBasicDemographics(progressType?: number, filters?: {
+    psu_code?: string;
+    gender_met?: string;
+    locality_met?: string;
+    religion_met?: string;
+    social_category_met?: string;
+    age_met?: string;
+    progress_sub_type?: number;
+  }): Promise<ApiResponse<{
     view_type: string;
+    progress_type?: number;
+    progress_page?: string;
+    filter_applied?: string;
+    filter_description?: string;
     demographic_charts: {
       gender_coverage: {
         male: string;
@@ -681,7 +693,11 @@ class ApiService {
           general_obc_difference: number;
         };
       }>;
-    }>('GET', '/demographics/basic-demographics', progressType ? { progress_type: progressType } : {});
+      sub_model?: any;
+    }>('GET', '/demographics/basic-demographics', {
+      ...(progressType ? { progress_type: progressType } : {}),
+      ...(filters || {})
+    });
   }
 }
 
