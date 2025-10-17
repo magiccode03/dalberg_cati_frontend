@@ -167,7 +167,7 @@ export default function VoteShareEstimatePage() {
         ...mapPartyData(data)
       });
     });
-
+    
     // Locality
     Object.entries(breakdown.locality).forEach(([subcategory, data]) => {
       demographicData.push({
@@ -176,7 +176,7 @@ export default function VoteShareEstimatePage() {
         ...mapPartyData(data)
       });
     });
-
+    
     // Social Category
     Object.entries(breakdown.social_category).forEach(([subcategory, data]) => {
       demographicData.push({
@@ -194,7 +194,7 @@ export default function VoteShareEstimatePage() {
         ...mapPartyData(data)
       });
     });
-
+    
     // Religion
     Object.entries(breakdown.religion).forEach(([subcategory, data]) => {
       demographicData.push({
@@ -634,14 +634,14 @@ export default function VoteShareEstimatePage() {
             </div>
           )}
 
-          {/* Demographic Table Section */}
-          <Card className="">
-            <div className="row">
-              <div className="col-md-12">
-                {renderDemographicTable()}
-              </div>
-            </div>
-          </Card>
+      {/* Demographic Table Section */}
+      <Card className="">
+        <div className="row">
+          <div className="col-md-12">
+            {renderDemographicTable()}
+          </div>
+        </div>
+      </Card>
         </>
       )}
 

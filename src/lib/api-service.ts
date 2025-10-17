@@ -495,9 +495,73 @@ class ApiService {
     }>('GET', '/dashboard/findings/wisdom-of-crowds');
   }
 
+  // Approval Ratings API
+  async getApprovalRatings(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      satisfaction_state_govt: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      preferred_cm: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    mla_satisfaction: {
+      title: string;
+      ac_data: Array<{
+        ac_code: number;
+        ac_name: string;
+        mla_name: string;
+        satisfaction_breakdown: {
+          'Highly Satisfied': number;
+          'Somewhat satisfied': number;
+          'Neither satisfied nor dissatisfied': number;
+          'Somewhat dissatisfied': number;
+          'Highly Dissatisfied': number;
+        };
+      }>;
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/approval-ratings');
+  }
+
   // Basic Demographics API
-  async getBasicDemographics(progressType?: number): Promise<ApiResponse<{
+  async getBasicDemographics(progressType?: number, filters?: {
+    psu_code?: string;
+    gender_met?: string;
+    locality_met?: string;
+    religion_met?: string;
+    social_category_met?: string;
+    age_met?: string;
+    progress_sub_type?: number;
+  }): Promise<ApiResponse<{
     view_type: string;
+    progress_type?: number;
+    progress_page?: string;
+    filter_applied?: string;
+    filter_description?: string;
     demographic_charts: {
       gender_coverage: {
         male: string;
@@ -681,7 +745,11 @@ class ApiService {
           general_obc_difference: number;
         };
       }>;
-    }>('GET', '/demographics/basic-demographics', progressType ? { progress_type: progressType } : {});
+      sub_model?: any;
+    }>('GET', '/demographics/basic-demographics', {
+      ...(progressType ? { progress_type: progressType } : {}),
+      ...(filters || {})
+    });
   }
 }
 
