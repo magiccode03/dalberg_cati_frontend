@@ -495,6 +495,58 @@ class ApiService {
     }>('GET', '/dashboard/findings/wisdom-of-crowds');
   }
 
+  // Approval Ratings API
+  async getApprovalRatings(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      satisfaction_state_govt: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      preferred_cm: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    mla_satisfaction: {
+      title: string;
+      ac_data: Array<{
+        ac_code: number;
+        ac_name: string;
+        mla_name: string;
+        satisfaction_breakdown: {
+          'Highly Satisfied': number;
+          'Somewhat satisfied': number;
+          'Neither satisfied nor dissatisfied': number;
+          'Somewhat dissatisfied': number;
+          'Highly Dissatisfied': number;
+        };
+      }>;
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/approval-ratings');
+  }
+
   // Basic Demographics API
   async getBasicDemographics(progressType?: number, filters?: {
     psu_code?: string;

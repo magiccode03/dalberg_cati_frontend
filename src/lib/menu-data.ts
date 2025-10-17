@@ -875,6 +875,14 @@ export const menuData: MenuItem[] = [
   //       roles: ['fd'],
   //       system: 'capi',
   //     },
+  //     {
+  //       id: 'capi-fd-approval-ratings',
+  //       label: 'Approval Ratings',
+  //       href: '/capi/fd/findings/approval-ratings',
+  //       icon: 'BarChart3',
+  //       roles: ['fd'],
+  //       system: 'capi',
+  //     },
   //   ],
   // },
  
