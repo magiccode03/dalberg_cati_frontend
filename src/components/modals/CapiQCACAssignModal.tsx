@@ -381,12 +381,14 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                Selected ACs ({assignedACs.length + selectedAcs.length})
+                Selected ACs ({assignedACs.filter((ac: any) => ac.total_pending > 0).length + selectedAcs.length})
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
               {/* Already Assigned ACs - Show as reference but can be reselected */}
-              {assignedACs.map((ac: any) => (
+              {assignedACs
+                .filter((ac: any) => ac.total_pending > 0) // Only show ACs with pending data
+                .map((ac: any) => (
                 <div
                   key={`assigned-${ac.ac_code}`}
                   className="inline-flex items-center gap-1.5 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full px-2 py-1 group"
@@ -487,7 +489,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               {acList.length > 0 ? (
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {acList.map((ac) => {
-                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code && assigned.total_pending > 0);
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
                     const dataAvailable = typeof ac.data_available === 'string' ? parseInt(ac.data_available) : ac.data_available;
                     const hasNoData = isNaN(dataAvailable) || dataAvailable <= 0;

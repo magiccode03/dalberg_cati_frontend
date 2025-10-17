@@ -8,7 +8,8 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2 } from 'lucide-react';
+import SelectDropdown from '@/components/ui/SelectDropdown';
+import { Loader2, Search, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
 interface AssignedACData {
@@ -18,6 +19,9 @@ interface AssignedACData {
   acCode: number;
   acName: string;
   interviewerId: number;
+  qcPending: number;
+  qcCompleted: number;
+  qcTotal: number;
   rowspan?: number;
   isFirstRow?: boolean;
 }
@@ -29,6 +33,9 @@ interface QCUserAssignment {
     ac_code: number;
     ac_name: string;
     interviewer_id: number;
+    qc_pending: number;
+    qc_completed: number;
+    qc_total: number;
   }>;
 }
 
@@ -50,6 +57,11 @@ interface APIResponse {
   timestamp: string;
 }
 
+interface FilterOptions {
+  qcUsers: Array<{ value: string; label: string }>;
+  acCodes: Array<{ value: string; label: string }>;
+}
+
 export default function AssignedACPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
@@ -60,6 +72,70 @@ export default function AssignedACPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
+  
+  // Filter states
+  const [selectedQCUser, setSelectedQCUser] = useState<string>('');
+  const [selectedACCode, setSelectedACCode] = useState<string>('');
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+    qcUsers: [],
+    acCodes: []
+  });
+  const [filtersLoading, setFiltersLoading] = useState(false);
+
+  // Fetch filter options
+  const fetchFilterOptions = async () => {
+    setFiltersLoading(true);
+    try {
+      // Fetch QC Users (load all data)
+      const qcUsersResponse = await apiClient.get('/qc-user-registration?status=1&limit=5000');
+      const qcUsersData = qcUsersResponse.data;
+      
+      if (qcUsersData.success && qcUsersData.data?.qc_users) {
+        const qcUsers = qcUsersData.data.qc_users.map((user: any) => ({
+          value: user.qc_id.toString(),
+          label: `${user.name} (${user.qc_id})`
+        }));
+        
+        // Fetch AC Codes from master AC list (load all data)
+        let acCodes: Array<{ value: string; label: string }> = [];
+        let currentPage = 1;
+        let hasMorePages = true;
+        
+        while (hasMorePages) {
+          const acResponse = await apiClient.get(`/dashboard/master-ac-index/list?page=${currentPage}&pageSize=1000`);
+          const acData = acResponse.data;
+          
+          if (acData.success && acData.data?.master_acs) {
+            const pageACs = acData.data.master_acs.map((ac: any) => ({
+              value: ac.ac_code.toString(),
+              label: `${ac.ac_name} (${ac.ac_code})`
+            }));
+            acCodes = [...acCodes, ...pageACs];
+            
+            // Check if there are more pages
+            hasMorePages = acData.data.has_next || false;
+            currentPage++;
+          } else {
+            hasMorePages = false;
+          }
+        }
+        
+        setFilterOptions({
+          qcUsers,
+          acCodes
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching filter options:', err);
+      // Set empty options on error
+      setFilterOptions({
+        qcUsers: [],
+        acCodes: []
+      });
+    } finally {
+      setFiltersLoading(false);
+    }
+  };
 
   // Helper function to transform API data to UI format with rowspan support
   const transformAPIData = (apiData: QCUserAssignment[]): AssignedACData[] => {
@@ -70,18 +146,21 @@ export default function AssignedACPage() {
       if (qcUser.assignments && Array.isArray(qcUser.assignments)) {
         const assignmentCount = qcUser.assignments.length;
         
-        qcUser.assignments.forEach((assignment, index) => {
-          transformedData.push({
-            id: id++,
-            qcId: qcUser.qc_id,
-            qcUserName: qcUser.qc_user_name,
-            acCode: assignment.ac_code,
-            acName: assignment.ac_name,
-            interviewerId: assignment.interviewer_id,
-            rowspan: index === 0 ? assignmentCount : 0, // Only first row gets rowspan
-            isFirstRow: index === 0 // Mark first row for QC ID and Name
-          });
-        });
+                qcUser.assignments.forEach((assignment, index) => {
+                  transformedData.push({
+                    id: id++,
+                    qcId: qcUser.qc_id,
+                    qcUserName: qcUser.qc_user_name,
+                    acCode: assignment.ac_code,
+                    acName: assignment.ac_name,
+                    interviewerId: assignment.interviewer_id,
+                    qcPending: assignment.qc_pending,
+                    qcCompleted: assignment.qc_completed,
+                    qcTotal: assignment.qc_total,
+                    rowspan: index === 0 ? assignmentCount : 0, // Only first row gets rowspan
+                    isFirstRow: index === 0 // Mark first row for QC ID and Name
+                  });
+                });
       }
     });
 
@@ -107,6 +186,14 @@ export default function AssignedACPage() {
       // Add pagination
       queryParams.append('page', currentPage.toString());
       queryParams.append('pageSize', pageSize.toString());
+      
+      // Add filter parameters
+      if (selectedQCUser) {
+        queryParams.append('qc_id', selectedQCUser);
+      }
+      if (selectedACCode) {
+        queryParams.append('ac_code', selectedACCode);
+      }
       
       const queryString = queryParams.toString();
       const endpoint = `/capi/qc-user-assignments${queryString ? `?${queryString}` : ''}`;
@@ -154,11 +241,11 @@ export default function AssignedACPage() {
         setError(data.error || 'Invalid response format from server');
         // Use fallback data
         const fallbackData: AssignedACData[] = [
-          { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 101, rowspan: 3, isFirstRow: true },
-          { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 102, rowspan: 0, isFirstRow: false },
-          { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 104, rowspan: 0, isFirstRow: false },
-          { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1182, rowspan: 2, isFirstRow: true },
-          { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4002, rowspan: 0, isFirstRow: false },
+          { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 101, qcPending: 25, qcCompleted: 75, qcTotal: 100, rowspan: 3, isFirstRow: true },
+          { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 102, qcPending: 15, qcCompleted: 35, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 104, qcPending: 10, qcCompleted: 40, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1182, qcPending: 30, qcCompleted: 70, qcTotal: 100, rowspan: 2, isFirstRow: true },
+          { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4002, qcPending: 20, qcCompleted: 30, qcTotal: 50, rowspan: 0, isFirstRow: false },
         ];
         setAssignedACData(fallbackData);
         setTotalCount(fallbackData.length);
@@ -177,17 +264,17 @@ export default function AssignedACPage() {
           qc_id: 109,
           qc_user_name: 'Kundan',
           assignments: [
-            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 101 },
-            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 102 },
-            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 104 }
+            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 101, qc_pending: 25, qc_completed: 75, qc_total: 100 },
+            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 102, qc_pending: 15, qc_completed: 35, qc_total: 50 },
+            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 104, qc_pending: 10, qc_completed: 40, qc_total: 50 }
           ]
         },
         {
           qc_id: 120,
           qc_user_name: 'Supriya',
           assignments: [
-            { ac_code: 132, ac_name: 'Warisnagar', interviewer_id: 1182 },
-            { ac_code: 132, ac_name: 'Warisnagar', interviewer_id: 4002 }
+            { ac_code: 132, ac_name: 'Warisnagar', interviewer_id: 1182, qc_pending: 30, qc_completed: 70, qc_total: 100 },
+            { ac_code: 132, ac_name: 'Warisnagar', interviewer_id: 4002, qc_pending: 20, qc_completed: 30, qc_total: 50 }
           ]
         }
       ];
@@ -203,10 +290,29 @@ export default function AssignedACPage() {
     }
   };
 
+  // Handle filter changes
+  const handleFilterChange = () => {
+    setCurrentPage(1); // Reset to first page when filters change
+    fetchAssignedACData();
+  };
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSelectedQCUser('');
+    setSelectedACCode('');
+    setCurrentPage(1);
+    fetchAssignedACData();
+  };
+
   // Fetch data on component mount and when page changes
   useEffect(() => {
     fetchAssignedACData();
   }, [currentPage]);
+
+  // Fetch filter options on component mount
+  useEffect(() => {
+    fetchFilterOptions();
+  }, []);
 
   // Calculate display range for current page
   const startIndex = (currentPage - 1) * pageSize;
@@ -260,6 +366,62 @@ export default function AssignedACPage() {
           </Card>
         )}
 
+        {/* Filters */}
+        <Card className="mb-6">
+          <div className="p-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              {/* QC User Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  QC User
+                </label>
+                <SelectDropdown
+                  options={filterOptions.qcUsers}
+                  value={selectedQCUser}
+                  onChange={(value) => setSelectedQCUser(Array.isArray(value) ? value[0] || '' : value)}
+                  placeholder="Select QC User"
+                  searchable
+                />
+              </div>
+
+              {/* AC Code Filter */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  AC Code
+                </label>
+                <SelectDropdown
+                  options={filterOptions.acCodes}
+                  value={selectedACCode}
+                  onChange={(value) => setSelectedACCode(Array.isArray(value) ? value[0] || '' : value)}
+                  placeholder="Select AC Code"
+                  searchable
+                />
+              </div>
+
+              {/* Filter Actions */}
+              <div className="flex space-x-2">
+                <Button
+                  onClick={handleFilterChange}
+                  className="flex items-center space-x-2"
+                  disabled={loading}
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Search</span>
+                </Button>
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="flex items-center space-x-2"
+                  disabled={loading}
+                >
+                  <X className="w-4 h-4" />
+                  <span>Clear</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+
         {/* Assigned AC Table */}
         <div className="w-full">
           <Card>
@@ -289,6 +451,9 @@ export default function AssignedACPage() {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Total</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -313,6 +478,9 @@ export default function AssignedACPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.acCode}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.acName}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.interviewerId}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcTotal.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcCompleted.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcPending.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>

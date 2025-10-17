@@ -28,33 +28,25 @@ interface ACWiseReportData {
 
 interface APIResponse {
   success: boolean;
-  data?: {
-    data: Array<{
-      ac_code: number;
-      ac_name: string;
-      district_code: number;
-      district_name: string;
-      pc_code: number;
-      pc_name: string;
-      agency_id: number;
-      agency: {
-        id: number;
-        agency_name: string;
-      };
-      acsample: number;
-      QcCount: number;
-      complete: number;
-      achieved: number;
-      reject: number;
-      underqc: number;
-      checker: string;
-    }>;
-    pagination?: {
-      page: number;
-      pageSize: number;
-      totalCount: number;
-      pageCount: number;
-    };
+  data?: Array<{
+    ac_code: number;
+    ac_name: string;
+    agency_name: string | null;
+    sample: number;
+    checker_ids: string;
+    allotted: number;
+    completed: number;
+    accepted: number;
+    rejected: number;
+    under_qc: number;
+  }>;
+  pagination?: {
+    current_page: number;
+    total_pages: number;
+    total_count: number;
+    page_size: number;
+    has_next: boolean;
+    has_previous: boolean;
   };
   error?: string;
   message?: string;
@@ -75,15 +67,15 @@ export default function ACWiseReportPage() {
       id: index + 1,
       sNo: index + 1,
       acCode: item.ac_code,
-      name: item.district_name,
-      agencyName: item.agency?.agency_name || '',
-      sample: item.acsample,
-      checker: item.checker || '',
-      alloted: item.QcCount,
-      completed: item.complete,
-      accepted: item.achieved,
-      rejected: item.reject,
-      underQc: item.underqc
+      name: item.ac_name,
+      agencyName: item.agency_name || '',
+      sample: item.sample,
+      checker: item.checker_ids || '-',
+      alloted: item.allotted,
+      completed: item.completed,
+      accepted: item.accepted,
+      rejected: item.rejected,
+      underQc: item.under_qc
     }));
   };
 
@@ -98,7 +90,7 @@ export default function ACWiseReportPage() {
       console.log('Access token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      console.log('Making API request to: /report/acwisereport');
+      console.log('Making API request to: /capi/ac-qc-statistics');
       
       // Build query parameters
       const queryParams = new URLSearchParams();
@@ -108,7 +100,7 @@ export default function ACWiseReportPage() {
       queryParams.append('pageSize', pageSize.toString());
       
       const queryString = queryParams.toString();
-      const endpoint = `/report/acwisereport${queryString ? `?${queryString}` : ''}`;
+      const endpoint = `/capi/ac-qc-statistics${queryString ? `?${queryString}` : ''}`;
       
       console.log('API endpoint:', endpoint);
       
@@ -128,18 +120,18 @@ export default function ACWiseReportPage() {
       console.log('API Response:', data);
       console.log('Response success:', data.success);
       
-      if (data.success && data.data && Array.isArray(data.data.data)) {
-        const transformedData = transformAPIData(data.data.data);
+      if (data.success && data.data && Array.isArray(data.data)) {
+        const transformedData = transformAPIData(data.data);
         setAcWiseReportData(transformedData);
-        setTotalCount(data.data.pagination?.totalCount || transformedData.length);
+        setTotalCount(data.pagination?.total_count || transformedData.length);
         console.log('Transformed data:', transformedData);
       } else {
         console.error('Invalid API response structure or API error:', data.error);
         setError(data.error || 'Invalid response format from server');
         // Use fallback data
         const fallbackData: ACWiseReportData[] = [
-          { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
-          { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
+          { id: 1, sNo: 1, acCode: 0, name: 'WB', agencyName: '', sample: 0, checker: '-', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
+          { id: 2, sNo: 2, acCode: 1, name: 'Mekliganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 109, 114, 117, 123, 999', alloted: 97, completed: 95, accepted: 34, rejected: 62, underQc: 7 },
         ];
         setAcWiseReportData(fallbackData);
         setTotalCount(fallbackData.length);
@@ -177,11 +169,11 @@ export default function ACWiseReportPage() {
       // Use fallback data on error
       console.log('API request failed, using fallback sample data...');
       const fallbackData: ACWiseReportData[] = [
-        { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
-        { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
-        { id: 3, sNo: 3, acCode: 2, name: 'Ramnagar (SC)', agencyName: 'Parbhat', sample: 300, checker: '101, 127, 139', alloted: 395, completed: 0, accepted: 346, rejected: 30, underQc: 0 },
-        { id: 4, sNo: 4, acCode: 3, name: 'Narkatiaganj', agencyName: 'Parbhat', sample: 300, checker: '110, 103, 120, 140', alloted: 400, completed: 0, accepted: 315, rejected: 73, underQc: 0 },
-        { id: 5, sNo: 5, acCode: 4, name: 'Bagaha', agencyName: 'Parbhat', sample: 300, checker: '116, 127, 128', alloted: 345, completed: 0, accepted: 306, rejected: 27, underQc: 0 },
+        { id: 1, sNo: 1, acCode: 0, name: 'WB', agencyName: '', sample: 0, checker: '-', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
+        { id: 2, sNo: 2, acCode: 1, name: 'Mekliganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 109, 114, 117, 123, 999', alloted: 97, completed: 95, accepted: 34, rejected: 62, underQc: 7 },
+        { id: 3, sNo: 3, acCode: 7, name: 'Dinhata', agencyName: 'Ajit Barman', sample: 0, checker: '100, 105, 111', alloted: 60, completed: 60, accepted: 48, rejected: 12, underQc: 0 },
+        { id: 4, sNo: 4, acCode: 8, name: 'Natabari', agencyName: 'Ajit Barman', sample: 0, checker: '105, 113', alloted: 43, completed: 43, accepted: 37, rejected: 6, underQc: 0 },
+        { id: 5, sNo: 5, acCode: 9, name: 'Tufanganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 103, 115', alloted: 59, completed: 56, accepted: 41, rejected: 15, underQc: 0 },
       ];
       setAcWiseReportData(fallbackData);
       setTotalCount(fallbackData.length);
@@ -292,7 +284,7 @@ export default function ACWiseReportPage() {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Agency Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th>
+                      {/* <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th> */}
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
@@ -310,7 +302,7 @@ export default function ACWiseReportPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {getAgencyBadge(data.agencyName)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td>
+                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.alloted.toLocaleString()}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.completed.toLocaleString()}</td>

@@ -15,6 +15,7 @@ import { Edit, Plus, Search, ChevronDown, ChevronRight, BarChart3, X } from 'luc
 import { apiService } from '@/lib/api-service';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
 import CatiQCACAssignModal from '@/components/modals/CatiQCACAssignModal';
 
@@ -102,6 +103,12 @@ const TeleUserInfoPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize] = useState(10); // Fixed page size
+  
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isQCModalOpen, setIsQCModalOpen] = useState(false);
@@ -161,14 +168,14 @@ const TeleUserInfoPage: React.FC = () => {
   };
 
   // Fetch telecallers from API
-  const fetchTelecallers = async () => {
+  const fetchTelecallers = async (page: number = currentPage) => {
     setLoading(true);
     setError(null);
 
     try {
       const params: any = {
-        page: 1,
-        limit: 10000, // Fetch all data
+        page: page,
+        pageSize: pageSize,
       };
 
       // Add filters if they have values
@@ -203,6 +210,23 @@ const TeleUserInfoPage: React.FC = () => {
 
       if (response.ok && result.success) {
         setTeleUserData(result.data);
+        
+        console.log('API Response:', result); // Debug log
+        console.log('Pagination info:', result.pagination); // Debug log
+        
+        // Handle pagination info
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || result.pagination.total_pages || 1);
+          setTotalCount(result.pagination.total || result.pagination.total_count || result.data.length);
+        } else {
+          // Fallback if no pagination info - check if we have more data than page size
+          const hasMoreData = result.data.length >= pageSize;
+          setTotalPages(hasMoreData ? 2 : 1); // Assume at least 2 pages if we have full page
+          setTotalCount(result.data.length);
+        }
+        
+        console.log('Set totalPages:', result.pagination ? (result.pagination.totalPages || result.pagination.total_pages || 1) : (result.data.length >= pageSize ? 2 : 1));
+        console.log('Set totalCount:', result.pagination ? (result.pagination.total || result.pagination.total_count || result.data.length) : result.data.length);
       } else {
         setError(result.message || 'Failed to fetch telecallers');
       }
@@ -224,7 +248,7 @@ const TeleUserInfoPage: React.FC = () => {
       try {
         const params: any = {
           page: 1,
-          limit: 10000,
+          pageSize: pageSize,
           fill_form: '1', // Default filter: Can Fill Form
         };
 
@@ -253,6 +277,23 @@ const TeleUserInfoPage: React.FC = () => {
 
         if (response.ok && result.success) {
           setTeleUserData(result.data);
+          
+          console.log('Initial API Response:', result); // Debug log
+          console.log('Initial Pagination info:', result.pagination); // Debug log
+          
+          // Handle pagination info
+          if (result.pagination) {
+            setTotalPages(result.pagination.totalPages || result.pagination.total_pages || 1);
+            setTotalCount(result.pagination.total || result.pagination.total_count || result.data.length);
+          } else {
+            // Fallback if no pagination info - check if we have more data than page size
+            const hasMoreData = result.data.length >= pageSize;
+            setTotalPages(hasMoreData ? 2 : 1); // Assume at least 2 pages if we have full page
+            setTotalCount(result.data.length);
+          }
+          
+          console.log('Initial Set totalPages:', result.pagination ? (result.pagination.totalPages || result.pagination.total_pages || 1) : (result.data.length >= pageSize ? 2 : 1));
+          console.log('Initial Set totalCount:', result.pagination ? (result.pagination.total || result.pagination.total_count || result.data.length) : result.data.length);
         } else {
           setError(result.message || 'Failed to fetch telecallers');
         }
@@ -273,6 +314,13 @@ const TeleUserInfoPage: React.FC = () => {
     fetchTelecallerOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle page changes
+  useEffect(() => {
+    if (currentPage > 1) {
+      fetchTelecallers(currentPage);
+    }
+  }, [currentPage]);
 
   // Fetch statistics for all visible users
   useEffect(() => {
@@ -305,7 +353,8 @@ const TeleUserInfoPage: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchTelecallers();
+    setCurrentPage(1); // Reset to first page when searching
+    fetchTelecallers(1);
   };
 
   const handleClear = () => {
@@ -317,9 +366,10 @@ const TeleUserInfoPage: React.FC = () => {
       telecaller: '',
       permission: '', // Clear permission filter
     });
+    setCurrentPage(1); // Reset to first page when clearing
     // Fetch with empty filters
     setTimeout(() => {
-      fetchTelecallers();
+      fetchTelecallers(1);
     }, 0);
   };
 
@@ -941,11 +991,28 @@ const TeleUserInfoPage: React.FC = () => {
           )}
 
           {/* Total Count Footer */}
-          {!loading && teleUserData.length > 0 && (
+          {/* {!loading && teleUserData.length > 0 && (
             <div className="flex justify-start mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="text-sm text-gray-700 dark:text-gray-300">
-                Total: <span className="font-semibold">{teleUserData.length}</span> telecaller{teleUserData.length !== 1 ? 's' : ''}
+                Total: <span className="font-semibold">{totalCount}</span> telecaller{totalCount !== 1 ? 's' : ''}
+              </div> */}
+              {/* Debug info - remove after testing */}
+              {/* <div className="ml-4 text-xs text-gray-500">
+                Debug: totalPages={totalPages}, currentPage={currentPage}, pageSize={pageSize}
               </div>
+            </div>
+          )} */}
+
+          {/* Pagination */}
+          {!loading && totalPages > 1 && (
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
             </div>
           )}
         </Card>
