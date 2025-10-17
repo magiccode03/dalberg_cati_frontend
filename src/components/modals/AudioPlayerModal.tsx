@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Play, Pause, Volume2, MoreVertical } from 'lucide-react';
+import { X, Play, Pause, Volume2, MoreVertical, Download } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import Modal from '@/components/ui/Modal';
 import Text from '@/components/ui/Text';
@@ -40,8 +40,10 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch audio data when modal opens
   useEffect(() => {
@@ -58,6 +60,7 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
       setIsPlaying(false);
       setCurrentTime(0);
       setDuration(0);
+      setShowDropdown(false);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -148,6 +151,46 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  const handleDownload = () => {
+    if (audioData) {
+      const audioUrl = audioData.audio1 && audioData.audio1.trim() !== '' 
+        ? `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`
+        : `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=audio1`;
+      
+      // Create a temporary link element to trigger download
+      const link = document.createElement('a');
+      link.href = audioUrl;
+      link.download = `interview_${audioData.server_id}_${audioData.audio1 || 'audio1'}.mp3`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      setShowDropdown(false);
+    }
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
 
   return (
     <Modal
@@ -290,9 +333,29 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
                       </div>
 
                       {/* More Options */}
-                      <button className="text-gray-600 hover:text-gray-800 flex-shrink-0">
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
+                      <div className="relative flex-shrink-0" ref={dropdownRef}>
+                        <button 
+                          onClick={toggleDropdown}
+                          className="text-gray-600 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100"
+                        >
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+                        
+                        {/* Dropdown Menu */}
+                        {showDropdown && (
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                            <div className="py-1">
+                              <button
+                                onClick={handleDownload}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                <Download className="w-4 h-4 mr-3" />
+                                Download Audio
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
           </div>
