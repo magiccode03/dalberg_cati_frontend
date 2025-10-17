@@ -376,7 +376,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         </div>
 
         {/* Selected and Assigned ACs Chips */}
-        {(assignedACs.filter((ac: any) => ac.total_pending > 0).length > 0 || selectedAcs.length > 0) && (
+        {(assignedACs.length > 0 || selectedAcs.length > 0) && (
           <div className="bg-gray-50 dark:bg-gray-900/20 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
               <MapPin className="h-4 w-4 text-gray-600 dark:text-gray-400" />
@@ -489,7 +489,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               {acList.length > 0 ? (
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {acList.map((ac) => {
-                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code && assigned.total_pending > 0);
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
                     const dataAvailable = typeof ac.data_available === 'string' ? parseInt(ac.data_available) : ac.data_available;
                     const hasNoData = isNaN(dataAvailable) || dataAvailable <= 0;
