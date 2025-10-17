@@ -562,14 +562,14 @@ export const menuData: MenuItem[] = [
       //   roles: ['dqm'],
       //   system: 'capi',
       // },
-      // {
-      //   id: 'capi-dqm-ac-wise-report',
-      //   label: 'AC Wise Report',
-      //   href: '/capi/dqm/report/acwisereport',
-      //   icon: 'MapPin',
-      //   roles: ['dqm'],
-      //   system: 'capi',
-      // },
+      {
+        id: 'capi-dqm-ac-wise-report',
+        label: 'AC Wise Report',
+        href: '/capi/dqm/report/acwisereport',
+        icon: 'MapPin',
+        roles: ['dqm'],
+        system: 'capi',
+      },
       // {
       //   id: 'capi-dqm-assigned-ac',
       //   label: 'Assigned AC',
