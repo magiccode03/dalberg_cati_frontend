@@ -159,6 +159,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           data_available: item.total_not_assigned || 0
         })) : [];
         
+        // Filter out ACs with no data available (data_available = 0)
+        acData = acData.filter((ac: any) => ac.data_available > 0);
+        
         // Client-side search filtering
         if (search.trim()) {
           const searchLower = search.toLowerCase();
@@ -174,18 +177,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           });
         }
         
-        // Sort ACs: data_available > 0 first, then by data_available descending
-        acData.sort((a: any, b: any) => {
-          // First priority: ACs with data_available > 0
-          const aHasData = a.data_available > 0;
-          const bHasData = b.data_available > 0;
-          
-          if (aHasData && !bHasData) return -1; // a comes first
-          if (!aHasData && bHasData) return 1;  // b comes first
-          
-          // If both have same data availability status, sort by data_available descending
-          return b.data_available - a.data_available;
-        });
+        // Sort ACs by data_available descending (all ACs now have data_available > 0)
+        acData.sort((a: any, b: any) => b.data_available - a.data_available);
         
         // Display all filtered ACs (no pagination)
         setAcList(acData);
@@ -211,17 +204,6 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       data_available: ac.data_available,
       data_available_type: typeof ac.data_available
     });
-    
-    // Check if AC has no data available (handle both number 0 and string "0")
-    const dataAvailable = typeof ac.data_available === 'string' ? parseInt(ac.data_available) : ac.data_available;
-    if (isNaN(dataAvailable) || dataAvailable <= 0) {
-      console.log('No data available, AC disabled', {
-        original_value: ac.data_available,
-        parsed_value: dataAvailable,
-        is_nan: isNaN(dataAvailable)
-      });
-      return; // Just return without showing popup
-    }
     
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
     
@@ -491,16 +473,12 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                   {acList.map((ac) => {
                     const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
-                    const dataAvailable = typeof ac.data_available === 'string' ? parseInt(ac.data_available) : ac.data_available;
-                    const hasNoData = isNaN(dataAvailable) || dataAvailable <= 0;
                     
                     return (
                     <div
                       key={ac.ac_code}
                       className={`p-2 transition-colors ${
-                        hasNoData
-                          ? 'cursor-not-allowed opacity-60 bg-gray-100 dark:bg-gray-800/50'
-                          : isSelected
+                        isSelected
                           ? 'cursor-pointer bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                           : isAssigned
                           ? 'cursor-pointer bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400 hover:bg-green-100 dark:hover:bg-green-900/20'
