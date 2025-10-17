@@ -284,7 +284,7 @@ export default function ACWiseReportPage() {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Agency Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th>
+                      {/* <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th> */}
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
@@ -302,7 +302,7 @@ export default function ACWiseReportPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {getAgencyBadge(data.agencyName)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td>
+                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.alloted.toLocaleString()}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.completed.toLocaleString()}</td>
