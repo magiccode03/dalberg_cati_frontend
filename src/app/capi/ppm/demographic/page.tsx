@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import { Download, Users, Calendar, Shield, Heart, UserCheck } from 'lucide-react';
 import { apiService } from '@/lib/api';
+import FormattedNumber from '@/components/ui/FormattedNumber';
 
 interface GenderWiseData {
   ac_code: number;
@@ -775,13 +776,13 @@ export default function DemographicPage() {
       ...genderWiseData.map(row => [
         `"${row.ac_name}"`,
         row.ac_code,
-        row.sample_achieved,
-        row.male_min_sample,
-        row.male_covered,
-        row.male_balance,
-        row.female_min_sample,
-        row.female_covered,
-        row.female_balance
+        new Intl.NumberFormat('en-IN').format(row.sample_achieved),
+        new Intl.NumberFormat('en-IN').format(row.male_min_sample),
+        new Intl.NumberFormat('en-IN').format(row.male_covered),
+        new Intl.NumberFormat('en-IN').format(row.male_balance),
+        new Intl.NumberFormat('en-IN').format(row.female_min_sample),
+        new Intl.NumberFormat('en-IN').format(row.female_covered),
+        new Intl.NumberFormat('en-IN').format(row.female_balance)
       ].join(','))
     ].join('\n');
 
@@ -820,19 +821,19 @@ export default function DemographicPage() {
       ...ageWiseData.map(row => [
         `"${row.ac_name}"`,
         row.ac_code,
-        row.sample_achieved,
-        row.age_groups['18_24'].quota,
-        row.age_groups['18_24'].covered,
-        row.age_groups['18_24'].balance,
-        row.age_groups['25_34'].quota,
-        row.age_groups['25_34'].covered,
-        row.age_groups['25_34'].balance,
-        row.age_groups['35_50'].quota,
-        row.age_groups['35_50'].covered,
-        row.age_groups['35_50'].balance,
-        row.age_groups['50_above'].quota,
-        row.age_groups['50_above'].covered,
-        row.age_groups['50_above'].balance
+        new Intl.NumberFormat('en-IN').format(row.sample_achieved),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['18_24'].quota),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['18_24'].covered),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['18_24'].balance),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['25_34'].quota),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['25_34'].covered),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['25_34'].balance),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['35_50'].quota),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['35_50'].covered),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['35_50'].balance),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['50_above'].quota),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['50_above'].covered),
+        new Intl.NumberFormat('en-IN').format(row.age_groups['50_above'].balance)
       ].join(','))
     ].join('\n');
 
@@ -872,7 +873,7 @@ export default function DemographicPage() {
         const baseData = [
           `"${row.ac_name}"`,
           row.ac_code,
-          row.sample_achieved
+          new Intl.NumberFormat('en-IN').format(row.sample_achieved)
         ];
         
         const casteData: (string | number)[] = [];
@@ -882,9 +883,9 @@ export default function DemographicPage() {
             casteData.push(
               `"${caste.caste_name}"`,
               caste.caste_code,
-              caste.quota,
-              caste.covered,
-              caste.balance,
+              new Intl.NumberFormat('en-IN').format(caste.quota),
+              new Intl.NumberFormat('en-IN').format(caste.covered),
+              new Intl.NumberFormat('en-IN').format(caste.balance),
               caste.rank
             );
           } else {
@@ -931,19 +932,19 @@ export default function DemographicPage() {
       ...religionWiseData.map(row => [
         `"${row.ac_name}"`,
         row.ac_code,
-        row.sample_achieved,
-        row.hindu.population,
-        row.hindu.sample,
-        row.hindu.difference,
-        row.muslim.population,
-        row.muslim.sample,
-        row.muslim.difference,
-        row.christian.population,
-        row.christian.sample,
-        row.christian.difference,
-        row.others.population,
-        row.others.sample,
-        row.others.difference
+        new Intl.NumberFormat('en-IN').format(row.sample_achieved),
+        new Intl.NumberFormat('en-IN').format(Number(row.hindu.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.hindu.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.hindu.difference)),
+        new Intl.NumberFormat('en-IN').format(Number(row.muslim.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.muslim.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.muslim.difference)),
+        new Intl.NumberFormat('en-IN').format(Number(row.christian.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.christian.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.christian.difference)),
+        new Intl.NumberFormat('en-IN').format(Number(row.others.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.others.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.others.difference))
       ].join(','))
     ].join('\n');
 
@@ -979,16 +980,16 @@ export default function DemographicPage() {
       ...socialCategoryWiseData.map(row => [
         `"${row.ac_name}"`,
         row.ac_code,
-        row.sample_achieved,
-        row.sc.population,
-        row.sc.sample,
-        row.sc.difference,
-        row.st.population,
-        row.st.sample,
-        row.st.difference,
-        row.general_obc.population,
-        row.general_obc.sample,
-        row.general_obc.difference
+        new Intl.NumberFormat('en-IN').format(row.sample_achieved),
+        new Intl.NumberFormat('en-IN').format(Number(row.sc.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.sc.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.sc.difference)),
+        new Intl.NumberFormat('en-IN').format(Number(row.st.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.st.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.st.difference)),
+        new Intl.NumberFormat('en-IN').format(Number(row.general_obc.population)),
+        new Intl.NumberFormat('en-IN').format(Number(row.general_obc.sample)),
+        new Intl.NumberFormat('en-IN').format(Number(row.general_obc.difference))
       ].join(','))
     ].join('\n');
 
@@ -1069,17 +1070,27 @@ export default function DemographicPage() {
             <tr key={row.ac_code}>
               <td>{row.ac_name}</td>
               <td className="text-center">{row.ac_code}</td>
-              <td className="text-center">{row.sample_achieved}</td>
-              <td className="text-center">{row.male_min_sample}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.sample_achieved} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.male_min_sample} locale="en-IN" />
+              </td>
               <td className={`text-center ${getCellStyle(row.male_covered)}`}>
-                {row.male_covered}
+                <FormattedNumber value={row.male_covered} locale="en-IN" />
             </td>
-              <td className="text-center">{row.male_balance}</td>
-              <td className="text-center">{row.female_min_sample}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.male_balance} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.female_min_sample} locale="en-IN" />
+              </td>
               <td className={`text-center ${getCellStyle(row.female_covered, true)}`}>
-                {row.female_covered}
+                <FormattedNumber value={row.female_covered} locale="en-IN" />
             </td>
-              <td className="text-center">{row.female_balance}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.female_balance} locale="en-IN" />
+              </td>
           </tr>
         ))}
       </tbody>
@@ -1149,26 +1160,44 @@ export default function DemographicPage() {
             <tr key={row.ac_code}>
               <td>{row.ac_name}</td>
               <td className="text-center">{row.ac_code}</td>
-              <td className="text-center">{row.sample_achieved}</td>
-              <td className="text-center">{row.age_groups['18_24'].quota}</td>
-              <td className="text-center">{row.age_groups['18_24'].covered}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.sample_achieved} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['18_24'].quota} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['18_24'].covered} locale="en-IN" />
+              </td>
               <td className={`text-center ${getAgeWiseBalanceStyle(row.age_groups['18_24'].balance)}`}>
-                {row.age_groups['18_24'].balance}
+                <FormattedNumber value={row.age_groups['18_24'].balance} locale="en-IN" />
               </td>
-              <td className="text-center">{row.age_groups['25_34'].quota}</td>
-              <td className="text-center">{row.age_groups['25_34'].covered}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['25_34'].quota} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['25_34'].covered} locale="en-IN" />
+              </td>
               <td className={`text-center ${getAgeWiseBalanceStyle(row.age_groups['25_34'].balance)}`}>
-                {row.age_groups['25_34'].balance}
+                <FormattedNumber value={row.age_groups['25_34'].balance} locale="en-IN" />
               </td>
-              <td className="text-center">{row.age_groups['35_50'].quota}</td>
-              <td className="text-center">{row.age_groups['35_50'].covered}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['35_50'].quota} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['35_50'].covered} locale="en-IN" />
+              </td>
               <td className={`text-center ${getAgeWiseBalanceStyle(row.age_groups['35_50'].balance)}`}>
-                {row.age_groups['35_50'].balance}
+                <FormattedNumber value={row.age_groups['35_50'].balance} locale="en-IN" />
               </td>
-              <td className="text-center">{row.age_groups['50_above'].quota}</td>
-              <td className="text-center">{row.age_groups['50_above'].covered}</td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['50_above'].quota} locale="en-IN" />
+              </td>
+              <td className="text-center">
+                <FormattedNumber value={row.age_groups['50_above'].covered} locale="en-IN" />
+              </td>
               <td className={`text-center ${getAgeWiseBalanceStyle(row.age_groups['50_above'].balance)}`}>
-                {row.age_groups['50_above'].balance}
+                <FormattedNumber value={row.age_groups['50_above'].balance} locale="en-IN" />
               </td>
           </tr>
         ))}
@@ -1292,7 +1321,9 @@ export default function DemographicPage() {
           <tr key={row.ac_code}>
             <td>{row.ac_name}</td>
             <td className="text-center">{row.ac_code}</td>
-            <td className="text-center">{row.sample_achieved}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.sample_achieved} locale="en-IN" />
+            </td>
             {/* Render up to 10 castes */}
             {Array.from({ length: 10 }).map((_, index) => {
               const caste = row.castes[index];
@@ -1300,10 +1331,14 @@ export default function DemographicPage() {
                 return (
                   <React.Fragment key={index}>
                     <td className="text-center">{caste.caste_name}</td>
-                    <td className="text-center">{caste.quota}</td>
-                    <td className="text-center">{caste.covered}</td>
+                    <td className="text-center">
+                      <FormattedNumber value={caste.quota} locale="en-IN" />
+                    </td>
+                    <td className="text-center">
+                      <FormattedNumber value={caste.covered} locale="en-IN" />
+                    </td>
                     <td className={`text-center ${getCasteBalanceStyle(caste.balance)}`}>
-                      {caste.balance}
+                      <FormattedNumber value={caste.balance} locale="en-IN" />
                     </td>
                   </React.Fragment>
                 );
@@ -1391,30 +1426,48 @@ export default function DemographicPage() {
           <tr key={row.ac_code}>
             <td>{row.ac_name}</td>
             <td className="text-center">{row.ac_code}</td>
-            <td className="text-center">{row.sample_achieved}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.sample_achieved} locale="en-IN" />
+            </td>
             {/* Hindu */}
-            <td className="text-center">{row.hindu.population}</td>
-            <td className="text-center">{row.hindu.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.hindu.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.hindu.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getReligionDifferenceStyle(row.hindu.difference)}`}>
-              {row.hindu.difference}
+              <FormattedNumber value={row.hindu.difference} locale="en-IN" />
             </td>
             {/* Muslim */}
-            <td className="text-center">{row.muslim.population}</td>
-            <td className="text-center">{row.muslim.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.muslim.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.muslim.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getReligionDifferenceStyle(row.muslim.difference)}`}>
-              {row.muslim.difference}
+              <FormattedNumber value={row.muslim.difference} locale="en-IN" />
             </td>
             {/* Christian */}
-            <td className="text-center">{row.christian.population}</td>
-            <td className="text-center">{row.christian.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.christian.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.christian.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getReligionDifferenceStyle(row.christian.difference)}`}>
-              {row.christian.difference}
+              <FormattedNumber value={row.christian.difference} locale="en-IN" />
             </td>
             {/* Others */}
-            <td className="text-center">{row.others.population}</td>
-            <td className="text-center">{row.others.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.others.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.others.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getReligionDifferenceStyle(row.others.difference)}`}>
-              {row.others.difference}
+              <FormattedNumber value={row.others.difference} locale="en-IN" />
             </td>
           </tr>
         ))}
@@ -1483,24 +1536,38 @@ export default function DemographicPage() {
           <tr key={row.ac_code}>
             <td>{row.ac_name}</td>
             <td className="text-center">{row.ac_code}</td>
-            <td className="text-center">{row.sample_achieved}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.sample_achieved} locale="en-IN" />
+            </td>
             {/* SC */}
-            <td className="text-center">{row.sc.population}</td>
-            <td className="text-center">{row.sc.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.sc.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.sc.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.sc.difference))}`}>
-              {row.sc.difference}
+              <FormattedNumber value={row.sc.difference} locale="en-IN" />
             </td>
             {/* ST */}
-            <td className="text-center">{row.st.population}</td>
-            <td className="text-center">{row.st.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.st.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.st.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.st.difference))}`}>
-              {row.st.difference}
+              <FormattedNumber value={row.st.difference} locale="en-IN" />
             </td>
             {/* General+OBC */}
-            <td className="text-center">{row.general_obc.population}</td>
-            <td className="text-center">{row.general_obc.sample}</td>
+            <td className="text-center">
+              <FormattedNumber value={row.general_obc.population} locale="en-IN" />
+            </td>
+            <td className="text-center">
+              <FormattedNumber value={row.general_obc.sample} locale="en-IN" />
+            </td>
             <td className={`text-center ${getSocialCategoryDifferenceStyle(parseFloat(row.general_obc.difference))}`}>
-              {row.general_obc.difference}
+              <FormattedNumber value={row.general_obc.difference} locale="en-IN" />
             </td>
           </tr>
         ))}

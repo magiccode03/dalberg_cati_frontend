@@ -712,7 +712,7 @@ const TelecallerProgressPage: React.FC = () => {
       // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
-        limit: '100', // API maximum limit
+        limit: '500', // API maximum limit
       });
       
       // Add filters (only if they have values)
@@ -1048,23 +1048,23 @@ const TelecallerProgressPage: React.FC = () => {
             <MetricCard
               title="Continue"
               value={getValue(data?.call_status?.continue)}
-              icon={<Phone className="h-6 w-6 text-blue-600" />}
-              color="border-blue-500"
-              bgColor="bg-blue-500"
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
             />
             <MetricCard
               title="Refuse to Respond"
               value={getValue(data?.call_status?.refuse_to_respond)}
-              icon={<Phone className="h-6 w-6 text-amber-600" />}
-              color="border-amber-500"
-              bgColor="bg-amber-500"
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
             />
             <MetricCard
               title="Call Back Later"
               value={getValue(data?.call_status?.call_back_later)}
-              icon={<Clock className="h-6 w-6 text-teal-600" />}
-              color="border-teal-500"
-              bgColor="bg-teal-500"
+              icon={<Clock className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
             />
             <MetricCard
               title="No response by Telecaller"
@@ -1516,8 +1516,8 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th>
+                        {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -1601,12 +1601,12 @@ const TelecallerProgressPage: React.FC = () => {
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.greater_than_180_sec?.toLocaleString() || 0}
-                          </td>
+                          </td> */}
                         </tr>
                       ))}
                     </tbody>

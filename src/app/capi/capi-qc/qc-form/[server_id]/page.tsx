@@ -13,6 +13,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 import { Volume2, Play, Pause } from 'lucide-react';
+import AudioPlayer from '@/components/ui/AudioPlayer';
 
 // Import form configurations
 import formConfig from '../form-config.json';
@@ -878,14 +879,10 @@ export default function QCFormPage() {
                 <div className="flex items-center gap-4 max-w-7xl mx-auto">
                   <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <audio 
-                      controls 
-                      className="w-full max-w-full h-8"
-                      style={{ maxHeight: '32px' }}
-                    >
-                      <source src={audioUrl} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
+                    <AudioPlayer 
+                      src={audioUrl} 
+                      className="w-full"
+                    />
                   </div>
                   {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
                     Duration: {formatDuration(instanceData.audio1_duration)}

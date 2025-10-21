@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -80,9 +80,16 @@ export default function AssignedACPage() {
     acCodes: []
   });
   const [filtersLoading, setFiltersLoading] = useState(false);
+  
+  // Refs to prevent multiple simultaneous API calls
+  const fetchDataRef = useRef(false);
+  const fetchFiltersRef = useRef(false);
 
   // Fetch filter options
-  const fetchFilterOptions = async () => {
+  const fetchFilterOptions = useCallback(async () => {
+    if (fetchFiltersRef.current) return; // Prevent multiple simultaneous calls
+    fetchFiltersRef.current = true;
+    
     setFiltersLoading(true);
     try {
       // Fetch QC Users (load all data)
@@ -95,28 +102,16 @@ export default function AssignedACPage() {
           label: `${user.name} (${user.qc_id})`
         }));
         
-        // Fetch AC Codes from master AC list (load all data)
-        let acCodes: Array<{ value: string; label: string }> = [];
-        let currentPage = 1;
-        let hasMorePages = true;
+        // Fetch AC Codes from master AC list (single call with limit)
+        const acResponse = await apiClient.get('/dashboard/master-ac-index/list?limit=300');
+        const acData = acResponse.data;
         
-        while (hasMorePages) {
-          const acResponse = await apiClient.get(`/dashboard/master-ac-index/list?page=${currentPage}&pageSize=1000`);
-          const acData = acResponse.data;
-          
-          if (acData.success && acData.data?.master_acs) {
-            const pageACs = acData.data.master_acs.map((ac: any) => ({
-              value: ac.ac_code.toString(),
-              label: `${ac.ac_name} (${ac.ac_code})`
-            }));
-            acCodes = [...acCodes, ...pageACs];
-            
-            // Check if there are more pages
-            hasMorePages = acData.data.has_next || false;
-            currentPage++;
-          } else {
-            hasMorePages = false;
-          }
+        let acCodes: Array<{ value: string; label: string }> = [];
+        if (acData.success && acData.data?.master_acs) {
+          acCodes = acData.data.master_acs.map((ac: any) => ({
+            value: ac.ac_code.toString(),
+            label: `${ac.ac_name} (${ac.ac_code})`
+          }));
         }
         
         setFilterOptions({
@@ -133,8 +128,9 @@ export default function AssignedACPage() {
       });
     } finally {
       setFiltersLoading(false);
+      fetchFiltersRef.current = false; // Reset the flag
     }
-  };
+  }, []); // Empty dependency array since this should only run once
 
   // Helper function to transform API data to UI format with rowspan support
   const transformAPIData = (apiData: QCUserAssignment[]): AssignedACData[] => {
@@ -166,7 +162,10 @@ export default function AssignedACPage() {
   };
 
   // Fetch data from API
-  const fetchAssignedACData = async () => {
+  const fetchAssignedACData = useCallback(async () => {
+    if (fetchDataRef.current) return; // Prevent multiple simultaneous calls
+    fetchDataRef.current = true;
+    
     try {
       setLoading(true);
       setError(null);
@@ -285,22 +284,23 @@ export default function AssignedACPage() {
       setHasPrevious(false);
     } finally {
       setLoading(false);
+      fetchDataRef.current = false; // Reset the flag
     }
-  };
+  }, [currentPage, selectedQCUser, selectedACCode, pageSize]); // Include all dependencies
 
   // Handle filter changes
-  const handleFilterChange = () => {
+  const handleFilterChange = useCallback(() => {
     setCurrentPage(1); // Reset to first page when filters change
     fetchAssignedACData();
-  };
+  }, [fetchAssignedACData]);
 
   // Clear all filters
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSelectedQCUser('');
     setSelectedACCode('');
     setCurrentPage(1);
     fetchAssignedACData();
-  };
+  }, [fetchAssignedACData]);
 
   // Download all data as CSV
   const downloadAllData = async () => {
@@ -375,15 +375,15 @@ export default function AssignedACPage() {
     }
   };
 
-  // Fetch data on component mount and when page changes
+  // Fetch data on component mount and when dependencies change
   useEffect(() => {
     fetchAssignedACData();
-  }, [currentPage]);
+  }, [fetchAssignedACData]);
 
   // Fetch filter options on component mount
   useEffect(() => {
     fetchFilterOptions();
-  }, []);
+  }, [fetchFilterOptions]);
 
   // Calculate display range for current page
   const startIndex = (currentPage - 1) * pageSize;
