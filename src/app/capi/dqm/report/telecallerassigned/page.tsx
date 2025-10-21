@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -9,8 +9,9 @@ import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import SelectDropdown from '@/components/ui/SelectDropdown';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2, Search, X, Download } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import FormattedNumber from '@/components/ui/FormattedNumber';
 
 interface AssignedACData {
   id: number;
@@ -18,7 +19,6 @@ interface AssignedACData {
   qcUserName: string;
   acCode: number;
   acName: string;
-  interviewerId: number;
   qcPending: number;
   qcCompleted: number;
   qcTotal: number;
@@ -32,7 +32,6 @@ interface QCUserAssignment {
   assignments: Array<{
     ac_code: number;
     ac_name: string;
-    interviewer_id: number;
     qc_pending: number;
     qc_completed: number;
     qc_total: number;
@@ -147,20 +146,19 @@ export default function AssignedACPage() {
         const assignmentCount = qcUser.assignments.length;
         
                 qcUser.assignments.forEach((assignment, index) => {
-                  transformedData.push({
-                    id: id++,
-                    qcId: qcUser.qc_id,
-                    qcUserName: qcUser.qc_user_name,
-                    acCode: assignment.ac_code,
-                    acName: assignment.ac_name,
-                    interviewerId: assignment.interviewer_id,
+          transformedData.push({
+            id: id++,
+            qcId: qcUser.qc_id,
+            qcUserName: qcUser.qc_user_name,
+            acCode: assignment.ac_code,
+            acName: assignment.ac_name,
                     qcPending: assignment.qc_pending,
                     qcCompleted: assignment.qc_completed,
                     qcTotal: assignment.qc_total,
                     rowspan: index === 0 ? assignmentCount : 0, // Only first row gets rowspan
                     isFirstRow: index === 0 // Mark first row for QC ID and Name
-                  });
-                });
+          });
+        });
       }
     });
 
@@ -228,7 +226,7 @@ export default function AssignedACPage() {
           setHasPrevious(data.pagination.has_previous);
         } else {
           // Fallback to transformed data length if no pagination info
-          setTotalCount(transformedData.length);
+        setTotalCount(transformedData.length);
           setTotalPages(1);
           setHasNext(false);
           setHasPrevious(false);
@@ -241,11 +239,11 @@ export default function AssignedACPage() {
         setError(data.error || 'Invalid response format from server');
         // Use fallback data
         const fallbackData: AssignedACData[] = [
-          { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 101, qcPending: 25, qcCompleted: 75, qcTotal: 100, rowspan: 3, isFirstRow: true },
-          { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 102, qcPending: 15, qcCompleted: 35, qcTotal: 50, rowspan: 0, isFirstRow: false },
-          { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', interviewerId: 104, qcPending: 10, qcCompleted: 40, qcTotal: 50, rowspan: 0, isFirstRow: false },
-          { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 1182, qcPending: 30, qcCompleted: 70, qcTotal: 100, rowspan: 2, isFirstRow: true },
-          { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', interviewerId: 4002, qcPending: 20, qcCompleted: 30, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', qcPending: 25, qcCompleted: 75, qcTotal: 100, rowspan: 3, isFirstRow: true },
+          { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', qcPending: 15, qcCompleted: 35, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', qcPending: 10, qcCompleted: 40, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', qcPending: 30, qcCompleted: 70, qcTotal: 100, rowspan: 2, isFirstRow: true },
+          { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', qcPending: 20, qcCompleted: 30, qcTotal: 50, rowspan: 0, isFirstRow: false },
         ];
         setAssignedACData(fallbackData);
         setTotalCount(fallbackData.length);
@@ -264,17 +262,17 @@ export default function AssignedACPage() {
           qc_id: 109,
           qc_user_name: 'Kundan',
           assignments: [
-            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 101, qc_pending: 25, qc_completed: 75, qc_total: 100 },
-            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 102, qc_pending: 15, qc_completed: 35, qc_total: 50 },
-            { ac_code: 1, ac_name: 'Valmiki Nagar', interviewer_id: 104, qc_pending: 10, qc_completed: 40, qc_total: 50 }
+            { ac_code: 1, ac_name: 'Valmiki Nagar', qc_pending: 25, qc_completed: 75, qc_total: 100 },
+            { ac_code: 1, ac_name: 'Valmiki Nagar', qc_pending: 15, qc_completed: 35, qc_total: 50 },
+            { ac_code: 1, ac_name: 'Valmiki Nagar', qc_pending: 10, qc_completed: 40, qc_total: 50 }
           ]
         },
         {
           qc_id: 120,
           qc_user_name: 'Supriya',
           assignments: [
-            { ac_code: 132, ac_name: 'Warisnagar', interviewer_id: 1182, qc_pending: 30, qc_completed: 70, qc_total: 100 },
-            { ac_code: 132, ac_name: 'Warisnagar', interviewer_id: 4002, qc_pending: 20, qc_completed: 30, qc_total: 50 }
+            { ac_code: 132, ac_name: 'Warisnagar', qc_pending: 30, qc_completed: 70, qc_total: 100 },
+            { ac_code: 132, ac_name: 'Warisnagar', qc_pending: 20, qc_completed: 30, qc_total: 50 }
           ]
         }
       ];
@@ -302,6 +300,79 @@ export default function AssignedACPage() {
     setSelectedACCode('');
     setCurrentPage(1);
     fetchAssignedACData();
+  };
+
+  // Download all data as CSV
+  const downloadAllData = async () => {
+    try {
+      setLoading(true);
+      
+      // Build query parameters for all data (no pagination)
+      const queryParams = new URLSearchParams();
+      
+      // Add filter parameters
+      if (selectedQCUser) {
+        queryParams.append('qc_id', selectedQCUser);
+      }
+      if (selectedACCode) {
+        queryParams.append('ac_code', selectedACCode);
+      }
+      
+      // Set a large page size to get all data
+      queryParams.append('page', '1');
+      queryParams.append('pageSize', '10000');
+      
+      const queryString = queryParams.toString();
+      const endpoint = `/capi/qc-user-assignments${queryString ? `?${queryString}` : ''}`;
+      
+      console.log('Downloading all data from:', endpoint);
+      
+      const response = await apiClient.get(endpoint);
+      const data: APIResponse = response.data;
+      
+      if (data.success && data.data && Array.isArray(data.data)) {
+        const transformedData = transformAPIData(data.data);
+        
+        // Convert to CSV
+        const csvHeaders = ['QC ID', 'QC User Name', 'AC Code', 'AC Name', 'QC Total', 'QC Completed', 'QC Pending'];
+        const csvRows = transformedData.map(item => [
+          item.qcId,
+          item.qcUserName,
+          item.acCode,
+          item.acName,
+          new Intl.NumberFormat('en-IN').format(item.qcTotal),
+          new Intl.NumberFormat('en-IN').format(item.qcCompleted),
+          new Intl.NumberFormat('en-IN').format(item.qcPending)
+        ]);
+        
+        // Create CSV content
+        const csvContent = [
+          csvHeaders.join(','),
+          ...csvRows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `assigned-ac-telecaller-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('CSV download completed');
+      } else {
+        console.error('Failed to fetch data for download:', data.error);
+        setError('Failed to fetch data for download');
+      }
+    } catch (err: any) {
+      console.error('Error downloading data:', err);
+      setError('Failed to download data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Fetch data on component mount and when page changes
@@ -335,13 +406,6 @@ export default function AssignedACPage() {
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <Text className="ml-2 text-gray-600">Loading assigned AC data...</Text>
-          </div>
-        )}
 
         {/* Error State */}
         {error && (
@@ -427,16 +491,33 @@ export default function AssignedACPage() {
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
+              <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+                <Heading level={4} className="text-lg font-semibold text-gray-900">
                     Assigned AC Interviewer Telecaller
-                  </Heading>
+                </Heading>
                 </div>
-                <span className="text-end"></span>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    onClick={downloadAllData}
+                    size="sm"
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
+                    disabled={loading}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download</span>
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="p-6">
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                  <Text className="ml-2 text-gray-600">Loading assigned AC data...</Text>
+                </div>
+              ) : (
+                <React.Fragment>
               <div className="overflow-x-auto">
                 <Table
                   striped
@@ -450,7 +531,6 @@ export default function AssignedACPage() {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Total</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
@@ -477,10 +557,15 @@ export default function AssignedACPage() {
                         )}
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.acCode}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.interviewerId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcTotal.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcCompleted.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcPending.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                          <FormattedNumber value={data.qcTotal} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                          <FormattedNumber value={data.qcCompleted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                          <FormattedNumber value={data.qcPending} locale="en-IN" />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -502,6 +587,8 @@ export default function AssignedACPage() {
                   />
                 </div>
               </div>
+              </React.Fragment>
+              )}
             </div>
           </Card>
         </div>
