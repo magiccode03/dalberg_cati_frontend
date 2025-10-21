@@ -153,7 +153,7 @@ export default function NewCallPage() {
     }
   };
 
-  const handleConnectToCall = async (interviewId: number, phoneNumber: string) => {
+  const handleConnectToCall = async (interviewId: number, phoneNumber: string, acCode: number) => {
     try {
       console.log('Initiating call:', { interviewId, phoneNumber });
       
@@ -211,8 +211,8 @@ export default function NewCallPage() {
           console.error('Failed to update interview status:', updateData);
         }
         
-        // Navigate to tele-form page with interview ID after successful call initiation
-        router.push(`/cati/ss/tele-form/${interviewId}`);
+        // Navigate to tele-form page with interview ID and AC code after successful call initiation
+        router.push(`/cati/ss/tele-form/${interviewId}/${acCode}`);
       } else {
         console.error('Call initiation failed:', callData);
         alert(`Call initiation failed: ${callData.message || 'Unknown error'}`);
@@ -383,7 +383,7 @@ export default function NewCallPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => handleConnectToCall(interview.id, interview.phone)}
+                          onClick={() => handleConnectToCall(interview.id, interview.phone, interview.ac_code)}
                           className="text-white bg-blue-600 hover:bg-blue-700 px-2 py-1.5 text-xs"
                           title="Connect to Call"
                         >

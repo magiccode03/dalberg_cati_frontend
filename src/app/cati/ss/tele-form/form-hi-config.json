@@ -419,58 +419,7 @@
     "label": "5. पिछले विधानसभा चुनाव (2021) में आपने किस पार्टी को वोट दिया था?",
     "conditional": "resp_age >= 22 && resp_registered_voter === '1'",
     "required": true,
-    "options": [
-      {
-        "label": "AITC (Trinamool Congress)",
-        "value": "1",
-        "tag": "opt_aitc"
-      },
-      {
-        "label": "BJP",
-        "value": "2",
-        "tag": "opt_bjp"
-      },
-      {
-        "label": "INC (Congress)",
-        "value": "3",
-        "tag": "opt_inc"
-      },
-      {
-        "label": "Left Front",
-        "value": "4",
-        "tag": "opt_left"
-      },
-      {
-        "label": "Independent",
-        "value": "12",
-        "tag": "opt_independent"
-      },
-      {
-        "label": "Others (specify)",
-        "value": "44",
-        "tag": "opt_others"
-      },
-      {
-        "label": "NOTA",
-        "value": "55",
-        "tag": "opt_nota"
-      },
-      {
-        "label": "Did not vote",
-        "value": "66",
-        "tag": "opt_did_not_vote"
-      },
-      {
-        "label": "Not eligible for voting",
-        "value": "77",
-        "tag": "opt_not_eligible"
-      },
-      {
-        "label": "No response/Refused to answer",
-        "value": "88",
-        "tag": "opt_no_response"
-      }
-    ],
+    "options": "party_2021_q5.[ac_code]",
     "rules": {
       "showFields": {
         "opt_others": [
@@ -1309,7 +1258,7 @@
   },
   {
     "type": "radio",
-    "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
+    "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद {{mp_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1343,7 +1292,7 @@
   },
   {
     "type": "radio",
-    "label": "16 B. आपके वर्तमान विधायक (MLA) के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
+    "label": "16 B. आपके वर्तमान विधायक (MLA) {{mla_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [

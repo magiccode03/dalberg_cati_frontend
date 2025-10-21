@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -17,6 +17,9 @@ import AudioPlayer from '@/components/ui/AudioPlayer';
 
 // Import form configurations
 import formConfig from '../form-config.json';
+
+// Global variable to track API calls across component mounts
+const globalApiCallTracker = new Set<string>();
 
 // Type definitions
 interface FormOption {
@@ -54,7 +57,7 @@ interface FormField {
   };
 }
 
-export default function QCFormPage() {
+function QCFormPage() {
   const router = useRouter();
   const params = useParams();
   const serverId = params.server_id as string;
@@ -70,11 +73,13 @@ export default function QCFormPage() {
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
+  const hasFetchedData = useRef(false); // Prevent multiple API calls
+  const isInitialized = useRef(false); // Prevent multiple initializations
   
   // Use the imported formConfig directly
   const currentFormConfig = formConfig as FormField[];
   
-  const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
+  const showToast = useCallback((message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newToast = {
       id,
@@ -84,13 +89,76 @@ export default function QCFormPage() {
       duration: 3000,
     };
     setToasts(prev => [...prev, newToast]);
-  };
+  }, []);
   
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
+  }, []);
 
-  // Load QC user data and interview data on mount
+  // Fetch instance data from API - memoized to prevent recreation
+  const fetchInstanceData = useCallback(async () => {
+    // Check if we already have data in localStorage for this serverId
+    const cachedDataKey = `instanceData_${serverId}`;
+    const cachedData = localStorage.getItem(cachedDataKey);
+    
+    if (cachedData) {
+      try {
+        const parsedData = JSON.parse(cachedData);
+        setInstanceData(parsedData);
+        setLoading(false);
+        return;
+      } catch (error) {
+        console.error('Error parsing cached data:', error);
+        localStorage.removeItem(cachedDataKey);
+      }
+    }
+    
+    // Prevent multiple API calls using global tracker
+    if (globalApiCallTracker.has(serverId)) {
+      setLoading(false); // Ensure loading is set to false if API already called
+      return;
+    }
+    
+    globalApiCallTracker.add(serverId);
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      if (!token || !serverId) {
+        setLoading(false);
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      
+      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${serverId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        // Store complete instance data for reference
+        setInstanceData(data.data);
+        
+        // Cache the data in localStorage for future use
+        localStorage.setItem(cachedDataKey, JSON.stringify(data.data));
+      } else {
+        showToast('Failed to load interview data', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching instance data:', error);
+      showToast('Error loading interview data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [serverId]); // Removed showToast from dependencies to prevent recreation
+
+  // Load QC user data and interview data on mount - run only once
   useEffect(() => {
     const savedData = localStorage.getItem('qc_user_data');
     if (savedData) {
@@ -105,13 +173,14 @@ export default function QCFormPage() {
     
     // Fetch instance data
     fetchInstanceData();
-  }, []);
+  }, []); // Empty dependency array - run only once on mount
 
-  // Handle scroll for sticky audio player
+  // Handle scroll for sticky audio player - optimized to prevent unnecessary re-renders
   useEffect(() => {
     let ticking = false;
     let originalTop = 0;
     let isInitialized = false;
+    let lastStickyState = false;
     
     const handleScroll = () => {
       if (!ticking) {
@@ -130,7 +199,12 @@ export default function QCFormPage() {
             // Only become sticky if we've scrolled past the original position
             // and the element is not in its original position
             const shouldBeSticky = currentScrollY > (originalTop - 64) && rect.top <= 64;
-            setIsSticky(shouldBeSticky);
+            
+            // Only update state if the sticky state actually changed to prevent unnecessary re-renders
+            if (shouldBeSticky !== lastStickyState) {
+              lastStickyState = shouldBeSticky;
+              setIsSticky(shouldBeSticky);
+            }
           }
           ticking = false;
         });
@@ -142,48 +216,14 @@ export default function QCFormPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch instance data from API
-  const fetchInstanceData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      if (!token || !serverId) return;
-
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
-      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${serverId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (data.success && data.data) {
-        // Store complete instance data for reference
-        setInstanceData(data.data);
-        console.log('Instance data loaded:', data.data);
-      } else {
-        showToast('Failed to load interview data', 'error');
-      }
-    } catch (error) {
-      console.error('Error fetching instance data:', error);
-      showToast('Error loading interview data', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Helper function to get label in current language
-  const getLabel = (label: string | { en?: string; hi?: string; bn?: string }): string => {
+  // Helper function to get label in current language - memoized to prevent re-creation
+  const getLabel = useCallback((label: string | { en?: string; hi?: string; bn?: string }): string => {
     if (typeof label === 'string') return label;
     return label[language as keyof typeof label] || label.en || '';
-  };
+  }, [language]);
 
-  // Helper function to get survey answer display value
-  const getSurveyAnswerDisplay = (field: FormField): string | null => {
+  // Helper function to get survey answer display value - memoized to prevent re-creation
+  const getSurveyAnswerDisplay = useCallback((field: FormField): string | null => {
     if (!field.survey_q_tag) return null;
     
     // Handle object structure with options
@@ -211,10 +251,10 @@ export default function QCFormPage() {
     }
     
     return null;
-  };
+  }, [instanceData, getLabel]);
 
-  // Get audio URL from instance data
-  const getAudioUrl = (): string | null => {
+  // Get audio URL from instance data - memoized to prevent re-renders
+  const audioUrl = useMemo(() => {
     if (!instanceData.audio1) return null;
     
     // Get first audio file if comma-separated
@@ -222,10 +262,10 @@ export default function QCFormPage() {
     if (!audioFile) return null;
     
     return `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`;
-  };
+  }, [instanceData.audio1, serverId]);
 
-  // Format duration in hh:mm:ss format
-  const formatDuration = (seconds: string | null | undefined): string => {
+  // Format duration in hh:mm:ss format - memoized to prevent re-creation
+  const formatDuration = useCallback((seconds: string | null | undefined): string => {
     if (!seconds) return '00:00:00';
     
     const totalSeconds = parseInt(seconds);
@@ -236,9 +276,14 @@ export default function QCFormPage() {
     const remainingSeconds = totalSeconds % 60;
     
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const audioUrl = getAudioUrl();
+  // Memoized language options to prevent re-creation
+  const languageOptions = useMemo(() => [
+    { value: 'en', label: 'English' },
+    { value: 'bn', label: 'বাংলা' },
+    { value: 'hi', label: 'हिंदी' },
+  ], []);
 
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string, useInstanceData: boolean = false): boolean => {
@@ -849,8 +894,8 @@ export default function QCFormPage() {
 
 
   if (loading) {
-    return (
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
+  return (
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
@@ -880,7 +925,7 @@ export default function QCFormPage() {
                   <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <AudioPlayer 
-                      src={audioUrl} 
+                      src={audioUrl}
                       className="w-full"
                     />
                   </div>
@@ -914,23 +959,19 @@ export default function QCFormPage() {
                   <div>District: <span className="font-semibold">{instanceData.district_name}</span></div>
                 )}
                 <div>QC User: <span className="font-semibold">{qcUserName} (ID: {qcUserId})</span></div> */}
-              </div>
             </div>
-            
-            {/* Language Selector */}
+              </div>
+              
+              {/* Language Selector */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
+                <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
               <div className="w-full sm:w-48">
-                <SelectDropdown
-                  options={[
-                    { value: 'en', label: 'English' },
-                    { value: 'bn', label: 'বাংলা' },
-                    { value: 'hi', label: 'हिंदी' },
-                  ]}
-                  value={language}
-                  onChange={(value) => setLanguage(value as string)}
-                  placeholder="Select Language"
-                />
+                  <SelectDropdown
+                  options={languageOptions}
+                    value={language}
+                    onChange={(value) => setLanguage(value as string)}
+                    placeholder="Select Language"
+                  />
               </div>
             </div>
           </div>
@@ -971,4 +1012,7 @@ export default function QCFormPage() {
     </Container>
   );
 }
+
+// Wrap component with React.memo to prevent unnecessary re-renders
+export default React.memo(QCFormPage);
 

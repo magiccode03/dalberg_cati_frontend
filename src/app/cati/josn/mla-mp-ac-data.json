@@ -1,0 +1,1766 @@
+[
+  {
+    "ac_code": 1,
+    "mp_name": "NIRMAL CHANDRA ROY",
+    "mla_name": "ADHIKARY PARESH CHANDRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 2,
+    "mp_name": "NISITH PRAMANIK",
+    "mla_name": "Sushil Barman",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 3,
+    "mp_name": "NISITH PRAMANIK",
+    "mla_name": "SUKUMAR ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 4,
+    "mp_name": "JAGADISH CHANDRA BARMA BASUNIA",
+    "mla_name": "Nikhil Ranjan Dey",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 5,
+    "mp_name": "JAGADISH CHANDRA BARMA BASUNIA",
+    "mla_name": "Baren Chandra Barman",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 6,
+    "mp_name": "JAGADISH CHANDRA BARMA BASUNIA",
+    "mla_name": "SANGITA ROY",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 7,
+    "mp_name": "JAGADISH CHANDRA BARMA BASUNIA",
+    "mla_name": "NISITH PRAMANIK",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 8,
+    "mp_name": "NISITH PRAMANIK",
+    "mla_name": "Mihir Goswami",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 9,
+    "mp_name": "MANOJ TIGGA",
+    "mla_name": "Malati Rava Roy",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 10,
+    "mp_name": "MANOJ TIGGA",
+    "mla_name": "MANOJ KUMAR ORAON",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 11,
+    "mp_name": "MANOJ TIGGA",
+    "mla_name": "BISHAL LAMA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 12,
+    "mp_name": "MANOJ TIGGA",
+    "mla_name": "SUMAN KANJILAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 13,
+    "mp_name": "MANOJ TIGGA",
+    "mla_name": "DIPAK BARMAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 14,
+    "mp_name": "MANOJ TIGGA",
+    "mla_name": "JAYPRAKASH TOPPO",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 15,
+    "mp_name": "DR JAYANTA KUMAR ROY",
+    "mla_name": "BISHNU PADA RAY",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 16,
+    "mp_name": "DR JAYANTA KUMAR ROY",
+    "mla_name": "Kaushik Roy",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 17,
+    "mp_name": "DR JAYANTA KUMAR ROY",
+    "mla_name": "DR. PRADIP KUMAR BARMA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 18,
+    "mp_name": "NIRMAL CHANDRA ROY",
+    "mla_name": "KHAGESWAR ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 19,
+    "mp_name": "DR JAYANTA KUMAR ROY",
+    "mla_name": "Sikha Chatterjee",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 20,
+    "mp_name": "NIRMAL CHANDRA ROY",
+    "mla_name": "BULU CHIK BARAIK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 21,
+    "mp_name": "PRAKASH CHIK BARAIK",
+    "mla_name": "PUNA BHENGRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 22,
+    "mp_name": "RAJU BISTA",
+    "mla_name": "RUDEN SADA LEPCHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 23,
+    "mp_name": "RAJU BISTA",
+    "mla_name": "NEERAJ TAMANG ZIMBA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 24,
+    "mp_name": "RAJU BISTA",
+    "mla_name": "Bishnu Prasad Sharma (alias B.P. Bajgain)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 25,
+    "mp_name": "RAJU BISTA",
+    "mla_name": "Anandamay Barman",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 26,
+    "mp_name": "RAJU BISTA",
+    "mla_name": "Sankar Ghosh",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 27,
+    "mp_name": "RAJU BISTA",
+    "mla_name": "Durga Murmu",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 28,
+    "mp_name": "GOPAL LAMA",
+    "mla_name": "HAMIDUL RAHAMAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 29,
+    "mp_name": "KALYANI KRISHNA",
+    "mla_name": "ABDUL KARIM CHOWDHARY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 30,
+    "mp_name": "KALYANI KRISHNA",
+    "mla_name": "MD. GHULAM RABBANI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 31,
+    "mp_name": "ALI IMRAN RAMZ (VICTOR)",
+    "mla_name": "AZAD MINHAJUL ARFIN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 32,
+    "mp_name": "KARTICK CHANDRA PAUL",
+    "mla_name": "GOUTAM PAUL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 33,
+    "mp_name": "KARTICK CHANDRA PAUL",
+    "mla_name": "SATYAJIT BARMAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 34,
+    "mp_name": "KARTICK CHANDRA PAUL",
+    "mla_name": "SOUMEN ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 35,
+    "mp_name": "KARTICK CHANDRA PAUL",
+    "mla_name": "KRISHNA KALYANI",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 36,
+    "mp_name": "BIPLAB MITRA",
+    "mla_name": "MOSARAF HUSSEN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 37,
+    "mp_name": "BIPLAB MITRA",
+    "mla_name": "REKHA ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 38,
+    "mp_name": "BIPLAB MITRA",
+    "mla_name": "TORAF HOSSAIN MANDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 39,
+    "mp_name": "SUKANTA MAJUMDAR",
+    "mla_name": "Ashok Kumar Lahiri",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 40,
+    "mp_name": "SUKANTA MAJUMDAR",
+    "mla_name": "BUDHRAI TUDU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 41,
+    "mp_name": "SUKANTA MAJUMDAR",
+    "mla_name": "SATYENDRA NATH RAY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 42,
+    "mp_name": "BIPLAB MITRA",
+    "mla_name": "BIPLAB MITRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 43,
+    "mp_name": "KHAGEN MURMU",
+    "mla_name": "JOYEL MURMU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 44,
+    "mp_name": "KHAGEN MURMU",
+    "mla_name": "CHINMOY DEB BARMAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 45,
+    "mp_name": "ALAM MOSTAQUE",
+    "mla_name": "Nihar Ranjan Ghosh",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 46,
+    "mp_name": "ALAM MOSTAQUE",
+    "mla_name": "TAJMUL HOSSAIN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 47,
+    "mp_name": "ALAM MOSTAQUE",
+    "mla_name": "ABDUR RAHIM BOXI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 48,
+    "mp_name": "ALAM MOSTAQUE",
+    "mla_name": "Samar Mukherjee",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 49,
+    "mp_name": "SREERUPA MITRA CHAUDHURY (NIRBHAYA DIDI)",
+    "mla_name": "SABITRI MITRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 50,
+    "mp_name": "KHAGEN MURMU",
+    "mla_name": "Gopal Chandra Saha",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 51,
+    "mp_name": "SREERUPA MITRA CHAUDHURY (NIRBHAYA DIDI)",
+    "mla_name": "SREERUPA MITRA CHAUDHURY(NIRBHOY DIDI)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 52,
+    "mp_name": "ISHA KHAN CHOUDHURY",
+    "mla_name": "YEASMIN SABINA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 53,
+    "mp_name": "ISHA KHAN CHOUDHURY",
+    "mla_name": "Md Abdul Ghani",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 54,
+    "mp_name": "SREERUPA MITRA CHAUDHURY (NIRBHAYA DIDI)",
+    "mla_name": "CHANDANA SARKAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 55,
+    "mp_name": "ISHA KHAN CHOUDHURY",
+    "mla_name": "MANIRUL ISLAM",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 56,
+    "mp_name": "ISHA KHAN CHOUDHURY",
+    "mla_name": "Amirul Islam",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 57,
+    "mp_name": "KHALILUR RAHAMAN",
+    "mla_name": "EMANI BISWAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 58,
+    "mp_name": "DHANANJAY GHOSH",
+    "mla_name": "JAKIR HOSSAIN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 59,
+    "mp_name": "KHALILUR RAHAMAN",
+    "mla_name": "Akhruzzaman",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 60,
+    "mp_name": "KHALILUR RAHAMAN",
+    "mla_name": "SUBRATA SAHA",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 61,
+    "mp_name": "MURTOJA HOSSAIN BOKUL",
+    "mla_name": "ALI MOHAMMAD",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 62,
+    "mp_name": "ABU TAHER KHAN",
+    "mla_name": "IDRIS ALI",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 63,
+    "mp_name": "MD SALIM",
+    "mla_name": "ABDUL SOUMIK HOSSAIN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 64,
+    "mp_name": "GOURI SANKAR GHOSH",
+    "mla_name": "GOURI SANKAR GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 65,
+    "mp_name": "KHALILUR RAHAMAN",
+    "mla_name": "KANAI CHANDRA MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 66,
+    "mp_name": "KHALILUR RAHAMAN",
+    "mla_name": "ASHIS MARJIT",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 67,
+    "mp_name": "DR. NIRMAL KUMAR SAHA",
+    "mla_name": "JIBAN KRISHNA SAHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 68,
+    "mp_name": "PATHAN YUSUF",
+    "mla_name": "APURBA SARKAR (DAVID)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 69,
+    "mp_name": "PATHAN YUSUF",
+    "mla_name": "HUMAYUN KABIR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 70,
+    "mp_name": "PATHAN YUSUF",
+    "mla_name": "RABIUL ALAM CHOWDHURY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 71,
+    "mp_name": "PATHAN YUSUF",
+    "mla_name": "HASANUZZAMAN SK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 72,
+    "mp_name": "ADHIR RANJAN CHOWDHURY",
+    "mla_name": "Subrata Maitra (Kanchan)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 73,
+    "mp_name": "ABU TAHER KHAN",
+    "mla_name": "NIAMOT SHEIKH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 74,
+    "mp_name": "PATHAN YUSUF",
+    "mla_name": "SAHINA MOMTAZ KHAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 75,
+    "mp_name": "ABU TAHER KHAN",
+    "mla_name": "JAFIKUL ISLAM",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 76,
+    "mp_name": "ABU TAHER KHAN",
+    "mla_name": "ABDUR RAZZAK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 77,
+    "mp_name": "ABU TAHER KHAN",
+    "mla_name": "Bimalendu Sinha Roy",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 78,
+    "mp_name": "AMRITA ROY",
+    "mla_name": "Tapas Kumar Saha",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 79,
+    "mp_name": "MAHUA MOITRA",
+    "mla_name": "Dr. Manik Bhattacharya",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 80,
+    "mp_name": "MAHUA MOITRA",
+    "mla_name": "NASIRUDDIN AHAMED (LAL)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 81,
+    "mp_name": "MAHUA MOITRA",
+    "mla_name": "Kallol Khan",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 82,
+    "mp_name": "MAHUA MOITRA",
+    "mla_name": "RUKBANUR RAHMAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 83,
+    "mp_name": "AMRITA ROY",
+    "mla_name": "MUKUL ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 84,
+    "mp_name": "MUKUT MANI ADHIKARI",
+    "mla_name": "PUNDARIKAKSHYA SAHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 85,
+    "mp_name": "AMRITA ROY",
+    "mla_name": "UJJAL BISWAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 86,
+    "mp_name": "JAGANNATH SARKAR",
+    "mla_name": "JAGANNATH SARKAR",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 87,
+    "mp_name": "JAGANNATH SARKAR",
+    "mla_name": "PARTHASARATHI CHATTERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 88,
+    "mp_name": "JAGANNATH SARKAR",
+    "mla_name": "ASHIS KUMAR BISWAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 89,
+    "mp_name": "JAGANNATH SARKAR",
+    "mla_name": "ASHIM BISWAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 90,
+    "mp_name": "JAGANNATH SARKAR",
+    "mla_name": "MUKUT MANI ADHIKARI",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 91,
+    "mp_name": "JAGANNATH SARKAR",
+    "mla_name": "Bankim Chandra Ghosh",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 92,
+    "mp_name": "SHANTANU THAKUR",
+    "mla_name": "AMBIKA ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 93,
+    "mp_name": "SHANTANU THAKUR",
+    "mla_name": "ASIM KUMAR SARKAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 94,
+    "mp_name": "SHANTANU THAKUR",
+    "mla_name": "MADHUPARNA THAKUR",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 95,
+    "mp_name": "SHANTANU THAKUR",
+    "mla_name": "ASHOK KIRTANIA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 96,
+    "mp_name": "SHANTANU THAKUR",
+    "mla_name": "SWAPAN MAJUMDER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 97,
+    "mp_name": "SHANTANU THAKUR",
+    "mla_name": "SUBRATA THAKUR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 98,
+    "mp_name": "BISWAJIT DAS S/O LATE BIJAY KRISHNA DAS",
+    "mla_name": "BINA MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 99,
+    "mp_name": "SK NURUL ISLAM",
+    "mla_name": "ABDUR RAHIM QUAZI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 100,
+    "mp_name": "SWAPAN MAJUMDER",
+    "mla_name": "JYOTI PRIYA MALLICK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 101,
+    "mp_name": "Dr. KAKOLI GHOSH DASTIDAR",
+    "mla_name": "NARAYAN GOSWAMI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 102,
+    "mp_name": "PARTHA BHOWMICK",
+    "mla_name": "RAFIQUR RAHAMAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 103,
+    "mp_name": "PARTHA BHOWMICK",
+    "mla_name": "SUBODH ADHIKARY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 104,
+    "mp_name": "PARTHA BHOWMICK",
+    "mla_name": "SANAT DEY",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 105,
+    "mp_name": "ARJUN SINGH",
+    "mla_name": "PAWAN KUMAR SINGH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 106,
+    "mp_name": "PARTHA BHOWMICK",
+    "mla_name": "SOMENATH SHYAM ICHINI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 107,
+    "mp_name": "PARTHA BHOWMICK",
+    "mla_name": "MANJU BASU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 108,
+    "mp_name": "PARTHA BHOWMICK",
+    "mla_name": "RAJU CHAKRABORTY (RAJ)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 109,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "KAJAL SINHA",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 110,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "CHANDRIMA BHATTACHARYA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 111,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "NIRMAL GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 112,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "MADAN MITRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 113,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "TAPAS ROY",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 114,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "BRATYA BASU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 115,
+    "mp_name": "Dr. KAKOLI GHOSH DASTIDAR",
+    "mla_name": "TAPASH CHATTERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 116,
+    "mp_name": "SWAPAN MAJUMDER",
+    "mla_name": "SUJIT BOSE S/O - LATE AJIT BOSE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 117,
+    "mp_name": "SOUGATA RAY",
+    "mla_name": "ADITI MUNSHI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 118,
+    "mp_name": "Dr. KAKOLI GHOSH DASTIDAR",
+    "mla_name": "RATHIN GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 119,
+    "mp_name": "Dr. KAKOLI GHOSH DASTIDAR",
+    "mla_name": "CHIRANJEET CHAKRABARTI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 120,
+    "mp_name": "Dr. KAKOLI GHOSH DASTIDAR",
+    "mla_name": "RAHIMA MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 121,
+    "mp_name": "SK NURUL ISLAM",
+    "mla_name": "SK RABIUL ISLAM",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 122,
+    "mp_name": "SK NURUL ISLAM",
+    "mla_name": "USHA RANI MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 123,
+    "mp_name": "REKHA PATRA",
+    "mla_name": "SUKUMAR MAHATA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 124,
+    "mp_name": "SK NURUL ISLAM",
+    "mla_name": "DR. SAPTARSHI BANERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 125,
+    "mp_name": "SK NURUL ISLAM",
+    "mla_name": "RAFIKUL ISLAM MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 126,
+    "mp_name": "SK NURUL ISLAM",
+    "mla_name": "DEBES MANDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 127,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "JAYANTA NASKAR",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 128,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "SHYAMAL MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 129,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "Ganesh Chandra Mondal",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 130,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "SAMIR KUMAR JANA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 131,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "MANTURAM PAKHIRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 132,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "BANKIM CHANDRA HAZRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 133,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "JOGARANJAN HALDER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 134,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "ALOKE JALDATA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 135,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "JOYDEB HALDER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 136,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "BISWANATH DAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 137,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "BIVAS SARDAR (VOBO)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 138,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "Paresh Ram Das",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 139,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "SAOKAT MOLLA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 140,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "BIMAN BANERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 141,
+    "mp_name": "PRATIMA MONDAL",
+    "mla_name": "NAMITA SAHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 142,
+    "mp_name": "BAPI HALDAR",
+    "mla_name": "GIAS UDDIN MOLLA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 143,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "PANNALAL HALDER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 144,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "SANKAR KUMAR NASKAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 145,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "MOHAN CHANDRA NASKAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 146,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "DILIP MONDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 147,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "ARUNDHUTI MAITRA (LOVELY)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 148,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "MD. NAWSAD SIDDIQUE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 149,
+    "mp_name": "MALA ROY",
+    "mla_name": "AHMED JAVED KHAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 150,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "DEBABRATA MAJUMDAR (MALAY)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 151,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "FIRDOUSI BEGUM",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 152,
+    "mp_name": "SAYANI GHOSH",
+    "mla_name": "AROOP BISWAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 153,
+    "mp_name": "MALA ROY",
+    "mla_name": "Ratna Chatterjee",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 154,
+    "mp_name": "MALA ROY",
+    "mla_name": "PARTHA CHATTERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 155,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "DULAL CHANDRA DAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 156,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "ASHOK KUMAR DEB",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 157,
+    "mp_name": "ABHISHEK BANERJEE",
+    "mla_name": "ABDUL KHALEQUE MOLLA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 158,
+    "mp_name": "MALA ROY",
+    "mla_name": "Firhad Hakim",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 159,
+    "mp_name": "MALA ROY",
+    "mla_name": "Sobhandeb Chattopadhyay",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 160,
+    "mp_name": "MALA ROY",
+    "mla_name": "DEBASISH KUMAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 161,
+    "mp_name": "MALA ROY",
+    "mla_name": "Subrata Mukherjee",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 162,
+    "mp_name": "BANDYOPADHYAY SUDIP",
+    "mla_name": "BANDYOPADHYAY NAYNA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 163,
+    "mp_name": "BANDYOPADHYAY SUDIP",
+    "mla_name": "Swarna Kamal Saha",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 164,
+    "mp_name": "BANDYOPADHYAY SUDIP",
+    "mla_name": "PARESH PAUL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 165,
+    "mp_name": "TAPAS ROY",
+    "mla_name": "VIVEK GUPTA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 166,
+    "mp_name": "TAPAS ROY",
+    "mla_name": "Dr. SHASHI PANJA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 167,
+    "mp_name": "BANDYOPADHYAY SUDIP",
+    "mla_name": "SUPTI PANDEY",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 168,
+    "mp_name": "BANDYOPADHYAY SUDIP",
+    "mla_name": "Atin Ghosh",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 169,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "RANA CHATTERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 170,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "GAUTAM CHOWDHURI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 171,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "Arup Roy, S/o Late Prabhat Roy",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 172,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "Manoj Tiwary",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 173,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "NANDITA CHOWDHURY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 174,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "PRIYA PAUL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 175,
+    "mp_name": "PRASUN BANERJEE",
+    "mla_name": "GULSAN MULLICK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 176,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "BIDESH RANJAN BOSE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 177,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "Dr. Nirmal Maji",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 178,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "PULAK ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 179,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "KALIPADA MANDAL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 180,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "Arunava Sen (Raja)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 181,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "SUKANTA KUMAR PAUL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 182,
+    "mp_name": "SAJDA AHMED",
+    "mla_name": "SAMIR KUMAR PANJA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 183,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "SITANATH GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 184,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "KALYAN GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 185,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "KANCHAN MULLICK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 186,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "DR. SUDIPTO ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 187,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "ARINDAM GUIN (BUBAI)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 188,
+    "mp_name": "RACHNA BANERJEE",
+    "mla_name": "BECHARAM MANNA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 189,
+    "mp_name": "RACHNA BANERJEE",
+    "mla_name": "INDRANIL SEN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 190,
+    "mp_name": "LOCKET CHATTERJEE",
+    "mla_name": "Asit Mazumder (Tapan)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 191,
+    "mp_name": "LOCKET CHATTERJEE",
+    "mla_name": "MANORANJAN BAPARI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 192,
+    "mp_name": "RACHNA BANERJEE",
+    "mla_name": "Dr. Ratna De Nag",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 193,
+    "mp_name": "LOCKET CHATTERJEE",
+    "mla_name": "TAPAN DASGUPTA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 194,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "SWATI KHANDOKER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 195,
+    "mp_name": "KALYAN BANERJEE",
+    "mla_name": "SNEHASIS CHAKRABORTY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 196,
+    "mp_name": "BAG MITALI",
+    "mla_name": "Dr. Karabi Manna",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 197,
+    "mp_name": "RACHNA BANERJEE",
+    "mla_name": "ASIMA PATRA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 198,
+    "mp_name": "BAG MITALI",
+    "mla_name": "RAMENDU SINHARAY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 199,
+    "mp_name": "ARUP KANTI DIGAR",
+    "mla_name": "BIMAN GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 200,
+    "mp_name": "BAG MITALI",
+    "mla_name": "MADHUSUDAN BAG",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 201,
+    "mp_name": "ARUP KANTI DIGAR",
+    "mla_name": "BISWANATH KARAK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 202,
+    "mp_name": "ARUP KANTI DIGAR",
+    "mla_name": "SUSANTA GHOSH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 203,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "Saumen Kumar Mahapatra",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 204,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "Biplab Roy Chowdhury",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 205,
+    "mp_name": "DR. HIRANMOY CHATTOPADHYAYA",
+    "mla_name": "PHIROJA BIBI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 206,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "Ashoke Dinda",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 207,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "SUKUMAR DE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 208,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "TILAK KUMAR CHAKRABORTY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 209,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "Tapasi Mondal",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 210,
+    "mp_name": "ABHIJIT GANGOPADHYAY",
+    "mla_name": "ADHIKARI SUVENDU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 211,
+    "mp_name": "ADHIKARI SOUMENDU",
+    "mla_name": "Soham Chakraborty",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 212,
+    "mp_name": "UTTAM BARIK SON OF LATE BIRENDRA BARIK",
+    "mla_name": "UTTAM BARIK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 213,
+    "mp_name": "ADHIKARI SOUMENDU",
+    "mla_name": "SUMITA SINHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 214,
+    "mp_name": "ADHIKARI SOUMENDU",
+    "mla_name": "RABINDRANATH MAITY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 215,
+    "mp_name": "ADHIKARI SOUMENDU",
+    "mla_name": "SANTANU PRAMANIK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 216,
+    "mp_name": "ADHIKARI SOUMENDU",
+    "mla_name": "ARUP KUMAR DAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 217,
+    "mp_name": "ADHIKARI SOUMENDU",
+    "mla_name": "AKHIL GIRI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 218,
+    "mp_name": "AGNIMITRA PAUL",
+    "mla_name": "TARUN KUMAR MAITY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 219,
+    "mp_name": "JUNE MALIAH",
+    "mla_name": "BIKRAM CHANDRA PRADHAN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 220,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "DULAL MURMU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 221,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "Dr. Khagendra Nath Mahata",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 222,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "BIRBAHA HANSDA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 223,
+    "mp_name": "JUNE MALIAH",
+    "mla_name": "PARESH MURMU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 224,
+    "mp_name": "AGNIMITRA PAUL",
+    "mla_name": "HIRANMOY CHATTOPADHYAYA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 225,
+    "mp_name": "JUNE MALIAH",
+    "mla_name": "ATTA SURJA KANTA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 226,
+    "mp_name": "ADHIKARI DEEPAK (DEV)",
+    "mla_name": "MANAS RANJAN BHUNIA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 227,
+    "mp_name": "ADHIKARI DEEPAK (DEV)",
+    "mla_name": "AJIT MAITY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 228,
+    "mp_name": "JUNE MALIAH",
+    "mla_name": "DINEN ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 229,
+    "mp_name": "ADHIKARI DEEPAK (DEV)",
+    "mla_name": "HUMAYUN KABIR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 230,
+    "mp_name": "ADHIKARI DEEPAK (DEV)",
+    "mla_name": "MAMATA BHUNIA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 231,
+    "mp_name": "ADHIKARI DEEPAK (DEV)",
+    "mla_name": "SITAL KAPAT",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 232,
+    "mp_name": "BAG MITALI",
+    "mla_name": "ARUP DHARA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 233,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "Uttara Singha (Hazra)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 234,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "Srikanta Mahata",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 235,
+    "mp_name": "ADHIKARI DEEPAK (DEV)",
+    "mla_name": "Seuli Saha",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 236,
+    "mp_name": "JUNE MALIAH",
+    "mla_name": "SUJOY HAZRA",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 237,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "DEBNATH HANSDA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 238,
+    "mp_name": "KALIPADA SAREN (KHERWAL)",
+    "mla_name": "RAJIB LOCHAN SAREN",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 239,
+    "mp_name": "SHANTIRAM MAHATO",
+    "mla_name": "BANESWAR MAHATO",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 240,
+    "mp_name": "JYOTIRMAY SINGH MAHATO",
+    "mla_name": "Sushanta Mahato",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 241,
+    "mp_name": "SHANTIRAM MAHATO",
+    "mla_name": "Nara Hari Mahato",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 242,
+    "mp_name": "JYOTIRMAY SINGH MAHATO",
+    "mla_name": "Sudip Kumar Mukherjee",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 243,
+    "mp_name": "SHANTIRAM MAHATO",
+    "mla_name": "SANDHYARANI TUDU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 244,
+    "mp_name": "SHANTIRAM MAHATO",
+    "mla_name": "KAMALAKANTA HANSDA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 245,
+    "mp_name": "JYOTIRMAY SINGH MAHATO",
+    "mla_name": "NADIAR CHAND BOURI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 246,
+    "mp_name": "ARUP CHAKRABORTY",
+    "mla_name": "Vivekananda Bauri",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 247,
+    "mp_name": "ARUP CHAKRABORTY",
+    "mla_name": "BAURI CHANDANA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 248,
+    "mp_name": "ARUP CHAKRABORTY",
+    "mla_name": "SATYANARAYAN MUKHOPADHYAY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 249,
+    "mp_name": "ARUP CHAKRABORTY",
+    "mla_name": "Jyotsna Mandi",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 250,
+    "mp_name": "ARUP CHAKRABORTY",
+    "mla_name": "MRITYUNJOY MURMU",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 251,
+    "mp_name": "ARUP CHAKRABORTY",
+    "mla_name": "FALGUNI SINGHABABU",
+    "bye_poll": true
+  },
+  {
+    "ac_code": 252,
+    "mp_name": "DR. SUBHAS SARKAR",
+    "mla_name": "NILADRI SEKHAR DANA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 253,
+    "mp_name": "KHAN SAUMITRA",
+    "mla_name": "ALOK MUKHERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 254,
+    "mp_name": "KHAN SAUMITRA",
+    "mla_name": "AMARNATH SHAKHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 255,
+    "mp_name": "KHAN SAUMITRA",
+    "mla_name": "TANMAY GHOSH (BUMBA)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 256,
+    "mp_name": "KHAN SAUMITRA",
+    "mla_name": "HARAKALI PROTIHER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 257,
+    "mp_name": "SUJATA MONDAL",
+    "mla_name": "NIRMAL KUMAR DHARA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 258,
+    "mp_name": "KHAN SAUMITRA",
+    "mla_name": "DIBAKAR GHARAMI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 259,
+    "mp_name": "SUJATA MONDAL",
+    "mla_name": "NABIN CHANDRA BAG",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 260,
+    "mp_name": "AZAD KIRTI JHA",
+    "mla_name": "KHOKAN DAS",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 261,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "Shampa Dhara",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 262,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "ALOK KUMAR MAJHI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 263,
+    "mp_name": "AZAD KIRTI JHA",
+    "mla_name": "CHOWDHURY SIDDIQULLAH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 264,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "DEBOPRASAD BAG (POLTU)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 265,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "MADHUSUDAN BHATTACHARYA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 266,
+    "mp_name": "AZAD KIRTI JHA",
+    "mla_name": "NISITH KUMAR MALIK",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 267,
+    "mp_name": "AZAD KIRTI JHA",
+    "mla_name": "ADHIKARI MANGOBINDA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 268,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "SWAPAN DEBNATH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 269,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "TAPAN CHATTERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 270,
+    "mp_name": "DR. SHARMILA SARKAR",
+    "mla_name": "Rabindranath Chatterjee",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 271,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "Sekh Sahonawez",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 272,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "Apurba Chowdhury (Achal)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 273,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "ABHEDANANDA THANDER",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 274,
+    "mp_name": "AZAD KIRTI JHA",
+    "mla_name": "NEPAL GHORUI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 275,
+    "mp_name": "SHATRUGHAN PRASAD SINHA",
+    "mla_name": "NARENDRANATH CHAKRABORTY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 276,
+    "mp_name": "AZAD KIRTI JHA",
+    "mla_name": "PRADIP MAZUMDAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 277,
+    "mp_name": "DILIP GHOSH",
+    "mla_name": "LAKSHMAN CHANDRA GHORUI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 278,
+    "mp_name": "SHATRUGHAN PRASAD SINHA",
+    "mla_name": "TAPAS BANERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 279,
+    "mp_name": "SHATRUGHAN PRASAD SINHA",
+    "mla_name": "HARERAM SINGH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 280,
+    "mp_name": "S S AHLUWALIA",
+    "mla_name": "AGNIMITRA PAUL",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 281,
+    "mp_name": "SHATRUGHAN PRASAD SINHA",
+    "mla_name": "Ghatak Moloy",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 282,
+    "mp_name": "S S AHLUWALIA",
+    "mla_name": "AJAY KUMAR PODDAR",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 283,
+    "mp_name": "SHATRUGHAN PRASAD SINHA",
+    "mla_name": "BIDHAN UPADHYAY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 284,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "Anup Kumar Saha",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 285,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "BIKASH ROYCHOUDHURY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 286,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "SINHA CHANDRANATH",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 287,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "BIDHAN CHANDRA MAJHI",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 288,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "ABHIJIT SINHA (RANA)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 289,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "NILABATI SAHA",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 290,
+    "mp_name": "ASIT KUMAR MAL",
+    "mla_name": "ABHIJIT ROY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 291,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "ASISH BANERJEE",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 292,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "Dr. ASOK KUMAR CHATTOPADHYAY",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 293,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "RAJENDRA PRASAD SINGH (RAJU SINGH)",
+    "bye_poll": false
+  },
+  {
+    "ac_code": 294,
+    "mp_name": "SATABDI ROY",
+    "mla_name": "DR MOSARRAF HOSSAIN",
+    "bye_poll": false
+  }
+]
