@@ -1621,6 +1621,264 @@
   },
   {
     "type": "radio",
+    "label": "২২. আপনি কি দয়া করে আমাকে আপনার জাতি বলতে পারেন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+        {
+          "label": "আগুরি",
+          "value": "1",
+          "tag": "opt_aguri"
+        },
+        {
+          "label": "কংসবনিক",
+          "value": "2",
+          "tag": "opt_kansabanik"
+        },
+        {
+          "label": "সাদগোপ",
+          "value": "3",
+          "tag": "opt_sadgop"
+        },
+        {
+          "label": "শুনরি",
+          "value": "4",
+          "tag": "opt_shunri"
+        },
+        {
+          "label": "যাদব",
+          "value": "5",
+          "tag": "opt_yadav"
+        },
+        {
+          "label": "সাঁওতাল",
+          "value": "6",
+          "tag": "opt_santal"
+        },
+        {
+          "label": "পোড",
+          "value": "7",
+          "tag": "opt_pod"
+        },
+        {
+          "label": "তাঁতি",
+          "value": "8",
+          "tag": "opt_tanti"
+        },
+        {
+          "label": "নামসীজ",
+          "value": "9",
+          "tag": "opt_namaseej"
+        },
+        {
+          "label": "ব্রাহ্মণ",
+          "value": "10",
+          "tag": "opt_brahmins"
+        },
+        {
+          "label": "কায়স্থ",
+          "value": "11",
+          "tag": "opt_kayasthas"
+        },
+        {
+          "label": "বৈদ্য",
+          "value": "12",
+          "tag": "opt_baidyas"
+        },
+        {
+          "label": "রাজপুত",
+          "value": "13",
+          "tag": "opt_rajputs"
+        },
+        {
+          "label": "ক্ষত্রিয়",
+          "value": "14",
+          "tag": "opt_kshatriyas"
+        },
+        {
+          "label": "বড়ুই",
+          "value": "15",
+          "tag": "opt_barui"
+        },
+        {
+          "label": "গন্ধবনিক",
+          "value": "16",
+          "tag": "opt_gandha_banik"
+        },
+        {
+          "label": "কুলিন কায়স্থ",
+          "value": "17",
+          "tag": "opt_kulin_kayasthas"
+        },
+        {
+          "label": "মহিষ্য",
+          "value": "18",
+          "tag": "opt_mahishya"
+        },
+        {
+          "label": "নামসদ্র",
+          "value": "19",
+          "tag": "opt_namasudra"
+        },
+        {
+          "label": "রাজবংশী",
+          "value": "20",
+          "tag": "opt_rajbanshi"
+        },
+        {
+          "label": "পৌন্ড্র",
+          "value": "21",
+          "tag": "opt_poundra"
+        },
+        {
+          "label": "ডম",
+          "value": "22",
+          "tag": "opt_dom"
+        },
+        {
+          "label": "বাগদী",
+          "value": "23",
+          "tag": "opt_bagdi"
+        },
+        {
+          "label": "চামার",
+          "value": "24",
+          "tag": "opt_chamar"
+        },
+        {
+          "label": "মুচি",
+          "value": "25",
+          "tag": "opt_muchi"
+        },
+        {
+          "label": "কোরি",
+          "value": "26",
+          "tag": "opt_kori"
+        },
+        {
+          "label": "হালদার",
+          "value": "27",
+          "tag": "opt_haldar"
+        },
+        {
+          "label": "সাঁওতাল",
+          "value": "28",
+          "tag": "opt_santhal"
+        },
+        {
+          "label": "মুন্ডা",
+          "value": "29",
+          "tag": "opt_munda"
+        },
+        {
+          "label": "ওরাওন",
+          "value": "30",
+          "tag": "opt_oraon"
+        },
+        {
+          "label": "ভূমিজ",
+          "value": "31",
+          "tag": "opt_bhumij"
+        },
+        {
+          "label": "হো",
+          "value": "32",
+          "tag": "opt_ho"
+        },
+        {
+          "label": "লোধা",
+          "value": "33",
+          "tag": "opt_lodha"
+        },
+        {
+          "label": "ভিল",
+          "value": "34",
+          "tag": "opt_bhil"
+        },
+        {
+          "label": "বিরহর",
+          "value": "35",
+          "tag": "opt_birhor"
+        },
+        {
+          "label": "মাহালি",
+          "value": "36",
+          "tag": "opt_mahali"
+        },
+        {
+          "label": "তেলি / তেলি সাহু",
+          "value": "37",
+          "tag": "opt_teli_teli_sahu"
+        },
+        {
+          "label": "নপিত",
+          "value": "38",
+          "tag": "opt_napit"
+        },
+        {
+          "label": "কর্মকার",
+          "value": "39",
+          "tag": "opt_karmakar"
+        },
+        {
+          "label": "রাজাক",
+          "value": "40",
+          "tag": "opt_rajak"
+        },
+        {
+          "label": "ধবা",
+          "value": "41",
+          "tag": "opt_dhoba"
+        },
+        {
+          "label": "হেলা",
+          "value": "42",
+          "tag": "opt_hela"
+        },
+        {
+          "label": "কাহার",
+          "value": "43",
+          "tag": "opt_kahar"
+        },
+        {
+          "label": "কুর্মি",
+          "value": "45",
+          "tag": "opt_kurmi"
+        },
+        {
+          "label": "পাসি",
+          "value": "46",
+          "tag": "opt_pasi"
+        },
+        {
+          "label": "কেওট",
+          "value": "47",
+          "tag": "opt_keot"
+        },
+        {
+          "label": "অন্যান্য (উল্লেখ করুন)",
+          "value": "44",
+          "tag": "opt_others_specify"
+        },
+        {
+          "label": "প্রত্যাখ্যান করেছেন",
+          "value": "88",
+          "tag": "opt_refused_to_respond"
+        }
+    ],
+    "tag": "resp_caste_jati"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (উল্লেখ করুন)",
+    "conditional": "resp_caste_jati === '44'",
+    "required": true,
+    "placeholder": "উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "resp_caste_jati_oth"
+  },
+  {
+    "type": "radio",
     "label": "২৩. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত মহিলা কতদূর পর্যন্ত পড়াশুনো করেছেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
@@ -1766,4 +2024,3 @@
     "tag": "thanks_future"
   }
 ]
-

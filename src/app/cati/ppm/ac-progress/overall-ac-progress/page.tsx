@@ -179,13 +179,13 @@ export default function CATIACWiseDataPage() {
         ) : (
           <div className="table-responsive max-h-[600px] overflow-y-auto">
             <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
-              <thead className="table-light sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
+              <thead className="bg-gray-50 sticky top-0 z-20 dark:bg-gray-800 shadow-sm">
                 <tr>
-                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800">Sr.No.</th>
-                  <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800">AC Name</th>
-                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800">Call Attempted</th>
-                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800">Call Connected</th>
-                  <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800">Success</th>
+                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800 text-center">Sr.No.</th>
+                  <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800 text-left">AC Name</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Attempted</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Connected</th>
+                  <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800 text-center">Success</th>
                 </tr>
               </thead>
               <tbody>
@@ -198,11 +198,11 @@ export default function CATIACWiseDataPage() {
                 ) : (
                   filteredData.map((item, index) => (
                     <tr key={item.ac_code}>
-                      <td className="border border-gray-300">{index + 1}</td>
-                      <td className="border border-gray-300">{item.ac_name}</td>
-                      <td className="border border-gray-300">{item.call_attempt}</td>
-                      <td className="border border-gray-300">{item.call_connected}</td>
-                      <td className="border border-gray-300">{item.success}</td>
+                      <td className="border border-gray-300 text-center">{index + 1}</td>
+                      <td className="border border-gray-300 text-left">{item.ac_name}</td>
+                      <td className="border border-gray-300 text-center">{item.call_attempt}</td>
+                      <td className="border border-gray-300 text-center">{item.call_connected}</td>
+                      <td className="border border-gray-300 text-center">{item.success}</td>
                     </tr>
                   ))
                 )}

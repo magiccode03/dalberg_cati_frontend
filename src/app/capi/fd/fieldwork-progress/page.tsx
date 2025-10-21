@@ -56,7 +56,7 @@ export default function FieldworkProgressPage() {
           acName: ac.ac_name,
           districtName: ac.district_name,
           validUnderQc: ac.total_achieved,
-          reject: ac.rejected_interviews,
+          reject: ((ac as any).reject || 0) - ((ac as any).reject_auto || 0),
           completionPercent: parseFloat(ac.completion_percentage)
         }));
         setAcProgressData(acData);
@@ -105,6 +105,19 @@ export default function FieldworkProgressPage() {
     }
   };
 
+  const formatIndianNumber = (value: string | number): string => {
+    // Convert to number if it's a string
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    
+    // Check if it's a valid number
+    if (isNaN(numValue)) {
+      return String(value);
+    }
+    
+    // Format with Indian number system (lakhs, crores)
+    return new Intl.NumberFormat('en-IN').format(numValue);
+  };
+
   const handleDownloadCSV = () => {
     // Prepare CSV data
     const csvHeaders = [
@@ -117,12 +130,12 @@ export default function FieldworkProgressPage() {
     ];
 
     const csvData = getSortedData().map(ac => [
-      ac.acCode,
+      formatIndianNumber(ac.acCode),
       ac.acName,
       ac.districtName,
-      ac.validUnderQc,
-      ac.reject,
-      ac.completionPercent
+      formatIndianNumber(ac.validUnderQc),
+      formatIndianNumber(ac.reject),
+      `${ac.completionPercent}%`
     ]);
 
     // Create CSV content
@@ -186,7 +199,7 @@ export default function FieldworkProgressPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={1} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
             Fieldwork Progress
           </Heading>
         </div>
@@ -217,9 +230,9 @@ export default function FieldworkProgressPage() {
               </thead>
               <tbody>
                 {progressSummaryData.map((item, index) => (
-                  <tr key={index}>
+                  <tr key={index} className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700'} hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200`}>
                     <td>{item.details}</td>
-                    <td>{item.measure}</td>
+                    <td>{formatIndianNumber(item.measure)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -264,8 +277,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('acCode')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>AC Code</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>AC Code</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'acCode' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -280,7 +293,7 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('acName')}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center">
                       <span>AC Name</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
@@ -296,7 +309,7 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('districtName')}
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center">
                       <span>District Name</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
@@ -312,8 +325,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('validUnderQc')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>Valid+Under QC</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>Valid+Under QC</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'validUnderQc' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -328,8 +341,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('reject')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>Reject</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>Reject</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'reject' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -344,8 +357,8 @@ export default function FieldworkProgressPage() {
                     className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('completionPercent')}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className='text-center d-block w-full'>% of Completion</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>% of Completion</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'completionPercent' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -361,12 +374,12 @@ export default function FieldworkProgressPage() {
               <tbody>
                 {getSortedData().map((ac, index) => (
                   <tr key={ac.acCode} className={getRowStyle(ac.completionPercent)}>
-                    <td className="text-center">{ac.acCode}</td>
+                    <td className="text-center">{formatIndianNumber(ac.acCode)}</td>
                     <td>{ac.acName}</td>
                     <td>{ac.districtName}</td>
-                    <td className="text-center">{ac.validUnderQc}</td>
-                    <td className="text-center">{ac.reject}</td>
-                    <td className="text-center">{ac.completionPercent}</td>
+                    <td className="text-center">{formatIndianNumber(ac.validUnderQc)}</td>
+                    <td className="text-center">{formatIndianNumber(ac.reject)}</td>
+                    <td className="text-center">{ac.completionPercent}%</td>
                   </tr>
                 ))}
               </tbody>

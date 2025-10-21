@@ -123,8 +123,25 @@ export default function StartFormFillingPage() {
         // Dispatch custom event to update header
         window.dispatchEvent(new Event('teleformUserUpdated'));
         
-        // Redirect to new-call page with teleform_user_id in URL
-        router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+        // Determine redirect based on user permissions
+        const userData = data.data;
+        const fillForm = userData.fill_form === 1;
+        const qc = userData.qc === 1;
+        
+        if (fillForm && !qc) {
+          // Only Fill Form permission - redirect to new-call
+          router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+        } else if (!fillForm && qc) {
+          // Only QC permission - redirect to qc-call
+          router.push(`/cati/ss/qc-call/${formData.teleform_user_id}`);
+        } else if (fillForm && qc) {
+          // Both permissions - default to new-call (Fill Form)
+          router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+        } else {
+          // No permissions - show error
+          setError('User does not have required permissions');
+          return false;
+        }
         
         return true;
       } else {
@@ -178,11 +195,26 @@ export default function StartFormFillingPage() {
   const handleGoToNewCall = () => {
     // Get teleform_user_id from localStorage or form data
     const teleformUserData = localStorage.getItem('teleform_user_data');
-    const teleformUserId = teleformUserData 
-      ? JSON.parse(teleformUserData).teleform_user_id 
-      : formData.teleform_user_id;
-    
-    router.push(`/cati/ss/new-call/${teleformUserId}`);
+    if (teleformUserData) {
+      const userData = JSON.parse(teleformUserData);
+      const teleformUserId = userData.teleform_user_id;
+      const fillForm = userData.fill_form === 1;
+      const qc = userData.qc === 1;
+      
+      if (fillForm && !qc) {
+        // Only Fill Form permission - redirect to new-call
+        router.push(`/cati/ss/new-call/${teleformUserId}`);
+      } else if (!fillForm && qc) {
+        // Only QC permission - redirect to qc-call
+        router.push(`/cati/ss/qc-call/${teleformUserId}`);
+      } else if (fillForm && qc) {
+        // Both permissions - default to new-call (Fill Form)
+        router.push(`/cati/ss/new-call/${teleformUserId}`);
+      }
+    } else {
+      // Fallback to form data
+      router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+    }
   };
 
   // Removed handleBackToLogin function

@@ -206,6 +206,26 @@ export default function TeleFormV2Page() {
         }
       }
       
+      // Handle excludeOptions logic - clear dependent field if same value is selected
+      if (field.rules?.excludeOptions && field.type === 'radio') {
+        const excludeField = field.rules.excludeOptions;
+        const currentExcludeValue = newData[excludeField];
+        
+        console.log('ExcludeOptions Debug:', {
+          fieldTag,
+          value,
+          excludeField,
+          currentExcludeValue,
+          shouldClear: currentExcludeValue && ['1', '2', '3', '4'].includes(value) && value === currentExcludeValue
+        });
+        
+        // If the selected value in current field matches the value in exclude field, clear the exclude field
+        if (currentExcludeValue && ['1', '2', '3', '4'].includes(value) && value === currentExcludeValue) {
+          console.log('Clearing field:', excludeField);
+          newData[excludeField] = '';
+        }
+      }
+      
       return newData;
     });
   };
@@ -545,7 +565,17 @@ export default function TeleFormV2Page() {
               </div>
             )}
             <div className="space-y-2 sm:space-y-3">
-              {field.options?.map(option => (
+              {field.options?.filter(option => {
+                // Handle excludeOptions logic - only for option values 1, 2, 3, 4
+                if (field.rules?.excludeOptions) {
+                  const excludeField = field.rules.excludeOptions;
+                  const excludeValue = formData[excludeField];
+                  if (excludeValue && ['1', '2', '3', '4'].includes(excludeValue) && option.value === excludeValue) {
+                    return false; // Hide this option
+                  }
+                }
+                return true;
+              }).map(option => (
                 <Radio
                   key={option.tag}
                   id={`${field.tag}_${option.value}`}

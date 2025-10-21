@@ -11,7 +11,6 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Plus, Edit, Check, Eye, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
@@ -114,8 +113,6 @@ export default function QCUserRegistrationPage() {
     reChecking: false,
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
   const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +124,6 @@ export default function QCUserRegistrationPage() {
     gps_qc_users: '0',
     rechecking_users: '0'
   });
-  const [totalCount, setTotalCount] = useState(0);
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,20 +151,21 @@ export default function QCUserRegistrationPage() {
         if (appliedFilters.gps) queryParams.append('gps', '1');
         if (appliedFilters.audio) queryParams.append('audio', '1');
         if (appliedFilters.reChecking) queryParams.append('clientaudiocheck', '1');
+        queryParams.append('limit', '1000'); // Fetch all users at once
         
         const queryString = queryParams.toString();
-        const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
+        const endpoint = `/qc-user-registration?${queryString}`;
         
         const response = await apiClient.get(endpoint);
         const data: APIResponse = response.data;
         
         if (data.success && data.data?.qc_users) {
-          // Transform QC user data
-          const userData: QCUserData[] = data.data.qc_users.map(user => ({
-            id: user.id,
-            qcId: user.qc_id,
-            name: user.name,
-            mobileNumber: user.mobile_number,
+            // Transform QC user data
+            const userData: QCUserData[] = data.data.qc_users.map(user => ({
+              id: user.id,
+              qcId: user.qc_id,
+              name: user.name,
+              mobileNumber: user.mobile_number,
             gps: user.gps === 1,
             audio: user.audio === 1,
             reChecking: user.clientaudiocheck === 1,
@@ -177,15 +174,12 @@ export default function QCUserRegistrationPage() {
             assignedAcCount: user.assigned_ac_count,
             assignedAcInterviewers: user.assigned_ac_interviewers,
             accessPermissions: user.access_permissions
-          }));
-          setQcUserData(userData);
+            }));
+            setQcUserData(userData);
           
-          // Set statistics and pagination data
+          // Set statistics
           if (data.data.statistics) {
             setStatistics(data.data.statistics);
-          }
-          if (data.data.pagination) {
-            setTotalCount(data.data.pagination.total_count);
           }
         } else {
           setError(data.error || 'No data received from server');
@@ -221,7 +215,6 @@ export default function QCUserRegistrationPage() {
   const handleSearch = () => {
     // Apply the current filter values to trigger the search
     setAppliedFilters(filters);
-    setCurrentPage(1); // Reset to first page when searching
     console.log('Searching with filters:', filters);
   };
 
@@ -238,7 +231,6 @@ export default function QCUserRegistrationPage() {
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters);
-    setCurrentPage(1);
   };
 
   const handleAddNewUser = () => {
@@ -281,9 +273,10 @@ export default function QCUserRegistrationPage() {
         if (appliedFilters.gps) queryParams.append('gps', '1');
         if (appliedFilters.audio) queryParams.append('audio', '1');
         if (appliedFilters.reChecking) queryParams.append('clientaudiocheck', '1');
+        queryParams.append('limit', '1000'); // Fetch all users at once
         
         const queryString = queryParams.toString();
-        const endpoint = queryString ? `/qc-user-registration?${queryString}` : '/qc-user-registration';
+        const endpoint = `/qc-user-registration?${queryString}`;
         
         const response = await apiClient.get(endpoint);
         const data: APIResponse = response.data;
@@ -307,9 +300,6 @@ export default function QCUserRegistrationPage() {
           
           if (data.data.statistics) {
             setStatistics(data.data.statistics);
-          }
-          if (data.data.pagination) {
-            setTotalCount(data.data.pagination.total_count);
           }
         }
       } catch (err: any) {
@@ -358,10 +348,6 @@ export default function QCUserRegistrationPage() {
     );
   };
 
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = qcUserData.slice(startIndex, startIndex + pageSize);
-
   if (loading) {
     return (
       <div className="main-content horizontal-content">
@@ -405,211 +391,216 @@ export default function QCUserRegistrationPage() {
 
   return (
     <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
         {/* Page Header */}
         <div className="mb-6">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
-            QC User Info
-          </Heading>
+            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            QC User Registration
+            </Heading>
         </div>
 
-        {/* Search Form */}
-        <div className="mb-6">
-          <Card>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    QC ID
-                  </label>
-                <Input
-                  type="text"
-                  placeholder="Enter QC ID"
-                  value={filters.qcId}
-                  onChange={(e) => handleFilterChange('qcId', e.target.value)}
-                />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Name
-                  </label>
-                <Input
-                  type="text"
-                  placeholder="Enter Name"
-                  value={filters.name}
-                  onChange={(e) => handleFilterChange('name', e.target.value)}
-                />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Mobile Number
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Enter Mobile Number"
-                    value={filters.mobileNumber}
-                    onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Status
-                  </label>
-                  <SelectDropdown
-                    value={filters.status}
-                    onChange={(value) => handleFilterChange('status', value as string)}
-                    options={[
-                      { value: '', label: 'Select User Status' },
-                      { value: '1', label: 'Active' },
-                      { value: '2', label: 'Inactive' },
-                    ]}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex flex-wrap items-center gap-6">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={filters.gps}
-                    onCheckedChange={(checked) => handleFilterChange('gps', checked as boolean)}
-                  />
-                  <Text className="text-sm text-gray-700">GPS</Text>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={filters.audio}
-                    onCheckedChange={(checked) => handleFilterChange('audio', checked as boolean)}
-                  />
-                  <Text className="text-sm text-gray-700">Audio</Text>
-                </div>
-                <Button
-                  variant="primary"
-                  onClick={handleSearch}
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-                <Button
-                  onClick={handleClear}
-                  className="bg-gray-500 text-white hover:bg-gray-600 flex items-center space-x-2"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Clear</span>
-                </Button>
-              </div>
+        {/* Search Filters */}
+        <Card className="p-4 mb-5">
+          <div className="flex flex-wrap items-end gap-4">
+            {/* QC ID Filter */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                QC ID
+              </label>
+              <Input
+                type="text"
+                placeholder="Enter QC ID"
+                value={filters.qcId}
+                onChange={(e) => handleFilterChange('qcId', e.target.value)}
+              />
             </div>
-          </Card>
-        </div>
+
+            {/* Name Filter */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Name
+              </label>
+              <Input
+                type="text"
+                placeholder="Enter Name"
+                value={filters.name}
+                onChange={(e) => handleFilterChange('name', e.target.value)}
+              />
+            </div>
+
+            {/* Mobile Number Filter */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Mobile Number
+              </label>
+              <Input
+                type="text"
+                placeholder="Enter Mobile Number"
+                value={filters.mobileNumber}
+                onChange={(e) => handleFilterChange('mobileNumber', e.target.value)}
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Status
+              </label>
+              <SelectDropdown
+                value={filters.status}
+                onChange={(value) => handleFilterChange('status', value as string)}
+                options={[
+                  { value: '', label: 'Select User Status' },
+                  { value: '1', label: 'Active' },
+                  { value: '2', label: 'Inactive' },
+                ]}
+              />
+            </div>
+
+            {/* GPS Filter */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                GPS
+              </label>
+              <SelectDropdown
+                value={filters.gps ? '1' : ''}
+                onChange={(value) => handleFilterChange('gps', value === '1')}
+                options={[
+                  { value: '', label: 'All' },
+                  { value: '1', label: 'Enabled' },
+                  { value: '0', label: 'Disabled' },
+                ]}
+              />
+            </div>
+
+            {/* Audio Filter */}
+            <div className="flex-1 min-w-[180px]">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Audio
+              </label>
+              <SelectDropdown
+                value={filters.audio ? '1' : ''}
+                onChange={(value) => handleFilterChange('audio', value === '1')}
+                options={[
+                  { value: '', label: 'All' },
+                  { value: '1', label: 'Enabled' },
+                  { value: '0', label: 'Disabled' },
+                ]}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
+                variant="primary"
+                onClick={handleSearch}
+                className="flex items-center"
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+              <Button
+                onClick={handleClear}
+                className="bg-gray-500 text-white hover:bg-gray-600 flex items-center"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
+              </Button>
+            </div>
+          </div>
+        </Card>
 
         {/* QC User Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col">
-                  <div className="flex items-center">
-                    <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                    <Heading level={4} className="text-lg font-semibold text-gray-900">
-                      QC USER INFO
-                    </Heading>
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
-                    Total <span className="font-semibold">{totalCount}</span> items.
-                  </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                QC User Registration
+                  </Heading>
                 </div>
+            <div className="flex items-center">
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={handleAddNewUser}
+                className="flex items-center"
                 >
-                  <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-4 h-4 mr-2" />
                   Add New User
                 </Button>
               </div>
             </div>
-            <div className="overflow-x-auto">
-              <Table
-                striped
-                bordered
-                hover
-                className="w-full border-collapse"
-              >
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">QC ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile Number</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GPS</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audio</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assign AC</th>
+
+          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+            Total <strong>{qcUserData.length}</strong> QC users.
+          </div>
+
+              <div className="overflow-x-auto">
+                <Table
+                  striped
+                  bordered
+                  hover
+                  className="w-full border-collapse"
+                >
+              <thead className="sticky-header bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">GPS</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Actions</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Assign AC</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {currentData.map((user, index) => (
+                      {qcUserData.map((user, index) => (
                         <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.qcId}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{index + 1}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.qcId}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.mobileNumber}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.gps)}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{renderIcon(user.audio)}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.status}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobileNumber}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{renderIcon(user.gps)}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{renderIcon(user.audio)}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        user.status === 'Active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {user.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                             <Button
                               variant="primary"
                               size="sm"
                               onClick={() => handleEditUser(user.id)}
+                        className="flex items-center justify-center"
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex gap-1">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                               <Button
                                 variant="primary"
                                 size="sm"
                                 onClick={() => handleAssignAC(user.id)}
+                        className="flex items-center justify-center"
                               >
                                 <Check className="w-4 h-4" />
                               </Button>
-                              {/* <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() => handleViewAssignedAC(user.id)}
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button> */}
-                            </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
-              </Table>
-            </div>
+                  </Table>
+                </div>
 
-            {/* Table Footer */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 px-6 py-4 border-t border-gray-200">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
-              </div>
-              <div>
-                <PaginationStandard
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalCount}
-                  itemsPerPage={pageSize}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            </div>
           </Card>
-        </div>
       </Container>
 
       {/* QC User View Modal */}

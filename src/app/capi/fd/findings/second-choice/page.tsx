@@ -9,22 +9,19 @@ import { Loader2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface SecondChoiceBreakdown {
+  AITC: number;
   BJP: number;
-  JDU: number;
-  HAMS: number;
-  VSIP: number;
-  "LJP(RV)": number;
   INC: number;
-  RJD: number;
-  "CPI(M)": number;
-  JSP: number;
+  "Left Front": number;
+  Independent: number;
+  AJSU: number;
   Others: number;
-  NWR: number;
+  NOTA: number;
 }
 
 interface SecondChoiceData {
-  first_choice: string;
-  second_choice_breakdown: SecondChoiceBreakdown;
+  upcoming: string;
+  second_choice: SecondChoiceBreakdown;
 }
 
 interface ZoneData {
@@ -123,7 +120,7 @@ export default function SecondChoicePage() {
   }
 
   const renderTable = (title: string, data: SecondChoiceData[]) => (
-    <Card className="p-6 mb-6">
+    <Card className="mb-6">
       <div className="w-full">
         <h4 className="text-center mb-4 text-lg font-semibold">{title}</h4>
         <div className="overflow-x-auto">
@@ -131,41 +128,35 @@ export default function SecondChoicePage() {
             <thead>
               <tr>
                 <th className="bg-blue-100 border border-gray-300"></th>
-                <th colSpan={12} className="text-center bg-blue-100 border border-gray-300 font-semibold">Second Choice Preferences</th>
+                <th colSpan={9} className="text-center bg-blue-100 border border-gray-300 font-semibold">Second Choice Preferences</th>
               </tr>
             </thead>
             <tbody>
                      <tr>
-                       <th rowSpan={12} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
+                       <th rowSpan={9} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
                 <th className="bg-blue-100 border border-gray-300 font-semibold">Party Name</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#92d050' }}>JDU</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#dce119' }}>HAMS</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'white', backgroundColor: '#275317' }}>VSIP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'white', backgroundColor: '#7030a0' }}>LJP(RV)</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'white', backgroundColor: '#548235' }}>RJD</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#ff0000' }}>CPI(M)</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#ffff00' }}>JSP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#aeaeae' }}>NWR</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
               </tr>
               {data.map((row, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <th className="text-center font-medium border border-gray-300" style={{ width: '8%', color: 'black', backgroundColor: getPartyColor(row.first_choice) }}>
-                    {row.first_choice}
+                  <th className="text-center font-medium border border-gray-300" style={{ width: '8%', color: 'black', backgroundColor: getPartyColor(row.upcoming) }}>
+                    {row.upcoming}
                   </th>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.BJP}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.JDU}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.HAMS}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.VSIP}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown["LJP(RV)"]}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.INC}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.RJD}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown["CPI(M)"]}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.JSP}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.Others}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice_breakdown.NWR}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.AITC}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.BJP}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.INC}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice['Left Front']}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.Independent}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.AJSU}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.Others}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{row.second_choice.NOTA}</td>
                 </tr>
               ))}
             </tbody>
@@ -177,17 +168,14 @@ export default function SecondChoicePage() {
 
   const getPartyColor = (party: string): string => {
     const colors: { [key: string]: string } = {
+      'AITC': '#00b0f0',
       'BJP': '#e97132',
-      'JDU': '#92d050',
-      'HAMS': '#dce119',
-      'VSIP': '#275317',
-      'LJP(RV)': '#7030a0',
       'INC': '#00b0f0',
-      'RJD': '#548235',
-      'CPI(M)': '#ff0000',
-      'JSP': '#ffff00',
+      'Left Front': '#ff0000',
+      'Independent': '#92d050',
+      'AJSU': '#dce119',
       'Others': '#aeaeae',
-      'NWR': '#aeaeae',
+      'NOTA': '#aeaeae',
     };
     return colors[party] || '#aeaeae';
   };
@@ -197,14 +185,9 @@ export default function SecondChoicePage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900">
             {apiData?.page_info.page_title || 'Second Choice'}
           </Heading>
-          {apiData?.page_info.total_interviews && (
-            <Text className="text-sm text-gray-600 mt-1">
-              Total Interviews: {apiData.page_info.total_interviews.toLocaleString()}
-            </Text>
-          )}
         </div>
         <div className="flex-1"></div>
         <div className="flex-1">
@@ -217,7 +200,7 @@ export default function SecondChoicePage() {
 
       {/* Zone Tables */}
       {apiData?.zone_breakdown.map((zone, index) => (
-        <div key={index}>
+        <div key={zone.zone_code || `zone-${index}`}>
           {renderTable(`Zone - ${zone.zone_code} ${zone.zone_name}`, zone.data)}
         </div>
       ))}

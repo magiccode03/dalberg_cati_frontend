@@ -1,142 +1,425 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
+import HorizontalBarChart from '@/components/charts/HorizontalBarChart';
+import { apiService } from '@/lib/api-service';
 
-interface VoteShareData {
-  party: string;
-  percentage: number;
-  count: string;
-  color: string;
-}
 
 interface DemographicData {
   category: string;
   subcategory: string;
+  aitc: number;
   bjp: number;
-  jdu: number;
-  hams: number;
-  vsip: number;
-  ljp: number;
   inc: number;
-  rjd: number;
-  cpi: number;
-  jsp: number;
+  leftFront: number;
+  independent: number;
+  ajsu: number;
   others: number;
-  nwr: number;
+  nota: number;
+}
+
+interface VoteShareData {
+  page_info: {
+    page_name: string;
+    page_title: string;
+    total_interviews: number;
+    progress_type?: string;
+  };
+  charts?: {
+    '2025_preference': {
+      chart_type: string;
+      chart_id: string;
+      question_id: string;
+      total_sample: number;
+      data: Array<{
+        name: string;
+        y: number;
+        count: string;
+      }>;
+      colors: string[];
+    };
+    '2021_ae'?: {
+      chart_type: string;
+      chart_id: string;
+      question_id: string;
+      total_sample: number;
+      data: Array<{
+        name: string;
+        y: number;
+        count: string;
+      }>;
+      colors: string[];
+    };
+    '2020_ae'?: {
+      chart_type: string;
+      chart_id: string;
+      question_id: string;
+      total_sample: number;
+      data: Array<{
+        name: string;
+        y: number;
+        count: string;
+      }>;
+      colors: string[];
+    };
+  };
+  demographic_breakdown?: {
+    gender: Record<string, Record<string, number>>;
+    locality: Record<string, Record<string, number>>;
+    social_category: Record<string, Record<string, number>>;
+    age_group: Record<string, Record<string, number>>;
+    religion: Record<string, Record<string, number>>;
+  };
+  ac_data?: Array<{
+    ac_code?: number;
+    pc_code?: number;
+    district_code?: number;
+    region_code?: number;
+    ac_name?: string;
+    pc_name?: string;
+    district?: string;
+    region_name?: string;
+    sample: string;
+    years: {
+      '2021_ae'?: Record<string, number>;
+      '2025_preference': Record<string, number>;
+    };
+  }>;
 }
 
 export default function VoteShareEstimatePage() {
-  const [progressType, setProgressType] = useState('ac');
+  const [progressType, setProgressType] = useState('');
+  const [voteShareData, setVoteShareData] = useState<VoteShareData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // 2025 Preference Data
-  const voteShare2025: VoteShareData[] = [
-    { party: 'Bhartiya Janta Party (BJP)', percentage: 49, count: '24,729', color: '#e97132' },
-    { party: 'Janta Dal (United) (JDU)', percentage: 10, count: '4,907', color: '#92d050' },
-    { party: 'Hindustani Awam Morcha (Secular) (HAMS)', percentage: 0, count: '112', color: '#dce119' },
-    { party: 'Vikassheel Insaan Party (VSIP)', percentage: 0, count: '139', color: '#275317' },
-    { party: 'Lok Janshakti Party (Ram Vilas)', percentage: 2, count: '1,131', color: '#7030a0' },
-    { party: 'Indian National Congress (INC)', percentage: 5, count: '2,713', color: '#00b0f0' },
-    { party: 'Rashtriya Janta Dal (RJD)', percentage: 28, count: '14,198', color: '#548235' },
-    { party: 'CPI-MaLe', percentage: 1, count: '502', color: '#ff0000' },
-    { party: 'JSP', percentage: 2, count: '757', color: '#ffff00' },
-    { party: 'Others', percentage: 1, count: '360', color: '#aeaeae' },
-    { party: 'NOTA/NWR', percentage: 1, count: '477', color: '#aeaeae' },
-  ];
+  // Fetch vote share estimates data
+  const fetchVoteShareData = async (type: string = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiService.getVoteShareEstimates(type);
+      if (response.success && response.data) {
+        setVoteShareData(response.data);
+      } else {
+        setError('Failed to fetch vote share data');
+      }
+    } catch (err) {
+      console.error('Error fetching vote share data:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // 2020 AE Data
-  const voteShare2020: VoteShareData[] = [
-    { party: 'Bhartiya Janta Party (BJP)', percentage: 26, count: '12,826', color: '#e97132' },
-    { party: 'Janta Dal (United) (JDU)', percentage: 24, count: '12,051', color: '#92d050' },
-    { party: 'Hindustani Awam Morcha (Secular) (HAMS)', percentage: 1, count: '309', color: '#dce119' },
-    { party: 'Vikassheel Insaan Party (VSIP)', percentage: 1, count: '693', color: '#275317' },
-    { party: 'Lok Janshakti Party (Ram Vilas)', percentage: 4, count: '1,913', color: '#7030a0' },
-    { party: 'Indian National Congress (INC)', percentage: 8, count: '3,803', color: '#00b0f0' },
-    { party: 'Rashtriya Janta Dal (RJD)', percentage: 19, count: '9,376', color: '#548235' },
-    { party: 'CPI-MaLe', percentage: 2, count: '1,091', color: '#ff0000' },
-    { party: 'JSP', percentage: 0, count: '0', color: '#ffff00' },
-    { party: 'Others', percentage: 2, count: '815', color: '#aeaeae' },
-    { party: 'NOTA/NWR', percentage: 14, count: '7,091', color: '#aeaeae' },
-  ];
+  useEffect(() => {
+    fetchVoteShareData(progressType);
+  }, [progressType]);
 
-  // Demographic Data
-  const demographicData: DemographicData[] = [
+  // Transform API data for charts
+  const getChartData = (chartData: any) => {
+    if (!chartData) return null;
+    
+    return {
+      categories: chartData.data.map((item: any) => item.name),
+      values: chartData.data.map((item: any) => item.y),
+      colors: chartData.colors,
+      interviewsAchieved: chartData.total_sample
+    };
+  };
+
+  const preference2025Data = voteShareData?.charts ? getChartData(voteShareData.charts['2025_preference']) : null;
+  // Try both 2021_ae and 2020_ae for backward compatibility
+  const ae2021Data = voteShareData?.charts ? 
+    (getChartData(voteShareData.charts['2021_ae']) || getChartData(voteShareData.charts['2020_ae'])) : null;
+  
+
+
+  // Transform API demographic data to table format
+  const getDemographicData = (): DemographicData[] => {
+    if (!voteShareData?.demographic_breakdown) return [];
+
+    const demographicData: DemographicData[] = [];
+    const breakdown = voteShareData.demographic_breakdown;
+
+    // Helper function to map party names to our interface
+    const mapPartyData = (data: Record<string, number>) => ({
+      aitc: data['AITC'] || 0,
+      bjp: data['BJP'] || 0,
+      inc: data['INC'] || 0,
+      leftFront: data['Left Front'] || 0,
+      independent: data['Independent'] || 0,
+      ajsu: data['AJSU'] || 0,
+      others: data['Others'] || 0,
+      nota: data['NOTA'] || 0,
+    });
+
     // Gender
-    { category: 'Gender', subcategory: 'Male', bjp: 47.1, jdu: 9.7, hams: 0.3, vsip: 0.3, ljp: 2.5, inc: 5.5, rjd: 30.0, cpi: 1.0, jsp: 2.0, others: 0.8, nwr: 0.9 },
-    { category: 'Gender', subcategory: 'Female', bjp: 54.0, jdu: 10.0, hams: 0.1, vsip: 0.2, ljp: 1.8, inc: 5.3, rjd: 25.2, cpi: 0.9, jsp: 0.6, others: 0.7, nwr: 1.1 },
+    Object.entries(breakdown.gender).forEach(([subcategory, data]) => {
+      demographicData.push({
+        category: 'Gender',
+        subcategory,
+        ...mapPartyData(data)
+      });
+    });
     
     // Locality
-    { category: 'Locality', subcategory: 'Urban', bjp: 55.9, jdu: 9.6, hams: 0.2, vsip: 0.1, ljp: 2.0, inc: 5.1, rjd: 23.9, cpi: 0.8, jsp: 1.5, others: 0.5, nwr: 0.4 },
-    { category: 'Locality', subcategory: 'Rural', bjp: 49.0, jdu: 9.8, hams: 0.2, vsip: 0.3, ljp: 2.3, inc: 5.4, rjd: 28.7, cpi: 1.0, jsp: 1.5, others: 0.7, nwr: 1.0 },
+    Object.entries(breakdown.locality).forEach(([subcategory, data]) => {
+      demographicData.push({
+        category: 'Locality',
+        subcategory,
+        ...mapPartyData(data)
+      });
+    });
     
     // Social Category
-    { category: 'Social Category', subcategory: 'General+OBC', bjp: 51.3, jdu: 6.9, hams: 0.1, vsip: 0.1, ljp: 0.7, inc: 6.3, rjd: 31.6, cpi: 0.9, jsp: 1.5, others: 0.4, nwr: 0.2 },
-    { category: 'Social Category', subcategory: 'SC', bjp: 49.5, jdu: 10.0, hams: 0.9, vsip: 0.7, ljp: 5.5, inc: 4.7, rjd: 22.0, cpi: 3.0, jsp: 1.5, others: 2.0, nwr: 0.3 },
-    { category: 'Social Category', subcategory: 'ST', bjp: 51.2, jdu: 10.7, hams: 0.1, vsip: 0.8, ljp: 2.2, inc: 7.0, rjd: 23.6, cpi: 1.7, jsp: 1.9, others: 0.7, nwr: 0.2 },
-    
-    // Age
-    { category: 'Age', subcategory: '18-24', bjp: 51.4, jdu: 5.6, hams: 0.2, vsip: 0.2, ljp: 2.4, inc: 6.3, rjd: 29.7, cpi: 0.9, jsp: 2.0, others: 0.8, nwr: 0.4 },
-    { category: 'Age', subcategory: '25-34', bjp: 51.4, jdu: 5.6, hams: 0.2, vsip: 0.2, ljp: 2.4, inc: 6.3, rjd: 29.7, cpi: 0.9, jsp: 2.0, others: 0.8, nwr: 0.4 },
-    { category: 'Age', subcategory: '35-50', bjp: 48.3, jdu: 8.5, hams: 0.2, vsip: 0.3, ljp: 2.1, inc: 6.2, rjd: 30.7, cpi: 0.7, jsp: 1.7, others: 0.6, nwr: 0.7 },
-    { category: 'Age', subcategory: '50+', bjp: 47.6, jdu: 11.3, hams: 0.3, vsip: 0.3, ljp: 2.2, inc: 5.0, rjd: 28.9, cpi: 1.2, jsp: 1.4, others: 0.7, nwr: 1.1 },
+    Object.entries(breakdown.social_category).forEach(([subcategory, data]) => {
+      demographicData.push({
+        category: 'Social Category',
+        subcategory,
+        ...mapPartyData(data)
+      });
+    });
+
+    // Age Group
+    Object.entries(breakdown.age_group).forEach(([subcategory, data]) => {
+      demographicData.push({
+        category: 'Age',
+        subcategory,
+        ...mapPartyData(data)
+      });
+    });
     
     // Religion
-    { category: 'Religion', subcategory: 'Hindu', bjp: 53.6, jdu: 10.3, hams: 0.2, vsip: 0.3, ljp: 2.5, inc: 3.7, rjd: 25.3, cpi: 1.0, jsp: 1.5, others: 0.7, nwr: 0.9 },
-    { category: 'Religion', subcategory: 'Muslim', bjp: 25.8, jdu: 5.2, hams: 0.0, vsip: 0.0, ljp: 1.0, inc: 17.0, rjd: 44.8, cpi: 3.1, jsp: 1.0, others: 2.1, nwr: 0.0 },
-    { category: 'Religion', subcategory: 'Christian', bjp: 73.9, jdu: 0.0, hams: 0.0, vsip: 0.0, ljp: 0.0, inc: 4.3, rjd: 13.0, cpi: 4.3, jsp: 0.0, others: 0.0, nwr: 4.3 },
-    { category: 'Religion', subcategory: 'Others', bjp: 45.1, jdu: 4.4, hams: 0.0, vsip: 0.0, ljp: 1.8, inc: 8.8, rjd: 23.9, cpi: 1.8, jsp: 3.5, others: 8.0, nwr: 2.7 },
-  ];
+    Object.entries(breakdown.religion).forEach(([subcategory, data]) => {
+      demographicData.push({
+        category: 'Religion',
+        subcategory,
+        ...mapPartyData(data)
+      });
+    });
+
+    return demographicData;
+  };
+
+  const demographicData = getDemographicData();
 
   const handleCardClick = (type: string) => {
     setProgressType(type);
     console.log('Progress type changed to:', type);
   };
 
-  const renderBarChart = (data: VoteShareData[], title: string, interviews: number) => (
-    <div className="card-border p-3">
-      <h4 className="text-center mb-4">{title}</h4>
-      <div className="d-flex justify-content-end mb-4">
-        <h6 className="text-sm text-gray-600">Interviews Achieved - {interviews.toLocaleString()}</h6>
-      </div>
-      
-      {/* Bar Chart Visualization */}
-      <div className="chart-container" style={{ height: '450px', position: 'relative' }}>
-        <div className="chart-bars">
-          {data.map((item, index) => (
-            <div key={index} className="chart-bar-item mb-3">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700" style={{ width: '180px', textAlign: 'right', paddingRight: '15px' }}>
-                  {item.party}
-                </span>
-                <div className="flex items-center">
-                  <span className="text-sm font-bold text-gray-900 mr-2">{item.percentage}%</span>
-                  <span className="text-xs text-gray-500">({item.count})</span>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-8 relative">
-                <div
-                  className="h-8 rounded-full flex items-center justify-end pr-3"
-                  style={{
-                    width: `${item.percentage}%`,
-                    backgroundColor: item.color,
-                    color: item.color === '#275317' || item.color === '#7030a0' || item.color === '#548235' ? 'white' : 'black'
-                  }}
-                >
-                  <span className="text-sm font-bold">{item.percentage}%</span>
-                </div>
-              </div>
-            </div>
-          ))}
+  // Render AC Level table
+  const renderACLevelTable = () => {
+    if (!voteShareData?.ac_data) return null;
+
+    return (
+      <div className="card-border p-3">
+        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <div className="table-responsive">
+          <table className="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th rowSpan={2} style={{ width: '5%' }} className="bg-tableheader">AC Code</th>
+                <th rowSpan={2} style={{ width: '15%' }} className="bg-tableheader">AC Name</th>
+                <th rowSpan={2} style={{ width: '8%' }} className="bg-tableheader">Sample</th>
+                <th rowSpan={2} style={{ width: '8%' }} className="bg-tableheader">Year</th>
+                <th colSpan={8} className="bg-tableheader text-center">Vote Share (%)</th>
+              </tr>
+              <tr>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {voteShareData.ac_data.map((ac, index) => (
+                <React.Fragment key={ac.ac_code || `ac-${index}`}>
+                  {/* 2021 AE Row */}
+                  <tr>
+                    <td rowSpan={2} className="text-center">{ac.ac_code}</td>
+                    <td rowSpan={2}>{ac.ac_name}</td>
+                    <td rowSpan={2} className="text-center">{ac.sample}</td>
+                    <td className="text-center">2021 AE</td>
+                    <td className="number">{ac.years['2021_ae']?.['AITC']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['BJP']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['INC']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['Left Front']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['Independent']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['AJSU']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['Others']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2021_ae']?.['NOTA']?.toFixed(1) || '0.0'}</td>
+                  </tr>
+                  {/* 2025 Preference Row */}
+                  <tr>
+                    <td className="text-center">2025 Preference</td>
+                    <td className="number">{ac.years['2025_preference']['AITC']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['BJP']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['INC']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['Left Front']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['Independent']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['AJSU']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['Others']?.toFixed(1) || '0.0'}</td>
+                    <td className="number">{ac.years['2025_preference']['NOTA']?.toFixed(1) || '0.0'}</td>
+                  </tr>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  // Render PC Level table
+  const renderPCLevelTable = () => {
+    if (!voteShareData?.ac_data) return null;
+
+    return (
+      <div className="card-border p-3">
+        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <div className="table-responsive">
+          <table className="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th style={{ width: '5%' }} className="bg-tableheader">PC Code</th>
+                <th style={{ width: '20%' }} className="bg-tableheader">PC Name</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }} className="number">Independent</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }} className="number">AJSU</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">Others</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">NOTA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {voteShareData.ac_data.map((pc, index) => (
+                <tr key={pc.pc_code || `pc-${index}`}>
+                  <td className="text-center">{pc.pc_code}</td>
+                  <td>{pc.pc_name}</td>
+                  <td className="number">{pc.years['2025_preference']['AITC']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['BJP']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['INC']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['Left Front']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['Independent']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['AJSU']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['Others']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{pc.years['2025_preference']['NOTA']?.toFixed(1) || '0.0'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  // Render District Level table
+  const renderDistrictLevelTable = () => {
+    if (!voteShareData?.ac_data) return null;
+
+    return (
+      <div className="card-border p-3">
+        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <div className="table-responsive">
+          <table className="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th style={{ width: '5%' }} className="bg-tableheader">District Code</th>
+                <th style={{ width: '20%' }} className="bg-tableheader">District Name</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }} className="number">Independent</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }} className="number">AJSU</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">Others</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">NOTA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {voteShareData.ac_data.map((district, index) => (
+                <tr key={district.district_code || `district-${index}`}>
+                  <td className="text-center">{district.district_code}</td>
+                  <td>{district.district}</td>
+                  <td className="number">{district.years['2025_preference']['AITC']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['BJP']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['INC']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['Left Front']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['Independent']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['AJSU']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['Others']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{district.years['2025_preference']['NOTA']?.toFixed(1) || '0.0'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  // Render Zone Level table
+  const renderZoneLevelTable = () => {
+    if (!voteShareData?.ac_data) return null;
+
+    return (
+      <div className="card-border p-3">
+        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <div className="table-responsive">
+          <table className="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th style={{ width: '5%' }} className="bg-tableheader">Zone Code</th>
+                <th style={{ width: '20%' }} className="bg-tableheader">Zone Name</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }} className="number">Independent</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }} className="number">AJSU</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">Others</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">NOTA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {voteShareData.ac_data.map((zone, index) => (
+                <tr key={zone.region_code || `zone-${index}`}>
+                  <td className="text-center">{zone.region_code}</td>
+                  <td>{zone.region_name}</td>
+                  <td className="number">{zone.years['2025_preference']['AITC']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['BJP']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['INC']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['Left Front']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['Independent']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['AJSU']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['Others']?.toFixed(1) || '0.0'}</td>
+                  <td className="number">{zone.years['2025_preference']['NOTA']?.toFixed(1) || '0.0'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
 
   const renderDemographicTable = () => {
+    if (!demographicData.length) return null;
+    
     const categories = [...new Set(demographicData.map(item => item.category))];
     
     return (
@@ -148,38 +431,32 @@ export default function VoteShareEstimatePage() {
               {categories.map((category, categoryIndex) => {
                 const categoryData = demographicData.filter(item => item.category === category);
                 return (
-                  <React.Fragment key={categoryIndex}>
+                  <React.Fragment key={`category-${categoryIndex}`}>
                     {/* Category Header */}
                     <tr>
                       <th style={{ width: '10%' }} className="bg-tableheader">{category}</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }}>JDU</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }}>HAMS</th>
-                      <th className="number" style={{ width: '5%', color: 'white', backgroundColor: '#275317' }}>VSIP</th>
-                      <th className="number" style={{ width: '5%', color: 'white', backgroundColor: '#7030a0' }}>LJP(RV)</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
-                      <th className="number" style={{ width: '5%', color: 'white', backgroundColor: '#548235' }}>RJD</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }}>CPI(M)</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#ffff00' }}>JSP</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>NWR</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
                     </tr>
                     
                     {/* Category Data Rows */}
                     {categoryData.map((row, rowIndex) => (
-                      <tr key={rowIndex}>
+                      <tr key={`${category}-${rowIndex}`}>
                         <td style={{ width: '10%' }}>{row.subcategory}</td>
-                        <td className="number">{row.bjp}</td>
-                        <td className="number">{row.jdu}</td>
-                        <td className="number">{row.hams}</td>
-                        <td className="number">{row.vsip}</td>
-                        <td className="number">{row.ljp}</td>
-                        <td className="number">{row.inc}</td>
-                        <td className="number">{row.rjd}</td>
-                        <td className="number">{row.cpi}</td>
-                        <td className="number">{row.jsp}</td>
-                        <td className="number">{row.others}</td>
-                        <td className="number">{row.nwr}</td>
+                        <td className="number">{row.aitc.toFixed(1)}</td>
+                        <td className="number">{row.bjp.toFixed(1)}</td>
+                        <td className="number">{row.inc.toFixed(1)}</td>
+                        <td className="number">{row.leftFront.toFixed(1)}</td>
+                        <td className="number">{row.independent.toFixed(1)}</td>
+                        <td className="number">{row.ajsu.toFixed(1)}</td>
+                        <td className="number">{row.others.toFixed(1)}</td>
+                        <td className="number">{row.nota.toFixed(1)}</td>
                       </tr>
                     ))}
                   </React.Fragment>
@@ -192,13 +469,48 @@ export default function VoteShareEstimatePage() {
     );
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading vote share estimates...</p>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="text-red-500 text-6xl mb-4">⚠️</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Data</h3>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900">
-            Vote Share Estimates
+          <Heading level={2} className="text-2xl font-semibold text-gray-900">
+            {voteShareData?.page_info?.page_title || 'Vote Share Estimates'}
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -266,26 +578,72 @@ export default function VoteShareEstimatePage() {
         </div>
       </div>
 
-      {/* Charts Section */}
-      <Card className="p-6 mb-6">
-        <div className="row">
-          <div className="col-md-6 mb-4">
-            {renderBarChart(voteShare2025, '2025 Preference', 50025)}
+      {/* Conditional Content Based on Progress Type */}
+      {progressType === 'ac' ? (
+        /* AC Level Table */
+        <Card className="">
+          <div className="row">
+            <div className="col-md-12">
+              {renderACLevelTable()}
+            </div>
           </div>
-          <div className="col-md-6 mb-4">
-            {renderBarChart(voteShare2020, '2020 AE', 49968)}
+        </Card>
+      ) : progressType === 'pc' ? (
+        /* PC Level Table */
+        <Card className="">
+          <div className="row">
+            <div className="col-md-12">
+              {renderPCLevelTable()}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      ) : progressType === 'district' ? (
+        /* District Level Table */
+        <Card className="">
+          <div className="row">
+            <div className="col-md-12">
+              {renderDistrictLevelTable()}
+            </div>
+          </div>
+        </Card>
+      ) : progressType === 'zone' ? (
+        /* Zone Level Table */
+        <Card className="">
+          <div className="row">
+            <div className="col-md-12">
+              {renderZoneLevelTable()}
+            </div>
+          </div>
+        </Card>
+      ) : (
+        /* Default: Charts and Demographic Table */
+        <>
+          {/* Charts Section */}
+          {preference2025Data && ae2021Data && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <HorizontalBarChart
+                title="2025 Preference"
+                data={preference2025Data}
+                height={450}
+              />
+              <HorizontalBarChart
+                title="2021 AE"
+                data={ae2021Data}
+                height={450}
+              />
+            </div>
+          )}
 
       {/* Demographic Table Section */}
-      <Card className="p-6">
+      <Card className="">
         <div className="row">
           <div className="col-md-12">
             {renderDemographicTable()}
           </div>
         </div>
       </Card>
+        </>
+      )}
 
       <style jsx>{`
         .main-container {

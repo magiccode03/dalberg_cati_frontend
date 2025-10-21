@@ -20,6 +20,20 @@ interface FDSidebarProps {
   onToggle: () => void;
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  href: string;
+  hasSubmenu: boolean;
+  submenu?: Array<{
+    id: string;
+    label: string;
+    icon: React.ComponentType<any>;
+    href: string;
+  }>;
+}
+
 export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -40,7 +54,7 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
   }, [pathname]);
 
   // CAPI FD menu items
-  const capiMenuItems = [
+  const capiMenuItems: MenuItem[] = [
   
     {
       id: 'fieldwork-progress',
@@ -49,13 +63,68 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/capi/fd/fieldwork-progress',
       hasSubmenu: false,
     },
-    // {
-    //   id: 'progress-report',
-    //   label: 'Progress Report',
-    //   icon: TrendingUp,
-    //   href: '/capi/fd/progress-report',
-    //   hasSubmenu: false,
-    // },
+    {
+      id: 'progress-report',
+      label: 'Progress Report',
+      icon: TrendingUp,
+      href: '/capi/fd/progress-report',
+      hasSubmenu: false,
+    },
+    {
+      id: 'findings',
+      label: 'Findings',
+      icon: BarChart3,
+      href: '/capi/fd/findings',
+      hasSubmenu: true,
+      submenu: [
+        {
+          id: 'gain-and-losses',
+          label: 'Gain and Losses',
+          icon: BarChart3,
+          href: '/capi/fd/findings/gain-and-losses',
+        },
+        {
+          id: 'second-choice',
+          label: 'Second Choice',
+          icon: BarChart3,
+          href: '/capi/fd/findings/second-choice',
+        },
+        {
+          id: 'vote-share-estimate',
+          label: 'Vote Share Estimate',
+          icon: BarChart3,
+          href: '/capi/fd/findings/vote-share-estimate',
+        },
+      ],
+    },
+    {
+      id: 'demographics',
+      label: 'Demographics',
+      icon: BarChart3,
+      href: '/capi/fd/demographics',
+      hasSubmenu: true,
+      submenu: [
+        {
+          id: 'basic-demographics',
+          label: 'Basic Demographics',
+          icon: BarChart3,
+          href: '/capi/fd/demographics/basic-demographics',
+        },
+        {
+          id: 'caste',
+          label: 'Caste',
+          icon: BarChart3,
+          href: '/capi/fd/demographics/caste',
+        },
+      ],
+    },
+    {
+      id: 'client-comparison',
+      label: 'Client Comparison',
+      icon: BarChart3,
+      href: '/capi/fd/client-comparison',
+      hasSubmenu: false,
+    },
     {
       id: 'interview-audios',
       label: 'Interview Audios',
@@ -80,7 +149,7 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
   ];
 
   // CATI FD menu items
-  const catiMenuItems = [
+  const catiMenuItems: MenuItem[] = [
    
     {
       id: 'telecaller-progress',
@@ -89,13 +158,48 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
       href: '/cati/fd/telecaller-progress',
       hasSubmenu: false,
     },
-    // {
-    //   id: 'telecaller-daily-call-details',
-    //   label: 'Telecaller Daily Call Details',
-    //   icon: TrendingUp,
-    //   href: '/cati/fd/telecaller-daily-call-details',
-    //   hasSubmenu: false,
-    // },
+    {
+      id: 'ac-wise-data',
+      label: 'Ac Wise Data',
+      icon: BarChart3,
+      href: '/cati/fd/ac-wise-data',
+      hasSubmenu: false,
+    },
+    {
+      id: 'download-data',
+      label: 'Download',
+      icon: BarChart3,
+      href: '/cati/fd/download',
+      hasSubmenu: true,
+      submenu: [
+        {
+          id: 'raw-data',
+          label: 'Raw Data',
+          icon: BarChart3,
+          href: '/cati/fd/download/raw-data',
+        },
+        {
+          id: 'reports',
+          label: 'Reports',
+          icon: BarChart3,
+          href: '/cati/fd/download/reports',
+        },
+      ],
+    },
+    {
+      id: 'data-analysis',
+      label: 'Data Analysis',
+      icon: BarChart3,
+      href: '/cati/fd/data-analysis',
+      hasSubmenu: false,
+    },
+    {
+      id: 'telecaller-daily-call-details',
+      label: 'Telecaller Daily Call Details',
+      icon: TrendingUp,
+      href: '/cati/fd/telecaller-daily-call-details',
+      hasSubmenu: false,
+    },
     {
       id: 'interview-audios',
       label: 'Interview Audios',
@@ -214,13 +318,14 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               const active = isActive(item.href);
+              const hasActiveSubmenu = item.submenu?.some(subItem => isActive(subItem.href));
               
               return (
                 <li key={item.id} className="w-full">
                   <button
                     onClick={() => handleNavigation(item.href)}
                     className={`flex items-center w-full p-3 rounded-lg transition-colors touch-manipulation ${
-                      active
+                      active || hasActiveSubmenu
                         ? 'bg-blue-600 text-white font-medium'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
@@ -231,6 +336,32 @@ export default function FDSidebar({ isCollapsed, onToggle }: FDSidebarProps) {
                       <ChevronRight className="h-4 w-4 flex-shrink-0" />
                     )}
                   </button>
+                  
+                  {/* Submenu */}
+                  {item.hasSubmenu && item.submenu && (
+                    <ul className="ml-6 mt-1 space-y-1">
+                      {item.submenu.map((subItem) => {
+                        const SubIconComponent = subItem.icon;
+                        const subActive = isActive(subItem.href);
+                        
+                        return (
+                          <li key={subItem.id}>
+                            <button
+                              onClick={() => handleNavigation(subItem.href)}
+                              className={`flex items-center w-full p-2 rounded-lg transition-colors touch-manipulation text-sm ${
+                                subActive
+                                  ? 'bg-blue-500 text-white font-medium'
+                                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                              }`}
+                            >
+                              <SubIconComponent className="h-4 w-4 flex-shrink-0" />
+                              <span className="ml-2 flex-grow text-left">{subItem.label}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}

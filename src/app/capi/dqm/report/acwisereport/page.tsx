@@ -8,8 +8,9 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import FormattedNumber from '@/components/ui/FormattedNumber';
 
 interface ACWiseReportData {
   id: number;
@@ -28,33 +29,25 @@ interface ACWiseReportData {
 
 interface APIResponse {
   success: boolean;
-  data?: {
-    data: Array<{
-      ac_code: number;
-      ac_name: string;
-      district_code: number;
-      district_name: string;
-      pc_code: number;
-      pc_name: string;
-      agency_id: number;
-      agency: {
-        id: number;
-        agency_name: string;
-      };
-      acsample: number;
-      QcCount: number;
-      complete: number;
-      achieved: number;
-      reject: number;
-      underqc: number;
-      checker: string;
-    }>;
-    pagination?: {
-      page: number;
-      pageSize: number;
-      totalCount: number;
-      pageCount: number;
-    };
+  data?: Array<{
+    ac_code: number;
+    ac_name: string;
+    agency_name: string | null;
+    sample: number;
+    checker_ids: string;
+    allotted: number;
+    completed: number;
+    accepted: number;
+    rejected: number;
+    under_qc: number;
+  }>;
+  pagination?: {
+    current_page: number;
+    total_pages: number;
+    total_count: number;
+    page_size: number;
+    has_next: boolean;
+    has_previous: boolean;
   };
   error?: string;
   message?: string;
@@ -75,15 +68,15 @@ export default function ACWiseReportPage() {
       id: index + 1,
       sNo: index + 1,
       acCode: item.ac_code,
-      name: item.district_name,
-      agencyName: item.agency?.agency_name || '',
-      sample: item.acsample,
-      checker: item.checker || '',
-      alloted: item.QcCount,
-      completed: item.complete,
-      accepted: item.achieved,
-      rejected: item.reject,
-      underQc: item.underqc
+      name: item.ac_name,
+      agencyName: item.agency_name || '',
+      sample: item.sample,
+      checker: item.checker_ids || '-',
+      alloted: item.allotted,
+      completed: item.completed,
+      accepted: item.accepted,
+      rejected: item.rejected,
+      underQc: item.under_qc
     }));
   };
 
@@ -98,7 +91,7 @@ export default function ACWiseReportPage() {
       console.log('Access token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      console.log('Making API request to: /report/acwisereport');
+      console.log('Making API request to: /capi/ac-qc-statistics');
       
       // Build query parameters
       const queryParams = new URLSearchParams();
@@ -108,7 +101,7 @@ export default function ACWiseReportPage() {
       queryParams.append('pageSize', pageSize.toString());
       
       const queryString = queryParams.toString();
-      const endpoint = `/report/acwisereport${queryString ? `?${queryString}` : ''}`;
+      const endpoint = `/capi/ac-qc-statistics${queryString ? `?${queryString}` : ''}`;
       
       console.log('API endpoint:', endpoint);
       
@@ -128,18 +121,18 @@ export default function ACWiseReportPage() {
       console.log('API Response:', data);
       console.log('Response success:', data.success);
       
-      if (data.success && data.data && Array.isArray(data.data.data)) {
-        const transformedData = transformAPIData(data.data.data);
+      if (data.success && data.data && Array.isArray(data.data)) {
+        const transformedData = transformAPIData(data.data);
         setAcWiseReportData(transformedData);
-        setTotalCount(data.data.pagination?.totalCount || transformedData.length);
+        setTotalCount(data.pagination?.total_count || transformedData.length);
         console.log('Transformed data:', transformedData);
       } else {
         console.error('Invalid API response structure or API error:', data.error);
         setError(data.error || 'Invalid response format from server');
         // Use fallback data
         const fallbackData: ACWiseReportData[] = [
-          { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
-          { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
+          { id: 1, sNo: 1, acCode: 0, name: 'WB', agencyName: '', sample: 0, checker: '-', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
+          { id: 2, sNo: 2, acCode: 1, name: 'Mekliganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 109, 114, 117, 123, 999', alloted: 97, completed: 95, accepted: 34, rejected: 62, underQc: 7 },
         ];
         setAcWiseReportData(fallbackData);
         setTotalCount(fallbackData.length);
@@ -177,14 +170,85 @@ export default function ACWiseReportPage() {
       // Use fallback data on error
       console.log('API request failed, using fallback sample data...');
       const fallbackData: ACWiseReportData[] = [
-        { id: 1, sNo: 1, acCode: 0, name: 'Bihar', agencyName: '', sample: 300, checker: '', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
-        { id: 2, sNo: 2, acCode: 1, name: 'Valmiki Nagar', agencyName: 'Parbhat', sample: 300, checker: '122, 116', alloted: 330, completed: 0, accepted: 310, rejected: 9, underQc: 0 },
-        { id: 3, sNo: 3, acCode: 2, name: 'Ramnagar (SC)', agencyName: 'Parbhat', sample: 300, checker: '101, 127, 139', alloted: 395, completed: 0, accepted: 346, rejected: 30, underQc: 0 },
-        { id: 4, sNo: 4, acCode: 3, name: 'Narkatiaganj', agencyName: 'Parbhat', sample: 300, checker: '110, 103, 120, 140', alloted: 400, completed: 0, accepted: 315, rejected: 73, underQc: 0 },
-        { id: 5, sNo: 5, acCode: 4, name: 'Bagaha', agencyName: 'Parbhat', sample: 300, checker: '116, 127, 128', alloted: 345, completed: 0, accepted: 306, rejected: 27, underQc: 0 },
+        { id: 1, sNo: 1, acCode: 0, name: 'WB', agencyName: '', sample: 0, checker: '-', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
+        { id: 2, sNo: 2, acCode: 1, name: 'Mekliganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 109, 114, 117, 123, 999', alloted: 97, completed: 95, accepted: 34, rejected: 62, underQc: 7 },
+        { id: 3, sNo: 3, acCode: 7, name: 'Dinhata', agencyName: 'Ajit Barman', sample: 0, checker: '100, 105, 111', alloted: 60, completed: 60, accepted: 48, rejected: 12, underQc: 0 },
+        { id: 4, sNo: 4, acCode: 8, name: 'Natabari', agencyName: 'Ajit Barman', sample: 0, checker: '105, 113', alloted: 43, completed: 43, accepted: 37, rejected: 6, underQc: 0 },
+        { id: 5, sNo: 5, acCode: 9, name: 'Tufanganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 103, 115', alloted: 59, completed: 56, accepted: 41, rejected: 15, underQc: 0 },
       ];
       setAcWiseReportData(fallbackData);
       setTotalCount(fallbackData.length);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Download all data as CSV
+  const downloadAllData = async () => {
+    try {
+      setLoading(true);
+      
+      console.log('Downloading all AC wise report data...');
+      
+      // Call API with limit=300 to get all data
+      const response = await apiClient.get('/capi/ac-qc-statistics?limit=300');
+      const data: APIResponse = response.data;
+      
+      if (data.success && data.data && Array.isArray(data.data)) {
+        const transformedData = transformAPIData(data.data);
+        
+        // Convert to CSV
+        const csvHeaders = [
+          'S.No',
+          'AC Code', 
+          'Name',
+          'Agency Name',
+          'Checker',
+          'Alloted',
+          'Completed',
+          'Accepted',
+          'Rejected',
+          'Under QC'
+        ];
+        
+        const csvRows = transformedData.map((item, index) => [
+          index + 1,
+          item.acCode,
+          `"${item.name}"`,
+          `"${item.agencyName}"`,
+          `"${item.checker}"`,
+          new Intl.NumberFormat('en-IN').format(item.alloted),
+          new Intl.NumberFormat('en-IN').format(item.completed),
+          new Intl.NumberFormat('en-IN').format(item.accepted),
+          new Intl.NumberFormat('en-IN').format(item.rejected),
+          new Intl.NumberFormat('en-IN').format(item.underQc)
+        ]);
+        
+        // Create CSV content
+        const csvContent = [
+          csvHeaders.join(','),
+          ...csvRows.map(row => row.join(','))
+        ].join('\n');
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `ac-wise-report-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('CSV download completed');
+      } else {
+        console.error('Failed to fetch data for download:', data.error);
+        setError('Failed to fetch data for download');
+      }
+    } catch (err: any) {
+      console.error('Error downloading data:', err);
+      setError('Failed to download data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -270,12 +334,24 @@ export default function ACWiseReportPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  AC Wise Report
-                </Heading>
-                <span className="text-end"></span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
+                  <Heading level={4} className="text-lg font-semibold text-gray-900">
+                    AC Wise Report
+                  </Heading>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    onClick={downloadAllData}
+                    size="sm"
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
+                    disabled={loading}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download</span>
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="p-6">
@@ -292,7 +368,7 @@ export default function ACWiseReportPage() {
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Agency Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th>
+                      {/* <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th> */}
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
@@ -310,13 +386,23 @@ export default function ACWiseReportPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {getAgencyBadge(data.agencyName)}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td>
+                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.alloted.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.completed.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium">{data.accepted.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium">{data.rejected.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">{data.underQc.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                          <FormattedNumber value={data.alloted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                          <FormattedNumber value={data.completed} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium">
+                          <FormattedNumber value={data.accepted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium">
+                          <FormattedNumber value={data.rejected} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">
+                          <FormattedNumber value={data.underQc} locale="en-IN" />
+                        </td>
                       </tr>
                     ))}
                   </tbody>

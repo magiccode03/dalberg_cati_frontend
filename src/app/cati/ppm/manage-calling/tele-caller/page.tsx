@@ -1,54 +1,47 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
-import Text from '@/components/ui/Text';
-import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
-import Checkbox from '@/components/ui/Checkbox';
-import { Edit, Plus, Search, ChevronDown, ChevronRight, BarChart3 } from 'lucide-react';
-import { apiService } from '@/lib/api-service';
+import { Edit, Plus, Search, ChevronDown, ChevronRight, BarChart3, X } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
+import CatiQCACAssignModal from '@/components/modals/CatiQCACAssignModal';
 
-interface TeleUserData {
-  id: number;
-  teleform_user_id: number;
-  name: string;
+interface UnifiedUserData {
+  user_id: number;
+  user_name: string;
   mobile_number: string;
-  form_id: number;
-  fill_form: number;
-  form_data: number;
-  qc: number;
-  qc_recheck: number;
-  supervisor_id: number;
+  user_type: 'telecaller' | 'qc_user';
   agency_id: number;
-  telecalling_group_id: number;
-  under_training: number;
-  created_at: number;
-  created_by: number;
-  updated_at: number;
-  updated_by: number;
+  agency_name: string;
   status: number;
-}
-
-interface UserStatistics {
-  total_assigned_count: number;
-  ac_detail: Array<{
+  total_assigned: number;
+  // For telecallers
+  total_call_attempted?: number;
+  total_call_pending?: number;
+  // For QC users
+  total_qc_pass?: number;
+  total_qc_fail?: number;
+  total_qc_pending?: number;
+  ac_wise_statistics: Array<{
     ac_code: number;
     ac_name: string;
-    call_attempted: number;
-    call_pending: number;
+    total_assigned: number;
+    // For telecallers
+    call_attempted?: number;
+    call_pending?: number;
+    // For QC users
+    qc_pass?: number;
+    qc_fail?: number;
+    qc_pending?: number;
   }>;
-  total_call_attempted: number;
-  total_call_pending: number;
 }
 
 interface SearchFilters {
@@ -56,6 +49,16 @@ interface SearchFilters {
   name: string;
   mobile_number: string;
   status: string;
+  telecaller: string;
+  permission: string;
+}
+
+interface TelecallerOption {
+  value: string;
+  label: string;
+  user_id: number;
+  name: string;
+  mobile_number: string;
 }
 
 const TeleUserInfoPage: React.FC = () => {
@@ -65,160 +68,145 @@ const TeleUserInfoPage: React.FC = () => {
     name: '',
     mobile_number: '',
     status: '',
+    telecaller: '',
+    permission: '', // No default permission filter
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(30);
-  const [teleUserData, setTeleUserData] = useState<TeleUserData[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  // Consolidated state management
+  const [state, setState] = useState({
+    // Data states
+    telecallerOptions: [] as TelecallerOption[],
+    userData: [] as UnifiedUserData[],
+    
+    // Loading states
+    optionsLoading: false,
+    loading: false,
+    isFetching: false,
+    error: null as string | null,
+    
+    // Pagination
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    pageSize: 10,
+    
+    // UI states
+    expandedRows: new Set<number>(),
+    isModalOpen: false,
+    isQCModalOpen: false,
+    selectedTelecaller: null as {id: number, name: string} | null,
+  });
   
-  // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTelecaller, setSelectedTelecaller] = useState<{id: number, name: string} | null>(null);
-  
-  // Expanded row state for statistics
-  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
-  const [userStatistics, setUserStatistics] = useState<Map<number, UserStatistics>>(new Map());
+  // Use refs to prevent multiple calls
+  const hasInitialized = useRef(false);
+  const optionsFetched = useRef(false);
+  const dataFetched = useRef(false);
+  const paginationFetched = useRef(false);
 
-  const statusOptions = [
+  // Memoized options to prevent unnecessary re-renders
+  const statusOptions = useMemo(() => [
     { value: '', label: 'All Status' },
     { value: '1', label: 'Active' },
     { value: '0', label: 'Inactive' },
-  ];
+  ], []);
 
-  // Fetch telecallers from API
-  const fetchTelecallers = async (page: number = currentPage) => {
-    setLoading(true);
-    setError(null);
+  const permissionOptions = useMemo(() => [
+    { value: '', label: 'All Users' },
+    { value: 'fill_form', label: 'Can Fill Form (Telecallers)' },
+    { value: 'qc', label: 'QC Users' },
+  ], []);
 
-    try {
-      const params: any = {
-        page,
-        limit: itemsPerPage,
-      };
+  // Optimized state update helper
+  const updateState = useCallback((updates: Partial<typeof state>) => {
+    setState(prev => ({ ...prev, ...updates }));
+  }, []);
 
-      // Add filters if they have values
-      if (searchFilters.teleform_user_id) params.teleform_user_id = searchFilters.teleform_user_id;
-      if (searchFilters.name) params.name = searchFilters.name;
-      if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
-      if (searchFilters.status) params.status = searchFilters.status;
-
-      console.log('API Call Params:', params); // Debug log to see what's being sent
-
-      // Get auth token
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
-
-      // Build query string
-      const queryParams = new URLSearchParams(params).toString();
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users?${queryParams}`;
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setTeleUserData(result.data);
-        setTotalItems(result.pagination.total);
-        setTotalPages(result.pagination.totalPages);
-      } else {
-        setError(result.message || 'Failed to fetch telecallers');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Error fetching telecallers');
-      console.error('Error fetching telecallers:', err);
-    } finally {
-      setLoading(false);
+  // Optimized fetch telecaller options with useCallback
+  const fetchTelecallerOptions = useCallback(async () => {
+    if (optionsFetched.current || state.optionsLoading) {
+      return;
     }
-  };
 
-  // Fetch data on component mount and when page changes
-  useEffect(() => {
-    fetchTelecallers(currentPage);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage]);
+    optionsFetched.current = true;
+    updateState({ optionsLoading: true });
 
-  // Fetch statistics for all visible users
-  useEffect(() => {
-    if (teleUserData.length > 0) {
-      teleUserData.forEach(user => {
-        if (!userStatistics.has(user.teleform_user_id)) {
-          fetchUserStatistics(user.teleform_user_id);
-        }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teleUserData]);
-
-  const handleInputChange = (field: keyof SearchFilters, value: string) => {
-    setSearchFilters(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1); // Reset to first page
-    fetchTelecallers(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handleAddData = (user: TeleUserData) => {
-    setSelectedTelecaller({
-      id: user.teleform_user_id,
-      name: user.name
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedTelecaller(null);
-  };
-
-  const handleAssignmentSuccess = async () => {
-    // Small delay to ensure backend has processed the assignment
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Refresh the telecallers data
-    fetchTelecallers(currentPage);
-    
-    // Force refresh statistics for all visible users to update analytics
-    if (teleUserData.length > 0) {
-      teleUserData.forEach(user => {
-        fetchUserStatistics(user.teleform_user_id, true); // Force refresh
-      });
-    }
-  };
-
-  const fetchUserStatistics = async (teleformUserId: number, forceRefresh: boolean = false) => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
-      // Add timestamp to force fresh data if forceRefresh is true
-      const url = forceRefresh 
-        ? `${apiBaseUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics?t=${Date.now()}`
-        : `${apiBaseUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`;
+      const response = await fetch(`${apiBaseUrl}/api/capi/unified-user-statistics?fill_form=1&page=1`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        const options: TelecallerOption[] = result.data
+          .map((user: UnifiedUserData) => ({
+            value: user.user_id.toString(),
+            label: `${user.user_name}(${user.user_id})`,
+            user_id: user.user_id,
+            name: user.user_name,
+            mobile_number: user.mobile_number,
+          }))
+          .sort((a: TelecallerOption, b: TelecallerOption) => a.name.localeCompare(b.name));
         
+        updateState({ telecallerOptions: options });
+      }
+    } catch (err) {
+      console.error('Error fetching telecaller options:', err);
+      optionsFetched.current = false;
+    } finally {
+      updateState({ optionsLoading: false });
+    }
+  }, [state.optionsLoading, updateState]);
+
+  // Optimized fetch telecallers with useCallback
+  const fetchTelecallers = useCallback(async (page: number = state.currentPage, useDefaultFilter: boolean = false) => {
+    if (state.isFetching || (useDefaultFilter && dataFetched.current)) {
+      return;
+    }
+    
+    updateState({ isFetching: true, loading: true, error: null });
+
+    try {
+      const params: any = {
+        page: page,
+        limit: state.pageSize,
+      };
+
+      // Add filters if they have values
+      if (searchFilters.teleform_user_id) params.user_id = searchFilters.teleform_user_id;
+      if (searchFilters.name) params.user_name = searchFilters.name;
+      if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
+      if (searchFilters.status) params.status = searchFilters.status;
+
+      // Permission filter: fill_form=1 (telecallers) or qc=1 (QC users)
+      if (searchFilters.permission) {
+        params[searchFilters.permission] = '1';
+        console.log('🔍 Using permission filter:', searchFilters.permission, '→', params[searchFilters.permission]);
+      } else if (useDefaultFilter) {
+        // Default filter: show only active telecallers (fill_form=1) when no permission filter is selected
+        params.fill_form = '1';
+        console.log('🔍 Using default filter: fill_form=1');
+      } else {
+        console.log('🔍 No permission filter applied');
+      }
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        updateState({ error: 'Authentication required' });
+        return;
+      }
+
+      const queryParams = new URLSearchParams(params).toString();
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/capi/unified-user-statistics?${queryParams}`;
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -230,30 +218,145 @@ const TeleUserInfoPage: React.FC = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setUserStatistics(prev => new Map(prev).set(teleformUserId, result.data));
+        if (useDefaultFilter) {
+          dataFetched.current = true;
+        }
+        
+        const pagination = result.pagination;
+        const totalPages = pagination ? pagination.total_pages : 1;
+        const totalCount = pagination ? pagination.total_count : result.data.length;
+        
+        updateState({
+          userData: result.data,
+          totalPages,
+          totalCount,
+          currentPage: page,
+        });
+      } else {
+        updateState({ error: result.message || 'Failed to fetch telecallers' });
       }
-    } catch (err) {
-      console.error('Error fetching statistics:', err);
+    } catch (err: any) {
+      updateState({ error: err.message || 'Error fetching telecallers' });
+      console.error('Error fetching telecallers:', err);
+    } finally {
+      updateState({ loading: false, isFetching: false });
     }
-  };
+  }, [state.pageSize, state.isFetching, searchFilters, updateState]); // Keep searchFilters in dependencies
 
-  const toggleRowExpansion = (teleformUserId: number) => {
-    const newExpandedRows = new Set(expandedRows);
+  // Initial data fetch on component mount
+  useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitialized.current) {
+      console.log('Component already initialized, skipping initialization');
+      return;
+    }
+
+    hasInitialized.current = true;
+    console.log('Initializing component data...');
+
+    const initializeData = async () => {
+      // Fetch telecaller options first
+      await fetchTelecallerOptions();
+      
+      // Then fetch initial telecaller data with default filter
+      await fetchTelecallers(1, true); // true = use default filter
+    };
+
+    initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+
+  // Handle page changes (only for page > 1 to avoid duplicate calls)
+  useEffect(() => {
+    if (state.currentPage > 1 && !paginationFetched.current) {
+      paginationFetched.current = true;
+      fetchTelecallers(state.currentPage);
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        paginationFetched.current = false;
+      }, 1000);
+    }
+  }, [state.currentPage]); // Remove fetchTelecallers from dependencies
+
+
+  // Optimized event handlers with useCallback
+  const handleInputChange = useCallback((field: keyof SearchFilters, value: string) => {
+    console.log('🔍 Input change:', field, '→', value);
+    setSearchFilters(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  const handleSearch = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('🔍 Search triggered with filters:', searchFilters);
+    updateState({ currentPage: 1 });
+    fetchTelecallers(1);
+  }, [updateState, searchFilters, fetchTelecallers]);
+
+  const handleClear = useCallback(() => {
+    setSearchFilters({
+      teleform_user_id: '',
+      name: '',
+      mobile_number: '',
+      status: '',
+      telecaller: '',
+      permission: '',
+    });
+    updateState({ currentPage: 1 });
+    fetchTelecallers(1);
+  }, [updateState, fetchTelecallers]);
+
+  const handleAddData = useCallback((user: UnifiedUserData) => {
+    const selectedTelecaller = {
+      id: user.user_id,
+      name: user.user_name
+    };
     
-    if (newExpandedRows.has(teleformUserId)) {
-      newExpandedRows.delete(teleformUserId);
+    updateState({
+      selectedTelecaller,
+      isQCModalOpen: user.user_type === 'qc_user',
+      isModalOpen: user.user_type === 'telecaller',
+    });
+  }, [updateState]);
+
+  const handleModalClose = useCallback(() => {
+    updateState({
+      isModalOpen: false,
+      isQCModalOpen: false,
+      selectedTelecaller: null,
+    });
+  }, [updateState]);
+
+  const handleAssignmentSuccess = useCallback(async () => {
+    // Small delay to ensure backend has processed the assignment
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Refresh the telecallers data
+    fetchTelecallers();
+  }, [fetchTelecallers]);
+
+  const toggleRowExpansion = useCallback((userId: number) => {
+    const newExpandedRows = new Set(state.expandedRows);
+    
+    if (newExpandedRows.has(userId)) {
+      newExpandedRows.delete(userId);
     } else {
-      // Close all other expanded rows
       newExpandedRows.clear();
-      newExpandedRows.add(teleformUserId);
-      // Fetch statistics if not already loaded
-      if (!userStatistics.has(teleformUserId)) {
-        fetchUserStatistics(teleformUserId);
-      }
+      newExpandedRows.add(userId);
     }
     
-    setExpandedRows(newExpandedRows);
-  };
+    updateState({ expandedRows: newExpandedRows });
+  }, [state.expandedRows, updateState]);
+
+  // Stable pagination handler
+  const handlePageChange = useCallback((page: number) => {
+    if (page !== state.currentPage && !state.isFetching) {
+      updateState({ currentPage: page });
+    }
+  }, [state.currentPage, state.isFetching, updateState]);
 
   return (
     <FluidContainer>
@@ -261,7 +364,7 @@ const TeleUserInfoPage: React.FC = () => {
         {/* Breadcrumb Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <Heading level={2} className="text-2xl sm:text-2xl font-semibold text-gray-900 dark:text-white">
+            <Heading level={2} className="text-2xl  font-semibold text-gray-900 dark:text-white">
               Tele Caller
             </Heading>
             {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -274,9 +377,9 @@ const TeleUserInfoPage: React.FC = () => {
         </div>
 
         {/* Error Message */}
-        {error && (
+        {state.error && (
           <Alert type="error" className="mb-6">
-            {error}
+            {state.error}
           </Alert>
         )}
 
@@ -285,30 +388,27 @@ const TeleUserInfoPage: React.FC = () => {
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
               <div className="lg:col-span-1">
-                <Input
-                  type="text"
-                  placeholder="Telecaller User ID"
-                  value={searchFilters.teleform_user_id}
-                  onChange={(e) => handleInputChange('teleform_user_id', e.target.value)}
+                <SelectDropdown
+                  options={state.telecallerOptions}
+                  value={searchFilters.telecaller}
+                  onChange={(value) => {
+                    const selectedValue = Array.isArray(value) ? value[0] : value as string;
+                    handleInputChange('telecaller', selectedValue);
+                    // Auto-populate user_id when telecaller is selected
+                    if (selectedValue) {
+                      const selectedOption = state.telecallerOptions.find(opt => opt.value === selectedValue);
+                      if (selectedOption) {
+                        setSearchFilters(prev => ({
+                          ...prev,
+                          telecaller: selectedValue,
+                          teleform_user_id: selectedOption.user_id.toString(),
+                        }));
+                      }
+                    }
+                  }}
                   className="w-full"
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <Input
-                  type="text"
-                  placeholder=" Telecaller Name"
-                  value={searchFilters.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <Input
-                  type="text"
-                  placeholder="Telecaller Mobile Number"
-                  value={searchFilters.mobile_number}
-                  onChange={(e) => handleInputChange('mobile_number', e.target.value)}
-                  className="w-full"
+                  placeholder="Select Telecaller"
+                  searchable
                 />
               </div>
               <div className="lg:col-span-1">
@@ -321,9 +421,30 @@ const TeleUserInfoPage: React.FC = () => {
                 />
               </div>
               <div className="lg:col-span-1">
-                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                <SelectDropdown
+                  options={permissionOptions}
+                  value={searchFilters.permission}
+                  onChange={(value) => handleInputChange('permission', Array.isArray(value) ? value[0] : value as string)}
+                  className="w-full"
+                  placeholder="User Type"
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <Button type="submit" disabled={state.loading} className="w-full">
                   <Search className="w-4 h-4 mr-2" />
-                  {loading ? 'Searching...' : 'Search'}
+                  {state.loading ? 'Searching...' : 'Search'}
+                </Button>
+              </div>
+              <div className="lg:col-span-1">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={handleClear}
+                  disabled={state.loading}
+                  className="w-full bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Clear
                 </Button>
               </div>
             </div>
@@ -368,34 +489,34 @@ const TeleUserInfoPage: React.FC = () => {
             </div>
           </div>
 
-          {loading ? (
+          {state.loading ? (
             <div className="flex justify-center items-center py-12">
               <LoadingSpinner size="lg" />
             </div>
-          ) : teleUserData.length > 0 ? (
+          ) : state.userData.length > 0 ? (
             <div className="space-y-3">
-              {teleUserData.map((user, index) => {
-                const isExpanded = expandedRows.has(user.teleform_user_id);
-                const stats = userStatistics.get(user.teleform_user_id);
+              {state.userData.map((user, index) => {
+                const isExpanded = state.expandedRows.has(user.user_id);
+                const isQCUser = user.user_type === 'qc_user';
                 
                 return (
-                  <div key={user.id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
+                  <div key={user.user_id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
                     {/* Main Row Content */}
                     <div className="p-3 md:p-4">
                       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                         {/* Left Section - User Info */}
                         <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                           <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm md:text-base">
-                            {user.name.charAt(0).toUpperCase()}
+                            {user.user_name.charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
                               <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                {user.name}
+                                {user.user_name}
                               </h3>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                  ID: {user.teleform_user_id}
+                                  ID: {user.user_id}
                                 </span>
                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
                                   user.status === 1 
@@ -415,29 +536,54 @@ const TeleUserInfoPage: React.FC = () => {
 
                         {/* Center Section - Quick Stats */}
                         <div className="flex items-center justify-center gap-4 md:gap-8 flex-1">
-                          {stats ? (
+                          {isQCUser ? (
                             <>
                               <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Allotded</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
                                 <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
-                                  {stats.total_assigned_count}
+                                  {user.total_assigned}
                                 </p>
                               </div>
                               <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Exhausted</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
                                 <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {stats.total_call_attempted}
+                                  {user.total_qc_pass || 0}
                                 </p>
                               </div>
                               <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending Numbers</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Fail</p>
+                                <p className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
+                                  {user.total_qc_fail || 0}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
                                 <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
-                                  {stats.total_call_pending}
+                                  {user.total_qc_pending || 0}
                                 </p>
                               </div>
                             </>
                           ) : (
-                            <div className="text-xs md:text-sm text-gray-400">Loading stats...</div>
+                            <>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
+                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {user.total_assigned}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Attempted</p>
+                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
+                                  {user.total_call_attempted || 0}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                                  {user.total_call_pending || 0}
+                                </p>
+                              </div>
+                            </>
                           )}
                         </div>
 
@@ -446,7 +592,7 @@ const TeleUserInfoPage: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => toggleRowExpansion(user.teleform_user_id)}
+                            onClick={() => toggleRowExpansion(user.user_id)}
                             title={isExpanded ? "Hide assigned AC details" : "View assigned AC details"}
                             className="text-xs md:text-sm px-2 md:px-3"
                           >
@@ -465,7 +611,7 @@ const TeleUserInfoPage: React.FC = () => {
                           <Button 
                             variant="primary" 
                             size="sm"
-                            onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.id}`)}
+                            onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.user_id}`)}
                             title="Edit telecaller"
                             className="px-2 md:px-3"
                           >
@@ -474,9 +620,13 @@ const TeleUserInfoPage: React.FC = () => {
                           <Button 
                             variant="secondary" 
                             size="sm" 
-                            className="bg-purple-500 hover:bg-purple-600 text-white px-2 md:px-3" 
+                            className={`px-2 md:px-3 ${
+                              isQCUser 
+                                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+                                : 'bg-purple-500 hover:bg-purple-600 text-white'
+                            }`}
                             onClick={() => handleAddData(user)}
-                            title="Assign AC data"
+                            title={isQCUser ? "Assign AC for QC" : "Assign AC data"}
                           >
                             <Plus className="w-3 h-3 md:w-4 md:h-4" />
                           </Button>
@@ -488,7 +638,6 @@ const TeleUserInfoPage: React.FC = () => {
                     {isExpanded && (
                       <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                         <div className="p-3 md:p-4">
-                          {stats ? (
                             <div className="space-y-3">
                               {/* Detailed Stats Row */}
                               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 gap-3">
@@ -497,38 +646,66 @@ const TeleUserInfoPage: React.FC = () => {
                                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                                     <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
                                     <span className="font-bold text-blue-600 dark:text-blue-400">
-                                      {stats.total_assigned_count}
+                                    {user.total_assigned}
+                                  </span>
+                                </div>
+                                {isQCUser ? (
+                                  <>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pass:</span>
+                                      <span className="font-bold text-green-600 dark:text-green-400">
+                                        {user.total_qc_pass || 0}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Fail:</span>
+                                      <span className="font-bold text-red-600 dark:text-red-400">
+                                        {user.total_qc_fail || 0}
                                     </span>
                                   </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
+                                      <span className="font-bold text-orange-600 dark:text-orange-400">
+                                        {user.total_qc_pending || 0}
+                                      </span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
                                   <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                                     <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
                                     <span className="font-bold text-green-600 dark:text-green-400">
-                                      {stats.total_call_attempted}
+                                        {user.total_call_attempted || 0}
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                                     <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
                                     <span className="font-bold text-orange-600 dark:text-orange-400">
-                                      {stats.total_call_pending}
+                                        {user.total_call_pending || 0}
                                     </span>
                                   </div>
+                                  </>
+                                )}
                                 </div>
                                 <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-gray-400 flex-shrink-0" />
                               </div>
                               
                               {/* AC Details Row */}
-                              {stats.ac_detail && stats.ac_detail.length > 0 && (
+                            {user.ac_wise_statistics && user.ac_wise_statistics.length > 0 && (
                                 <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                                   <div className="flex items-center gap-2 mb-3">
                                     <BarChart3 className="h-4 w-4 text-gray-500" />
                                     <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                      AC-wise Breakdown ({stats.ac_detail.length} ACs)
+                                    AC-wise Breakdown ({user.ac_wise_statistics.length} ACs)
                                     </span>
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {stats.ac_detail.map((ac) => (
+                                  {user.ac_wise_statistics.map((ac) => (
                                       <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                                         <div className="flex items-center justify-between mb-2">
                                           <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -538,21 +715,63 @@ const TeleUserInfoPage: React.FC = () => {
                                             #{ac.ac_code}
                                           </span>
                                         </div>
-                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
+                                        {isQCUser ? (
+                                          <>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Pass:</span>
+                                              <span className="font-semibold text-green-600 dark:text-green-400">
+                                                {ac.qc_pass || 0}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Fail:</span>
+                                              <span className="font-semibold text-red-600 dark:text-red-400">
+                                                {ac.qc_fail || 0}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Pending:</span>
+                                              <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                                {ac.qc_pending || 0}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
+                                              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                                {ac.total_assigned}
+                                              </span>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <>
                                           <div className="flex items-center gap-1">
                                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                                             <span className="text-gray-600 dark:text-gray-400">Attempted:</span>
                                             <span className="font-semibold text-green-600 dark:text-green-400">
-                                              {ac.call_attempted}
+                                                {ac.call_attempted || 0}
                                             </span>
                                           </div>
                                           <div className="flex items-center gap-1">
                                             <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
                                             <span className="text-gray-600 dark:text-gray-400">Pending:</span>
                                             <span className="font-semibold text-orange-600 dark:text-orange-400">
-                                              {ac.call_pending}
+                                                {ac.call_pending || 0}
                                             </span>
                                           </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
+                                              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                                {ac.total_assigned}
+                                              </span>
+                                            </div>
+                                          </>
+                                        )}
                                         </div>
                                       </div>
                                     ))}
@@ -560,12 +779,6 @@ const TeleUserInfoPage: React.FC = () => {
                                 </div>
                               )}
                             </div>
-                          ) : (
-                            <div className="flex justify-center items-center py-4">
-                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mr-2"></div>
-                              <span className="text-sm text-gray-500">Loading statistics...</span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     )}
@@ -587,34 +800,51 @@ const TeleUserInfoPage: React.FC = () => {
             </div>
           )}
 
-          {/* Pagination Footer */}
-          {!loading && teleUserData.length > 0 && (
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-xs md:text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
-                Showing <span className="font-semibold">{(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> telecallers.
+          {/* Total Count Footer */}
+          {/* {!loading && teleUserData.length > 0 && (
+            <div className="flex justify-start mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
+                Total: <span className="font-semibold">{totalCount}</span> telecaller{totalCount !== 1 ? 's' : ''}
+              </div> */}
+              {/* Debug info - remove after testing */}
+              {/* <div className="ml-4 text-xs text-gray-500">
+                Debug: totalPages={totalPages}, currentPage={currentPage}, pageSize={pageSize}
               </div>
-              <div className="flex justify-center sm:justify-end">
+            </div>
+          )} */}
+
+          {/* Pagination */}
+          {!state.loading && state.totalPages > 1 && (
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <PaginationStandard
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalItems}
-                  itemsPerPage={itemsPerPage}
+                  currentPage={state.currentPage}
+                  totalPages={state.totalPages}
+                totalItems={state.totalCount}
+                itemsPerPage={state.pageSize}
                   onPageChange={handlePageChange}
                 />
-              </div>
             </div>
           )}
         </Card>
 
         {/* AC Assignment Modal */}
-        {selectedTelecaller && (
+        {state.selectedTelecaller && (
+          <>
           <ACAssignmentModal
-            isOpen={isModalOpen}
+            isOpen={state.isModalOpen}
             onClose={handleModalClose}
-            teleformUserId={selectedTelecaller.id}
-            telecallerName={selectedTelecaller.name}
+            teleformUserId={state.selectedTelecaller.id}
+            telecallerName={state.selectedTelecaller.name}
             onSuccess={handleAssignmentSuccess}
           />
+            <CatiQCACAssignModal
+              isOpen={state.isQCModalOpen}
+              onClose={handleModalClose}
+              teleformUserId={state.selectedTelecaller.id}
+              telecallerName={state.selectedTelecaller.name}
+              onSuccess={handleAssignmentSuccess}
+            />
+          </>
         )}
       </div>
     </FluidContainer>

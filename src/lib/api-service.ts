@@ -96,12 +96,20 @@ class ApiService {
     config?: any
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await apiClient.request({
+      const requestConfig: any = {
         method,
         url: endpoint,
-        data,
         ...config,
-      });
+      };
+
+      // For GET requests, use params instead of data
+      if (method === 'GET' && data) {
+        requestConfig.params = data;
+      } else if (data) {
+        requestConfig.data = data;
+      }
+
+      const response = await apiClient.request(requestConfig);
 
       return {
         success: response.data.success || true,
@@ -219,6 +227,73 @@ class ApiService {
     return this.request<any>('GET', '/dashboard/sample-statistics');
   }
 
+  // Vote Share Estimates Methods
+  async getVoteShareEstimates(progressType?: string): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+      progress_type?: string;
+    };
+    charts?: {
+      '2025_preference': {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2021_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2020_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    demographic_breakdown?: {
+      gender: Record<string, Record<string, number>>;
+      locality: Record<string, Record<string, number>>;
+      social_category: Record<string, Record<string, number>>;
+      age_group: Record<string, Record<string, number>>;
+      religion: Record<string, Record<string, number>>;
+    };
+    ac_data?: Array<{
+      ac_code: number;
+      ac_name: string;
+      sample: string;
+      years: {
+        '2021_ae': Record<string, number>;
+        '2025_preference': Record<string, number>;
+      };
+    }>;
+  }>> {
+    const queryString = progressType ? `?progress_type=${progressType}` : '';
+    return this.request<any>('GET', `/dashboard/findings/vote-share-estimates${queryString}`);
+  }
+
   // PMT Methods
   async getQCFailReport(page: number = 1): Promise<ApiResponse<any>> {
     return this.request<any>('GET', `/pmt/qc-fail-report?page=${page}`);
@@ -265,6 +340,416 @@ class ApiService {
       limit: limit.toString(),
     });
     return this.request<any>('GET', `/dashboard/team-registration?${params}`);
+  }
+
+  // Gain and Losses API
+  async getGainAndLosses(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/gain-and-losses');
+  }
+
+  // Second Choice API
+  async getSecondChoiceData(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        upcoming: string;
+        second_choice: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        upcoming: string;
+        second_choice: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/second-choice');
+  }
+
+  // Fieldwork Progress API (FD - Field Data)
+  async getFDFieldworkProgress(progressType?: number, progressSubType?: number, progressSubTypeCode?: string): Promise<ApiResponse<any>> {
+    let url = '/fd/fieldwork-progress';
+    const params = new URLSearchParams();
+    
+    if (progressType) params.append('progress_type', progressType.toString());
+    if (progressSubType) params.append('progress_sub_type', progressSubType.toString());
+    if (progressSubTypeCode) params.append('progress_sub_type_code', progressSubTypeCode);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    return this.request<any>('GET', url);
+  }
+
+  // Wisdom of Crowds API
+  async getWisdomOfCrowds(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      party_likely_to_win: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+        title: string;
+      };
+    };
+  }>> {
+    return this.request<{
+      page_info: {
+        page_name: string;
+        page_title: string;
+        total_interviews: number;
+      };
+      charts: {
+        party_likely_to_win: {
+          chart_type: string;
+          chart_id: string;
+          question_id: string;
+          total_sample: number;
+          data: Array<{
+            name: string;
+            y: number;
+            count: string;
+          }>;
+          colors: string[];
+          title: string;
+        };
+      };
+    }>('GET', '/dashboard/findings/wisdom-of-crowds');
+  }
+
+  // Approval Ratings API
+  async getApprovalRatings(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      satisfaction_state_govt: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      preferred_cm: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    mla_satisfaction: {
+      title: string;
+      ac_data: Array<{
+        ac_code: number;
+        ac_name: string;
+        mla_name: string;
+        satisfaction_breakdown: {
+          'Highly Satisfied': number;
+          'Somewhat satisfied': number;
+          'Neither satisfied nor dissatisfied': number;
+          'Somewhat dissatisfied': number;
+          'Highly Dissatisfied': number;
+        };
+      }>;
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/approval-ratings');
+  }
+
+  // Basic Demographics API
+  async getBasicDemographics(progressType?: number, filters?: {
+    psu_code?: string;
+    gender_met?: string;
+    locality_met?: string;
+    religion_met?: string;
+    social_category_met?: string;
+    age_met?: string;
+    progress_sub_type?: number;
+  }): Promise<ApiResponse<{
+    view_type: string;
+    progress_type?: number;
+    progress_page?: string;
+    filter_applied?: string;
+    filter_description?: string;
+    demographic_charts: {
+      gender_coverage: {
+        male: string;
+        female: string;
+        male_achievement: string;
+        female_achievement: string;
+        male_difference: string;
+        female_difference: string;
+      };
+      locality_coverage: {
+        urban: string;
+        rural: string;
+        urban_achievement: string;
+        rural_achievement: string;
+        urban_difference: string;
+        rural_difference: string;
+      };
+      social_category_coverage: {
+        general: string;
+        obc: string;
+        sc: string;
+        st: string;
+        general_achievement: number;
+        obc_achievement: number;
+        sc_achievement: string;
+        st_achievement: string;
+        general_obc_achievement: string;
+      };
+      age_coverage: {
+        age_18_24: string;
+        age_25_34: string;
+        age_35_50: string;
+        age_50_above: string;
+        age_18_24_achievement: string;
+        age_25_34_achievement: string;
+        age_35_50_achievement: string;
+        age_50_above_achievement: string;
+      };
+      religion_coverage: {
+        hindu: string;
+        muslim: string;
+        sikh: string;
+        christian: string;
+        other: string;
+        hindu_achievement: string;
+        muslim_achievement: string;
+        sikh_achievement: number;
+        christian_achievement: number;
+        other_achievement: string;
+      };
+    };
+    navigation_tiles: {
+      total_ac_count: number;
+      total_pc_count: number;
+      total_district_count: number;
+      total_zone_count: number;
+    };
+  }>> {
+    return this.request<{
+      view_type: string;
+      demographic_charts: {
+        gender_coverage: {
+          male: string;
+          female: string;
+          male_achievement: string;
+          female_achievement: string;
+          male_difference: string;
+          female_difference: string;
+        };
+        locality_coverage: {
+          urban: string;
+          rural: string;
+          urban_achievement: string;
+          rural_achievement: string;
+          urban_difference: string;
+          rural_difference: string;
+        };
+        social_category_coverage: {
+          general: string;
+          obc: string;
+          sc: string;
+          st: string;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: string;
+          st_achievement: string;
+          general_obc_achievement: string;
+        };
+        age_coverage: {
+          age_18_24: string;
+          age_25_34: string;
+          age_35_50: string;
+          age_50_above: string;
+          age_18_24_achievement: string;
+          age_25_34_achievement: string;
+          age_35_50_achievement: string;
+          age_50_above_achievement: string;
+        };
+        religion_coverage: {
+          hindu: string;
+          muslim: string;
+          sikh: string;
+          christian: string;
+          other: string;
+          hindu_achievement: string;
+          muslim_achievement: string;
+          sikh_achievement: number;
+          christian_achievement: number;
+          other_achievement: string;
+        };
+      };
+      navigation_tiles: {
+        total_ac_count: number;
+        total_pc_count: number;
+        total_district_count: number;
+        total_zone_count: number;
+      };
+      data_provider?: Array<{
+        ac_code: number;
+        ac_name: string;
+        pc_code: number;
+        pc_name: string;
+        district_code: number;
+        district_name: string;
+        region_code: number | null;
+        region_name: string | null;
+        sample_target: number;
+        valid_underqc_achived: number;
+        demographics: {
+          male: number;
+          female: number;
+          male_achievement: number;
+          female_achievement: number;
+          male_difference: number;
+          female_difference: number;
+          age_18_24: number;
+          age_25_34: number;
+          age_35_50: number;
+          age_50_above: number;
+          age_18_24_achievement: number;
+          age_25_34_achievement: number;
+          age_35_50_achievement: number;
+          age_50_above_achievement: number;
+          age_18_24_difference: number;
+          age_25_34_difference: number;
+          age_35_50_difference: number;
+          age_50_above_difference: number;
+          urban: number;
+          rural: number;
+          urban_achievement: number;
+          rural_achievement: number;
+          urban_difference: number;
+          rural_difference: number;
+          hindu: number;
+          muslim: number;
+          sikh: number;
+          christian: number;
+          religion_others: number;
+          hindu_achievement: number;
+          muslim_achievement: number;
+          sikh_achievement: number;
+          christian_achievement: number;
+          religion_others_achievement: number;
+          hindu_difference: number;
+          muslim_difference: number;
+          sikh_difference: number;
+          christian_difference: number;
+          religion_others_difference: number;
+          general: number;
+          obc: number;
+          sc: number;
+          st: number;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: number;
+          st_achievement: number;
+          general_difference: number;
+          obc_difference: number;
+          sc_difference: number;
+          st_difference: number;
+          general_obc_difference: number;
+        };
+      }>;
+      sub_model?: any;
+    }>('GET', '/demographics/basic-demographics', {
+      ...(progressType ? { progress_type: progressType } : {}),
+      ...(filters || {})
+    });
   }
 }
 

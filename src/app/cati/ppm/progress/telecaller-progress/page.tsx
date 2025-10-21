@@ -11,49 +11,50 @@ import { Calendar, BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Act
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import TelecallerList from '@/components/telecaller/TelecallerList';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Text from '@/components/ui/Text';
 
 // Interface for performance metrics
 interface PerformanceMetrics {
-  // Caller Performance
-  total_callers: number;
-  number_of_dials: number;
-  caller_did_not_pick: number;
-  days_till_now: number;
-  total_ivr_duration: string;
-  total_talk_duration: string;
-  call_connected: number;
-  
-  // Call Dial Status
-  call_not_received: number;
-  ringing: number;
-  not_ringing: number;
-  no_response: number;
-  
-  // Not Ringing Breakdown
-  switch_off: number;
-  number_not_reachable: number;
-  number_does_not_exist: number;
-  not_ringing_no_response: number;
-  
-  // Ringing Breakdown
-  picked: number;
-  did_not_picked: number;
-  ringing_no_response: number;
-  
-  // Ringing Picked Breakdown
-  call_continue: number;
-  wrong_number: number;
-  reschedule_call: number;
-  picked_no_response: number;
-  
-  // General Metrics
-  number_exhausted: number;
-  successful_interview: number;
-  incomplete_interview: number;
-  reject_interview: number;
+  number_status: {
+    call_not_received_to_telecaller: number;
+    ringing: number;
+    not_ringing: number;
+  };
+  call_not_ring_status: {
+    switch_off: number;
+    number_not_reachable: number;
+    number_does_not_exist: number;
+    call_not_ring_no_response: number;
+  };
+  call_ring_status: {
+    picked: number;
+    did_not_picked: number;
+    call_ring_no_response: number;
+  };
+  call_status: {
+    continue: number;
+    refuse_to_respond: number;
+    call_back_later: number;
+  };
+  caller_performance: {
+    total_callers: number;
+    number_of_dials_attempted: number;
+    number_of_calls_connected: number;
+    total_talk_duration: string;
+  };
+  interview_metrics: {
+    successful: number;
+    terminated: number;
+    incompleted: number;
+  };
+  status_metrics: {
+    tele_no_response: number;
+    partial_system: number;
+    partial_tele: number;
+    submitted: number;
+  };
 }
 
 // Day-wise performance interface
@@ -76,23 +77,30 @@ interface ACData {
   district_name: string;
 }
 
-// Telecaller Wise Data interface
+// Telecaller Summary Data interface
 interface TelecallerWiseData {
-  telecaller_id: number;
+  caller_id: number;
   caller_name: string;
+  caller_mobile_no: string;
   number_of_dials: number;
-  ivr_duration: string;
+  number_of_calls_connected: number;
   talk_duration: string;
-  caller_did_not_pick: number;
+  call_not_received_to_telecaller: number;
+  ringing: number;
+  not_ringing: number;
+  switch_off: number;
+  number_not_reachable: number;
   number_does_not_exist: number;
-  respondent_picked_call: number;
-  picked_and_refused: number;
-  number_exhausted: number;
-  successful_interviews: number;
-  rejected_interviews: number;
-  incomplete_interviews: number;
-  number_picked_the_call: number;
-  number_does_not_working: number;
+  picked: number;
+  did_not_picked: number;
+  continue: number;
+  refuse_to_respond: number;
+  call_back_later: number;
+  successful: number;
+  terminated: number;
+  incompleted: number;
+  less_than_180_sec: number;
+  greater_than_180_sec: number;
 }
 
 // Pagination interface for telecaller data
@@ -203,8 +211,8 @@ const TelecallerProgressPage: React.FC = () => {
   const getDateRangeForPerformanceAPI = (dateValue: string, customDateFrom?: string, customDateTo?: string) => {
     if (dateValue === 'custom' && customDateFrom && customDateTo) {
       return {
-        start_date: customDateFrom,
-        end_date: customDateTo
+        date_from: customDateFrom,
+        date_to: customDateTo
       };
     } else if (dateValue && dateValue !== 'custom') {
       // Convert predefined ranges to actual date strings
@@ -254,8 +262,8 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       return {
-        start_date: startDate,
-        end_date: endDate
+        date_from: startDate,
+        date_to: endDate
       };
     }
     return {};
@@ -383,10 +391,10 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('date', date);
       }
       
-      const url = `${apiUrl}/api/cati/telecaller-performance${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${apiUrl}/api/cati/telecaller-metrics${params.toString() ? `?${params.toString()}` : ''}`;
       
       // Debug log for API calls
-      console.log('Performance API URL:', url);
+      console.log('Telecaller Metrics API URL:', url);
       console.log('Date range:', dateRange);
 
       const response = await fetch(url, {
@@ -465,10 +473,10 @@ const TelecallerProgressPage: React.FC = () => {
       
       params.append('days', '7'); // Default to 7 days
       
-      const url = `${apiUrl}/api/cati/telecaller-performance/daywise${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${apiUrl}/api/cati/telecaller-metrics/daywise${params.toString() ? `?${params.toString()}` : ''}`;
       
       // Debug log for day-wise API calls
-      console.log('Day-wise API URL:', url);
+      console.log('Day-wise Telecaller Metrics API URL:', url);
       console.log('Date range:', dateRange);
       
       const response = await fetch(url, {
@@ -612,7 +620,11 @@ const TelecallerProgressPage: React.FC = () => {
           if (value) params.append(key, value);
         });
       
-      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+      const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
+
+      // Debug log for telecaller summary API calls
+      console.log('Telecaller Summary API URL:', url);
+      console.log('Date range:', dateRange);
 
       const response = await fetch(url, {
         headers: {
@@ -621,10 +633,6 @@ const TelecallerProgressPage: React.FC = () => {
         },
       });
 
-        // Debug log for telecaller-wise API calls
-        console.log('Telecaller-wise API URL:', url);
-        console.log('Date range:', dateRange);
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -632,15 +640,15 @@ const TelecallerProgressPage: React.FC = () => {
       const result = await response.json();
 
       if (result.success && result.data) {
-          const pageData = result.data.data || [];
+          const pageData = Array.isArray(result.data) ? result.data : [];
           allData = [...allData, ...pageData];
 
           // Check if there are more pages
-          const pagination = result.data.pagination;
+          const pagination = result.pagination;
           hasMoreData = pagination && currentPage < pagination.totalPages;
           currentPage++;
       } else {
-        throw new Error(result.message || 'Failed to fetch telecaller-wise data');
+        throw new Error(result.message || 'Failed to fetch telecaller summary data');
       }
       } // End of while loop
 
@@ -704,7 +712,7 @@ const TelecallerProgressPage: React.FC = () => {
       // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
-        limit: '100', // API maximum limit
+        limit: '500', // API maximum limit
       });
       
       // Add filters (only if they have values)
@@ -717,12 +725,12 @@ const TelecallerProgressPage: React.FC = () => {
       }
       
       // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
-      const dateRange = getDateRangeForOtherAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
       
-      const url = `${apiUrl}/api/cati/telecaller-wise-data?${params.toString()}`;
+      const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
       const response = await fetch(url, {
         headers: {
@@ -737,46 +745,72 @@ const TelecallerProgressPage: React.FC = () => {
 
       const result = await response.json();
 
-      if (result.success && result.data && result.data.data) {
-        const data = result.data.data;
+      if (result.success && result.data) {
+        const data = Array.isArray(result.data) ? result.data : [];
         
         // Convert to CSV
         const headers = [
           'Sr. No.',
+          'Caller ID',
           'Caller Name',
+          'Caller Mobile No.',
           'Number of Dials',
-          'IVR Duration',
+          'Number of Calls Connected',
           'Talk Duration',
-          'Caller Did Not Pick',
+          'Call Not Received to Telecaller',
+          'Ringing',
+          'Not Ringing',
+          'No response by Telecaller (Number Status)',
+          'Switch Off',
+          'Number Not Reachable',
           'Number Does Not Exist',
-          'Respondent Picked Call',
-          'Picked and Refused',
-          'Number Exhausted',
-          'Successful Interviews',
-          'Rejected Interviews',
-          'Incomplete Interviews',
-          'Number: Picked The Call',
-          'Number: Does Not Working',
+          'No response by Telecaller (Call Not Ring)',
+          'Picked',
+          'Did Not Picked',
+          'No response by Telecaller (Call Ring)',
+          'Continue',
+          'Refuse to Respond',
+          'Call Back Later',
+          'No response by Telecaller (Call Status)',
+          'Successful',
+          'Terminated',
+          'Incompleted',
+          'No response by Telecaller (Interview)',
+          'Less Than 180 (Sec)',
+          'Greater Than 180 (Sec)',
         ];
 
         const csvRows = [
           headers.join(','),
           ...data.map((item: TelecallerWiseData, index: number) => [
             index + 1,
+            item.caller_id || '-',
             `"${item.caller_name || '-'}"`,
+            `"${item.caller_mobile_no || '-'}"`,
             item.number_of_dials || 0,
-            `"${item.ivr_duration || '00:00:00'}"`,
+            item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
-            item.caller_did_not_pick || 0,
+            item.call_not_received_to_telecaller || 0,
+            item.ringing || 0,
+            item.not_ringing || 0,
+            Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)),
+            item.switch_off || 0,
+            item.number_not_reachable || 0,
             item.number_does_not_exist || 0,
-            item.respondent_picked_call || 0,
-            item.picked_and_refused || 0,
-            item.number_exhausted || 0,
-            item.successful_interviews || 0,
-            item.rejected_interviews || 0,
-            item.incomplete_interviews || 0,
-            item.number_picked_the_call || 0,
-            item.number_does_not_working || 0,
+            Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)),
+            item.picked || 0,
+            item.did_not_picked || 0,
+            Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)),
+            item.continue || 0,
+            item.refuse_to_respond || 0,
+            item.call_back_later || 0,
+            Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)),
+            item.successful || 0,
+            item.terminated || 0,
+            item.incompleted || 0,
+            Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)),
+            item.less_than_180_sec || 0,
+            item.greater_than_180_sec || 0,
           ].join(','))
         ];
 
@@ -784,7 +818,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         // Generate filename with current date
         const today = new Date().toISOString().split('T')[0];
-        const filename = `Telecaller_Wise_Data_${today}.csv`;
+        const filename = `Telecaller_Summary_Data_${today}.csv`;
 
         // Download CSV
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -865,231 +899,220 @@ const TelecallerProgressPage: React.FC = () => {
     </div>
   );
 
-  const renderMetrics = (data: PerformanceMetrics) => (
-    <>
-      {/* Caller Performance Section */}
-      <div className="mb-8">
-        <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Total Callers"
-            value={data.total_callers}
-            icon={<Users className="h-6 w-6 text-blue-600" />}
-            color="border-blue-500"
-            bgColor="bg-blue-500"
-          />
-          <MetricCard
-            title="Number of Dials Attempted"
-            value={data.number_of_dials}
-            // value={4790}
-            icon={<Phone className="h-6 w-6 text-orange-600" />}
-            color="border-orange-500"
-            bgColor="bg-orange-500"
-          />
-          {/* <MetricCard
-            title="Caller did not pick"
-            value={data.caller_did_not_pick}
-            icon={<TrendingDown className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          /> */}
-          <MetricCard
-            title="Number of Calls Connected"
-            value={data.call_connected}
-            // value={2124}
-            icon={<Calendar className="h-6 w-6 text-indigo-600" />}
-            color="border-indigo-500"
-            bgColor="bg-indigo-500"
-          />
-          {/* <MetricCard
-            title="Total IVR Duration"
-            value={formatDuration(data.total_ivr_duration)}
-            icon={<Clock className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          /> */}
-          <MetricCard
-            title="Total Talk Duration"
-            value={formatDuration(data.total_talk_duration)}
-            icon={<Clock className="h-6 w-6 text-emerald-600" />}
-            color="border-emerald-500"
-            bgColor="bg-emerald-500"
-          />
-        </div>
-      </div>
+  const renderMetrics = (data: PerformanceMetrics | null) => {
+    // Helper function to safely get value or show placeholder
+    const getValue = (value: any) => {
+      if (value === null || value === undefined) return '—';
+      return value;
+    };
 
-      {/* Call Dial Status Section */}
-      <div className="mb-8">
-        <SectionHeader title="CALL DIAL STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          {/* <MetricCard
-            title="Call not Received"
-            value={data.call_not_received}
-            icon={<Phone className="h-6 w-6 text-amber-600" />}
-            color="border-amber-500"
-            bgColor="bg-amber-500"
-          /> */}
-          <MetricCard
-            title="Ringing"
-            value={data.ringing}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Not Ringing"
-            value={data.not_ringing}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="No Response"
-            // value={data.no_response}
-            value={0}
-            icon={<Phone className="h-6 w-6 text-teal-600" />}
-            color="border-teal-500"
-            bgColor="bg-teal-500"
-          />
+    return (
+      <>
+        {/* Caller Performance Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Total Callers"
+              value={getValue(data?.caller_performance?.total_callers)}
+              icon={<Users className="h-6 w-6 text-blue-600" />}
+              color="border-blue-500"
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              title="Number of Dials Attempted"
+              value={getValue(data?.caller_performance?.number_of_dials_attempted)}
+              icon={<Phone className="h-6 w-6 text-orange-600" />}
+              color="border-orange-500"
+              bgColor="bg-orange-500"
+            />
+            <MetricCard
+              title="Number of Calls Connected"
+              value={getValue(data?.caller_performance?.number_of_calls_connected)}
+              icon={<Phone className="h-6 w-6 text-indigo-600" />}
+              color="border-indigo-500"
+              bgColor="bg-indigo-500"
+            />
+            <MetricCard
+              title="Total Talk Duration"
+              value={data?.caller_performance?.total_talk_duration ? formatDuration(data.caller_performance.total_talk_duration) : '—'}
+              icon={<Clock className="h-6 w-6 text-emerald-600" />}
+              color="border-emerald-500"
+              bgColor="bg-emerald-500"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Call Dial: Not Ringing Section */}
-      {/* <div className="mb-8">
-        <SectionHeader title="CALL DIAL : NOT RINGING" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Switch Off"
-            value={data.switch_off}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="Number Not Reachable"
-            value={data.number_not_reachable}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="Number Does Not Exist"
-            value={data.number_does_not_exist}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="No Response"
-            value={data.not_ringing_no_response}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
+        {/* Number Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="NUMBER STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Call Not Received to Telecaller"
+              value={getValue(data?.number_status?.call_not_received_to_telecaller)}
+              icon={<Phone className="h-6 w-6 text-gray-500" />}
+              color="border-gray-400"
+              bgColor="bg-gray-400"
+            />
+            <MetricCard
+              title="Ringing"
+              value={getValue(data?.number_status?.ringing)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Not Ringing"
+              value={getValue(data?.number_status?.not_ringing)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.caller_performance?.number_of_dials_attempted || 0) - (data?.number_status?.ringing || 0) - (data?.number_status?.not_ringing || 0) - (data?.number_status?.call_not_received_to_telecaller || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div> */}
 
-      {/* Call Dial: Ringing Section */}
-      {/* <div className="mb-8">
-        <SectionHeader title="CALL DIAL : RINGING" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <MetricCard
-            title="Picked"
-            value={data.picked}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Did not picked"
-            value={data.did_not_picked}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="No Response"
-            value={data.ringing_no_response}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
+        {/* Call Not Ring Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALL NOT RING STATUS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Switch Off"
+              value={getValue(data?.call_not_ring_status?.switch_off)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="Number Not Reachable"
+              value={getValue(data?.call_not_ring_status?.number_not_reachable)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="Number Does Not Exist"
+              value={getValue(data?.call_not_ring_status?.number_does_not_exist)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.number_status?.not_ringing || 0) - (data?.call_not_ring_status?.switch_off || 0) - (data?.call_not_ring_status?.number_not_reachable || 0) - (data?.call_not_ring_status?.number_does_not_exist || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div> */}
 
-      {/* Call Dial: Ringing (Picked) Section */}
-      {/* <div className="mb-8">
-        <SectionHeader title="CALL DIAL : RINGING (PICKED)" icon={<BarChart3 className="h-6 w-6 text-green-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Call Continue"
-            value={data.call_continue}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Wrong Number"
-            value={data.wrong_number}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Reschedule Call"
-            value={data.reschedule_call}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="No Response"
-            value={data.picked_no_response}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
+        {/* Call Ring Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALL RING STATUS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <MetricCard
+              title="Number of Calls Connected"
+              value={getValue(data?.call_ring_status?.picked)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Number of Calls Not Connected"
+              value={getValue(data?.call_ring_status?.did_not_picked)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.number_status?.ringing || 0) - (data?.call_ring_status?.picked || 0) - (data?.call_ring_status?.did_not_picked || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div> */}
 
-      {/* General Metrics Section */}
-      <div className="mb-8">
-        <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
-          {/* <MetricCard
-            title="Number Exhausted"
-            value={data.number_exhausted}
-            icon={<Phone className="h-6 w-6 text-blue-600" />}
-            color="border-blue-500"
-            bgColor="bg-blue-500"
-          /> */}
-          <MetricCard
-            title="Successful Interview"
-            value={data.successful_interview}
-            // value={406}
-            icon={<TrendingUp className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          {/* <MetricCard
-            title="Incomplete Interview"
-            value={data.incomplete_interview}
-            icon={<TrendingDown className="h-6 w-6 text-amber-600" />}
-            color="border-amber-500"
-            bgColor="bg-amber-500"
-          /> */}
-          {/* <MetricCard
-            title="Reject Interview"
-            // value={data.reject_interview}
-            value={1725}
-            icon={<TrendingDown className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          /> */}
+        {/* Call Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALL STATUS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Continue"
+              value={getValue(data?.call_status?.continue)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Refuse to Respond"
+              value={getValue(data?.call_status?.refuse_to_respond)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Call Back Later"
+              value={getValue(data?.call_status?.call_back_later)}
+              icon={<Clock className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.call_ring_status?.picked || 0) - (data?.call_status?.continue || 0) - (data?.call_status?.refuse_to_respond || 0) - (data?.call_status?.call_back_later || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div>
-    </>
-  );
+
+        {/* Interview Metrics Section */}
+        <div className="mb-8">
+          <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Completed"
+              value={getValue(data?.interview_metrics?.successful)}
+              icon={<TrendingUp className="h-6 w-6 text-cyan-600" />}
+              color="border-cyan-500"
+              bgColor="bg-cyan-500"
+            />
+            <MetricCard
+              title="Terminated"
+              value={getValue(data?.interview_metrics?.terminated)}
+              icon={<TrendingDown className="h-6 w-6 text-fuchsia-600" />}
+              color="border-fuchsia-500"
+              bgColor="bg-fuchsia-500"
+            />
+            <MetricCard
+              title="Incompleted"
+              value={getValue(data?.interview_metrics?.incompleted)}
+              icon={<TrendingDown className="h-6 w-6 text-sky-600" />}
+              color="border-sky-500"
+              bgColor="bg-sky-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.call_status?.continue || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <FluidContainer>
@@ -1101,7 +1124,7 @@ const TelecallerProgressPage: React.FC = () => {
             {/* Title Section */}
             <div className="flex-1">
               <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-                Caller Performance Dashboard
+              Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
@@ -1331,23 +1354,11 @@ const TelecallerProgressPage: React.FC = () => {
           </div>
         )}
 
-        {/* Content */}
-        {!loading && !error && (
+        {/* Content - Always show cards even on error */}
+        {!loading && (
           <>
             {/* Success Message */}
-            {/* {metrics && viewMode === 'overall' && (
-              <Alert type="success" className="mb-4">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 flex-shrink-0" />
-                  <span className="text-sm md:text-base">
-                    <span className="hidden sm:inline">Performance data loaded successfully. Last updated: {new Date().toLocaleTimeString()}</span>
-                    <span className="sm:hidden">Data loaded • {new Date().toLocaleTimeString()}</span>
-                  </span>
-                </div>
-              </Alert>
-            )} */}
-            
-            {dayWiseData.length > 0 && viewMode === 'daywise' && (
+            {!error && dayWiseData.length > 0 && viewMode === 'daywise' && (
               <Alert type="success" className="mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 flex-shrink-0" />
@@ -1359,13 +1370,15 @@ const TelecallerProgressPage: React.FC = () => {
               </Alert>
             )}
 
-            {viewMode === 'overall' && metrics && (
+            {/* Overall View - Show cards even on error */}
+            {viewMode === 'overall' && (
               <Card className="p-4 md:p-6">
                 {renderMetrics(metrics)}
               </Card>
             )}
 
-            {viewMode === 'daywise' && dayWiseData.length > 0 && (
+            {/* Day-wise View */}
+            {viewMode === 'daywise' && !error && dayWiseData.length > 0 && (
               <div className="space-y-4 md:space-y-6">
                 {dayWiseData.map((dayData, index) => (
                   <Card key={dayData.date} className="p-4 md:p-6">
@@ -1388,7 +1401,7 @@ const TelecallerProgressPage: React.FC = () => {
                         </span>
                       </h3>
                       <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                        Day {dayData.metrics.days_till_now}
+                        {/* Day {dayData.metrics.days_till_now} */}
                       </span>
                     </div>
                     {renderMetrics(dayData.metrics)}
@@ -1397,30 +1410,25 @@ const TelecallerProgressPage: React.FC = () => {
               </div>
             )}
 
-            {viewMode === 'daywise' && dayWiseData.length === 0 && !loading && (
-              <Alert type="info" className="mb-6">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>No day-wise data available for the selected filters.</span>
-                </div>
-              </Alert>
+            {/* Show empty cards in day-wise view when no data */}
+            {viewMode === 'daywise' && (error || dayWiseData.length === 0) && (
+              <Card className="p-4 md:p-6">
+                {renderMetrics(null)}
+              </Card>
             )}
           </>
         )}
       </div>
       
-      {/* Telecaller Wise Data Table */}
+      {/* Telecaller Summary Table */}
       <Card className="mt-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
-              Telecaller Wise Data
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Telecaller Summary
             </Heading>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Total {telecallerWiseData.length} items.
-              </div>
             </div>
           </div>
           
@@ -1441,7 +1449,7 @@ const TelecallerProgressPage: React.FC = () => {
           </Button>
         </div>
 
-        <div className="text-sm text-gray-600 dark:text-gray-400 my-1">
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
           Total <strong>{telecallerWiseData.length}</strong> items.
         </div>
 
@@ -1478,232 +1486,132 @@ const TelecallerProgressPage: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Try adjusting your filters</p>
             </div>
           ) : (
-            <Table striped bordered hover>
-              <TableHeader className="sticky top-0 z-20 bg-white dark:bg-gray-800 shadow-sm">
-                <TableRow>
-                  <TableHead className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300">#</TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('caller_name')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Caller Name</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'caller_name' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_of_dials')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number of Dials</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_of_dials' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_of_dials' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('ivr_duration')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>IVR Duration</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'ivr_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('talk_duration')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Talk Duration</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'talk_duration' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('caller_did_not_pick')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Caller Did Not Pick</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'caller_did_not_pick' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'caller_did_not_pick' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_does_not_exist')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number Does Not Exist</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_exist' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_exist' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('respondent_picked_call')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Respondent Picked Call</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'respondent_picked_call' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'respondent_picked_call' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('picked_and_refused')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Picked and Refused</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'picked_and_refused' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'picked_and_refused' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_exhausted')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number Exhausted</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_exhausted' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_exhausted' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('successful_interviews')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Successful Interviews</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'successful_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'successful_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('rejected_interviews')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Rejected Interviews</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'rejected_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'rejected_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('incomplete_interviews')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Incomplete Interviews</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'incomplete_interviews' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'incomplete_interviews' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_picked_the_call')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number: Picked The Call</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_picked_the_call' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_picked_the_call' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                  <TableHead
-                    className="whitespace-nowrap bg-white dark:bg-gray-800 border-b-2 border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
-                    onClick={() => handleSort('number_does_not_working')}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Number: Does Not Working</span>
-                      <div className="flex flex-col">
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_working' && sortConfig.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}>▲</span>
-                        <span className={`text-xs ${sortConfig.key === 'number_does_not_working' && sortConfig.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}>▼</span>
-                      </div>
-                    </div>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getSortedData().map((item, index) => (
-                  <TableRow key={item.telecaller_id}>
-                    <TableCell>
-                      {index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium text-gray-900 dark:text-white">
-                      {item.caller_name || '-'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_of_dials?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.ivr_duration || '00:00:00'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {item.talk_duration || '00:00:00'}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.caller_did_not_pick?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_does_not_exist?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.respondent_picked_call?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.picked_and_refused?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_exhausted?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-green-600 dark:text-green-400 font-semibold">
-                      {item.successful_interviews?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-red-600 dark:text-red-400 font-semibold">
-                      {item.rejected_interviews?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right text-amber-600 dark:text-amber-400 font-semibold">
-                      {item.incomplete_interviews?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_picked_the_call?.toLocaleString() || 0}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {item.number_does_not_working?.toLocaleString() || 0}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                <div className="table-responsive">
+                  <Table className="table table-bordered table-striped table-hover">
+                    <thead className="sticky-header bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Not Received to Telecaller</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Number Status)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Switch Off</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Not Reachable</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Does Not Exist</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Not Ring)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Not Connected</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Ring)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Continue</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Refuse to Respond</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Back Later</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Status)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Successful</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
+                        {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getSortedData().map((item, index) => (
+                        <tr key={item.caller_id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {index + 1}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.caller_id || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-left">
+                            {item.caller_name || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {item.caller_mobile_no || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_of_dials?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_of_calls_connected?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {item.talk_duration || '00:00:00'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.call_not_received_to_telecaller?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.ringing?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.not_ringing?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.switch_off?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_not_reachable?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.number_does_not_exist?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.picked?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.did_not_picked?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.continue?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.refuse_to_respond?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.call_back_later?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)).toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                            {item.successful?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                            {item.terminated?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
+                            {item.incompleted?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
+                          </td>
+                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.less_than_180_sec?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {item.greater_than_180_sec?.toLocaleString() || 0}
+                          </td> */}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
           )}
         </div>
 
@@ -1713,3 +1621,4 @@ const TelecallerProgressPage: React.FC = () => {
 };
 
 export default TelecallerProgressPage;
+

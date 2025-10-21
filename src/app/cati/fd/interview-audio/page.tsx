@@ -22,7 +22,19 @@ interface InterviewAudioData {
 
 interface APIResponse {
   success: boolean;
-  data: InterviewAudioData[];
+  data: {
+    data: InterviewAudioData[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  };
+  message: string;
+  timestamp: string;
 }
 
 // Utility function to fix audio URL encoding
@@ -96,7 +108,7 @@ export default function CATIInterviewAudioPage() {
         limit: itemsPerPage
       };
       
-      if (appliedFilters.serverId) params.server_id = appliedFilters.serverId;
+      if (appliedFilters.serverId) params.id = appliedFilters.serverId;
       // Priority: AC Name dropdown takes precedence over AC Code input
       if (appliedFilters.acName) {
         params.ac_code = appliedFilters.acName; // AC Name dropdown stores AC code as value
@@ -120,8 +132,8 @@ export default function CATIInterviewAudioPage() {
         
         // Handle pagination from API response
         if (response.data.pagination) {
-          setTotalItems(response.data.pagination.total_count);
-          setTotalPages(response.data.pagination.total_pages);
+          setTotalItems(response.data.pagination.total);
+          setTotalPages(response.data.pagination.totalPages);
         } else {
           // Fallback to client-side calculation if no pagination info
           setTotalItems(interviewData.length);
@@ -232,8 +244,8 @@ export default function CATIInterviewAudioPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={2} className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-            Interview Audio
+          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+            Interview Audio (CATI)
           </Heading>
         </div>
         <div className="flex-1"></div>
@@ -257,7 +269,7 @@ export default function CATIInterviewAudioPage() {
         <Card className="mb-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Code
               </label>
@@ -268,7 +280,7 @@ export default function CATIInterviewAudioPage() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter AC Code"
               />
-            </div>
+            </div> */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 AC Name
@@ -344,11 +356,11 @@ export default function CATIInterviewAudioPage() {
               <div className="flex items-center">
                 <div className="w-1 h-6 bg-blue-500 mr-3"></div>
                 <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                  Interview List
+                  Interview List (CATI)
                 </Heading>
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400 mt-2 ml-4">
-                Total {totalItems} items.
+                Total <strong>{totalItems}</strong> items.
               </div>
             </div>
           </div>
@@ -399,12 +411,12 @@ export default function CATIInterviewAudioPage() {
           ) : (
           <div className="table-responsive">
             <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
+                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
                   <th className="text-center" style={{ width: '10%' }}>Server Id</th>
                   <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
+                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
                   <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
                   <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
                 </tr>
@@ -415,7 +427,7 @@ export default function CATIInterviewAudioPage() {
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="text-center">{row.id}</td>
                     <td className="text-center">{row.ac_code}</td>
-                    <td>{row.ac_name}</td>
+                    <td className="text-left">{row.ac_name}</td>
                     <td className="text-center"><DateFormatter date={row.interview_date} format="dd/mm/yyyy" /></td>
                     <td className="text-center">
                       <Button
@@ -481,7 +493,7 @@ export default function CATIInterviewAudioPage() {
               <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Token</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
                     <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.id}</p>
                   </div>
                   <div>
