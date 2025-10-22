@@ -24,11 +24,15 @@ interface AssignedACData {
   qcTotal: number;
   rowspan?: number;
   isFirstRow?: boolean;
+  isSummaryRow?: boolean;
 }
 
 interface QCUserAssignment {
   qc_id: number;
   qc_user_name: string;
+  qc_total: number;
+  qc_pending: number;
+  qc_completed: number;
   assignments: Array<{
     ac_code: number;
     ac_name: string;
@@ -93,7 +97,7 @@ export default function AssignedACPage() {
     setFiltersLoading(true);
     try {
       // Fetch QC Users (load all data)
-      const qcUsersResponse = await apiClient.get('/qc-user-registration?status=1&limit=5000');
+      const qcUsersResponse = await apiClient.get('/qc-user-registration?status=1&limit=1000');
       const qcUsersData = qcUsersResponse.data;
       
       if (qcUsersData.success && qcUsersData.data?.qc_users) {
@@ -141,19 +145,34 @@ export default function AssignedACPage() {
       if (qcUser.assignments && Array.isArray(qcUser.assignments)) {
         const assignmentCount = qcUser.assignments.length;
         
-                qcUser.assignments.forEach((assignment, index) => {
+        qcUser.assignments.forEach((assignment, index) => {
           transformedData.push({
             id: id++,
             qcId: qcUser.qc_id,
             qcUserName: qcUser.qc_user_name,
             acCode: assignment.ac_code,
             acName: assignment.ac_name,
-                    qcPending: assignment.qc_pending,
-                    qcCompleted: assignment.qc_completed,
-                    qcTotal: assignment.qc_total,
-                    rowspan: index === 0 ? assignmentCount : 0, // Only first row gets rowspan
-                    isFirstRow: index === 0 // Mark first row for QC ID and Name
+            qcPending: assignment.qc_pending,
+            qcCompleted: assignment.qc_completed,
+            qcTotal: assignment.qc_total,
+            rowspan: index === 0 ? assignmentCount+1 : 0, // Only first row gets rowspan
+            isFirstRow: index === 0 // Mark first row for QC ID and Name
           });
+        });
+
+        // Add summary row for each QC user
+        transformedData.push({
+          id: id++,
+          qcId: qcUser.qc_id,
+          qcUserName: qcUser.qc_user_name,
+          acCode: 0, // Special code for summary row
+          acName: 'TOTAL',
+          qcPending: qcUser.qc_pending,
+          qcCompleted: qcUser.qc_completed,
+          qcTotal: qcUser.qc_total,
+          rowspan: 0,
+          isFirstRow: false,
+          isSummaryRow: true // Mark as summary row
         });
       }
     });
@@ -241,8 +260,10 @@ export default function AssignedACPage() {
           { id: 1, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', qcPending: 25, qcCompleted: 75, qcTotal: 100, rowspan: 3, isFirstRow: true },
           { id: 2, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', qcPending: 15, qcCompleted: 35, qcTotal: 50, rowspan: 0, isFirstRow: false },
           { id: 3, qcId: 109, qcUserName: 'Kundan', acCode: 1, acName: 'Valmiki Nagar', qcPending: 10, qcCompleted: 40, qcTotal: 50, rowspan: 0, isFirstRow: false },
-          { id: 4, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', qcPending: 30, qcCompleted: 70, qcTotal: 100, rowspan: 2, isFirstRow: true },
-          { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', qcPending: 20, qcCompleted: 30, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 4, qcId: 109, qcUserName: 'Kundan', acCode: 0, acName: 'TOTAL', qcPending: 50, qcCompleted: 150, qcTotal: 200, rowspan: 0, isFirstRow: false, isSummaryRow: true },
+          { id: 5, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', qcPending: 30, qcCompleted: 70, qcTotal: 100, rowspan: 2, isFirstRow: true },
+          { id: 6, qcId: 120, qcUserName: 'Supriya', acCode: 132, acName: 'Warisnagar', qcPending: 20, qcCompleted: 30, qcTotal: 50, rowspan: 0, isFirstRow: false },
+          { id: 7, qcId: 120, qcUserName: 'Supriya', acCode: 0, acName: 'TOTAL', qcPending: 50, qcCompleted: 100, qcTotal: 150, rowspan: 0, isFirstRow: false, isSummaryRow: true },
         ];
         setAssignedACData(fallbackData);
         setTotalCount(fallbackData.length);
@@ -260,6 +281,9 @@ export default function AssignedACPage() {
         {
           qc_id: 109,
           qc_user_name: 'Kundan',
+          qc_total: 200,
+          qc_pending: 50,
+          qc_completed: 150,
           assignments: [
             { ac_code: 1, ac_name: 'Valmiki Nagar', qc_pending: 25, qc_completed: 75, qc_total: 100 },
             { ac_code: 1, ac_name: 'Valmiki Nagar', qc_pending: 15, qc_completed: 35, qc_total: 50 },
@@ -269,6 +293,9 @@ export default function AssignedACPage() {
         {
           qc_id: 120,
           qc_user_name: 'Supriya',
+          qc_total: 150,
+          qc_pending: 50,
+          qc_completed: 100,
           assignments: [
             { ac_code: 132, ac_name: 'Warisnagar', qc_pending: 30, qc_completed: 70, qc_total: 100 },
             { ac_code: 132, ac_name: 'Warisnagar', qc_pending: 20, qc_completed: 30, qc_total: 50 }
@@ -318,9 +345,9 @@ export default function AssignedACPage() {
         queryParams.append('ac_code', selectedACCode);
       }
       
-      // Set a large page size to get all data
+      // Set a large page size to get all data (within API limits)
       queryParams.append('page', '1');
-      queryParams.append('pageSize', '10000');
+      queryParams.append('pageSize', '1000');
       
       const queryString = queryParams.toString();
       const endpoint = `/capi/qc-user-assignments${queryString ? `?${queryString}` : ''}`;
@@ -333,17 +360,19 @@ export default function AssignedACPage() {
       if (data.success && data.data && Array.isArray(data.data)) {
         const transformedData = transformAPIData(data.data);
         
-        // Convert to CSV
+        // Convert to CSV (exclude summary rows)
         const csvHeaders = ['QC ID', 'QC User Name', 'AC Code', 'AC Name', 'QC Total', 'QC Completed', 'QC Pending'];
-        const csvRows = transformedData.map(item => [
-          item.qcId,
-          item.qcUserName,
-          item.acCode,
-          item.acName,
-          new Intl.NumberFormat('en-IN').format(item.qcTotal),
-          new Intl.NumberFormat('en-IN').format(item.qcCompleted),
-          new Intl.NumberFormat('en-IN').format(item.qcPending)
-        ]);
+        const csvRows = transformedData
+          .filter(item => !item.isSummaryRow) // Exclude summary rows from CSV
+          .map(item => [
+            item.qcId,
+            item.qcUserName,
+            item.acCode,
+            item.acName,
+            new Intl.NumberFormat('en-IN').format(item.qcTotal),
+            new Intl.NumberFormat('en-IN').format(item.qcCompleted),
+            new Intl.NumberFormat('en-IN').format(item.qcPending)
+          ]);
         
         // Create CSV content
         const csvContent = [
@@ -538,8 +567,15 @@ export default function AssignedACPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.map((data) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        {data.isFirstRow && (
+                      <tr 
+                        key={data.id} 
+                        className={`${
+                          data.isSummaryRow 
+                            ? 'bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-700' 
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        {data.isFirstRow && !data.isSummaryRow && (
                           <td 
                             rowSpan={data.rowspan || 1} 
                             className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center"
@@ -547,7 +583,7 @@ export default function AssignedACPage() {
                             {data.qcId}
                           </td>
                         )}
-                        {data.isFirstRow && (
+                        {data.isFirstRow && !data.isSummaryRow && (
                           <td 
                             rowSpan={data.rowspan || 1} 
                             className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium"
@@ -555,15 +591,49 @@ export default function AssignedACPage() {
                             {data.qcUserName}
                           </td>
                         )}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                        {/* {data.isSummaryRow && (
+                          <>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-800 dark:text-blue-200 text-center font-bold">
+                              {data.qcId}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-800 dark:text-blue-200 font-bold">
+                              {data.qcUserName}
+                            </td>
+                          </>
+                        )} */}
+                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
+                          data.isSummaryRow 
+                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                            : 'text-gray-900'
+                        }`}>
+                          {data.isSummaryRow ? '-' : data.acCode}
+                        </td>
+                        <td className={`px-4 py-4 whitespace-nowrap text-sm ${
+                          data.isSummaryRow 
+                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                            : 'text-gray-900'
+                        }`}>
+                          {data.acName}
+                        </td>
+                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
+                          data.isSummaryRow 
+                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                            : 'text-gray-900'
+                        }`}>
                           <FormattedNumber value={data.qcTotal} locale="en-IN" />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
+                          data.isSummaryRow 
+                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                            : 'text-gray-900'
+                        }`}>
                           <FormattedNumber value={data.qcCompleted} locale="en-IN" />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
+                          data.isSummaryRow 
+                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                            : 'text-gray-900'
+                        }`}>
                           <FormattedNumber value={data.qcPending} locale="en-IN" />
                         </td>
                       </tr>
