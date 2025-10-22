@@ -364,17 +364,17 @@ export default function ACWiseReportPage() {
                 >
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">SR.No.</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Agency Name</th>
                       {/* <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th> */}
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Accepted</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Rejected</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -387,7 +387,6 @@ export default function ACWiseReportPage() {
                           {getAgencyBadge(data.agencyName)}
                         </td>
                         {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                           <FormattedNumber value={data.alloted} locale="en-IN" />
                         </td>
@@ -403,6 +402,7 @@ export default function ACWiseReportPage() {
                         <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">
                           <FormattedNumber value={data.underQc} locale="en-IN" />
                         </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
                       </tr>
                     ))}
                   </tbody>
