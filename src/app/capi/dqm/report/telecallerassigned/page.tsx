@@ -426,7 +426,7 @@ export default function AssignedACPage() {
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
             <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              Assigned AC Interviewer Telecaller
+              Assigned AC - Telecaller
             </Heading>
           </div>
           <div className="flex-1"></div>
@@ -516,30 +516,30 @@ export default function AssignedACPage() {
         </Card>
 
         {/* Assigned AC Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
+        <Card className="">
+          <div className="flex justify-between items-center mb-6">
               <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Assigned AC Interviewer Telecaller
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Assigned AC - Telecaller
                 </Heading>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={downloadAllData}
-                    size="sm"
-                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
-                    disabled={loading}
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Download</span>
-                  </Button>
-                </div>
               </div>
+            <div className="flex items-center">
+              <Button
+                variant="primary"
+                onClick={downloadAllData}
+                className="flex items-center"
+                disabled={loading}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
             </div>
-            <div className="p-6">
+          </div>
+
+          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+            Total <strong>{totalCount}</strong> QC Users.
+          </div>
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
@@ -554,15 +554,15 @@ export default function AssignedACPage() {
                   hover
                   className="w-full border-collapse"
                 >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                  <thead className="sticky-header bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Total</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Total</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -642,11 +642,12 @@ export default function AssignedACPage() {
                 </Table>
               </div>
 
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
+              {/* Table Footer with Pagination */}
+              <div className="flex justify-between items-center mt-4 px-4 pb-4">
                 <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
+                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
                 </div>
+                {totalPages > 1 && (
                 <div>
                   <PaginationStandard
                     currentPage={currentPage}
@@ -656,12 +657,11 @@ export default function AssignedACPage() {
                     onPageChange={setCurrentPage}
                   />
                 </div>
+                )}
               </div>
               </React.Fragment>
               )}
-            </div>
           </Card>
-        </div>
       </Container>
     </div>
   );
