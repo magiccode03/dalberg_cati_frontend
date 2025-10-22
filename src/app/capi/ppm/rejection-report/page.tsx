@@ -13,7 +13,8 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
-import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
+import Audio from '@/components/ui/Audio';
+import apiClient from '@/lib/api-client';
 
 interface RejectionData {
   srNo: number;
@@ -57,9 +58,10 @@ export default function RejectionReportPage() {
   const [appliedFilters, setAppliedFilters] = useState(filters); // Track applied filters separately
 
   // Audio modal state
-  const [audioModalOpen, setAudioModalOpen] = useState(false);
-  const [selectedServerId, setSelectedServerId] = useState<string>('');
-  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<any>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   
   // Memoize the API parameters based on applied filters (not current filters)
   const apiParams = React.useMemo(() => {
@@ -285,16 +287,49 @@ export default function RejectionReportPage() {
     setCurrentPage(1);
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
-    setAudioModalOpen(true);
+  const fetchAudioData = async (serverId: string, audioFileName: string) => {
+    try {
+      setAudioLoading(true);
+      setAudioError(null);
+      
+      console.log('🔍 Fetching audio data for server_id:', serverId, 'audioFileName:', audioFileName);
+      
+      // Use the actual audio file name from the interview data, or fallback to 'audio1'
+      const imageParam = audioFileName && audioFileName.trim() !== '' ? audioFileName : 'audio1';
+      
+      const response = await apiClient.get(`/overview/interview-log/audio-data?server_id=${serverId}&image=${imageParam}`);
+      console.log('📊 Audio Data API Response:', response);
+      
+      if (response.data.success && response.data.data) {
+        const audioData = response.data.data;
+        const processedAudioData = {
+          ...audioData,
+          audio: audioData.audio1 && audioData.audio1.trim() !== '' 
+            ? `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`
+            : `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=audio1`
+        };
+        
+        setCurrentAudio(processedAudioData);
+        setShowAudioModal(true);
+      } else {
+        setAudioError('Failed to load audio data');
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching audio data:', err);
+      setAudioError(`Failed to load audio data: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setAudioLoading(false);
+    }
   };
 
-  const handleCloseAudioModal = () => {
-    setAudioModalOpen(false);
-    setSelectedServerId('');
-    setSelectedAudioFile('');
+  const handlePlayAudio = (serverId: string, audioFile: string) => {
+    fetchAudioData(serverId, audioFile);
+  };
+
+  const handleCloseModal = () => {
+    setShowAudioModal(false);
+    setCurrentAudio(null);
+    setAudioError(null);
   };
 
   const getFailReasonBadge = (reason: string) => {
@@ -740,13 +775,134 @@ export default function RejectionReportPage() {
           </div>
         </Card>
 
-        {/* Audio Player Modal */}
-        <AudioPlayerModal
-          isOpen={audioModalOpen}
-          onClose={handleCloseAudioModal}
-          serverId={selectedServerId}
-          audioFileName={selectedAudioFile}
-        />
+        {/* Audio Modal */}
+        {showAudioModal && currentAudio && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  <Volume2 className="h-6 w-6 text-blue-600" />
+                  <Heading level={3} className="text-lg font-semibold">
+                    Interview Details
+                  </Heading>
+                </div>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-4">
+                {/* Interview Details */}
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.ac_name}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">PS Code</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.ps_code}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.server_id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                        {new Date(currentAudio.interview_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Device Id</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs">{currentAudio.device_id}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer Id</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.interviewer_id || '-'}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.status_label || 'Available'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Audio Player */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                  <Heading level={4} size="lg" weight="medium" className="mb-4">Listen Audio:</Heading>
+                  
+                  {audioLoading && (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <Text className="ml-2" color="secondary">Loading audio...</Text>
+                    </div>
+                  )}
+
+                  {audioError && (
+                    <div className="flex flex-col items-center py-8 bg-red-50 dark:bg-red-900/20 rounded-lg mb-4">
+                      <div className="text-red-500 mb-2">⚠️</div>
+                      <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
+                      <Text color="error" size="sm" align="center" className="mb-4">{audioError}</Text>
+                      <button
+                        onClick={() => fetchAudioData(currentAudio.server_id, currentAudio.audio1)}
+                        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+
+                  {!audioLoading && !audioError && (
+                    <Audio
+                      src={currentAudio.audio}
+                      onPlay={() => console.log('Audio started playing')}
+                      onPause={() => console.log('Audio paused')}
+                      onTimeUpdate={(currentTime, duration) => {
+                        console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                      }}
+                      onEnded={() => {
+                        console.log('Audio playback ended');
+                      }}
+                      onError={(error) => {
+                        console.error('Audio error:', error);
+                      }}
+                      className="border border-gray-200 dark:border-gray-600"
+                    />
+                  )}
+                </div>
+
+                {/* Download Link */}
+                <div className="text-center">
+                  <a
+                    href={currentAudio.audio}
+                    download
+                    className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                  >
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Download Audio
+                  </a>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  onClick={handleCloseModal}
+                  variant="outline"
+                  className="px-4 py-2"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Container>
   );
 }

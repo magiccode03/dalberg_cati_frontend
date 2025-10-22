@@ -12,6 +12,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
+import Audio from '@/components/ui/Audio';
 
 // Interfaces
 interface SearchFilters {
@@ -111,8 +112,6 @@ const TelecallerDailyCallDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [useIframe, setUseIframe] = useState(false);
 
   // Options for dropdowns
   const reportDaysOptions = [
@@ -238,21 +237,11 @@ const TelecallerDailyCallDetailPage = () => {
   const handlePlayAudio = (audioUrl: string) => {
     setCurrentAudio(audioUrl);
     setShowAudioModal(true);
-    setAudioError(false);
-    setUseIframe(false);
   };
 
   const handleCloseAudioModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
-    setAudioError(false);
-    setUseIframe(false);
-  };
-
-  const handleAudioError = () => {
-    console.error('Audio playback error, switching to iframe');
-    setAudioError(true);
-    setUseIframe(true);
   };
 
   const formatDuration = (seconds: number | null) => {
@@ -678,78 +667,51 @@ const TelecallerDailyCallDetailPage = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
-              {!audioError && !useIframe ? (
-                <div className="space-y-4">
-                  <audio
-                    controls
-                    className="w-full"
-                    autoPlay
-                    preload="metadata"
-                    controlsList="nodownload"
-                    crossOrigin="anonymous"
-                    onError={handleAudioError}
-                  >
-                    <source src={currentAudio} type="audio/mpeg" />
-                    <source src={currentAudio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
+            <div className="p-6 space-y-4">
+              {/* Audio Player */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                <Audio
+                  src={currentAudio}
+                  autoPlay={true}
+                  onPlay={() => console.log('Audio started playing')}
+                  onPause={() => console.log('Audio paused')}
+                  onTimeUpdate={(currentTime, duration) => {
+                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                  }}
+                  onEnded={() => {
+                    console.log('Audio playback ended');
+                    // Optionally auto-close modal after a delay
+                    setTimeout(() => {
+                      handleCloseAudioModal();
+                    }, 2000);
+                  }}
+                  onError={(error) => {
+                    console.error('Audio error:', error);
+                  }}
+                  className="border border-gray-200 dark:border-gray-600"
+                />
+              </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-external-link mr-2"></i>
-                      Open in New Tab
-                    </a>
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {audioError && (
-                    <Alert type="warning">
-                      <strong>Playback Issue:</strong> The audio couldn't play directly. Trying alternative method...
-                    </Alert>
-                  )}
-
-                  <iframe
-                    src={currentAudio}
-                    className="w-full h-64 border-2 border-gray-300 dark:border-gray-600 rounded"
-                    title="Audio Player"
-                  />
-
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-external-link mr-2"></i>
-                      Open in New Tab
-                    </a>
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
-                  </div>
-                </div>
-              )}
+              {/* Download and External Links */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <a
+                  href={currentAudio}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <i className="fa fa-external-link mr-2"></i>
+                  Open in New Tab
+                </a>
+                <a
+                  href={currentAudio}
+                  download
+                  className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <i className="fa fa-download mr-2"></i>
+                  Download Audio
+                </a>
+              </div>
 
               {/* Audio URL Info */}
               <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-xs break-all">

@@ -8,8 +8,9 @@ import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Play, X, Volume2 } from 'lucide-react';
+import { Search, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
+import Audio from '@/components/ui/Audio';
 
 interface InterviewData {
   server_id: number;
@@ -52,8 +53,6 @@ export default function CAPIInterviewAudioPage() {
   const [interviewDateOptions, setInterviewDateOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<InterviewData | null>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [useIframe, setUseIframe] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -183,26 +182,11 @@ export default function CAPIInterviewAudioPage() {
     
     setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
-    setAudioError(false);
-    setUseIframe(false);
   };
 
   const handleCloseModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
-    setAudioError(false);
-    setUseIframe(false);
-  };
-
-  const handleAudioError = () => {
-    console.error('Audio playback failed, switching to iframe mode');
-    setAudioError(true);
-    setUseIframe(true);
-  };
-
-  const handleIframeError = () => {
-    console.error('Iframe audio playback also failed');
-    setAudioError(true);
   };
 
   const handlePageChange = (page: number) => {
@@ -414,7 +398,7 @@ export default function CAPIInterviewAudioPage() {
                         className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center justify-center mx-auto"
                         title="Play Audio"
                       >
-                        <Play className="h-4 w-4" />
+                        <Volume2 className="h-4 w-4" />
                       </Button>
                     </td>
                   </tr>
@@ -494,109 +478,37 @@ export default function CAPIInterviewAudioPage() {
 
               {/* Audio Player */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <div className="mb-3 text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
-                  </p>
-                  {audioError && !useIframe && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      Audio player had an issue. Try the alternative options below.
-                    </p>
-                  )}
-                </div>
+                <Audio
+                  src={(currentAudio as any).audio}
+                  onPlay={() => console.log('Audio started playing')}
+                  onPause={() => console.log('Audio paused')}
+                  onTimeUpdate={(currentTime, duration) => {
+                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                  }}
+                  onEnded={() => {
+                    console.log('Audio playback ended');
+                    // Optionally auto-close modal after a delay
+                    setTimeout(() => {
+                      handleCloseModal();
+                    }, 2000);
+                  }}
+                  onError={(error) => {
+                    console.error('Audio error:', error);
+                  }}
+                  className="border border-gray-200 dark:border-gray-600"
+                />
+              </div>
 
-                {!useIframe ? (
-                  (currentAudio as any).audio ? (
-                    <audio
-                      controls
-                      className="w-full"
-                      controlsList="nodownload"
-                      preload="metadata"
-                      onError={handleAudioError}
-                      onLoadStart={() => console.log('Audio loading started')}
-                      onCanPlay={() => console.log('Audio can play')}
-                    >
-                      <source src={(currentAudio as any).audio} type="audio/mpeg" />
-                      <source src={(currentAudio as any).audio} type="audio/mp3" />
-                      Your browser does not support the audio element.
-                    </audio>
-                  ) : (
-                    <div className="text-center py-4 text-gray-500">
-                      No audio file available for this interview.
-                    </div>
-                  )
-        ) : (
-          (currentAudio as any).audio ? (
-            <div className="w-full">
-              <iframe
-                src={(currentAudio as any).audio}
-                className="w-full h-16 border-0 rounded"
-                title="Audio Player"
-                allow="autoplay"
-                onError={handleIframeError}
-                onLoad={() => {
-                  // Check if iframe content is just text (not audio player)
-                  setTimeout(() => {
-                    try {
-                      const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
-                      if (iframe && iframe.contentDocument) {
-                        const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                        if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                          console.warn('Iframe returned text instead of audio player');
-                          setAudioError(true);
-                        }
-                      }
-                    } catch (e) {
-                      // Cross-origin restrictions, can't access iframe content
-                      console.log('Cannot access iframe content due to CORS');
-                    }
-                  }, 1000);
-                }}
-              />
-            </div>
-          ) : (
-            <div className="text-center py-4 text-gray-500">
-              No audio file available for this interview.
-            </div>
-          )
-        )}
-
-                {/* Error Message for Failed Audio */}
-                {audioError && (
-                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
-                    <div className="text-center">
-                      <div className="text-red-600 dark:text-red-400 mb-2">
-                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p className="font-semibold">Audio Playback Failed</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Alternative Options */}
-                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
-                  {!useIframe && audioError && (
-                    <button
-                      onClick={() => setUseIframe(true)}
-                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Try Alternative Player
-                    </button>
-                  )}
-                  <a
-                    href={(currentAudio as any).audio}
-                    download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
-                    style={{ display: (currentAudio as any).audio ? 'inline' : 'none' }}
-                  >
-                    Download audio
-                  </a>
-                </div>
+              {/* Download Link */}
+              <div className="text-center">
+                <a
+                  href={(currentAudio as any).audio}
+                  download
+                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <Volume2 className="w-4 h-4 mr-2" />
+                  Download Audio
+                </a>
               </div>
             </div>
 

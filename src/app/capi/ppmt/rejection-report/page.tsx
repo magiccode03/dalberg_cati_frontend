@@ -13,7 +13,28 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
-import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
+import Audio from '@/components/ui/Audio';
+
+// Simple function to construct full audio URL from filename
+const getAudioUrl = (filename: string): string => {
+  if (!filename) return filename;
+  
+  // If it's already a full URL, return as-is
+  if (filename.startsWith('http')) {
+    return filename;
+  }
+  
+  // Construct full URL from filename
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+  const fullUrl = `${apiBaseUrl}/uploads/${filename}`;
+  
+  console.log('Audio URL construction:');
+  console.log('- Original:', filename);
+  console.log('- API Base:', apiBaseUrl);
+  console.log('- Constructed:', fullUrl);
+  
+  return fullUrl;
+};
 
 interface RejectionData {
   srNo: number;
@@ -58,8 +79,8 @@ export default function RejectionReportPage() {
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
-  const [selectedServerId, setSelectedServerId] = useState<string>('');
-  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
+  const [selectedRejection, setSelectedRejection] = useState<RejectionData | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
   
   // Memoize the API parameters based on applied filters (not current filters)
   const apiParams = React.useMemo(() => {
@@ -285,16 +306,16 @@ export default function RejectionReportPage() {
     setCurrentPage(1);
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
+  const handlePlayAudio = (rejection: RejectionData) => {
+    setSelectedRejection(rejection);
     setAudioModalOpen(true);
+    setAudioError(null);
   };
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
-    setSelectedServerId('');
-    setSelectedAudioFile('');
+    setSelectedRejection(null);
+    setAudioError(null);
   };
 
   const getFailReasonBadge = (reason: string) => {
@@ -707,7 +728,7 @@ export default function RejectionReportPage() {
                       <button 
                         className="w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white"
                         title="Play Audio"
-                        onClick={() => handlePlayAudio(row.serverId, row.audio1)}
+                        onClick={() => handlePlayAudio(row)}
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>
@@ -741,12 +762,129 @@ export default function RejectionReportPage() {
         </Card>
 
         {/* Audio Player Modal */}
-        <AudioPlayerModal
-          isOpen={audioModalOpen}
-          onClose={handleCloseAudioModal}
-          serverId={selectedServerId}
-          audioFileName={selectedAudioFile}
-        />
+        {audioModalOpen && selectedRejection && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  <Volume2 className="h-6 w-6 text-blue-600" />
+                  <Heading level={3} className="text-lg font-semibold">
+                    Interview Details
+                  </Heading>
+                </div>
+                <button
+                  onClick={handleCloseAudioModal}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-4">
+                {/* Interview Details */}
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRejection.acName}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">PS Code</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRejection.psCode}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRejection.serverId}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRejection.interviewDate}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer Id</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRejection.interviewerId}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedRejection.failReason}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Audio Player */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                  <Heading level={4} size="lg" weight="medium" className="mb-4">Listen Audio:</Heading>
+                  
+                  {audioError && (
+                    <div className="flex flex-col items-center py-8 bg-red-50 dark:bg-red-900/20 rounded-lg mb-4">
+                      <div className="text-red-500 mb-2">⚠️</div>
+                      <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
+                      <Text color="error" size="sm" align="center" className="mb-4">{audioError}</Text>
+                      <button
+                        onClick={() => setAudioError(null)}
+                        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+
+                  {!audioError && selectedRejection.audio1 && (
+                    <div>
+                      <Audio
+                        src={getAudioUrl(selectedRejection.audio1)}
+                        onError={(error) => {
+                          console.error('Audio error:', error);
+                          console.error('Original filename:', selectedRejection.audio1);
+                          console.error('Constructed URL:', getAudioUrl(selectedRejection.audio1));
+                          setAudioError(`Audio failed to load: ${error}`);
+                        }}
+                        className="border border-gray-200 dark:border-gray-600"
+                      />
+                    </div>
+                  )}
+
+                  {!audioError && !selectedRejection.audio1 && (
+                    <div className="flex flex-col items-center py-8 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="text-yellow-500 mb-2">⚠️</div>
+                      <Text color="warning" weight="medium" className="mb-2">No Audio Available</Text>
+                      <Text color="warning" size="sm" align="center">
+                        This interview does not have an audio file associated with it.
+                      </Text>
+                    </div>
+                  )}
+                </div>
+
+                {/* Download Link */}
+                {selectedRejection.audio1 && (
+                  <div className="text-center">
+                    <a
+                      href={getAudioUrl(selectedRejection.audio1)}
+                      download
+                      className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                    >
+                      <Volume2 className="w-4 h-4 mr-2" />
+                      Download Audio
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  onClick={handleCloseAudioModal}
+                  variant="outline"
+                  className="px-4 py-2"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Container>
   );
 }

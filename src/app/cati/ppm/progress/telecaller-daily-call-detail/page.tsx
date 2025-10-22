@@ -13,6 +13,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle, Play, Volume2 } from 'lucide-react';
+import Audio from '@/components/ui/Audio';
 
 // Interfaces
 interface SearchFilters {
@@ -151,7 +152,6 @@ const TelecallerDailyCallDetailPage = () => {
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
   const [audioError, setAudioError] = useState(false);
-  const [useIframe, setUseIframe] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof CallDetailData | null;
     direction: 'asc' | 'desc';
@@ -481,20 +481,12 @@ const TelecallerDailyCallDetailPage = () => {
     setCurrentAudio(audioUrl);
     setShowAudioModal(true);
     setAudioError(false);
-    setUseIframe(false);
   };
 
   const handleCloseAudioModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
     setAudioError(false);
-    setUseIframe(false);
-  };
-
-  const handleAudioError = () => {
-    console.error('Audio playback error, switching to iframe');
-    setAudioError(true);
-    setUseIframe(true);
   };
 
   const formatDuration = (seconds: number | null) => {
@@ -1152,60 +1144,62 @@ const TelecallerDailyCallDetailPage = () => {
 
             {/* Modal Body */}
             <div className="p-6">
-              {!audioError && !useIframe ? (
-                <div className="space-y-4">
-                  <audio
-                    controls
-                    className="w-full"
-                    autoPlay
-                    preload="metadata"
-                    controlsList="nodownload"
-                    crossOrigin="anonymous"
-                    onError={handleAudioError}
-                  >
-                    <source src={currentAudio} type="audio/mpeg" />
-                    <source src={currentAudio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
-
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
+              <div className="space-y-4">
+                {/* Audio Player */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                  <div className="mb-4 text-center">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Click play to start the audio
+                    </p>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {audioError && (
-                    <Alert type="warning">
-                      <strong>Playback Issue:</strong> The audio couldn't play directly. Trying alternative method...
-                    </Alert>
-                  )}
 
-                  <iframe
+                  <Audio
                     src={currentAudio}
-                    className="w-full h-64 border-2 border-gray-300 dark:border-gray-600 rounded"
-                    title="Audio Player"
+                    onPlay={() => console.log('Audio started playing')}
+                    onPause={() => console.log('Audio paused')}
+                    onTimeUpdate={(currentTime, duration) => {
+                      console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                    }}
+                    onEnded={() => {
+                      console.log('Audio playback ended');
+                    }}
+                    onError={(error) => {
+                      console.error('Audio error:', error);
+                      setAudioError(true);
+                    }}
+                    className="border border-gray-200 dark:border-gray-600"
                   />
 
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
-                  </div>
+                  {/* Error Message for Failed Audio */}
+                  {audioError && (
+                    <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                      <div className="text-center">
+                        <div className="text-red-600 dark:text-red-400 mb-2">
+                          <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p className="font-semibold">Audio Playback Failed</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            The audio URL is not serving playable content.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
 
+                {/* Download Link */}
+                <div className="text-center">
+                  <a
+                    href={currentAudio}
+                    download
+                    className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                  >
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Download Audio
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div>

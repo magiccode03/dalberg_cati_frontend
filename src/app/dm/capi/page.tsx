@@ -35,12 +35,6 @@ const CapiDataPage = () => {
       yesterdayUrl: '/bh/poll202504/pmt/download/instance?extra=yesterday'
     },
     {
-      id: 3,
-      action: 'Download All Instance(Client Data)',
-      overallUrl: '/bh/poll202504/pmt/download/instanceall?type=all_instance',
-      yesterdayUrl: null
-    },
-    {
       id: 4,
       action: 'Download Valid Instance',
       overallUrl: '/bh/poll202504/pmt/download/instanceall?type=valid',
@@ -104,7 +98,7 @@ const CapiDataPage = () => {
                 <tr>
                   <th className="text-left font-semibold text-gray-800 dark:text-gray-200">Action</th>
                   <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Overall</th>
-                  <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Yesterday (14-10-2025)</th>
+                  <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Yesterday (15-10-2025)</th>
                 </tr>
               </thead>
               <tbody>
