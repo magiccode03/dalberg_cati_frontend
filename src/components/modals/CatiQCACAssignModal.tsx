@@ -80,7 +80,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch(`${apiUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`, {
+      const response = await fetch(`${apiUrl}/api/cati/qc/teleform-user/${teleformUserId}/statistics`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -188,14 +188,14 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         throw new Error('API URL not configured');
       }
 
-      const response = await fetch(`${apiUrl}/api/cati/ac-details/unassign-data`, {
+      const response = await fetch(`${apiUrl}/api/cati/qc/unassign-data`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          teleform_user_id: teleformUserId,
+          qc_teleform_user_id: teleformUserId,
           ac_code: acToUnassign.ac_code,
         }),
       });
@@ -274,8 +274,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     onClose();
   };
 
-  // Get assigned ACs from stats
-  const assignedACs = userStats?.ac_detail || [];
+  // Get assigned ACs from stats (updated to match new API field)
+  const assignedACs = userStats?.ac_wise_statistics || [];
 
   return (
     <Modal
