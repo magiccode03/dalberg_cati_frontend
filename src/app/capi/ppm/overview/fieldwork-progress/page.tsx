@@ -47,6 +47,10 @@ export default function FieldworkProgressPage() {
           { details: 'ACs completed', measure: result.summary.acs_completed },
           { details: 'ACs not completed', measure: result.summary.acs_in_progress },
           { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate }
+
+          // { details: 'ACs completed', measure: result.summary.acs_completed, info: 'Achieved Sample >= Target Sample' },
+          // { details: 'ACs not completed', measure: result.summary.acs_in_progress, info: 'Achieved Sample > 10 and Achieved Sample < Target Sample' },
+          // { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate, info: 'Achieved Sample < 10' }
         ];
         setProgressSummaryData(summaryData);
 
