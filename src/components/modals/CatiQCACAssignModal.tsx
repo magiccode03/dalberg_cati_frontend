@@ -80,7 +80,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch(`${apiUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`, {
+      const response = await fetch(`${apiUrl}/api/cati/qc/teleform-user/${teleformUserId}/statistics`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -154,7 +154,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
   const handleACSelect = (ac: ACData) => {
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
-    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+    // Check if AC is assigned AND has pending work (total_pending > 0)
+    const assignedAC = userStats?.ac_wise_statistics?.find((assigned: any) => assigned.ac_code === ac.ac_code);
+    const isAssigned = assignedAC && assignedAC.total_pending > 0;
     
     // Don't allow deselecting already assigned ACs
     if (isAssigned) return;
@@ -188,14 +190,14 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         throw new Error('API URL not configured');
       }
 
-      const response = await fetch(`${apiUrl}/api/cati/ac-details/unassign-data`, {
+      const response = await fetch(`${apiUrl}/api/cati/qc/unassign-data`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          teleform_user_id: teleformUserId,
+          qc_teleform_user_id: teleformUserId,
           ac_code: acToUnassign.ac_code,
         }),
       });
@@ -274,8 +276,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     onClose();
   };
 
-  // Get assigned ACs from stats
-  const assignedACs = userStats?.ac_detail || [];
+  // Get assigned ACs from stats (updated to match new API field)
+  // Filter out ACs with total_pending=0 as they shouldn't be shown as assigned
+  const assignedACs = (userStats?.ac_wise_statistics || []).filter((ac: any) => ac.total_pending > 0);
 
   return (
     <Modal
@@ -397,7 +400,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               {acList.length > 0 ? (
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {acList.map((ac) => {
-                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+                    // Check if AC is assigned AND has pending work (total_pending > 0)
+                    const assignedAC = userStats?.ac_wise_statistics?.find((assigned: any) => assigned.ac_code === ac.ac_code);
+                    const isAssigned = assignedAC && assignedAC.total_pending > 0;
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
                     
                     return (
@@ -441,7 +446,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                             </span>
                           )}
                           <div className="text-right">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Not Assigned</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Available</div>
                             <div className="text-sm font-semibold text-gray-900 dark:text-white">
                               {ac.total_not_assigned}
                             </div>
