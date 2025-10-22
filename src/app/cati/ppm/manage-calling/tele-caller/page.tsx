@@ -112,7 +112,7 @@ const TeleUserInfoPage: React.FC = () => {
 
   const permissionOptions = useMemo(() => [
     { value: '', label: 'All Users' },
-    { value: 'fill_form', label: 'Can Fill Form (Telecallers)' },
+    { value: 'fill_form', label: 'Telecallers' },
     { value: 'qc', label: 'QC Users' },
   ], []);
 

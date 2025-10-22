@@ -257,7 +257,7 @@ export default function CreateTeleCallerPage() {
                         onCheckedChange={(checked) => setValue('fill_form', checked === true)}
                       />
                       <label htmlFor="fill_form" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Can Fill Form
+                        Telecaller
                       </label>
                     </div>
                     <div className="flex items-center space-x-2">
