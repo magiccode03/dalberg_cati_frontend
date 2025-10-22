@@ -34,6 +34,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   onSuccess,
 }) => {
   const [acList, setAcList] = useState<ACData[]>([]);
+  const [allAcData, setAllAcData] = useState<ACData[]>([]); // Store all ACs for client-side filtering
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAcs, setSelectedAcs] = useState<ACData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,28 +53,28 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setAcList([]);
-      fetchACDetails(1, '');
+      setAllAcData([]);
+      fetchACDetails();
       fetchUserStatistics();
     }
   }, [isOpen]);
 
-  // Handle search with debounce
+  // Handle search with client-side filtering (no API calls)
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      setAcList([]);
-      fetchACDetails(1, searchTerm);
-    }, 500); // 500ms debounce
+      filterACs(searchTerm);
+    }, 300); // 300ms debounce for smoother UX
 
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchTerm]);
+  }, [searchTerm, allAcData]);
 
   const fetchUserStatistics = async () => {
     try {
@@ -98,8 +99,49 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     }
   };
 
+  // Client-side filtering function (no API calls)
+  const filterACs = (search: string) => {
+    if (!allAcData.length) return;
 
-  const fetchACDetails = async (page: number = 1, search: string = '') => {
+    let filteredData = allAcData;
+    
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      filteredData = allAcData.filter((ac: ACData) => {
+        // Try to determine if it's an AC code (number) or name
+        if (!isNaN(Number(search))) {
+          return ac.ac_code.toString().includes(search);
+        } else {
+          return ac.ac_name.toLowerCase().includes(searchLower);
+        }
+      });
+    }
+    
+    // Sort ACs: total_not_assigned > 0 first, then by total_not_assigned descending
+    filteredData.sort((a: any, b: any) => {
+      // First priority: ACs with data available for assignment
+      const aHasData = a.total_not_assigned > 0;
+      const bHasData = b.total_not_assigned > 0;
+      
+      if (aHasData && !bHasData) return -1; // a comes first
+      if (!aHasData && bHasData) return 1;  // b comes first
+      
+      // If both have same data availability status, sort by total_not_assigned descending
+      return b.total_not_assigned - a.total_not_assigned;
+    });
+    
+    setAcList(filteredData);
+    setTotalItems(filteredData.length);
+    
+    if (filteredData.length === 0) {
+      setError(search ? 'No Assembly Constituencies found matching your search' : 'No Assembly Constituencies found');
+    } else {
+      setError(null);
+    }
+  };
+
+
+  const fetchACDetails = async () => {
     setLoading(true);
     setError(null);
 
@@ -107,7 +149,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch(`${apiUrl}/api/cati/qc/ac-list`, {
+      const response = await fetch(`${apiUrl}/api/cati/qc/ac-list?limit=300`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -123,22 +165,25 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       console.log('QC AC List API Response:', data);
 
       if (data.success) {
-        const acData = Array.isArray(data.data) ? data.data : [];
+        // Transform API response to match our interface
+        const acData = Array.isArray(data.data) ? data.data.map((item: any) => ({
+          ac_code: item.ac_code,
+          ac_name: item.ac_name,
+          total_interviews: item.total_interviews || 0,
+          total_assigned: item.total_assigned || 0,
+          total_not_assigned: item.total_not_assigned || 0,
+          total_pass: item.total_pass || 0,
+          total_fail: item.total_fail || 0,
+          total_pending: item.total_pending || 0
+        })) : [];
         
-        // Filter ACs based on search term if provided
-        let filteredData = acData;
-        if (search.trim()) {
-          const searchLower = search.toLowerCase();
-          filteredData = acData.filter((ac: ACData) => 
-            ac.ac_code.toString().includes(search) ||
-            ac.ac_name.toLowerCase().includes(searchLower)
-          );
-        }
+        // Store all AC data for client-side filtering
+        setAllAcData(acData);
         
-        setAcList(filteredData);
-        setTotalItems(filteredData.length);
+        // Initial display with no search (shows all ACs)
+        filterACs('');
         
-        if (filteredData.length === 0) {
+        if (acData.length === 0) {
           setError('No Assembly Constituencies found');
         }
       } else {
@@ -153,6 +198,24 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   };
 
   const handleACSelect = (ac: ACData) => {
+    console.log('AC Selected:', {
+      ac_code: ac.ac_code,
+      ac_name: ac.ac_name,
+      total_not_assigned: ac.total_not_assigned,
+      total_not_assigned_type: typeof ac.total_not_assigned
+    });
+    
+    // Check if AC has no data available for assignment (handle both number 0 and string "0")
+    const dataAvailable = typeof ac.total_not_assigned === 'string' ? parseInt(ac.total_not_assigned) : ac.total_not_assigned;
+    if (isNaN(dataAvailable) || dataAvailable <= 0) {
+      console.log('No data available, AC disabled', {
+        original_value: ac.total_not_assigned,
+        parsed_value: dataAvailable,
+        is_nan: isNaN(dataAvailable)
+      });
+      return; // Just return without showing popup
+    }
+    
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
     // Check if AC is assigned AND has pending work (total_pending > 0)
     const assignedAC = userStats?.ac_wise_statistics?.find((assigned: any) => assigned.ac_code === ac.ac_code);
@@ -273,6 +336,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     setSelectedAcs([]);
     setSearchTerm('');
     setError(null);
+    setAllAcData([]);
+    setAcList([]);
     onClose();
   };
 
@@ -404,16 +469,20 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                     const assignedAC = userStats?.ac_wise_statistics?.find((assigned: any) => assigned.ac_code === ac.ac_code);
                     const isAssigned = assignedAC && assignedAC.total_pending > 0;
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
+                    const dataAvailable = typeof ac.total_not_assigned === 'string' ? parseInt(ac.total_not_assigned) : ac.total_not_assigned;
+                    const hasNoData = isNaN(dataAvailable) || dataAvailable <= 0;
                     
                     return (
                     <div
                       key={ac.ac_code}
-                      className={`p-2 cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                      className={`p-2 transition-colors ${
+                        hasNoData
+                          ? 'cursor-not-allowed opacity-60 bg-gray-100 dark:bg-gray-800/50'
+                          : isSelected
+                          ? 'cursor-pointer bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                           : isAssigned
-                          ? 'bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                          ? 'cursor-pointer bg-green-50 dark:bg-green-900/10 border-l-2 border-green-400 hover:bg-green-100 dark:hover:bg-green-900/20'
+                          : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                       onClick={() => handleACSelect(ac)}
                     >
@@ -435,7 +504,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
                         {/* Right: Statistics & Status */}
                         <div className="flex items-center gap-3 flex-shrink-0">
-                          {isAssigned && (
+                          {isAssigned && !isSelected && (
                             <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full whitespace-nowrap">
                               Assigned
                             </span>

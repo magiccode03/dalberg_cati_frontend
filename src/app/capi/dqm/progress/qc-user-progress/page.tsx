@@ -285,8 +285,9 @@ export default function QCUserProgressPage() {
 
       // Create CSV headers
       const headers = [
-        'QC User Name',
+        'Sr.No.',
         'QC ID', 
+        'QC User Name',
         'Total Assigned',
         'Audio QC Completed',
         'Audio QC Pass',
@@ -297,9 +298,10 @@ export default function QCUserProgressPage() {
       // Create CSV rows
       const csvRows = [
         headers.join(','),
-        ...qcUserProgressData.map(user => [
-          `"${user.caller_name}"`,
+        ...qcUserProgressData.map((user, index) => [
+          index + 1,
           user.qc_id,
+          `"${user.caller_name}"`,
           user.audio_qc_total,
           user.audio_qc_completed,
           user.audio_qc_pass,
@@ -546,8 +548,9 @@ export default function QCUserProgressPage() {
             >
               <thead className="sticky-header bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     Total Assigned
                   </th>
@@ -568,10 +571,11 @@ export default function QCUserProgressPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {qcUserProgressData.map((user, index) => (
                   <tr key={`${user.qc_id}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.caller_name || '-'}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{index + 1}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
                       {user.qc_id}
                     </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.caller_name || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_total.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_completed.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.audio_qc_pass.toLocaleString()}</td>
