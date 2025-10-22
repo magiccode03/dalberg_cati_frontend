@@ -65,7 +65,7 @@ export default function QCUserProgressPage() {
       });
       
       const response = await Promise.race([
-        apiClient.get(`/qc-user-registration?status=${status}`),
+        apiClient.get(`/qc-user-registration?status=${status}&limit=1000`),
         timeoutPromise
       ]) as any;
       
@@ -116,12 +116,59 @@ export default function QCUserProgressPage() {
       if (filters.acCode) queryParams.append('ac_code', filters.acCode);
       if (filters.qcId) queryParams.append('qc_id', filters.qcId);
       
-      // Handle date filters
+      // Handle date filters - always use audio_qc_complete_date_from and audio_qc_complete_date_to
       if (filters.reportDays === 'custom' && filters.customDateFrom && filters.customDateTo) {
         queryParams.append('audio_qc_complete_date_from', filters.customDateFrom);
         queryParams.append('audio_qc_complete_date_to', filters.customDateTo);
       } else if (filters.reportDays && filters.reportDays !== 'custom') {
-        queryParams.append('report_days', filters.reportDays);
+        // Calculate date range based on reportDays selection
+        const today = new Date();
+        let fromDate: string;
+        let toDate: string = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        switch (filters.reportDays) {
+          case 'today':
+            fromDate = toDate;
+            break;
+          case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            fromDate = yesterday.toISOString().split('T')[0];
+            toDate = fromDate;
+            break;
+          case 'dby': // Day before yesterday
+            const dby = new Date(today);
+            dby.setDate(dby.getDate() - 2);
+            fromDate = dby.toISOString().split('T')[0];
+            toDate = fromDate;
+            break;
+          case 'l3': // Last 3 days
+            const l3 = new Date(today);
+            l3.setDate(l3.getDate() - 2);
+            fromDate = l3.toISOString().split('T')[0];
+            break;
+          case 'l7': // Last 7 days
+            const l7 = new Date(today);
+            l7.setDate(l7.getDate() - 6);
+            fromDate = l7.toISOString().split('T')[0];
+            break;
+          case 'l15': // Last 15 days
+            const l15 = new Date(today);
+            l15.setDate(l15.getDate() - 14);
+            fromDate = l15.toISOString().split('T')[0];
+            break;
+          case 'currentmonth': // Current month
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            fromDate = firstDay.toISOString().split('T')[0];
+            break;
+          default:
+            fromDate = toDate;
+        }
+        
+        queryParams.append('audio_qc_complete_date_from', fromDate);
+        queryParams.append('audio_qc_complete_date_to', toDate);
+        
+        console.log(`Date range for ${filters.reportDays}: ${fromDate} to ${toDate}`);
       }
       
       const queryString = queryParams.toString();
