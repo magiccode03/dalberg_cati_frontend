@@ -213,7 +213,7 @@ export default function ProgressReportPage() {
             { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'terminated_interviews', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'system_rejections', label: 'System rejections', width: 'w-40', align: 'center' },
-            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-80', align: 'center' },
+            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-40', align: 'center' },
             { key: 'gps_pending', label: 'GPS Pending', width: 'w-24', align: 'center' },
             { key: 'gps_fail', label: 'GPS Fail', width: 'w-20', align: 'center' },
             { key: 'passed', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
@@ -239,7 +239,7 @@ export default function ProgressReportPage() {
             { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'terminated_interviews', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'system_rejections', label: 'System rejections', width: 'w-40', align: 'center' },
-            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-80', align: 'center' },
+            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-40', align: 'center' },
             { key: 'passed', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
             { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white', align: 'center' },
             { key: 'under_qc', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
@@ -259,7 +259,7 @@ export default function ProgressReportPage() {
             { key: 'total_interview', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'invalid', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'reject_auto', label: 'System rejections', width: 'w-40', align: 'center' },
-            { key: 'count_after_termination_and_rejection', label: 'Counts after Terminated and System Rejection', width: 'w-80', align: 'center' },
+            { key: 'count_after_termination_and_rejection', label: 'Counts after Terminated and System Rejection', width: 'w-40', align: 'center' },
             { key: 'valid', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
             { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white', align: 'center' },
             { key: 'interview_in_qc_total', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
@@ -286,7 +286,7 @@ export default function ProgressReportPage() {
             { key: 'total_interview', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'invalid', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'reject_auto', label: 'System Rejections', width: 'w-40', align: 'center' },
-            { key: 'count_after_termination_and_rejection', label: 'Counts After Terminated And System Rejection', width: 'w-80', align: 'center' },
+            { key: 'count_after_termination_and_rejection', label: 'Counts After Terminated And System Rejection', width: 'w-40', align: 'center' },
             { key: 'valid', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
             { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white', align: 'center' },
             { key: 'interview_in_qc_total', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
@@ -323,9 +323,9 @@ export default function ProgressReportPage() {
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-48', align: 'center' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32', align: 'center' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-48', align: 'center' },
-            { key: 'reject_qc_audio_respondent', label: 'Interviewer acting as respondent', width: 'w-64', align: 'center' },
-            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-80', align: 'center' },
-            { key: 'reject_qc_audio_mechanical', label: 'The interviewer is asking questions mechanically', width: 'w-80', align: 'center' },
+            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
+            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-40', align: 'center' },
+            { key: 'reject_duplicate_audio', label: 'Duplicate Audio', width: 'w-40', align: 'center' },
             { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24', align: 'center' }
           ];
         case 'pc':
@@ -364,9 +364,9 @@ export default function ProgressReportPage() {
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-48', align: 'center' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32', align: 'center' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-48', align: 'center' },
-            { key: 'reject_qc_audio_respondent', label: 'Interviewer acting as respondent', width: 'w-64', align: 'center' },
-            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-80', align: 'center' },
-            { key: 'reject_qc_audio_mechanical', label: 'The interviewer is asking questions mechanically', width: 'w-80', align: 'center' },
+            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
+            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-40', align: 'center' },
+            { key: 'reject_duplicate_audio', label: 'Duplicate Audio', width: 'w-40', align: 'center' },
             { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24', align: 'center' },
             { key: 'rejection_per', label: 'Rejection %', width: 'w-24', align: 'center' }
           ];
@@ -567,12 +567,12 @@ export default function ProgressReportPage() {
         return item.reject_qc_audio_blank ?? '-';
       case 'reject_qc_audio_irrelevant':
         return item.reject_qc_audio_irrelevant ?? '-';
-      case 'reject_qc_audio_respondent':
-        return item.reject_qc_audio_respondent ?? '-';
+      case 'cannot_hear_the_response_clearly':
+        return item.cannot_hear_the_response_clearly ?? '-';
       case 'reject_qc_audio_interviewer_more':
         return item.reject_qc_audio_interviewer_more ?? '-';
-      case 'reject_qc_audio_mechanical':
-        return item.reject_qc_audio_mechanical ?? '-';
+      case 'reject_duplicate_audio':
+        return item.reject_duplicate_audio ?? '-';
       
       // Other fields
       case 'nwrta_fail':
@@ -715,8 +715,8 @@ export default function ProgressReportPage() {
       reject_qc_audio_gender: summaryData.reject_qc_audio_gender ?? '-',
       reject_qc_audio_irrelevant: summaryData.reject_qc_audio_irrelevant ?? '-',
       reject_qc_audio_interviewer_more: summaryData.reject_qc_audio_interviewer_more ?? '-',
-      reject_qc_audio_mechanical: summaryData.reject_qc_audio_mechanical ?? '-',
-      reject_qc_audio_respondent: summaryData.reject_qc_audio_respondent ?? '-',
+      reject_duplicate_audio: summaryData.reject_duplicate_audio ?? '-',
+      cannot_hear_the_response_clearly: summaryData.cannot_hear_the_response_clearly ?? '-',
       reject_rta: summaryData.reject_rta ?? '-',
       without_audio_valid: summaryData.without_audio_valid ?? '-'
     };
