@@ -477,10 +477,10 @@ const ACListPage = () => {
                   </div>
                 </th>
                 <th 
-                  className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                  className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('acName')}
                 >
-                  <div className="flex items-center justify-start">
+                  <div className="flex items-center justify-center">
                     <span>AC Name</span>
                     <div className="ml-1 flex flex-col">
                       <ChevronUp 
@@ -509,10 +509,10 @@ const ACListPage = () => {
                   </div>
                 </th>
                 <th 
-                  className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                  className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
                   onClick={() => handleSort('agencyName')}
                 >
-                  <div className="flex items-center justify-start">
+                  <div className="flex items-center justify-center">
                     <span>Zonal Manager Name</span>
                     <div className="ml-1 flex flex-col">
                       <ChevronUp 

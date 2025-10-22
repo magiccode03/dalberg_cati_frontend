@@ -14,6 +14,7 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
 import Audio from '@/components/ui/Audio';
+import DateFormatter from '@/components/ui/DateFormatter';
 
 // Simple function to construct full audio URL from filename
 const getAudioUrl = (filename: string): string => {
@@ -680,23 +681,29 @@ export default function RejectionReportPage() {
             </div>
           </div>
           
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{totalCount}</b> items.
+            </Text>
+          </div>
+          
 
           <div className="table-responsive">
             <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="text-center">Sr. No</th>
+                  <th className="text-center">S.No</th>
                   <th className="text-center">Server ID</th>
-                  <th className="text-left">AC Name</th>
+                  <th className="text-center">AC Name</th>
                   <th className="text-center">PS Code</th>
                   <th className="text-center">Interview Date</th>
                   <th className="text-center">Interviewer ID</th>
                   <th className="text-center">Interview Duration</th>
-                  <th className="text-left">Respondent Name</th>
+                  <th className="text-center">Respondent Name</th>
                   <th className="text-center">Respondent Mobile</th>
-                  <th className="text-left">Fail Reason</th>
+                  <th className="text-center">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
-                  <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-center">Audio Fail Reason</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>
                 </tr>
@@ -714,17 +721,17 @@ export default function RejectionReportPage() {
                         {row.serverId}
                       </a>
                     </td>
-                    <td>{row.acName}</td>
-                    <td className="font-mono">{row.psCode}</td>
-                    <td>{row.interviewDate}</td>
-                    <td>{row.interviewerId}</td>
-                    <td className="font-mono">{row.interviewDuration}</td>
-                    <td>{row.respondentName}</td>
-                    <td>{row.respondentMobile || '-'}</td>
-                    <td>{row.failReason}</td>
-                    <td>{row.audioQcId || '-'}</td>
-                    <td>{row.audioFailReason || '-'}</td>
-                    <td>
+                    <td className="text-left">{row.acName}</td>
+                    <td className="text-center font-mono">{row.psCode}</td>
+                    <td className="text-center"><DateFormatter date={row.interviewDate} format="dd/mm/yyyy" /></td>
+                    <td className="text-center">{row.interviewerId}</td>
+                    <td className="text-center font-mono">{row.interviewDuration}</td>
+                    <td className="text-left">{row.respondentName}</td>
+                    <td className="text-center">{row.respondentMobile || '-'}</td>
+                    <td className="text-left">{row.failReason}</td>
+                    <td className="text-center">{row.audioQcId || '-'}</td>
+                    <td className={row.audioFailReason ? "text-left" : "text-center"}>{row.audioFailReason || '-'}</td>
+                    <td className="text-center">
                       <button 
                         className="w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white"
                         title="Play Audio"

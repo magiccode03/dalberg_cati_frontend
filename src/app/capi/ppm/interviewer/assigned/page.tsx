@@ -32,9 +32,10 @@ const AssignedInterviewerContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [allFilteredData, setAllFilteredData] = useState<AssignedInterviewerData[]>([]);
   
   // Filter states
   const [filters, setFilters] = useState({
@@ -49,6 +50,13 @@ const AssignedInterviewerContent = () => {
     return fetchInterviewerDataWithFilters(filters);
   };
 
+  // Helper function to get paginated data
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return allFilteredData.slice(startIndex, endIndex);
+  };
+
   // Fetch data for a specific page
   const fetchPageData = async () => {
     const apiParams = {
@@ -61,7 +69,7 @@ const AssignedInterviewerContent = () => {
     const response = await apiService.getAssignedInterviewers(apiParams);
     
     if (response.success && response.data) {
-      setInterviewerData(response.data.data);
+      setAllFilteredData(response.data.data);
       setTotalCount(response.data.total);
       setTotalPages(Math.ceil(response.data.total / pageSize));
     } else {
@@ -137,14 +145,20 @@ const AssignedInterviewerContent = () => {
     
     console.log(`Filtered to ${filteredData.length} records`);
     
-    setInterviewerData(filteredData);
+    setAllFilteredData(filteredData);
     setTotalCount(filteredData.length);
-    setTotalPages(1); // Show all filtered results
+    setTotalPages(Math.ceil(filteredData.length / pageSize));
   };
 
   useEffect(() => {
     fetchInterviewerData();
   }, [currentPage]);
+
+  // Update displayed data when page or filtered data changes
+  useEffect(() => {
+    const paginatedData = getPaginatedData();
+    setInterviewerData(paginatedData);
+  }, [currentPage, allFilteredData]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
@@ -275,9 +289,9 @@ const AssignedInterviewerContent = () => {
     
     console.log(`Filtered to ${filteredData.length} records`);
     
-    setInterviewerData(filteredData);
+    setAllFilteredData(filteredData);
     setTotalCount(filteredData.length);
-    setTotalPages(1); // Show all filtered results
+    setTotalPages(Math.ceil(filteredData.length / pageSize));
   };
 
   if (loading && currentPage === 1) {
@@ -388,16 +402,16 @@ const AssignedInterviewerContent = () => {
           <Table className="table table-bordered table-striped table-hover">
             <thead className="sticky-header bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">ID</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Zonal Manager</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Assigned ACS</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Full Name</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Zonal Manager</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Assigned ACS</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
               </tr>
             </thead>
             <tbody>
-              {interviewerData.map((item, index) => (
+              {getPaginatedData().map((item, index) => (
                 <tr key={`${item.user_id}-${index}`} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                     {(currentPage - 1) * pageSize + index + 1}
@@ -415,7 +429,7 @@ const AssignedInterviewerContent = () => {
                       {item.agency_name || 'N/A'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200 text-left">
+                  <td className="px-4 py-3 border-b border-gray-200 text-center">
                     <span className="text-gray-700">
                       {item.assigned_ac.join(', ')}
                     </span>
@@ -438,7 +452,7 @@ const AssignedInterviewerContent = () => {
         </div>
 
         {/* Empty State */}
-        {interviewerData.length === 0 && !loading && (
+        {allFilteredData.length === 0 && !loading && (
           <div className="text-center py-12">
             <Text className="text-gray-500 text-lg">
               No assigned interviewers found.
@@ -446,14 +460,13 @@ const AssignedInterviewerContent = () => {
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="mt-6">
           <PaginationStandard
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalCount}
             itemsPerPage={pageSize}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="justify-center"
+            onPageChange={setCurrentPage}
           />
         </div>
       </Card>

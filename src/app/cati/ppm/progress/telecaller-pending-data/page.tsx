@@ -111,7 +111,7 @@ const TelecallerPendingDataPage = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">S.No.</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left">Telecaller Name</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Telecaller Name</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Telecaller ID</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Pending Data (0)</th>
                 </tr>

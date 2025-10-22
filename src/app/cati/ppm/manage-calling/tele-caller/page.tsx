@@ -553,14 +553,13 @@ const TeleUserInfoPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:space-x-2 gap-2 lg:gap-0">
               <Button 
                 variant="primary" 
-                size="sm"
                 onClick={() => router.push('/cati/ppm/manage-calling/create-tele-caller')}
-                className="w-full lg:w-auto"
               >
-                <Plus className="w-4 h-4 mr-1" />
+                <Plus className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Add New Telecaller</span>
                 <span className="sm:hidden">Add New Telecaller</span>
               </Button>
+             
               {/* <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
                 <Search className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Calling User Check</span>

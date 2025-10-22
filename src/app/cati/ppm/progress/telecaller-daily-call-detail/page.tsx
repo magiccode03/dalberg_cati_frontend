@@ -1053,7 +1053,7 @@ const TelecallerDailyCallDetailPage = () => {
                     <thead className="sticky-header bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
@@ -1144,7 +1144,7 @@ const TelecallerDailyCallDetailPage = () => {
 
             {/* Modal Body */}
             <div className="p-6">
-              <div className="space-y-4">
+                <div className="space-y-4">
                 {/* Audio Player */}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
                   <div className="mb-4 text-center">
@@ -1190,16 +1190,16 @@ const TelecallerDailyCallDetailPage = () => {
 
                 {/* Download Link */}
                 <div className="text-center">
-                  <a
-                    href={currentAudio}
-                    download
+                    <a
+                      href={currentAudio}
+                      download
                     className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                  >
+                    >
                     <Volume2 className="w-4 h-4 mr-2" />
-                    Download Audio
-                  </a>
+                      Download Audio
+                    </a>
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>

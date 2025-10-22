@@ -150,6 +150,10 @@ const TelecallerProgressPage: React.FC = () => {
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // Dropdown options
   const acCodeOptions = [
     { value: '', label: 'All ACs' },
@@ -335,6 +339,7 @@ const TelecallerProgressPage: React.FC = () => {
   // Search handler
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
     // Trigger API calls with current filters
     if (viewMode === 'overall') {
     fetchPerformanceData();
@@ -686,6 +691,14 @@ const TelecallerProgressPage: React.FC = () => {
       }
       return 0;
     });
+  };
+
+  // Get paginated data
+  const getPaginatedData = () => {
+    const sortedData = getSortedData();
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return sortedData.slice(startIndex, endIndex);
   };
 
   // Download telecaller data as CSV (limit 200 records with current filters)
@@ -1424,7 +1437,6 @@ const TelecallerProgressPage: React.FC = () => {
           {/* Download Button */}
           <Button
             variant="primary"
-            size="sm"
             onClick={handleDownloadTelecallerCSV}
             disabled={downloadingCSV || telecallerDataLoading}
             loading={downloadingCSV}
@@ -1480,7 +1492,7 @@ const TelecallerProgressPage: React.FC = () => {
                     <thead className="sticky-header bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
@@ -1497,10 +1509,10 @@ const TelecallerProgressPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {getSortedData().map((item, index) => (
+                      {getPaginatedData().map((item, index) => (
                         <tr key={item.telecaller_id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {index + 1}
+                            {(currentPage - 1) * pageSize + index + 1}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-left">
                             {item.caller_name || '-'}
@@ -1551,6 +1563,19 @@ const TelecallerProgressPage: React.FC = () => {
                 </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {telecallerWiseData.length > 0 && (
+          <div className="mt-4">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalItems={telecallerWiseData.length}
+              totalPages={Math.ceil(telecallerWiseData.length / pageSize)}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
 
       </Card>
     </Container>

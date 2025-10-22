@@ -18,7 +18,7 @@ const MasterInterviewerContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
@@ -136,50 +136,40 @@ const MasterInterviewerContent = () => {
         </div>
 
         {/* Data Summary */}
-        <div className="mb-4">
+        <div className="summary mb-4">
           <Text className="text-sm text-gray-600">
-            Showing{' '}
-            <strong>
-              {(currentPage-1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}
-            </strong>{' '}
-            of <strong>{totalCount}</strong> master interviewers.
+            Total <b>{totalCount}</b> items.
           </Text>
         </div>
 
         {/* Table */}
         <div className="table-responsive">
-          <Table className="table table-bordered table-striped table-hover">
-            <thead className="sticky-header bg-gray-50">
+          <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+            <thead className="table-light bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Login Id</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Data Submit</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Assigned ACS</th>
+                <th className="text-center">S.No</th>
+                <th className="text-center">Full Name</th>
+                <th className="text-center">Login Id</th>
+                <th className="text-center">Total Data Submit</th>
+                <th className="text-center">Assigned ACS</th>
               </tr>
             </thead>
             <tbody>
               {interviewerData.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                    {(currentPage - 1) * pageSize + index + 1}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 text-left">
-                    {item.fullname}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">
-                    {item.login_id}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                <tr key={item.id}>
+                  <td className="text-center">{(currentPage - 1) * pageSize + index + 1}</td>
+                  <td className="text-left">{item.fullname}</td>
+                  <td className="text-center font-mono">{item.login_id}</td>
+                  <td className="text-center">
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">
                       {item.total_data_submitted}
                     </span>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-200 text-center">
+                  <td className="text-center">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      className="bg-blue-500 hover:bg-blue-600 text-white border-0"
                       onClick={() => handleViewACs(item.id.toString())}
                       disabled={loadingUserId === item.id.toString()}
                       title="View ACs"
@@ -206,14 +196,14 @@ const MasterInterviewerContent = () => {
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        {/* Pagination */}
+        <div className="mt-6">
           <PaginationStandard
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalCount}
             itemsPerPage={pageSize}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="justify-center"
+            onPageChange={setCurrentPage}
           />
         </div>
       </Card>

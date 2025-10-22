@@ -15,6 +15,7 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import Audio from '@/components/ui/Audio';
+import DateFormatter from '@/components/ui/DateFormatter';
 
 // TypeScript interfaces for API response
 interface InterviewData {
@@ -144,7 +145,7 @@ const InterviewLogPage = () => {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize] = useState(25);
 
   // API state management
   const [allInterviewData, setAllInterviewData] = useState<DisplayInterviewData[]>([]);
@@ -945,22 +946,22 @@ const InterviewLogPage = () => {
             )} */}
             
             {!loading && (
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <div className="p-6">
+            <div className="bg-white ">
+              <div className="">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
                       Total <strong>{totalCount.toLocaleString()}</strong> items.
                   </Text>
                 </div>
                 
-                <div className="overflow-x-auto">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
+                <div className="table-responsive">
+                  <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                    <thead className="table-light bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server ID</th>
+                        <th className="text-center">S.No</th>
+                        <th className="text-center">Server ID</th>
                         <th 
-                          className="px-4 py-3 font-semibold text-gray-700 text-center cursor-pointer hover:bg-gray-100"
+                          className="text-center cursor-pointer hover:bg-gray-100"
                           onClick={() => handleSort('interview_date')}
                         >
                           <div className="flex items-center justify-center">
@@ -975,48 +976,50 @@ const InterviewLogPage = () => {
                             </div>
                           </div>
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Sample Type</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">PS Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Device ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interviewer ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio QC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio QC ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio Fail Reason</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Outcome</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Status</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">PS Image</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Selfie Image</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Gender</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Play Audio</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">GPS Map</th>
+                        <th className="text-center">Sample Type</th>
+                        <th className="text-center">AC Name</th>
+                        <th className="text-center">PS Name</th>
+                        <th className="text-center">Device ID</th>
+                        <th className="text-center">Interviewer ID</th>
+                        <th className="text-center">Audio QC</th>
+                        <th className="text-center">Audio QC ID</th>
+                        <th className="text-center">Audio Fail Reason</th>
+                        <th className="text-center">QC Outcome</th>
+                        <th className="text-center">Status</th>
+                        <th className="text-center">PS Image</th>
+                        <th className="text-center">Selfie Image</th>
+                        <th className="text-center">Gender</th>
+                        <th className="text-center">Play Audio</th>
+                        <th className="text-center">GPS Map</th>
                       </tr>
                     </thead>
                     <tbody>
                       {getSortedData().map((interview, index) => (
-                        <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {((currentPage - 1) * pageSize) + index + 1}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">
-                            <span className="text-sm font-medium text-blue-600">
+                        <tr key={`interview-${interview.server_id}-${index}`}>
+                          <td className="text-center">{((currentPage - 1) * pageSize) + index + 1}</td>
+                          <td className="text-center">
+                            <a 
+                              href={`/interview-detail?server_id=${interview.server_id}`}
+                              target="_blank"
+                              className="text-blue-600 hover:text-blue-800 font-mono"
+                            >
                               {interview.server_id}
-                            </span>
+                            </a>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm text-left">{interview.interview_date}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.sample_type}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ac_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ps_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{interview.device_id}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{interview.interviewer_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio_qc_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{interview.audio_qc_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio1_status_label || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-center"><DateFormatter date={interview.interview_date} format="dd/mm/yyyy" /></td>
+                          <td className="text-left">{interview.sample_type}</td>
+                          <td className="text-left">{interview.ac_name}</td>
+                          <td className="text-left">{interview.ps_name}</td>
+                          <td className="text-center font-mono">{interview.device_id}</td>
+                          <td className="text-center">{interview.interviewer_id || '-'}</td>
+                          <td className="text-left">{interview.audio_qc_label}</td>
+                          <td className="text-center">{interview.audio_qc_id || '-'}</td>
+                          <td className={interview.audio1_status_label ? "text-left" : "text-center"}>{interview.audio1_status_label || '-'}</td>
+                          <td className="text-center">
                             {getQcOutcomeBadge(interview.qc_outcome)}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.status_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-left">{interview.status_label}</td>
+                          <td className="text-center">
                             <div className="flex justify-center items-center">
                               {interview.ps_image_available ? (
                                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -1027,7 +1030,7 @@ const InterviewLogPage = () => {
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-center">
                             <div className="flex justify-center items-center">
                               {interview.selfie_image_available ? (
                                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -1038,42 +1041,38 @@ const InterviewLogPage = () => {
                               )}
                             </div>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-center">
                             <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
                               {interview.gender_label || '-'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              <button 
-                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                  interview.audio_playback_available 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                                title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
-                                disabled={!interview.audio_playback_available}
-                                onClick={() => handlePlayAudio(interview)}
-                              >
-                                <Volume2 className="w-4 h-4" />
-                              </button>
-                            </div>
+                          <td className="text-center">
+                            <button 
+                              className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                interview.audio_playback_available 
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                              title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                              disabled={!interview.audio_playback_available}
+                              onClick={() => handlePlayAudio(interview)}
+                            >
+                              <Volume2 className="w-4 h-4" />
+                            </button>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="flex justify-center items-center">
-                              <button 
-                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                  interview.gps_available 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}
-                                title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
-                                disabled={!interview.gps_available}
-                                onClick={() => handleGpsMap(interview)}
-                              >
-                                <MapPin className="w-4 h-4" />
-                              </button>
-                            </div>
+                          <td className="text-center">
+                            <button 
+                              className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                interview.gps_available 
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                              title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                              disabled={!interview.gps_available}
+                              onClick={() => handleGpsMap(interview)}
+                            >
+                              <MapPin className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1090,24 +1089,15 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
-                {/* Pagination Controls */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    {/* Pagination Info */}
-                    <div className="text-sm text-gray-600">
-                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()} entries
-                    </div>
-
-                    {/* Pagination Component */}
-                    <PaginationStandard
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      totalItems={totalCount}
-                      itemsPerPage={pageSize}
-                      onPageChange={handlePageChange}
-                      className="justify-center"
-                    />
-                  </div>
+                {/* Pagination */}
+                <div className="mt-6">
+                  <PaginationStandard
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalCount}
+                    itemsPerPage={pageSize}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </div>
             </div>

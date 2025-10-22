@@ -156,8 +156,7 @@ export default function CATIACWiseDataPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button 
-              variant="outline" 
-              size="sm"
+              variant="primary" 
               onClick={handleDownload}
               disabled={loading || filteredData.length === 0}
               className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600"
@@ -182,7 +181,7 @@ export default function CATIACWiseDataPage() {
               <thead className="bg-gray-50 sticky top-0 z-20 dark:bg-gray-800 shadow-sm">
                 <tr>
                   <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800 text-center">Sr.No.</th>
-                  <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800 text-left">AC Name</th>
+                  <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800 text-center">AC Name</th>
                   <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Attempted</th>
                   <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Connected</th>
                   <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800 text-center">Success</th>
