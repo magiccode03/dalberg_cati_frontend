@@ -154,7 +154,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
   const handleACSelect = (ac: ACData) => {
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
-    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+    // Check if AC is assigned AND has pending work (total_pending > 0)
+    const assignedAC = userStats?.ac_wise_statistics?.find((assigned: any) => assigned.ac_code === ac.ac_code);
+    const isAssigned = assignedAC && assignedAC.total_pending > 0;
     
     // Don't allow deselecting already assigned ACs
     if (isAssigned) return;
@@ -275,7 +277,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   };
 
   // Get assigned ACs from stats (updated to match new API field)
-  const assignedACs = userStats?.ac_wise_statistics || [];
+  // Filter out ACs with total_pending=0 as they shouldn't be shown as assigned
+  const assignedACs = (userStats?.ac_wise_statistics || []).filter((ac: any) => ac.total_pending > 0);
 
   return (
     <Modal
@@ -397,7 +400,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
               {acList.length > 0 ? (
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {acList.map((ac) => {
-                    const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
+                    // Check if AC is assigned AND has pending work (total_pending > 0)
+                    const assignedAC = userStats?.ac_wise_statistics?.find((assigned: any) => assigned.ac_code === ac.ac_code);
+                    const isAssigned = assignedAC && assignedAC.total_pending > 0;
                     const isSelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
                     
                     return (
@@ -441,7 +446,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                             </span>
                           )}
                           <div className="text-right">
-                            <div className="text-xs text-gray-500 dark:text-gray-400">Not Assigned</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">Available</div>
                             <div className="text-sm font-semibold text-gray-900 dark:text-white">
                               {ac.total_not_assigned}
                             </div>
