@@ -8,8 +8,9 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import FormattedNumber from '@/components/ui/FormattedNumber';
 
 interface ACWiseReportData {
   id: number;
@@ -182,6 +183,77 @@ export default function ACWiseReportPage() {
     }
   };
 
+  // Download all data as CSV
+  const downloadAllData = async () => {
+    try {
+      setLoading(true);
+      
+      console.log('Downloading all AC wise report data...');
+      
+      // Call API with limit=300 to get all data
+      const response = await apiClient.get('/capi/ac-qc-statistics?limit=300');
+      const data: APIResponse = response.data;
+      
+      if (data.success && data.data && Array.isArray(data.data)) {
+        const transformedData = transformAPIData(data.data);
+        
+        // Convert to CSV
+        const csvHeaders = [
+          'S.No',
+          'AC Code', 
+          'Name',
+          'Agency Name',
+          'Checker',
+          'Alloted',
+          'Completed',
+          'Accepted',
+          'Rejected',
+          'Under QC'
+        ];
+        
+        const csvRows = transformedData.map((item, index) => [
+          index + 1,
+          item.acCode,
+          `"${item.name}"`,
+          `"${item.agencyName}"`,
+          `"${item.checker}"`,
+          new Intl.NumberFormat('en-IN').format(item.alloted),
+          new Intl.NumberFormat('en-IN').format(item.completed),
+          new Intl.NumberFormat('en-IN').format(item.accepted),
+          new Intl.NumberFormat('en-IN').format(item.rejected),
+          new Intl.NumberFormat('en-IN').format(item.underQc)
+        ]);
+        
+        // Create CSV content
+        const csvContent = [
+          csvHeaders.join(','),
+          ...csvRows.map(row => row.join(','))
+        ].join('\n');
+        
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `ac-wise-report-${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('CSV download completed');
+      } else {
+        console.error('Failed to fetch data for download:', data.error);
+        setError('Failed to fetch data for download');
+      }
+    } catch (err: any) {
+      console.error('Error downloading data:', err);
+      setError('Failed to download data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch data on component mount and when page changes
   useEffect(() => {
     fetchACWiseReportData();
@@ -262,12 +334,24 @@ export default function ACWiseReportPage() {
         <div className="w-full">
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  AC Wise Report
-                </Heading>
-                <span className="text-end"></span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
+                  <Heading level={4} className="text-lg font-semibold text-gray-900">
+                    AC Wise Report
+                  </Heading>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    onClick={downloadAllData}
+                    size="sm"
+                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
+                    disabled={loading}
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download</span>
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="p-6">
@@ -304,11 +388,21 @@ export default function ACWiseReportPage() {
                         </td>
                         {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.alloted.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.completed.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium">{data.accepted.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium">{data.rejected.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">{data.underQc.toLocaleString()}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                          <FormattedNumber value={data.alloted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                          <FormattedNumber value={data.completed} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium">
+                          <FormattedNumber value={data.accepted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium">
+                          <FormattedNumber value={data.rejected} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">
+                          <FormattedNumber value={data.underQc} locale="en-IN" />
+                        </td>
                       </tr>
                     ))}
                   </tbody>

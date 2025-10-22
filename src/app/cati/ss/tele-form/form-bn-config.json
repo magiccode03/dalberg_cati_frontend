@@ -419,58 +419,7 @@
     "label": "৫. আপনি 2021-এ শেষবার বিধানসভা নির্বাচনে (এম এল এ) কোন দলকে ভোট দিয়েছিলেন?",
     "conditional": "resp_age >= 22 && resp_registered_voter === '1'",
     "required": true,
-    "options": [
-      {
-        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
-        "value": "1",
-        "tag": "opt_aitc"
-      },
-      {
-        "label": "বি জে পি",
-        "value": "2",
-        "tag": "opt_bjp"
-      },
-      {
-        "label": "আই এন সি (কংগ্রেস)",
-        "value": "3",
-        "tag": "opt_inc"
-      },
-      {
-        "label": "বামফ্রন্ট",
-        "value": "4",
-        "tag": "opt_left"
-      },
-      {
-        "label": "নির্দল",
-        "value": "12",
-        "tag": "opt_independent"
-      },
-      {
-        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-        "value": "44",
-        "tag": "opt_others"
-      },
-      {
-        "label": "নোটা",
-        "value": "55",
-        "tag": "opt_nota"
-      },
-      {
-        "label": "ভোট দেননি",
-        "value": "66",
-        "tag": "opt_did_not_vote"
-      },
-      {
-        "label": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি",
-        "value": "77",
-        "tag": "opt_not_eligible"
-      },
-      {
-        "label": "কোনো উত্তর নেই/ উত্তর দিতে চাননি",
-        "value": "88",
-        "tag": "opt_no_response"
-      }
-    ],
+    "options": "party_2021_q5.[ac_code]",
     "rules": {
       "showFields": {
         "opt_others": [
@@ -1309,7 +1258,7 @@
   },
   {
     "type": "radio",
-    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ?",
+    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
@@ -1343,7 +1292,7 @@
   },
   {
     "type": "radio",
-    "label": "১৬-খ. আপনার বর্তমান বিধায়ক - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [

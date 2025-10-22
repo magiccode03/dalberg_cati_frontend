@@ -131,12 +131,12 @@ export default function HorizontalNav() {
     const systemToUse = user.role === 'ss' ? 'cati' : user.system;
     let baseMenuItems = getMenuByRole(user.role, systemToUse);
     
-    // Debug logging
-    console.log('User role:', user.role);
-    console.log('User system:', user.system);
-    console.log('System to use:', systemToUse);
-    console.log('Teleform user data:', teleformUserData);
-    console.log('Base menu items:', baseMenuItems);
+    // Debug logging (removed to prevent console spam during re-renders)
+    // console.log('User role:', user.role);
+    // console.log('User system:', user.system);
+    // console.log('System to use:', systemToUse);
+    // console.log('Teleform user data:', teleformUserData);
+    // console.log('Base menu items:', baseMenuItems);
     
     // For SS role, filter dynamic menu items based on teleform user data
     if (user.role === 'ss') {
@@ -144,8 +144,8 @@ export default function HorizontalNav() {
         const fillForm = teleformUserData.fill_form === 1;
         const qc = teleformUserData.qc === 1;
         
-        console.log('Fill form permission:', fillForm);
-        console.log('QC permission:', qc);
+        // console.log('Fill form permission:', fillForm);
+        // console.log('QC permission:', qc);
         
         baseMenuItems = baseMenuItems.filter(item => {
           // Always show non-dynamic items

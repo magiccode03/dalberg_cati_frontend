@@ -40,8 +40,9 @@ export default function QCUserProgressPage() {
   const router = useRouter();
   
   const [filters, setFilters] = useState({
-    startDate: '',
-    endDate: '',
+    reportDays: '',
+    customDateFrom: '',
+    customDateTo: '',
     qcId: '',
     qcUserStatus: '1', // Default to Active
     acCode: '',
@@ -64,7 +65,7 @@ export default function QCUserProgressPage() {
       });
       
       const response = await Promise.race([
-        apiClient.get(`/qc-user-registration?status=${status}`),
+        apiClient.get(`/qc-user-registration?status=${status}&limit=1000`),
         timeoutPromise
       ]) as any;
       
@@ -114,8 +115,61 @@ export default function QCUserProgressPage() {
       if (filters.qcUserStatus) queryParams.append('qc_user_status', filters.qcUserStatus);
       if (filters.acCode) queryParams.append('ac_code', filters.acCode);
       if (filters.qcId) queryParams.append('qc_id', filters.qcId);
-      if (filters.startDate) queryParams.append('audio_qc_complete_date_from', filters.startDate);
-      if (filters.endDate) queryParams.append('audio_qc_complete_date_to', filters.endDate);
+      
+      // Handle date filters - always use audio_qc_complete_date_from and audio_qc_complete_date_to
+      if (filters.reportDays === 'custom' && filters.customDateFrom && filters.customDateTo) {
+        queryParams.append('audio_qc_complete_date_from', filters.customDateFrom);
+        queryParams.append('audio_qc_complete_date_to', filters.customDateTo);
+      } else if (filters.reportDays && filters.reportDays !== 'custom') {
+        // Calculate date range based on reportDays selection
+        const today = new Date();
+        let fromDate: string;
+        let toDate: string = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        switch (filters.reportDays) {
+          case 'today':
+            fromDate = toDate;
+            break;
+          case 'yesterday':
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            fromDate = yesterday.toISOString().split('T')[0];
+            toDate = fromDate;
+            break;
+          case 'dby': // Day before yesterday
+            const dby = new Date(today);
+            dby.setDate(dby.getDate() - 2);
+            fromDate = dby.toISOString().split('T')[0];
+            toDate = fromDate;
+            break;
+          case 'l3': // Last 3 days
+            const l3 = new Date(today);
+            l3.setDate(l3.getDate() - 2);
+            fromDate = l3.toISOString().split('T')[0];
+            break;
+          case 'l7': // Last 7 days
+            const l7 = new Date(today);
+            l7.setDate(l7.getDate() - 6);
+            fromDate = l7.toISOString().split('T')[0];
+            break;
+          case 'l15': // Last 15 days
+            const l15 = new Date(today);
+            l15.setDate(l15.getDate() - 14);
+            fromDate = l15.toISOString().split('T')[0];
+            break;
+          case 'currentmonth': // Current month
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            fromDate = firstDay.toISOString().split('T')[0];
+            break;
+          default:
+            fromDate = toDate;
+        }
+        
+        queryParams.append('audio_qc_complete_date_from', fromDate);
+        queryParams.append('audio_qc_complete_date_to', toDate);
+        
+        console.log(`Date range for ${filters.reportDays}: ${fromDate} to ${toDate}`);
+      }
       
       const queryString = queryParams.toString();
       const endpoint = queryString ? `/capi/interview/qc-user-wise-data?${queryString}` : '/capi/interview/qc-user-wise-data';
@@ -211,8 +265,9 @@ export default function QCUserProgressPage() {
 
   const handleClear = () => {
     const defaultFilters = {
-      startDate: '',
-      endDate: '',
+      reportDays: '',
+      customDateFrom: '',
+      customDateTo: '',
       qcId: '',
       qcUserStatus: '1',
       acCode: '',
@@ -335,31 +390,59 @@ export default function QCUserProgressPage() {
         {/* Search Filters */}
         <Card className="p-4 mb-5">
           <div className="flex flex-wrap items-end gap-4">
-            {/* Start Date Filter */}
+            {/* Report Days Filter */}
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Start Date
+                Report Days
               </label>
-              <input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              <SelectDropdown
+                value={filters.reportDays}
+                onChange={(value) => handleFilterChange('reportDays', value as string)}
+                options={[
+                  { value: '', label: 'All' },
+                  { value: 'today', label: 'Today' },
+                  { value: 'yesterday', label: 'Yesterday' },
+                  { value: 'dby', label: 'Day Before Yesterday' },
+                  { value: 'l3', label: 'Last 3 Days' },
+                  { value: 'l7', label: 'Last 7 Days' },
+                  { value: 'l15', label: 'Last 15 Days' },
+                  { value: 'currentmonth', label: 'Current Month' },
+                  { value: 'custom', label: 'Custom Date' },
+                ]}
+                placeholder="Select Report Days"
+                searchable={false}
+                clearable={true}
               />
             </div>
 
-            {/* End Date Filter */}
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={filters.endDate}
-                onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-              />
-            </div>
+            {/* Custom Date Range Inputs - Only show when "Custom Date" is selected */}
+            {filters.reportDays === 'custom' && (
+              <>
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    From Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.customDateFrom}
+                    onChange={(e) => handleFilterChange('customDateFrom', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+                
+                <div className="flex-1 min-w-[200px]">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    To Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.customDateTo}
+                    onChange={(e) => handleFilterChange('customDateTo', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                  />
+                </div>
+              </>
+            )}
 
             {/* QC User Status Filter */}
             <div className="flex-1 min-w-[200px]">

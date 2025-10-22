@@ -14,9 +14,15 @@ import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 // Import form configurations
-import formEnConfig from '../../tele-form/form-en-config.json';
-import formBnConfig from '../../tele-form/form-bn-config.json';
-import formHiConfig from '../../tele-form/form-hi-config.json';
+import formEnConfig from '../../form-en-config.json';
+import formBnConfig from '../../form-bn-config.json';
+import formHiConfig from '../../form-hi-config.json';
+
+// Import JSON data files
+// @ts-ignore
+import partyData from '../../../../josn/party_2021_q5.json';
+// @ts-ignore
+import mlaMpData from '../../../../josn/mla-mp-ac-data.json';
 
 // Type definitions
 interface FormOption {
@@ -55,6 +61,7 @@ export default function TeleFormV2Page() {
   const router = useRouter();
   const params = useParams();
   const interviewId = params.id as string;
+  const acCode = params.ac_code as string;
   
   const [language, setLanguage] = useState<string>('english');
   const [timer, setTimer] = useState<number>(0);
@@ -107,6 +114,112 @@ export default function TeleFormV2Page() {
 
   // Get current form configuration based on language
   const currentFormConfig = formConfigs[language] || formConfigs.english;
+
+  // Get MLA/MP data for the current AC code
+  const getMlaMpData = (acCode: string) => {
+    const acCodeNum = parseInt(acCode);
+    return mlaMpData.find((item: any) => item.ac_code === acCodeNum);
+  };
+
+  // Replace placeholders in labels with actual values
+  const replaceLabelPlaceholders = (label: string, acCode: string): string => {
+    const mlaMpInfo = getMlaMpData(acCode);
+    if (!mlaMpInfo) return label;
+    
+    return label
+      .replace(/\{\{mp_name\}\}/g, `"${mlaMpInfo.mp_name}"`)
+      .replace(/\{\{mla_name\}\}/g, `"${mlaMpInfo.mla_name}"`);
+  };
+
+  // Get party options for the current AC code
+  const getPartyOptions = (acCode: string): FormOption[] => {
+    const acCodeNum = parseInt(acCode);
+    const acPartyData = partyData.ac_data[acCodeNum.toString()];
+    
+    if (!acPartyData) {
+      // Return default party options when specific AC data is not available
+      return [
+        {
+          label: language === 'bengali' ? 'AITC (Trinamool Congress)' : 'AITC (Trinamool Congress)',
+          value: '1',
+          tag: 'party_1'
+        },
+        {
+          label: language === 'bengali' ? 'BJP' : 'BJP',
+          value: '2',
+          tag: 'party_2'
+        },
+        {
+          label: language === 'bengali' ? 'INC (Congress)' : 'INC (Congress)',
+          value: '3',
+          tag: 'party_3'
+        },
+        {
+          label: language === 'bengali' ? 'Left Front' : 'Left Front',
+          value: '4',
+          tag: 'party_4'
+        },
+        {
+          label: language === 'bengali' ? 'Independent' : 'Independent',
+          value: '12',
+          tag: 'party_12'
+        },
+        {
+          label: language === 'bengali' ? 'Others (specify)' : 'Others (specify)',
+          value: '44',
+          tag: 'party_44'
+        },
+        {
+          label: language === 'bengali' ? 'NOTA' : 'NOTA',
+          value: '55',
+          tag: 'party_55'
+        },
+        {
+          label: language === 'bengali' ? 'Did not vote' : 'Did not vote',
+          value: '66',
+          tag: 'party_66'
+        },
+        {
+          label: language === 'bengali' ? 'Not eligible for voting' : 'Not eligible for voting',
+          value: '77',
+          tag: 'party_77'
+        },
+        {
+          label: language === 'bengali' ? 'No response/Refused to answer' : 'No response/Refused to answer',
+          value: '88',
+          tag: 'party_88'
+        }
+      ];
+    }
+    
+    return acPartyData.parties.map((party: any) => ({
+      label: language === 'bengali' ? party.party_name_bangla : party.party_name_english,
+      value: party.party_code.toString(),
+      tag: `party_${party.party_code}`
+    }));
+  };
+
+  // Process form configuration to replace placeholders and add dynamic options
+  const processFormConfig = (config: FormField[]): FormField[] => {
+    return config.map(field => {
+      const processedField = { ...field };
+      
+      // Replace placeholders in label
+      processedField.label = replaceLabelPlaceholders(field.label, acCode);
+      
+      // Handle dynamic options for party data
+      if (typeof field.options === 'string' && field.options === `party_2021_q5.[ac_code]`) {
+        processedField.options = getPartyOptions(acCode);
+      }
+      
+      return processedField;
+    });
+  };
+
+  // Get processed form configuration
+  const processedFormConfig = React.useMemo(() => {
+    return processFormConfig(currentFormConfig);
+  }, [currentFormConfig, acCode, language]);
 
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string): boolean => {
@@ -290,7 +403,7 @@ export default function TeleFormV2Page() {
   const transformFormDataForSubmission = (data: Record<string, any>) => {
     const transformed: Record<string, any> = {};
     
-    currentFormConfig.forEach((field) => {
+    processedFormConfig.forEach((field) => {
       const fieldValue = data[field.tag];
       
       if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
@@ -433,7 +546,7 @@ export default function TeleFormV2Page() {
     const errors: string[] = [];
     
     // Get all visible fields that are required
-    currentFormConfig.forEach((field) => {
+    processedFormConfig.forEach((field) => {
       if (field.required && isFieldVisible(field)) {
         const fieldValue = formData[field.tag];
         
@@ -465,7 +578,7 @@ export default function TeleFormV2Page() {
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
-      currentFormConfig.forEach((field) => {
+      processedFormConfig.forEach((field) => {
         if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
           const isEmpty = field.type === 'checkbox' 
@@ -482,7 +595,7 @@ export default function TeleFormV2Page() {
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
       
       // Scroll to first error
-      const firstErrorField = currentFormConfig.find(
+      const firstErrorField = processedFormConfig.find(
         field => field.required && isFieldVisible(field) && 
         (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
@@ -733,7 +846,7 @@ export default function TeleFormV2Page() {
       finalDemographics: [],
     };
 
-    currentFormConfig.forEach(field => {
+    processedFormConfig.forEach(field => {
       if (['number_status', 'call_not_ring', 'call_ring_status', 'q_call_status', 'call_reschedule'].includes(field.tag)) {
         sections.callStatus.push(field);
       } else if (field.tag === 'consent') {
