@@ -1,0 +1,341 @@
+resp_religion,caste_code,caste_name_english,caste_name_bangla,caste_name_hindi
+1,1,Aguri,Aguri,Aguri
+1,2,Kansabanik,Kansabanik,Kansabanik
+1,3,sadgop,sadgop,sadgop
+1,4,shunri,shunri,shunri
+1,5,Yadav,Yadav,Yadav
+1,6,Santal,Santal,Santal
+1,7,Pod,Pod,Pod
+1,8,Tanti,Tanti,Tanti
+1,9,Namaseej,Namaseej,Namaseej
+1,10,Brahmins,Brahmins,Brahmins
+1,11,Kayasthas,Kayasthas,Kayasthas
+1,12,Baidyas,Baidyas,Baidyas
+1,13,Rajputs,Rajputs,Rajputs
+1,14,Kshatriyas,Kshatriyas,Kshatriyas
+1,15,Barui,Barui,Barui
+1,16,Gandha Banik,Gandha Banik,Gandha Banik
+1,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+1,18,Mahishya,Mahishya,Mahishya
+1,19,Namasudra,Namasudra,Namasudra
+1,20,Rajbanshi,Rajbanshi,Rajbanshi
+1,21,Poundra,Poundra,Poundra
+1,22,Dom,Dom,Dom
+1,23,Bagdi,Bagdi,Bagdi
+1,24,Chamar,Chamar,Chamar
+1,25,Muchi,Muchi,Muchi
+1,26,Kori,Kori,Kori
+1,27,Haldar,Haldar,Haldar
+1,28,Santhal,Santhal,Santhal
+1,29,Munda,Munda,Munda
+1,30,Oraon,Oraon,Oraon
+1,31,Bhumij,Bhumij,Bhumij
+1,32,Ho,Ho,Ho
+1,33,Lodha,Lodha,Lodha
+1,34,Bhil,Bhil,Bhil
+1,35,Birhor,Birhor,Birhor
+1,36,Mallah,Mallah,Mallah
+1,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+1,38,Napit,Napit,Napit
+1,39,Karmakar,Karmakar,Karmakar
+1,40,Rajak,Rajak,Rajak
+1,41,Dhoba,Dhoba,Dhoba
+1,42,Hela,Hela,Hela
+1,43,Kahar,Kahar,Kahar
+1,45,Kurmi,Kurmi,Kurmi
+1,46,Pasi,Pasi,Pasi
+1,47,Keot,Keot,Keot
+1,44,Others (Specify),Others (Specify),Others (Specify)
+1,88,Refused to respond,Refused to respond,Refused to respond
+2,48,Shaikh,Shaikh,Shaikh
+2,49,Ansari,Ansari,Ansari
+2,44,Others (Specify),Others (Specify),Others (Specify)
+2,88,Refused to respond,Refused to respond,Refused to respond
+3,1,Aguri,Aguri,Aguri
+3,2,Kansabanik,Kansabanik,Kansabanik
+3,3,sadgop,sadgop,sadgop
+3,4,shunri,shunri,shunri
+3,5,Yadav,Yadav,Yadav
+3,6,Santal,Santal,Santal
+3,7,Pod,Pod,Pod
+3,8,Tanti,Tanti,Tanti
+3,9,Namaseej,Namaseej,Namaseej
+3,10,Brahmins,Brahmins,Brahmins
+3,11,Kayasthas,Kayasthas,Kayasthas
+3,12,Baidyas,Baidyas,Baidyas
+3,13,Rajputs,Rajputs,Rajputs
+3,14,Kshatriyas,Kshatriyas,Kshatriyas
+3,15,Barui,Barui,Barui
+3,16,Gandha Banik,Gandha Banik,Gandha Banik
+3,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+3,18,Mahishya,Mahishya,Mahishya
+3,19,Namasudra,Namasudra,Namasudra
+3,20,Rajbanshi,Rajbanshi,Rajbanshi
+3,21,Poundra,Poundra,Poundra
+3,22,Dom,Dom,Dom
+3,23,Bagdi,Bagdi,Bagdi
+3,24,Chamar,Chamar,Chamar
+3,25,Muchi,Muchi,Muchi
+3,26,Kori,Kori,Kori
+3,27,Haldar,Haldar,Haldar
+3,28,Santhal,Santhal,Santhal
+3,29,Munda,Munda,Munda
+3,30,Oraon,Oraon,Oraon
+3,31,Bhumij,Bhumij,Bhumij
+3,32,Ho,Ho,Ho
+3,33,Lodha,Lodha,Lodha
+3,34,Bhil,Bhil,Bhil
+3,35,Birhor,Birhor,Birhor
+3,36,Mallah,Mallah,Mallah
+3,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+3,38,Napit,Napit,Napit
+3,39,Karmakar,Karmakar,Karmakar
+3,40,Rajak,Rajak,Rajak
+3,41,Dhoba,Dhoba,Dhoba
+3,42,Hela,Hela,Hela
+3,43,Kahar,Kahar,Kahar
+3,45,Kurmi,Kurmi,Kurmi
+3,46,Pasi,Pasi,Pasi
+3,47,Keot,Keot,Keot
+3,44,Others (Specify),Others (Specify),Others (Specify)
+3,88,Refused to respond,Refused to respond,Refused to respond
+4,1,Aguri,Aguri,Aguri
+4,2,Kansabanik,Kansabanik,Kansabanik
+4,3,sadgop,sadgop,sadgop
+4,4,shunri,shunri,shunri
+4,5,Yadav,Yadav,Yadav
+4,6,Santal,Santal,Santal
+4,7,Pod,Pod,Pod
+4,8,Tanti,Tanti,Tanti
+4,9,Namaseej,Namaseej,Namaseej
+4,10,Brahmins,Brahmins,Brahmins
+4,11,Kayasthas,Kayasthas,Kayasthas
+4,12,Baidyas,Baidyas,Baidyas
+4,13,Rajputs,Rajputs,Rajputs
+4,14,Kshatriyas,Kshatriyas,Kshatriyas
+4,15,Barui,Barui,Barui
+4,16,Gandha Banik,Gandha Banik,Gandha Banik
+4,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+4,18,Mahishya,Mahishya,Mahishya
+4,19,Namasudra,Namasudra,Namasudra
+4,20,Rajbanshi,Rajbanshi,Rajbanshi
+4,21,Poundra,Poundra,Poundra
+4,22,Dom,Dom,Dom
+4,23,Bagdi,Bagdi,Bagdi
+4,24,Chamar,Chamar,Chamar
+4,25,Muchi,Muchi,Muchi
+4,26,Kori,Kori,Kori
+4,27,Haldar,Haldar,Haldar
+4,28,Santhal,Santhal,Santhal
+4,29,Munda,Munda,Munda
+4,30,Oraon,Oraon,Oraon
+4,31,Bhumij,Bhumij,Bhumij
+4,32,Ho,Ho,Ho
+4,33,Lodha,Lodha,Lodha
+4,34,Bhil,Bhil,Bhil
+4,35,Birhor,Birhor,Birhor
+4,36,Mallah,Mallah,Mallah
+4,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+4,38,Napit,Napit,Napit
+4,39,Karmakar,Karmakar,Karmakar
+4,40,Rajak,Rajak,Rajak
+4,41,Dhoba,Dhoba,Dhoba
+4,42,Hela,Hela,Hela
+4,43,Kahar,Kahar,Kahar
+4,45,Kurmi,Kurmi,Kurmi
+4,46,Pasi,Pasi,Pasi
+4,47,Keot,Keot,Keot
+4,44,Others (Specify),Others (Specify),Others (Specify)
+4,88,Refused to respond,Refused to respond,Refused to respond
+5,1,Aguri,Aguri,Aguri
+5,2,Kansabanik,Kansabanik,Kansabanik
+5,3,sadgop,sadgop,sadgop
+5,4,shunri,shunri,shunri
+5,5,Yadav,Yadav,Yadav
+5,6,Santal,Santal,Santal
+5,7,Pod,Pod,Pod
+5,8,Tanti,Tanti,Tanti
+5,9,Namaseej,Namaseej,Namaseej
+5,10,Brahmins,Brahmins,Brahmins
+5,11,Kayasthas,Kayasthas,Kayasthas
+5,12,Baidyas,Baidyas,Baidyas
+5,13,Rajputs,Rajputs,Rajputs
+5,14,Kshatriyas,Kshatriyas,Kshatriyas
+5,15,Barui,Barui,Barui
+5,16,Gandha Banik,Gandha Banik,Gandha Banik
+5,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+5,18,Mahishya,Mahishya,Mahishya
+5,19,Namasudra,Namasudra,Namasudra
+5,20,Rajbanshi,Rajbanshi,Rajbanshi
+5,21,Poundra,Poundra,Poundra
+5,22,Dom,Dom,Dom
+5,23,Bagdi,Bagdi,Bagdi
+5,24,Chamar,Chamar,Chamar
+5,25,Muchi,Muchi,Muchi
+5,26,Kori,Kori,Kori
+5,27,Haldar,Haldar,Haldar
+5,28,Santhal,Santhal,Santhal
+5,29,Munda,Munda,Munda
+5,30,Oraon,Oraon,Oraon
+5,31,Bhumij,Bhumij,Bhumij
+5,32,Ho,Ho,Ho
+5,33,Lodha,Lodha,Lodha
+5,34,Bhil,Bhil,Bhil
+5,35,Birhor,Birhor,Birhor
+5,36,Mallah,Mallah,Mallah
+5,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+5,38,Napit,Napit,Napit
+5,39,Karmakar,Karmakar,Karmakar
+5,40,Rajak,Rajak,Rajak
+5,41,Dhoba,Dhoba,Dhoba
+5,42,Hela,Hela,Hela
+5,43,Kahar,Kahar,Kahar
+5,45,Kurmi,Kurmi,Kurmi
+5,46,Pasi,Pasi,Pasi
+5,47,Keot,Keot,Keot
+5,44,Others (Specify),Others (Specify),Others (Specify)
+5,88,Refused to respond,Refused to respond,Refused to respond
+6,1,Aguri,Aguri,Aguri
+6,2,Kansabanik,Kansabanik,Kansabanik
+6,3,sadgop,sadgop,sadgop
+6,4,shunri,shunri,shunri
+6,5,Yadav,Yadav,Yadav
+6,6,Santal,Santal,Santal
+6,7,Pod,Pod,Pod
+6,8,Tanti,Tanti,Tanti
+6,9,Namaseej,Namaseej,Namaseej
+6,10,Brahmins,Brahmins,Brahmins
+6,11,Kayasthas,Kayasthas,Kayasthas
+6,12,Baidyas,Baidyas,Baidyas
+6,13,Rajputs,Rajputs,Rajputs
+6,14,Kshatriyas,Kshatriyas,Kshatriyas
+6,15,Barui,Barui,Barui
+6,16,Gandha Banik,Gandha Banik,Gandha Banik
+6,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+6,18,Mahishya,Mahishya,Mahishya
+6,19,Namasudra,Namasudra,Namasudra
+6,20,Rajbanshi,Rajbanshi,Rajbanshi
+6,21,Poundra,Poundra,Poundra
+6,22,Dom,Dom,Dom
+6,23,Bagdi,Bagdi,Bagdi
+6,24,Chamar,Chamar,Chamar
+6,25,Muchi,Muchi,Muchi
+6,26,Kori,Kori,Kori
+6,27,Haldar,Haldar,Haldar
+6,28,Santhal,Santhal,Santhal
+6,29,Munda,Munda,Munda
+6,30,Oraon,Oraon,Oraon
+6,31,Bhumij,Bhumij,Bhumij
+6,32,Ho,Ho,Ho
+6,33,Lodha,Lodha,Lodha
+6,34,Bhil,Bhil,Bhil
+6,35,Birhor,Birhor,Birhor
+6,36,Mallah,Mallah,Mallah
+6,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+6,38,Napit,Napit,Napit
+6,39,Karmakar,Karmakar,Karmakar
+6,40,Rajak,Rajak,Rajak
+6,41,Dhoba,Dhoba,Dhoba
+6,42,Hela,Hela,Hela
+6,43,Kahar,Kahar,Kahar
+6,45,Kurmi,Kurmi,Kurmi
+6,46,Pasi,Pasi,Pasi
+6,47,Keot,Keot,Keot
+6,44,Others (Specify),Others (Specify),Others (Specify)
+6,88,Refused to respond,Refused to respond,Refused to respond
+7,1,Aguri,Aguri,Aguri
+7,2,Kansabanik,Kansabanik,Kansabanik
+7,3,sadgop,sadgop,sadgop
+7,4,shunri,shunri,shunri
+7,5,Yadav,Yadav,Yadav
+7,6,Santal,Santal,Santal
+7,7,Pod,Pod,Pod
+7,8,Tanti,Tanti,Tanti
+7,9,Namaseej,Namaseej,Namaseej
+7,10,Brahmins,Brahmins,Brahmins
+7,11,Kayasthas,Kayasthas,Kayasthas
+7,12,Baidyas,Baidyas,Baidyas
+7,13,Rajputs,Rajputs,Rajputs
+7,14,Kshatriyas,Kshatriyas,Kshatriyas
+7,15,Barui,Barui,Barui
+7,16,Gandha Banik,Gandha Banik,Gandha Banik
+7,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+7,18,Mahishya,Mahishya,Mahishya
+7,19,Namasudra,Namasudra,Namasudra
+7,20,Rajbanshi,Rajbanshi,Rajbanshi
+7,21,Poundra,Poundra,Poundra
+7,22,Dom,Dom,Dom
+7,23,Bagdi,Bagdi,Bagdi
+7,24,Chamar,Chamar,Chamar
+7,25,Muchi,Muchi,Muchi
+7,26,Kori,Kori,Kori
+7,27,Haldar,Haldar,Haldar
+7,28,Santhal,Santhal,Santhal
+7,29,Munda,Munda,Munda
+7,30,Oraon,Oraon,Oraon
+7,31,Bhumij,Bhumij,Bhumij
+7,32,Ho,Ho,Ho
+7,33,Lodha,Lodha,Lodha
+7,34,Bhil,Bhil,Bhil
+7,35,Birhor,Birhor,Birhor
+7,36,Mallah,Mallah,Mallah
+7,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+7,38,Napit,Napit,Napit
+7,39,Karmakar,Karmakar,Karmakar
+7,40,Rajak,Rajak,Rajak
+7,41,Dhoba,Dhoba,Dhoba
+7,42,Hela,Hela,Hela
+7,43,Kahar,Kahar,Kahar
+7,45,Kurmi,Kurmi,Kurmi
+7,46,Pasi,Pasi,Pasi
+7,47,Keot,Keot,Keot
+7,44,Others (Specify),Others (Specify),Others (Specify)
+7,88,Refused to respond,Refused to respond,Refused to respond
+44,1,Aguri,Aguri,Aguri
+44,2,Kansabanik,Kansabanik,Kansabanik
+44,3,sadgop,sadgop,sadgop
+44,4,shunri,shunri,shunri
+44,5,Yadav,Yadav,Yadav
+44,6,Santal,Santal,Santal
+44,7,Pod,Pod,Pod
+44,8,Tanti,Tanti,Tanti
+44,9,Namaseej,Namaseej,Namaseej
+44,10,Brahmins,Brahmins,Brahmins
+44,11,Kayasthas,Kayasthas,Kayasthas
+44,12,Baidyas,Baidyas,Baidyas
+44,13,Rajputs,Rajputs,Rajputs
+44,14,Kshatriyas,Kshatriyas,Kshatriyas
+44,15,Barui,Barui,Barui
+44,16,Gandha Banik,Gandha Banik,Gandha Banik
+44,17,Kulin Kayasthas,Kulin Kayasthas,Kulin Kayasthas
+44,18,Mahishya,Mahishya,Mahishya
+44,19,Namasudra,Namasudra,Namasudra
+44,20,Rajbanshi,Rajbanshi,Rajbanshi
+44,21,Poundra,Poundra,Poundra
+44,22,Dom,Dom,Dom
+44,23,Bagdi,Bagdi,Bagdi
+44,24,Chamar,Chamar,Chamar
+44,25,Muchi,Muchi,Muchi
+44,26,Kori,Kori,Kori
+44,27,Haldar,Haldar,Haldar
+44,28,Santhal,Santhal,Santhal
+44,29,Munda,Munda,Munda
+44,30,Oraon,Oraon,Oraon
+44,31,Bhumij,Bhumij,Bhumij
+44,32,Ho,Ho,Ho
+44,33,Lodha,Lodha,Lodha
+44,34,Bhil,Bhil,Bhil
+44,35,Birhor,Birhor,Birhor
+44,36,Mallah,Mallah,Mallah
+44,37,Teli/Teli Sahu,Teli/Teli Sahu,Teli/Teli Sahu
+44,38,Napit,Napit,Napit
+44,39,Karmakar,Karmakar,Karmakar
+44,40,Rajak,Rajak,Rajak
+44,41,Dhoba,Dhoba,Dhoba
+44,42,Hela,Hela,Hela
+44,43,Kahar,Kahar,Kahar
+44,45,Kurmi,Kurmi,Kurmi
+44,46,Pasi,Pasi,Pasi
+44,47,Keot,Keot,Keot
+44,44,Others (Specify),Others (Specify),Others (Specify)
+44,88,Refused to respond,Refused to respond,Refused to respond
