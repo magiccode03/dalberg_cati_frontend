@@ -13,6 +13,7 @@ import { Search, Download, Upload, Edit, RotateCcw } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface PSForForm {
+  id: number;
   ac_code: number;
   lot_no: number;
   ac_lot: string;
@@ -345,7 +346,7 @@ export default function PSForFormPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                            onClick={() => handleEditPS(ps.ac_code)}
+                            onClick={() => handleEditPS(ps.id)}
                           className="text-white bg-blue-500 hover:bg-blue-600 border-0"
                             title="Edit PS"
                         >

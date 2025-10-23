@@ -182,34 +182,6 @@ export default function EditPSFormPage() {
         </div>
       </div>
 
-      {/* PS Overview Information */}
-      {psData && (
-        <Card className="mb-6">
-          <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              PS Overview
-            </Heading>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-              <div>
-                <Text className="font-medium text-gray-600 dark:text-gray-400">AC Code:</Text>
-                <Text className="text-gray-900 dark:text-white">{psData.ac_code}</Text>
-              </div>
-              <div>
-                <Text className="font-medium text-gray-600 dark:text-gray-400">Lot No:</Text>
-                <Text className="text-gray-900 dark:text-white">{psData.lot_no}</Text>
-              </div>
-              <div>
-                <Text className="font-medium text-gray-600 dark:text-gray-400">AC Lot:</Text>
-                <Text className="text-gray-900 dark:text-white">{psData.ac_lot}</Text>
-              </div>
-              <div>
-                <Text className="font-medium text-gray-600 dark:text-gray-400">Polling Station No:</Text>
-                <Text className="text-gray-900 dark:text-white">{psData.polling_station_no}</Text>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
 
       {/* Alerts */}
       {error && (
