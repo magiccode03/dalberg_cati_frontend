@@ -331,30 +331,30 @@ export default function ACWiseReportPage() {
         )}
 
         {/* AC Wise Report Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    AC Wise Report
-                  </Heading>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={downloadAllData}
-                    size="sm"
-                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
-                    disabled={loading}
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Download</span>
-                  </Button>
-                </div>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                AC Wise Report
+              </Heading>
             </div>
-            <div className="p-6">
+            <div className="flex items-center">
+              <Button
+                variant="primary"
+                onClick={downloadAllData}
+                className="flex items-center"
+                disabled={loading}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </div>
+
+          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+            Total <strong>{totalCount}</strong> ACs.
+          </div>
               <div className="overflow-x-auto">
                 <Table
                   striped
@@ -362,44 +362,42 @@ export default function ACWiseReportPage() {
                   hover
                   className="w-full border-collapse"
                 >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">SR.No.</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
+                  <thead className="sticky-header bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Agency Name</th>
-                      {/* <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th> */}
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Rejected</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Rejected</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
+                    {currentData.map((data, index) => (
                       <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.sNo}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{data.name}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{index + 1}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.acCode}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.name}</td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {getAgencyBadge(data.agencyName)}
                         </td>
-                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
                           <FormattedNumber value={data.alloted} locale="en-IN" />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
                           <FormattedNumber value={data.completed} locale="en-IN" />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium text-center">
                           <FormattedNumber value={data.accepted} locale="en-IN" />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium text-center">
                           <FormattedNumber value={data.rejected} locale="en-IN" />
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium text-center">
                           <FormattedNumber value={data.underQc} locale="en-IN" />
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
@@ -409,24 +407,24 @@ export default function ACWiseReportPage() {
                 </Table>
               </div>
 
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+          {/* Table Footer with Pagination */}
+          <div className="flex justify-between items-center mt-4 px-4 pb-4">
+            <div className="text-sm text-gray-700">
+              Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
             </div>
-          </Card>
-        </div>
+            {totalPages > 1 && (
+              <div>
+                <PaginationStandard
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalCount}
+                  itemsPerPage={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
+          </div>
+        </Card>
       </Container>
     </div>
   );
