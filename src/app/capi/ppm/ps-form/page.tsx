@@ -175,8 +175,8 @@ export default function PSForFormPage() {
   };
 
   const handleEditPS = (id: number) => {
-    // Handle edit PS logic here
-    console.log('Edit PS ID:', id);
+    // Navigate to edit page
+    window.location.href = `/capi/ppm/ps-form/edit/${id}`;
   };
 
   const startIndex = (currentPage - 1) * pageSize;

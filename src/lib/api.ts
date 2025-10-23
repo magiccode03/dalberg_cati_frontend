@@ -116,6 +116,8 @@ export const API_ENDPOINTS = {
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
+    PS_FORM_UPDATE: (id: string) => `/dashboard/master-polling-station-dynamic/update?id=${id}`,
+    PS_FORM_UPDATE_SUBMIT: '/dashboard/master-polling-station-dynamic/update',
     TEAM_REGISTRATION: '/dashboard/team-registration',
     TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
@@ -1497,6 +1499,18 @@ class ApiService {
   async getPSFormList(params?: { page?: number; limit?: number; polling_station_name?: string; polling_station_no?: string; ac_code?: string }): Promise<any> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.PS_FORM_LIST}${queryString}`);
+  }
+
+  async getPSFormForUpdate(id: string): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.PS_FORM_UPDATE(id));
+  }
+
+  async updatePSForm(id: string, psData: any): Promise<ApiResponse<any>> {
+    const url = `${API_ENDPOINTS.DASHBOARD.PS_FORM_UPDATE_SUBMIT}?id=${id}`;
+    return this.request(url, {
+      method: 'PUT',
+      body: JSON.stringify(psData),
+    });
   }
 
   // Demographic Methods

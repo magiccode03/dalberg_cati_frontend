@@ -364,14 +364,14 @@ export const menuData: MenuItem[] = [
   //     },
   //   ],
   // },
-  // {
-  //   id: 'capi-ppm-ps-form',
-  //   label: 'PS for Form',
-  //   href: '/capi/ppm/ps-form',
-  //   icon: 'FileText',
-  //   roles: ['ppm'],
-  //   system: 'capi',
-  // },
+  {
+    id: 'capi-ppm-ps-form',
+    label: 'PS for Form',
+    href: '/capi/ppm/ps-form',
+    icon: 'FileText',
+    roles: ['ppm'],
+    system: 'capi',
+  },
 
   // CAPI Project Progress Monitoring Team (PPMT) Menu
   {
