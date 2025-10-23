@@ -559,16 +559,22 @@ const TelecallerDailyCallDetailPage = () => {
 
       {/* Data Table */}
       <Card className="">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
             <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Detail
             </Heading>
           </div>
         </div>
-
-        <div className="overflow-x-auto">
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{pagination.total.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+          
           {loading ? (
             <div className="text-center py-12">
               <i className="fa fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
@@ -580,44 +586,42 @@ const TelecallerDailyCallDetailPage = () => {
               <p className="text-gray-600 dark:text-gray-400">No call details found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="table table-bordered table-striped table-hover">
-                <thead className="sticky-header bg-gray-50">
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-left">Call Time</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Received</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Response</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">API Response</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
-                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio file</th>
+                    <th className="text-center">S.No</th>
+                    <th className="text-left">Caller Name</th>
+                    <th className="text-center">Caller ID</th>
+                    <th className="text-left">Call Time</th>
+                    <th className="text-center">Call Received</th>
+                    <th className="text-center">Caller Response</th>
+                    <th className="text-center">API Response</th>
+                    <th className="text-center">IVR Duration</th>
+                    <th className="text-center">Talk Duration</th>
+                    <th className="text-center">Audio file</th>
                   </tr>
                 </thead>
                 <tbody>
                   {callDetailData.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                        {(pagination.page - 1) * pagination.limit + index + 1}
-                      </td>
-                      <td className="px-4 py-3 border-b border-gray-200 text-left">{item.caller_name || '-'}</td>
-                      <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{item.caller_id || '-'}</td>
-                      <td className="px-4 py-3 border-b border-gray-200 text-left">{formatDateTime(item.call_time)}</td>
-                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                    <tr key={item.id}>
+                      <td className="text-center">{(pagination.page - 1) * pagination.limit + index + 1}</td>
+                      <td className="text-left">{item.caller_name || '-'}</td>
+                      <td className="text-center">{item.caller_id || '-'}</td>
+                      <td className="text-left">{formatDateTime(item.call_time)}</td>
+                      <td className="text-center">
                         {item.call_received === 1 ? 'Yes' : item.call_received === 0 ? 'No' : '-'}
                       </td>
-                      <td className="px-4 py-3 border-b border-gray-200 text-center">-</td>
-                      <td className="px-4 py-3 border-b border-gray-200 text-center">-</td>
-                      <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{formatDuration(item.ivr_duration)}</td>
-                      <td className="px-4 py-3 border-b border-gray-200 font-mono text-center">{formatDuration(item.talk_duration)}</td>
-                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                      <td className="text-center">-</td>
+                      <td className="text-center">-</td>
+                      <td className="text-center">{formatDuration(item.ivr_duration)}</td>
+                      <td className="text-center">{formatDuration(item.talk_duration)}</td>
+                      <td className="text-center">
                         {item.audio ? (
                           <Button
                             size="sm"
                             onClick={() => handlePlayAudio(item.audio!)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            className="bg-blue-500 hover:bg-blue-600 text-white"
                           >
                             <i className="fa fa-play mr-1"></i>
                             Play
@@ -629,14 +633,12 @@ const TelecallerDailyCallDetailPage = () => {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           )}
-        </div>
 
-        {/* Pagination */}
-        {!loading && !error && pagination.total > 0 && (
-          <div className="mt-4 px-4 pb-4">
+          {/* Pagination */}
+          <div className="mt-6">
             <PaginationStandard
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
@@ -645,7 +647,7 @@ const TelecallerDailyCallDetailPage = () => {
               onPageChange={handlePageChange}
             />
           </div>
-        )}
+        </div>
       </Card>
 
       {/* Audio Modal */}

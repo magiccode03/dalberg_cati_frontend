@@ -45,7 +45,7 @@ export default function CAPIInterviewAudioPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20);
+  const [itemsPerPage] = useState(25);
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -201,15 +201,12 @@ export default function CAPIInterviewAudioPage() {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1">
-          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Interview Audio (F2F  )
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Interview Audio (F2F)
           </Heading>
-        </div>
-        <div className="flex-1"></div>
-        <div className="flex-1">
-          <span></span>
         </div>
       </div>
 
@@ -310,24 +307,21 @@ export default function CAPIInterviewAudioPage() {
 
       {/* Interview List */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center mb-3">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title text-lg font-semibold text-gray-900">
-                Interview List (F2F)
-              </Heading>
-            </div>
-            <span className="text-end">
-              {/* Empty for now */}
-            </span>
-          </div>
-          <div className="summary mb-4">
-            <span className="text-sm text-gray-600">
-              Total <b>{totalItems}</b> items.
-            </span>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Interview List (F2F)
+            </Heading>
           </div>
         </div>
+        
+        {/* <div className="bg-white"> */}
+          <div className="mb-4">
+            <span className="text-sm text-gray-600">
+              Total <strong>{totalItems}</strong> items.
+            </span>
+          </div>
         
         <div className="card-body">
           {loading ? (
@@ -373,15 +367,15 @@ export default function CAPIInterviewAudioPage() {
             </div>
           ) : (
           <div className="table-responsive">
-            <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead className="bg-gray-50">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
-                  <th className="text-center" style={{ width: '10%' }}>Server Id</th>
-                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
-                  <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
-                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Server Id</th>
+                  <th className="text-center">AC Code</th>
+                  <th className="text-center">AC Name</th>
+                  <th className="text-center">Interview Date</th>
+                  <th className="text-center">Interview Audio</th>
                 </tr>
               </thead>
               <tbody>
@@ -390,12 +384,12 @@ export default function CAPIInterviewAudioPage() {
                     <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                     <td className="text-center">{row.server_id}</td>
                     <td className="text-center">{row.ac_code}</td>
-                    <td>{row.ac_name}</td>
+                    <td className="text-left">{row.ac_name}</td>
                     <td className="text-center">{new Date(row.interview_date).toLocaleDateString()}</td>
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center justify-center mx-auto"
+                        className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 flex items-center justify-center mx-auto"
                         title="Play Audio"
                       >
                         <Volume2 className="h-4 w-4" />
@@ -408,25 +402,16 @@ export default function CAPIInterviewAudioPage() {
           </div>
           )}
 
-          {/* Pagination Info and Controls */}
-          {!loading && !error && interviewData.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
-                </div>
-                {totalPages > 1 && (
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </div>
-            </div>
-          )}
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
         </div>
       </Card>
 
