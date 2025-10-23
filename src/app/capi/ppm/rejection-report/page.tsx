@@ -1170,13 +1170,9 @@ export default function RejectionReportPage() {
                   <tr key={row.srNo}>
                     <td className="text-center">{row.srNo}</td>
                     <td className="text-center">
-                      <a 
-                        href={`/interview-detail?server_id=${row.serverId}`}
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-800 font-mono"
-                      >
+                      <span className="font-mono text-sm font-medium text-gray-900">
                         {row.serverId}
-                      </a>
+                      </span>
                     </td>
                     <td>{row.acName}</td>
                     <td className="font-mono">{row.psCode}</td>
