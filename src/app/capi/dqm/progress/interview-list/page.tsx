@@ -339,7 +339,7 @@ export default function InterviewListPage() {
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               Interview List
             </Heading>
           </div>
@@ -597,22 +597,22 @@ export default function InterviewListPage() {
                   >
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Server ID</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Server ID</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Interview<br />Date
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample Type</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">PS Name</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Interviewer<br />ID
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Gender</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Audio<br />QC
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Audio<br />QC ID
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
@@ -620,37 +620,37 @@ export default function InterviewListPage() {
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Outcome</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Edit</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio</th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Edit</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {currentData.map((interview, index) => (
                         <tr key={interview.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{interview.serverId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{interview.interviewDate}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{interview.sampleType}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{interview.acName}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{interview.psName}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{interview.interviewerId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{startIndex + index + 1}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.serverId}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.interviewDate}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.sampleType}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.acName}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.psName}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.interviewerId}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
                             <span className={interview.genderLabel === 'Male' ? 'text-blue-600' : 'text-pink-600'}>
                               {interview.genderLabel}
                             </span>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{interview.audioQcLabel}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{interview.audioQcId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{interview.audioFailReason}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.audioQcLabel}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.audioQcId}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.audioFailReason}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
                             <Badge variant={interview.statusLabel === 'Valid' ? 'success' : 'secondary'} size="sm">
                               {interview.statusLabel}
                             </Badge>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
                             {getQcOutcomeBadge(interview.qcOutcome)}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                             {interview.audioQcLabel === 'Fail' ? (
                               <Button
                                 variant="destructive"
