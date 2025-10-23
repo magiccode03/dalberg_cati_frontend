@@ -10,8 +10,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download } from 'lucide-react';
+import { Search, Download, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
 import PSDetailsModal from '@/components/modals/PSDetailsModal';
@@ -115,6 +114,20 @@ export default function ProgressReportPage() {
     
     setCurrentPage(1); // Reset to first page when searching
     fetchProgressReport(false);
+  };
+
+  const handleClear = () => {
+    const defaultForm = {
+      reportDays: 'all',
+      typeOfReport: 'performance',
+      level: 'ac',
+      acCode: '',
+      customDate: '',
+      customDateEnd: ''
+    };
+    setSearchForm(defaultForm);
+    setError(null);
+    setProgressData([]);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -449,9 +462,7 @@ export default function ProgressReportPage() {
       case 'reject':
         return item.reject ?? '-';
       case 'interview_in_qc_total':
-        // Calculate the sum of all QC fields and display 0 if the sum is 0
-        const qcTotal = (item.interview_in_qc ?? 0) + (item.interview_in_qc_complete ?? 0) + (item.interview_in_reqc ?? 0) + (item.interview_in_reqc_complete ?? 0);
-        return qcTotal ?? '-';
+        return item.under_qc ?? '-';
       
       // GPS fields (only for AC level)
       case 'gps_pending':
@@ -470,12 +481,7 @@ export default function ProgressReportPage() {
         const failedValue = (Number(item.reject) || 0) - (Number(item.reject_auto) || 0);
         return isNaN(failedValue) ? (item.fail_interviews ?? '-') : failedValue;
       case 'under_qc':
-        // Use pre-calculated value if it exists (for summary row), otherwise calculate
-        if (item.under_qc !== undefined) {
-          return item.under_qc;
-        }
-        const underQcValue = (Number(item.interview_in_qc) || 0) + (Number(item.interview_in_qc_complete) || 0) + (Number(item.interview_in_reqc) || 0) + (Number(item.interview_in_reqc_complete) || 0);
-        return isNaN(underQcValue) ? (item.under_qc_interviews ?? item.under_qc_interview ?? '-') : underQcValue;
+        return item.under_qc ?? '-';
       
       // Percentage fields
       case 'female_per':
@@ -588,7 +594,7 @@ export default function ProgressReportPage() {
 
     // Debug logging
     const failedCalc = (Number(summaryData.reject) || 0) - (Number(summaryData.reject_auto) || 0);
-    const underQcCalc = (Number(summaryData.interview_in_qc) || 0) + (Number(summaryData.interview_in_qc_complete) || 0) + (Number(summaryData.interview_in_reqc) || 0) + (Number(summaryData.interview_in_reqc_complete) || 0);
+    const underQcCalc = Number(summaryData.under_qc) || 0;
     
     // Calculate rejection percentage: (reject + invalid) / total_interview * 100
     const rejectionPerCalc = (Number(summaryData.total_interview) || 0) > 0 
@@ -599,10 +605,7 @@ export default function ProgressReportPage() {
     console.log('Summary Data for calculations:', {
       reject: summaryData.reject,
       reject_auto: summaryData.reject_auto,
-      interview_in_qc: summaryData.interview_in_qc,
-      interview_in_qc_complete: summaryData.interview_in_qc_complete,
-      interview_in_reqc: summaryData.interview_in_reqc,
-      interview_in_reqc_complete: summaryData.interview_in_reqc_complete,
+      under_qc: summaryData.under_qc,
       failedCalc,
       underQcCalc
     });
@@ -846,10 +849,18 @@ export default function ProgressReportPage() {
               </div>
             </div>
           )}
-          <div className="flex items-end">
-            <Button onClick={handleSearch} className="w-full">
+          <div className="flex items-end gap-2">
+            <Button onClick={handleSearch} className="flex-1">
               <Search className="w-4 h-4 mr-2" />
               Search
+            </Button>
+            <Button 
+              onClick={handleClear}
+              variant="outline"
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+            >
+              <X className="w-4 h-4 mr-2" />
+              Clear
             </Button>
           </div>
         </div>

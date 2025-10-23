@@ -46,6 +46,7 @@ export default function EditTeleCallerPage() {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [databaseId, setDatabaseId] = useState<string | null>(null);
 
   const {
     register,
@@ -80,7 +81,7 @@ export default function EditTeleCallerPage() {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users/${telecallerId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users/teleform-id/${telecallerId}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -92,6 +93,8 @@ export default function EditTeleCallerPage() {
 
       if (response.ok && result.success) {
         const data = result.data;
+        // Store the database ID for update operations
+        setDatabaseId(data.id.toString());
         // Set form values
         setValue('teleform_user_id', data.teleform_user_id.toString());
         setValue('name', data.name);
@@ -138,8 +141,13 @@ export default function EditTeleCallerPage() {
         return;
       }
 
-      // Call the API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users/${telecallerId}`, {
+      // Call the API using database ID
+      if (!databaseId) {
+        setError('Database ID not found. Please refresh the page and try again.');
+        return;
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users/${databaseId}`, {
         method: 'PUT',
         headers: {
           'accept': 'application/json',
@@ -307,7 +315,7 @@ export default function EditTeleCallerPage() {
                         onCheckedChange={(checked) => setValue('fill_form', checked === true)}
                       />
                       <label htmlFor="fill_form" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Can Fill Form
+                        Telecaller
                       </label>
                     </div>
                     <div className="flex items-center space-x-2">

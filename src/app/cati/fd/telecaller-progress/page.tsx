@@ -12,42 +12,44 @@ import Alert from '@/components/ui/Alert';
 
 // Interface for performance metrics
 interface PerformanceMetrics {
-  // Caller Performance
-  total_callers: number;
-  number_of_dials: number;
-  caller_did_not_pick: number;
-  call_connected: number;
-  total_ivr_duration: string;
-  total_talk_duration: string;
-  
-  // Call Dial Status
-  call_not_received: number;
-  ringing: number;
-  not_ringing: number;
-  no_response: number;
-  
-  // Not Ringing Breakdown
-  switch_off: number;
-  number_not_reachable: number;
-  number_does_not_exist: number;
-  not_ringing_no_response: number;
-  
-  // Ringing Breakdown
-  picked: number;
-  did_not_picked: number;
-  ringing_no_response: number;
-  
-  // Ringing Picked Breakdown
-  call_continue: number;
-  wrong_number: number;
-  reschedule_call: number;
-  picked_no_response: number;
-  
-  // General Metrics
-  number_exhausted: number;
-  successful_interview: number;
-  incomplete_interview: number;
-  reject_interview: number;
+  number_status: {
+    call_not_received_to_telecaller: number;
+    ringing: number;
+    not_ringing: number;
+  };
+  call_not_ring_status: {
+    switch_off: number;
+    number_not_reachable: number;
+    number_does_not_exist: number;
+    call_not_ring_no_response: number;
+  };
+  call_ring_status: {
+    picked: number;
+    did_not_picked: number;
+    call_ring_no_response: number;
+  };
+  call_status: {
+    continue: number;
+    refuse_to_respond: number;
+    call_back_later: number;
+  };
+  caller_performance: {
+    total_callers: number;
+    number_of_dials_attempted: number;
+    number_of_calls_connected: number;
+    total_talk_duration: string;
+  };
+  interview_metrics: {
+    successful: number;
+    terminated: number;
+    incompleted: number;
+  };
+  status_metrics: {
+    tele_no_response: number;
+    partial_system: number;
+    partial_tele: number;
+    submitted: number;
+  };
 }
 
 // Day-wise performance interface
@@ -108,7 +110,7 @@ const TelecallerProgressPage: React.FC = () => {
       if (selectedTelecaller !== 'all') params.append('teleform_user_id', selectedTelecaller);
       if (selectedAC !== 'all') params.append('ac_code', selectedAC);
       
-      const url = `${apiUrl}/api/cati/telecaller-performance${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${apiUrl}/api/cati/telecaller-metrics${params.toString() ? `?${params.toString()}` : ''}`;
 
       const response = await fetch(url, {
         method: 'GET',
@@ -170,7 +172,7 @@ const TelecallerProgressPage: React.FC = () => {
       if (selectedAC !== 'all') params.append('ac_code', selectedAC);
       params.append('days', '7'); // Default to 7 days
       
-      const url = `${apiUrl}/api/cati/telecaller-performance/daywise${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${apiUrl}/api/cati/telecaller-metrics/daywise${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -322,230 +324,220 @@ const TelecallerProgressPage: React.FC = () => {
     </div>
   );
 
-  const renderMetrics = (data: PerformanceMetrics) => (
-    <>
-      {/* Caller Performance Section */}
-      <div className="mb-8">
-        <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Total Callers"
-            value={data.total_callers}
-            icon={<Users className="h-6 w-6 text-blue-600" />}
-            color="border-blue-500"
-            bgColor="bg-blue-500"
-          />
-          <MetricCard
-            title="Number of Dials Attempted"
-            value={data.number_of_dials}
-            // value={4790}
-            icon={<Phone className="h-6 w-6 text-orange-600" />}
-            color="border-orange-500"
-            bgColor="bg-orange-500"
-          />
-          {/* <MetricCard
-            title="Caller did not pick"
-            value={data.caller_did_not_pick}
-            icon={<TrendingDown className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          /> */}
-          <MetricCard
-            title="Number of Calls Connected"
-            value={data.call_connected}
-            // value={2124}
-            icon={<Calendar className="h-6 w-6 text-indigo-600" />}
-            color="border-indigo-500"
-            bgColor="bg-indigo-500"
-          />
-          {/* <MetricCard
-            title="Total IVR Duration"
-            value={formatDuration(data.total_ivr_duration)}
-            icon={<Clock className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          /> */}
-          <MetricCard
-            title="Total Talk Duration"
-            value={formatDuration(data.total_talk_duration)}
-            icon={<Clock className="h-6 w-6 text-emerald-600" />}
-            color="border-emerald-500"
-            bgColor="bg-emerald-500"
-          />
-        </div>
-      </div>
+  const renderMetrics = (data: PerformanceMetrics | null) => {
+    // Helper function to safely get value or show placeholder
+    const getValue = (value: any) => {
+      if (value === null || value === undefined) return '—';
+      return value;
+    };
 
-      {/* Call Dial Status Section */}
-      <div className="mb-8">
-        <SectionHeader title="CALL DIAL STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          {/* <MetricCard
-            title="Call not Received"
-            value={data.call_not_received}
-            icon={<Phone className="h-6 w-6 text-amber-600" />}
-            color="border-amber-500"
-            bgColor="bg-amber-500"
-          /> */}
-          <MetricCard
-            title="Ringing"
-            value={data.ringing}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Not Ringing"
-            value={data.not_ringing}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="No Response"
-            // value={data.no_response}
-            value={0}
-            icon={<Phone className="h-6 w-6 text-teal-600" />}
-            color="border-teal-500"
-            bgColor="bg-teal-500"
-          />
+    return (
+      <>
+        {/* Caller Performance Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Total Callers"
+              value={getValue(data?.caller_performance?.total_callers)}
+              icon={<Users className="h-6 w-6 text-blue-600" />}
+              color="border-blue-500"
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              title="Number of Dials Attempted"
+              value={getValue(data?.caller_performance?.number_of_dials_attempted)}
+              icon={<Phone className="h-6 w-6 text-orange-600" />}
+              color="border-orange-500"
+              bgColor="bg-orange-500"
+            />
+            <MetricCard
+              title="Number of Calls Connected"
+              value={getValue(data?.caller_performance?.number_of_calls_connected)}
+              icon={<Phone className="h-6 w-6 text-indigo-600" />}
+              color="border-indigo-500"
+              bgColor="bg-indigo-500"
+            />
+            <MetricCard
+              title="Total Talk Duration"
+              value={data?.caller_performance?.total_talk_duration ? formatDuration(data.caller_performance.total_talk_duration) : '—'}
+              icon={<Clock className="h-6 w-6 text-emerald-600" />}
+              color="border-emerald-500"
+              bgColor="bg-emerald-500"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Call Dial: Not Ringing Section */}
-      {/* <div className="mb-8">
-        <SectionHeader title="CALL DIAL : NOT RINGING" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Switch Off"
-            value={data.switch_off}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="Number Not Reachable"
-            value={data.number_not_reachable}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="Number Does Not Exist"
-            value={data.number_does_not_exist}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="No Response"
-            value={data.not_ringing_no_response}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
+        {/* Number Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="NUMBER STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Call Not Received to Telecaller"
+              value={getValue(data?.number_status?.call_not_received_to_telecaller)}
+              icon={<Phone className="h-6 w-6 text-gray-500" />}
+              color="border-gray-400"
+              bgColor="bg-gray-400"
+            />
+            <MetricCard
+              title="Ringing"
+              value={getValue(data?.number_status?.ringing)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Not Ringing"
+              value={getValue(data?.number_status?.not_ringing)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.caller_performance?.number_of_dials_attempted || 0) - (data?.number_status?.ringing || 0) - (data?.number_status?.not_ringing || 0) - (data?.number_status?.call_not_received_to_telecaller || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div> */}
 
-      {/* Call Dial: Ringing Section */}
-      {/* <div className="mb-8">
-        <SectionHeader title="CALL DIAL : RINGING" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <MetricCard
-            title="Picked"
-            value={data.picked}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Did not picked"
-            value={data.did_not_picked}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="No Response"
-            value={data.ringing_no_response}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
+        {/* Call Not Ring Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALL NOT RING STATUS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Switch Off"
+              value={getValue(data?.call_not_ring_status?.switch_off)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="Number Not Reachable"
+              value={getValue(data?.call_not_ring_status?.number_not_reachable)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="Number Does Not Exist"
+              value={getValue(data?.call_not_ring_status?.number_does_not_exist)}
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.number_status?.not_ringing || 0) - (data?.call_not_ring_status?.switch_off || 0) - (data?.call_not_ring_status?.number_not_reachable || 0) - (data?.call_not_ring_status?.number_does_not_exist || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div> */}
 
-      {/* Call Dial: Ringing (Picked) Section */}
-      {/* <div className="mb-8">
-        <SectionHeader title="CALL DIAL : RINGING (PICKED)" icon={<BarChart3 className="h-6 w-6 text-green-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Call Continue"
-            value={data.call_continue}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Wrong Number"
-            value={data.wrong_number}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Reschedule Call"
-            value={data.reschedule_call}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="No Response"
-            value={data.picked_no_response}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
+        {/* Call Ring Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALL RING STATUS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+            <MetricCard
+              title="Number of Calls Connected"
+              value={getValue(data?.call_ring_status?.picked)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Number of Calls Not Connected"
+              value={getValue(data?.call_ring_status?.did_not_picked)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.number_status?.ringing || 0) - (data?.call_ring_status?.picked || 0) - (data?.call_ring_status?.did_not_picked || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div> */}
 
-      {/* General Metrics Section */}
-      <div className="mb-8">
-        <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 md:gap-4">
-          {/* <MetricCard
-            title="Number Exhausted"
-            value={data.number_exhausted}
-            icon={<Phone className="h-6 w-6 text-blue-600" />}
-            color="border-blue-500"
-            bgColor="bg-blue-500"
-          /> */}
-          <MetricCard
-            title="Successful Interview"
-            value={data.successful_interview}
-            icon={<TrendingUp className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          {/* <MetricCard
-            title="Incomplete Interview"
-            value={data.incomplete_interview}
-            icon={<TrendingDown className="h-6 w-6 text-amber-600" />}
-            color="border-amber-500"
-            bgColor="bg-amber-500"
-          /> */}
-          {/* <MetricCard
-            title="Reject Interview"
-            // value={data.reject_interview}
-            value={1725}
-            icon={<TrendingDown className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          /> */}
+        {/* Call Status Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALL STATUS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Continue"
+              value={getValue(data?.call_status?.continue)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Refuse to Respond"
+              value={getValue(data?.call_status?.refuse_to_respond)}
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Call Back Later"
+              value={getValue(data?.call_status?.call_back_later)}
+              icon={<Clock className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.call_ring_status?.picked || 0) - (data?.call_status?.continue || 0) - (data?.call_status?.refuse_to_respond || 0) - (data?.call_status?.call_back_later || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
         </div>
-      </div>
-    </>
-  );
+
+        {/* Interview Metrics Section */}
+        <div className="mb-8">
+          <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Completed"
+              value={getValue(data?.interview_metrics?.successful)}
+              icon={<TrendingUp className="h-6 w-6 text-cyan-600" />}
+              color="border-cyan-500"
+              bgColor="bg-cyan-500"
+            />
+            <MetricCard
+              title="Terminated"
+              value={getValue(data?.interview_metrics?.terminated)}
+              icon={<TrendingDown className="h-6 w-6 text-fuchsia-600" />}
+              color="border-fuchsia-500"
+              bgColor="bg-fuchsia-500"
+            />
+            <MetricCard
+              title="Incompleted"
+              value={getValue(data?.interview_metrics?.incompleted)}
+              icon={<TrendingDown className="h-6 w-6 text-sky-600" />}
+              color="border-sky-500"
+              bgColor="bg-sky-500"
+            />
+            <MetricCard
+              title="No response by Telecaller"
+              value={getValue(Math.max(0, (data?.call_status?.continue || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
+              icon={<Phone className="h-6 w-6 text-gray-600" />}
+              color="border-gray-600"
+              bgColor="bg-gray-600"
+            />
+          </div>
+        </div>
+      </>
+    );
+  };
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -677,7 +669,7 @@ const TelecallerProgressPage: React.FC = () => {
               </Alert>
             )}
 
-            {viewMode === 'overall' && metrics && (
+            {viewMode === 'overall' && (
               <Card className="p-4 md:p-6">
                 {renderMetrics(metrics)}
               </Card>
@@ -706,7 +698,7 @@ const TelecallerProgressPage: React.FC = () => {
                         </span>
                       </h3>
                       <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                        Day {dayData.metrics.call_connected}
+                        {/* Day {dayData.metrics.days_till_now} */}
                       </span>
                     </div>
                     {renderMetrics(dayData.metrics)}

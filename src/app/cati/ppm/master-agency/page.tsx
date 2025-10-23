@@ -328,7 +328,7 @@ const MasterAgencyPage = () => {
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Total Telecaller</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Valid Interview</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Reject Interview</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Telecaller Can Fill Form</th>
+                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Telecaller</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
                 <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Action</th>
               </tr>

@@ -6,8 +6,42 @@ import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Loader2 } from 'lucide-react';
-import { apiService, GainLossData, GainLossZoneData } from '@/lib/api';
+import { apiService } from '@/lib/api-service';
 
+// TypeScript interfaces for the API response
+interface GainLossData {
+  '2021_party': string;
+  '2021_vote_share': number;
+  upcoming: {
+    AITC: number;
+    BJP: number;
+    INC: number;
+    'Left Front': number;
+    Independent: number;
+    AJSU: number;
+    Others: number;
+    NOTA: number;
+  };
+}
+
+interface GainLossZoneData {
+  zone_code: number;
+  zone_name: string;
+  data: GainLossData[];
+}
+
+interface GainLossResponse {
+  page_info: {
+    page_name: string;
+    page_title: string;
+    total_interviews: number;
+  };
+  state_level: {
+    title: string;
+    data: GainLossData[];
+  };
+  zone_breakdown: GainLossZoneData[];
+}
 
 export default function GainAndLossesPage() {
   const [stateLevelData, setStateLevelData] = useState<GainLossData[]>([]);
@@ -48,8 +82,8 @@ export default function GainAndLossesPage() {
 
 
   const renderTable = (title: string, data: GainLossData[]) => {
-    const getPartyName = (row: GainLossData) => row['2020_party'];
-    const getPreference = (row: GainLossData) => row['2025_preference'];
+    const getPartyName = (row: GainLossData) => row['2021_party'];
+    const getUpcoming = (row: GainLossData) => row.upcoming;
     
     return (
     <Card className="mb-6">
@@ -60,44 +94,38 @@ export default function GainAndLossesPage() {
             <thead>
               <tr>
                 <th className="bg-blue-100 border border-gray-300"></th>
-                <th colSpan={12} className="text-center bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
+                <th colSpan={9} className="text-center bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <th rowSpan={12} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">2020 AE</th>
+                <th rowSpan={9} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">2021 AE</th>
                 <th className="bg-blue-100 border border-gray-300 font-semibold">Party Name</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#92d050' }}>JDU</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#dce119' }}>HAMS</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'white', backgroundColor: '#275317' }}>VSIP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'white', backgroundColor: '#7030a0' }}>LJP(RV)</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'white', backgroundColor: '#548235' }}>RJD</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#ff0000' }}>CPI(M)</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#ffff00' }}>JSP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '7%', color: 'black', backgroundColor: '#aeaeae' }}>NWR</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
               </tr>
               {data.map((row, index) => {
                 const partyName = getPartyName(row);
-                const preference = getPreference(row);
+                const upcoming = getUpcoming(row);
                 return (
                 <tr key={index} className="hover:bg-gray-50">
                   <th className="text-center font-medium border border-gray-300" style={{ width: '8%', color: 'black', backgroundColor: getPartyColor(partyName) }}>
                     {partyName}
                   </th>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.BJP}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.JDU}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.HAMS}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.VSIP}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference['LJP(RV)']}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.INC}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.RJD}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference['CPI(M)']}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.JSP}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.Others}</td>
-                  <td className="text-center font-medium border border-gray-300 py-2">{preference.NWR}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.AITC}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.BJP}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.INC}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming['Left Front']}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.Independent}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.AJSU}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.Others}</td>
+                  <td className="text-center font-medium border border-gray-300 py-2">{upcoming.NOTA}</td>
                 </tr>
                 );
               })}
@@ -111,17 +139,14 @@ export default function GainAndLossesPage() {
 
   const getPartyColor = (party: string): string => {
     const colors: { [key: string]: string } = {
+      'AITC': '#00b0f0',
       'BJP': '#e97132',
-      'JDU': '#92d050',
-      'HAMS': '#dce119',
-      'VSIP': '#275317',
-      'LJP(RV)': '#7030a0',
       'INC': '#00b0f0',
-      'RJD': '#548235',
-      'CPI(M)': '#ff0000',
-      'JSP': '#ffff00',
+      'Left Front': '#ff0000',
+      'Independent': '#92d050',
+      'AJSU': '#dce119',
       'Others': '#aeaeae',
-      'NWR': '#aeaeae',
+      'NOTA': '#aeaeae',
     };
     return colors[party] || '#aeaeae';
   };
@@ -173,7 +198,7 @@ export default function GainAndLossesPage() {
 
       {/* Zone Tables */}
       {!loading && !error && zoneData.map((zone, index) => (
-        <div key={index}>
+        <div key={zone.zone_code || `zone-${index}`}>
           {renderTable(`Zone - ${zone.zone_code} ${zone.zone_name}`, zone.data)}
         </div>
       ))}

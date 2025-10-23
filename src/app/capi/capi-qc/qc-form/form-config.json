@@ -706,7 +706,6 @@
       "bn": "9. Remark"
     },
     "tag": "qc_q9",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
     "required": false,
     "maxLength": 500
   }

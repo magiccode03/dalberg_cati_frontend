@@ -564,57 +564,6 @@
     "tag": "qc_q5"
   },
   {
-    "key": 6,
-    "type": "radio",
-    "label": {
-      "en": "6. Name of the Respondent Matching?",
-      "hi": "6. प्रत्युत्तरदाता का नाम मेल खाता है?",
-      "bn": "6. উত্তরদাতার নাম কি মিলে গেছে?"
-    },
-    "survey_q_tag": "resp_name",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
-    "required": true,
-    "options": [
-      {
-        "label": {
-          "en": "Matched",
-          "hi": "मिलान हुआ",
-          "bn": "মিলে গেছে"
-        },
-        "value": "1",
-        "tag": "opt_matched"
-      },
-      {
-        "label": {
-          "en": "Not Matched",
-          "hi": "मिलान नहीं हुआ",
-          "bn": "মেলেনি"
-        },
-        "value": "2",
-        "tag": "opt_not_matched"
-      },
-      {
-        "label": {
-          "en": "Cannot hear the response clearly",
-          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
-          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
-        },
-        "value": "3",
-        "tag": "opt_not_hear_clearly"
-      },
-      {
-        "label": {
-          "en": "Did not ask",
-          "hi": "नहीं पूछा",
-          "bn": "জিজ্ঞাসা করা হয়নি"
-        },
-        "value": "4",
-        "tag": "opt_did_not_ask"
-      }
-    ],
-    "tag": "qc_q6"
-  },
-  {
     "key": 7,
     "type": "radio",
     "label": {
@@ -657,47 +606,6 @@
     "tag": "qc_q7"
   },
   {
-    "key": 8,
-    "type": "radio",
-    "label": {
-      "en": "8. Did the interviewer ask the phone number of the respondent?",
-      "hi": "8. क्या साक्षात्कारकर्ता ने प्रत्युत्तरदाता का फोन नंबर पूछा?",
-      "bn": "8. সাক্ষাৎকারগ্রহণকারী কি উত্তরদাতার ফোন নম্বর জিজ্ঞাসা করেছিলেন?"
-    },
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
-    "required": true,
-    "options": [
-      {
-        "label": {
-          "en": "Asked the number and noted in the questionnaire",
-          "hi": "संख्या पूछी और प्रश्नावली में नोट किया",
-          "bn": "নম্বরটি জিজ্ঞাসা করে প্রশ্নপত্রে নোট করা হয়েছে"
-        },
-        "value": "1",
-        "tag": "opt_asked_noted"
-      },
-      {
-        "label": {
-          "en": "Asked the question but the respondent refused to share",
-          "hi": "प्रश्न पूछा गया लेकिन उत्तरदाता ने साझा करने से इनकार कर दिया",
-          "bn": "প্রশ্নটি করা হয়েছে কিন্তু উত্তরদাতা শেয়ার করতে অস্বীকার করেছেন"
-        },
-        "value": "2",
-        "tag": "opt_asked_refused"
-      },
-      {
-        "label": {
-          "en": "Did not ask",
-          "hi": "नहीं पूछा",
-          "bn": "জিজ্ঞাসা করা হয়নি"
-        },
-        "value": "3",
-        "tag": "opt_not_asked"
-      }
-    ],
-    "tag": "qc_q8"
-  },
-  {
     "key": 9,
     "type": "text",
     "label": {
@@ -706,7 +614,6 @@
       "bn": "9. Remark"
     },
     "tag": "qc_q9",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
     "required": false,
     "maxLength": 500
   }
