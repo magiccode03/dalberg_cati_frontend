@@ -323,8 +323,8 @@ export default function ProgressReportPage() {
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-48', align: 'center' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32', align: 'center' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-48', align: 'center' },
-            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
             { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-40', align: 'center' },
+            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
             { key: 'reject_duplicate_audio', label: 'Duplicate Audio', width: 'w-40', align: 'center' },
             { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24', align: 'center' }
           ];
@@ -364,8 +364,8 @@ export default function ProgressReportPage() {
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-48', align: 'center' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32', align: 'center' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-48', align: 'center' },
-            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
             { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-40', align: 'center' },
+            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
             { key: 'reject_duplicate_audio', label: 'Duplicate Audio', width: 'w-40', align: 'center' },
             { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24', align: 'center' },
             { key: 'rejection_per', label: 'Rejection %', width: 'w-24', align: 'center' }
@@ -567,10 +567,10 @@ export default function ProgressReportPage() {
         return item.reject_qc_audio_blank ?? '-';
       case 'reject_qc_audio_irrelevant':
         return item.reject_qc_audio_irrelevant ?? '-';
-      case 'cannot_hear_the_response_clearly':
-        return item.cannot_hear_the_response_clearly ?? '-';
       case 'reject_qc_audio_interviewer_more':
         return item.reject_qc_audio_interviewer_more ?? '-';
+      case 'cannot_hear_the_response_clearly':
+        return item.cannot_hear_the_response_clearly ?? '-';
       case 'reject_duplicate_audio':
         return item.reject_duplicate_audio ?? '-';
       
@@ -715,8 +715,8 @@ export default function ProgressReportPage() {
       reject_qc_audio_gender: summaryData.reject_qc_audio_gender ?? '-',
       reject_qc_audio_irrelevant: summaryData.reject_qc_audio_irrelevant ?? '-',
       reject_qc_audio_interviewer_more: summaryData.reject_qc_audio_interviewer_more ?? '-',
-      reject_duplicate_audio: summaryData.reject_duplicate_audio ?? '-',
       cannot_hear_the_response_clearly: summaryData.cannot_hear_the_response_clearly ?? '-',
+      reject_duplicate_audio: summaryData.reject_duplicate_audio ?? '-',
       reject_rta: summaryData.reject_rta ?? '-',
       without_audio_valid: summaryData.without_audio_valid ?? '-'
     };
