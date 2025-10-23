@@ -76,7 +76,7 @@ const MonthlyReportPage = () => {
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(100);
+  const [pageSize] = useState(25);
 
   // Sample data for caller summary
   const [callerSummaryData] = useState<CallerSummaryData[]>([
@@ -229,10 +229,10 @@ const MonthlyReportPage = () => {
 
   // Pagination calculations
   const totalItems = callerSummaryData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfFirstItem = (currentPage - 1) * itemsPerPage;
-  const indexOfLastItem = indexOfFirstItem + itemsPerPage;
-  const currentItems = callerSummaryData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = callerSummaryData.slice(startIndex, endIndex);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -445,8 +445,8 @@ const MonthlyReportPage = () => {
       <Card>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Caller Summary
             </Heading>
           </div>
@@ -460,152 +460,91 @@ const MonthlyReportPage = () => {
           </Button>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number of dials
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  IVR Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Talk Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller did not pick
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number does not exist
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Respondent did not pick
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Respondent Picked the call
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Picked and Refused
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number Exhausted
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Successful Interviews
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number: Picked The Call
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number: Does Not Working
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number: No Response
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Number: Refused
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Form not Fill
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Caller Form not Fill and Respondent Picked
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {indexOfFirstItem + index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.callerName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.callerId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <a href="#" className="text-blue-600 hover:text-blue-800">
-                      {item.numberOfDials}
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.ivrDuration}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.talkDuration}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.callerDidNotPick}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.numberDoesNotExist}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.respondentDidNotPick}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.respondentPickedCall}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.pickedAndRefused}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.numberExhausted}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.successfulInterviews}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.numberPickedTheCall}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.numberDoesNotWorking}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.numberNoResponse}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {item.numberRefused}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <a href="#" className="text-blue-600 hover:text-blue-800">
-                      {item.callerFormNotFill}
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <a href="#" className="text-blue-600 hover:text-blue-800">
-                      {item.callerFormNotFillRespondentPicked}
-                    </a>
-                  </td>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Caller Name</th>
+                  <th className="text-center">Caller ID</th>
+                  <th className="text-center">Number of dials</th>
+                  <th className="text-center">IVR Duration</th>
+                  <th className="text-center">Talk Duration</th>
+                  <th className="text-center">Caller did not pick</th>
+                  <th className="text-center">Number does not exist</th>
+                  <th className="text-center">Respondent did not pick</th>
+                  <th className="text-center">Respondent Picked the call</th>
+                  <th className="text-center">Picked and Refused</th>
+                  <th className="text-center">Number Exhausted</th>
+                  <th className="text-center">Successful Interviews</th>
+                  <th className="text-center">Number: Picked The Call</th>
+                  <th className="text-center">Number: Does Not Working</th>
+                  <th className="text-center">Number: No Response</th>
+                  <th className="text-center">Number: Refused</th>
+                  <th className="text-center">Caller Form not Fill</th>
+                  <th className="text-center">Caller Form not Fill and Respondent Picked</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+              </thead>
+              <tbody>
+                {currentData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-left">{item.callerName}</td>
+                    <td className="text-center">{item.callerId}</td>
+                    <td className="text-center">
+                      <a href="#" className="text-blue-600 hover:text-blue-800">
+                        {item.numberOfDials.toLocaleString()}
+                      </a>
+                    </td>
+                    <td className="text-center">{item.ivrDuration}</td>
+                    <td className="text-center">{item.talkDuration}</td>
+                    <td className="text-center">{item.callerDidNotPick.toLocaleString()}</td>
+                    <td className="text-center">{item.numberDoesNotExist.toLocaleString()}</td>
+                    <td className="text-center">{item.respondentDidNotPick.toLocaleString()}</td>
+                    <td className="text-center">{item.respondentPickedCall.toLocaleString()}</td>
+                    <td className="text-center">{item.pickedAndRefused.toLocaleString()}</td>
+                    <td className="text-center">{item.numberExhausted.toLocaleString()}</td>
+                    <td className="text-center">{item.successfulInterviews.toLocaleString()}</td>
+                    <td className="text-center">{item.numberPickedTheCall.toLocaleString()}</td>
+                    <td className="text-center">{item.numberDoesNotWorking.toLocaleString()}</td>
+                    <td className="text-center">{item.numberNoResponse.toLocaleString()}</td>
+                    <td className="text-center">{item.numberRefused.toLocaleString()}</td>
+                    <td className="text-center">
+                      <a href="#" className="text-blue-600 hover:text-blue-800">
+                        {item.callerFormNotFill.toLocaleString()}
+                      </a>
+                    </td>
+                    <td className="text-center">
+                      <a href="#" className="text-blue-600 hover:text-blue-800">
+                        {item.callerFormNotFillRespondentPicked.toLocaleString()}
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Pagination */}
-        <div className="mt-6">
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-          />
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
-
       </Card>
     </Container>
   );

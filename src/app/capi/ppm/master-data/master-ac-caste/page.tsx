@@ -43,7 +43,7 @@ export default function MasterACCastePage() {
   const [casteName, setCasteName] = useState('');
   const [casteCode, setCasteCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [data, setData] = useState<APIResponse['data'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -212,56 +212,54 @@ export default function MasterACCastePage() {
 
       {/* Master AC Caste Table Card */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                List of AC Wise Caste
-              </Heading>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleDownloadCaste}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download Caste List
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleUploadCaste}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Caste List
-              </Button>
-            </div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              List of AC Wise Caste
+            </Heading>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleDownloadCaste}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download Caste List
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleUploadCaste}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Caste List
+            </Button>
           </div>
         </div>
         
-        <div className="card-body">
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+          
           <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <strong>{totalItems}</strong> items.
-              </Text>
-            </div>
-            
-            <Table className="table table-striped table-bordered">
-              <thead>
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
                   <th className="text-center">S.No</th>
                   <th className="text-center">Ac Code</th>
-                  <th className="text-left">Caste Name</th>
-                  <th className="text-left">Absoulte Caste</th>
-                  <th className="text-left">Caste</th>
+                  <th className="text-center">Caste Name</th>
+                  <th className="text-center">Absoulte Caste</th>
+                  <th className="text-center">Caste</th>
                   <th className="text-center">Rank</th>
                   <th className="text-center">Caste Code</th>
                   <th className="text-center">Castecode</th>
                   <th className="text-center">Minsample</th>
-                  <th className="text-center action-column">Actions</th>
+                  <th className="text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -270,7 +268,7 @@ export default function MasterACCastePage() {
                     <td className="text-center">{startIndex + index + 1}</td>
                     <td className="text-center">{caste.ac_code}</td>
                     <td className="text-left">{caste.caste_name}</td>
-                    <td className="text-left">{caste.absoulte_caste}</td>
+                    <td className="text-center">{caste.absoulte_caste}</td>
                     <td className="text-left">{caste.caste}</td>
                     <td className="text-center">{caste.rank}</td>
                     <td className="text-center">{caste.caste_code}</td>
@@ -291,16 +289,17 @@ export default function MasterACCastePage() {
                 ))}
               </tbody>
             </Table>
-            
-            <div className="mt-6">
-              <PaginationStandard
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                itemsPerPage={pageSize}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+          </div>
+
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </Card>

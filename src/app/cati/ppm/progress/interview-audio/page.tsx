@@ -74,7 +74,7 @@ export default function CATIInterviewAudioPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(25);
   const [interviewData, setInterviewData] = useState<InterviewAudioData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -302,42 +302,29 @@ export default function CATIInterviewAudioPage() {
 
       {/* Interview List */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                Interview List (CATI)
-              </Heading>
-            </div>
-            <span className="text-end">
-              {/* Empty for now */}
-            </span>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Interview List (CATI)
+            </Heading>
           </div>
         </div>
-        
-        <div className="card-body">
+
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+          Total <strong>{totalItems}</strong> items.
+        </div>
+
+        <div className="overflow-x-auto">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-gray-600">Loading interview data...</div>
+            <div className="text-center py-12">
+              <i className="fa fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">Loading interview data...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-red-600">Error: {error}</div>
-              <div className="mt-4 text-sm text-gray-600">
-                <details className="cursor-pointer">
-                  <summary className="font-semibold">Debug Info (Click to expand)</summary>
-                  <div className="mt-2 p-4 bg-gray-100 rounded text-left">
-                    <p><strong>Current Page:</strong> {currentPage}</p>
-                    <p><strong>Items Per Page:</strong> {itemsPerPage}</p>
-                    <p><strong>Total Items:</strong> {totalItems}</p>
-                    <p><strong>Total Pages:</strong> {totalPages}</p>
-                    <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
-                    <p><strong>AC Code Filter:</strong> {acCode || 'None'}</p>
-                    <p><strong>Date Filter:</strong> {interviewDate || 'None'}</p>
-                  </div>
-                </details>
-              </div>
+            <div className="text-center py-12">
+              <i className="fa fa-exclamation-triangle text-6xl text-red-300 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">Error: {error}</p>
               <button 
                 onClick={fetchData}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -346,72 +333,77 @@ export default function CATIInterviewAudioPage() {
               </button>
             </div>
           ) : interviewData.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-gray-600">No interview data found</div>
-              <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
-              <button 
-                onClick={fetchData}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Refresh
-              </button>
+            <div className="text-center py-12">
+              <i className="fa fa-inbox text-6xl text-gray-300 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">No interview data found</p>
             </div>
           ) : (
-          <div className="table-responsive">
-            <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
-                <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
-                  <th style={{ width: '10%' }}>Server Token</th>
-                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
-                  <th style={{ width: '10%' }}>Interview Date</th>
-                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row, index) => (
-                  <tr key={row.id}>
-                    <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.id}</td>
-                    <td className="text-center">{row.ac_code}</td>
-                    <td>{row.ac_name}</td>
-                    <td>{formatInterviewDate(row.interview_date)}</td>
-                    <td className="text-center">
-                      <Button
-                        onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center gap-2 mx-auto"
-                      >
-                        <Volume2 className="h-4 w-4" />
-                      </Button>
-                    </td>
+            <div className="table-responsive">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="sticky-header bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server Token</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Code</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Name</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interview Date</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interview Audio</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          )}
-
-          {/* Pagination Info and Controls */}
-          {!loading && !error && interviewData.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
-                </div>
-                {totalPages > 1 && (
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </div>
+                </thead>
+                <tbody>
+                  {paginatedData.map((row, index) => (
+                    <tr key={row.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {row.id}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {row.ac_code}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-left">
+                        {row.ac_name}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {formatInterviewDate(row.interview_date)}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        <div className="relative group">
+                          <Button
+                            size="sm"
+                            onClick={() => handlePlayAudio(row)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </Button>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Play Audio
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {!loading && !error && totalItems > 0 && (
+          <div className="mt-4 px-4 pb-4">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </Card>
 
       {/* Audio Modal */}

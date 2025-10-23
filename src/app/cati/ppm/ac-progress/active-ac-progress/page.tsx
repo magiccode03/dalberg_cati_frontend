@@ -6,6 +6,7 @@ import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Download, CreditCard } from 'lucide-react';
 
 // Interfaces
@@ -26,6 +27,10 @@ interface ACProgressData {
 }
 
 const ActiveACProgressPage = () => {
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // Empty data for Active AC Progress (no active ACs currently)
   const [acProgressData] = useState<ACProgressData[]>([]);
 
@@ -47,6 +52,13 @@ const ActiveACProgressPage = () => {
   const handleDownload = () => {
     console.log('Download Active AC Progress data');
   };
+
+  // Pagination calculations
+  const totalItems = acProgressData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = acProgressData.slice(startIndex, endIndex);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -209,67 +221,88 @@ const ActiveACProgressPage = () => {
       <Card>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Master AC Progress
             </Heading>
           </div>
           <button 
             onClick={handleDownload}
-            className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+            className="flex items-center bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
           >
             <Download className="w-4 h-4 mr-2" />
             Download
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Name</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">AC Code</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Total Numbers</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number Assigned</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number Pending</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number Exhausted</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Successful Interviews</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number does not exist</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Respondent did not pick</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Picked and Refused</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Data Available</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Data in File</th>
-              </tr>
-            </thead>
-            <tbody>
-              {acProgressData.length === 0 ? (
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <td colSpan={13} className="px-4 py-8 text-center text-gray-500">
-                    No results found.
-                  </td>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">AC Name</th>
+                  <th className="text-center">AC Code</th>
+                  <th className="text-center">Total Numbers</th>
+                  <th className="text-center">Number Assigned</th>
+                  <th className="text-center">Number Pending</th>
+                  <th className="text-center">Number Exhausted</th>
+                  <th className="text-center">Successful Interviews</th>
+                  <th className="text-center">Number does not exist</th>
+                  <th className="text-center">Respondent did not pick</th>
+                  <th className="text-center">Picked and Refused</th>
+                  <th className="text-center">Data Available</th>
+                  <th className="text-center">Data in File</th>
                 </tr>
-              ) : (
-                acProgressData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.acName}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.acCode}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.totalNumbers.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.numberAssigned.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.numberPending.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.numberExhausted.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.successfulInterviews.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.numberDoesNotExist.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.respondentDidNotPick.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.pickedAndRefused.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.dataAvailable.toLocaleString()}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.dataInFile.toLocaleString()}</td>
+              </thead>
+              <tbody>
+                {currentData.length === 0 ? (
+                  <tr>
+                    <td colSpan={13} className="text-center py-8 text-gray-500">
+                      No results found.
+                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ) : (
+                  currentData.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-left">{item.acName}</td>
+                      <td className="text-center">{item.acCode}</td>
+                      <td className="text-center">{item.totalNumbers.toLocaleString()}</td>
+                      <td className="text-center">{item.numberAssigned.toLocaleString()}</td>
+                      <td className="text-center">{item.numberPending.toLocaleString()}</td>
+                      <td className="text-center">{item.numberExhausted.toLocaleString()}</td>
+                      <td className="text-center">{item.successfulInterviews.toLocaleString()}</td>
+                      <td className="text-center">{item.numberDoesNotExist.toLocaleString()}</td>
+                      <td className="text-center">{item.respondentDidNotPick.toLocaleString()}</td>
+                      <td className="text-center">{item.pickedAndRefused.toLocaleString()}</td>
+                      <td className="text-center">{item.dataAvailable.toLocaleString()}</td>
+                      <td className="text-center">{item.dataInFile.toLocaleString()}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </Card>
     </Container>

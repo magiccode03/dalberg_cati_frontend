@@ -44,7 +44,7 @@ export default function PSForFormPage() {
   const [pollingStationNo, setPollingStationNo] = useState('');
   const [acCode, setAcCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [psFormData, setPsFormData] = useState<PSForForm[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -242,71 +242,69 @@ export default function PSForFormPage() {
 
       {/* PS for Form Table Card */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               List of Master Poling Station For Field Form
             </Heading>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleCalculateValidInterview}
-              >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Calculate Valid Interview
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleDownloadPS}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download PS List
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleUploadPS}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload PS List
-              </Button>
-            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleCalculateValidInterview}
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Calculate Valid Interview
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleDownloadPS}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download PS List
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleUploadPS}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload PS List
+            </Button>
           </div>
         </div>
         
-        <div className="card-body">
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              {loading ? (
+                'Loading...'
+              ) : error ? (
+                <span className="text-red-600">Error: {error}</span>
+              ) : (
+                <>Total <strong>{totalItems.toLocaleString()}</strong> items.</>
+              )}
+            </Text>
+          </div>
+          
           <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                {loading ? (
-                  'Loading...'
-                ) : error ? (
-                  <span className="text-red-600">Error: {error}</span>
-                ) : (
-                  <>Total <strong>{totalItems.toLocaleString()}</strong> items.</>
-                )}
-              </Text>
-            </div>
-            
-            <Table className="table table-striped table-bordered border border-gray-300">
-              <thead>
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
                   <th className="text-center">S.No</th>
                   <th className="text-center">Ac Code</th>
                   <th className="text-center">Lot No</th>
                   <th className="text-center">Ac Lot</th>
                   <th className="text-center">Polling Station No</th>
-                  <th className="text-left">Polling Station Name</th>
-                  <th className="text-left">Polling Station Name L2</th>
-                  <th className="text-left">Polling Station Location</th>
+                  <th className="text-center">Polling Station Name</th>
+                  <th className="text-center">Polling Station Name L2</th>
+                  <th className="text-center">Polling Station Location</th>
                   <th className="text-center">Valid Interview</th>
                   <th className="text-center">Valid Interview Limit</th>
-                  <th className="text-center action-column">Actions</th>
+                  <th className="text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -345,20 +343,22 @@ export default function PSForFormPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                            onClick={() => handleEditPS(ps.ac_code)}
+                          onClick={() => handleEditPS(ps.ac_code)}
                           className="text-white bg-blue-500 hover:bg-blue-600 border-0"
-                            title="Edit PS"
+                          title="Edit PS"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
                       </td>
                     </tr>
-                    ))
+                  ))
                 )}
               </tbody>
             </Table>
-            
-            {!loading && !error && psFormData.length > 0 && (
+          </div>
+
+          {/* Pagination */}
+          {!loading && !error && psFormData.length > 0 && (
             <div className="mt-6">
               <PaginationStandard
                 currentPage={currentPage}
@@ -368,8 +368,7 @@ export default function PSForFormPage() {
                 onPageChange={setCurrentPage}
               />
             </div>
-            )}
-          </div>
+          )}
         </div>
       </Card>
     </Container>

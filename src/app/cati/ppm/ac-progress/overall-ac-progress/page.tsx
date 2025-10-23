@@ -8,7 +8,8 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
-import { Download, Search } from 'lucide-react';
+import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Download, Search, X } from 'lucide-react';
 import { apiService, CATIACData } from '@/lib/api';
 
 export default function CATIACWiseDataPage() {
@@ -17,6 +18,10 @@ export default function CATIACWiseDataPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAcCode, setSelectedAcCode] = useState<string>('');
+  
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
 
   useEffect(() => {
     fetchCATIData();
@@ -46,13 +51,19 @@ export default function CATIACWiseDataPage() {
   const handleSearch = () => {
     if (!selectedAcCode) {
       setFilteredData(acData);
-      return;
+    } else {
+      const filtered = acData.filter(item =>
+        item.ac_code.toString() === selectedAcCode
+      );
+      setFilteredData(filtered);
     }
+    setCurrentPage(1); // Reset to first page when searching
+  };
 
-    const filtered = acData.filter(item =>
-      item.ac_code.toString() === selectedAcCode
-    );
-    setFilteredData(filtered);
+  const handleClear = () => {
+    setSelectedAcCode(''); // Clear the selected AC code
+    setFilteredData(acData); // Show all data
+    setCurrentPage(1); // Reset to first page
   };
 
   const handleAcChange = (value: string | string[]) => {
@@ -70,6 +81,12 @@ export default function CATIACWiseDataPage() {
         label: `${ac.ac_name} (${ac.ac_code})`
       }))
   ];
+
+  // Calculate pagination
+  const totalItems = filteredData.length;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
 
   const handleDownload = () => {
     if (filteredData.length === 0) return;
@@ -133,15 +150,28 @@ export default function CATIACWiseDataPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 opacity-0">
                 Action
               </label>
-              <Button 
-                type="button" 
-                onClick={handleSearch}
-                disabled={loading}
-                className="w-full"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </Button>
+                
+                <Button 
+                  type="button" 
+                  onClick={handleClear}
+                  disabled={loading}
+                  variant="secondary"
+                  className="flex-1"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Clear
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -167,6 +197,12 @@ export default function CATIACWiseDataPage() {
           </div>
         </div>
 
+        <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
         {loading ? (
           <div className="text-center py-8">
             <Text>Loading CATI AC data...</Text>
@@ -176,28 +212,28 @@ export default function CATIACWiseDataPage() {
             <Text>{error}</Text>
           </div>
         ) : (
-          <div className="table-responsive max-h-[600px] overflow-y-auto">
+          <div className="table-responsive ">
             <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
-              <thead className="bg-gray-50 sticky top-0 z-20 dark:bg-gray-800 shadow-sm">
+              <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
-                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800 text-center">Sr.No.</th>
-                  <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800 text-center">AC Name</th>
-                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Attempted</th>
-                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Connected</th>
-                  <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800 text-center">Success</th>
+                  <th className="border border-gray-300 w-16 text-center">Sr.No.</th>
+                  <th className="border border-gray-300 w-32 text-center">AC Name</th>
+                  <th className="border border-gray-300 w-24 text-center">Call Attempted</th>
+                  <th className="border border-gray-300 w-24 text-center">Call Connected</th>
+                  <th className="border border-gray-300 w-20 text-center">Success</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredData.length === 0 ? (
+                {currentData.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-8 text-gray-500 border border-gray-300">
                       {selectedAcCode ? 'No AC data found matching your selection' : 'No CATI AC data found'}
                     </td>
                   </tr>
                 ) : (
-                  filteredData.map((item, index) => (
+                  currentData.map((item, index) => (
                     <tr key={item.ac_code}>
-                      <td className="border border-gray-300 text-center">{index + 1}</td>
+                      <td className="border border-gray-300 text-center">{startIndex + index + 1}</td>
                       <td className="border border-gray-300 text-left">{item.ac_name}</td>
                       <td className="border border-gray-300 text-center">{item.call_attempt}</td>
                       <td className="border border-gray-300 text-center">{item.call_connected}</td>
@@ -209,6 +245,17 @@ export default function CATIACWiseDataPage() {
             </Table>
           </div>
         )}
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={Math.ceil(totalItems / itemsPerPage)}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </div>
 
       </Card>
     </Container>

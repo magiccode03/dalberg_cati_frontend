@@ -31,7 +31,7 @@ const UploadDataPage = () => {
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 30;
+  const [pageSize] = useState(25);
 
   // Sample data for uploaded files history
   const [uploadedFilesData] = useState<UploadedFileData[]>([
@@ -165,16 +165,12 @@ const UploadDataPage = () => {
     console.log('Re-process data for ID:', fileId);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   // Pagination calculations
   const totalItems = uploadedFilesData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = uploadedFilesData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = uploadedFilesData.slice(startIndex, endIndex);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -189,8 +185,8 @@ const UploadDataPage = () => {
       <Card className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Upload Data
             </Heading>
           </div>
@@ -198,7 +194,7 @@ const UploadDataPage = () => {
             variant="primary" 
             size="sm"
             onClick={handleDownloadSample}
-            className="flex items-center"
+            className="flex items-center bg-blue-500 hover:bg-blue-600"
           >
             <Download className="w-4 h-4 mr-2" />
             Sample File
@@ -253,76 +249,85 @@ const UploadDataPage = () => {
 
       {/* Uploaded Files History */}
       <Card>
-        <div className="mb-4">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Uploaded files History
             </Heading>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Description of Uploaded File</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number of Rows</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Upload Date & Time</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentItems.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200">{indexOfFirstItem + index + 1}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.description}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.numberOfRows.toLocaleString()}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.uploadDateTime}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <div className="flex items-center space-x-2">
-                      <span className={item.isProcessing ? 'text-green-600' : 'text-gray-600'}>
-                        {item.status}
-                      </span>
-                      {item.isProcessing && (
-                        <button
-                          onClick={() => handleReprocessData(item.fileId)}
-                          className="text-green-600 hover:text-green-800 flex items-center text-sm"
-                        >
-                          <RotateCcw className="w-3 h-3 mr-1" />
-                          Re-Process Data
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
-                    <button
-                      onClick={() => handleViewFileData(item.fileId)}
-                      className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
-                      title="View File Data"
-                    >
-                      <Eye className="w-4 h-4 text-white" />
-                    </button>
-                  </td>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Description of Uploaded File</th>
+                  <th className="text-center">Number of Rows</th>
+                  <th className="text-center">Upload Date & Time</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Data</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+              </thead>
+              <tbody>
+                {currentData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-left">{item.description}</td>
+                    <td className="text-center">{item.numberOfRows.toLocaleString()}</td>
+                    <td className="text-center">{item.uploadDateTime}</td>
+                    <td className="text-center">
+                      <div className="flex items-center space-x-2">
+                        <span className={item.isProcessing ? 'text-green-600' : 'text-gray-600'}>
+                          {item.status}
+                        </span>
+                        {item.isProcessing && (
+                          <button
+                            onClick={() => handleReprocessData(item.fileId)}
+                            className="text-green-600 hover:text-green-800 flex items-center text-sm"
+                          >
+                            <RotateCcw className="w-3 h-3 mr-1" />
+                            Re-Process Data
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleViewFileData(item.fileId)}
+                        className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center"
+                        title="View File Data"
+                      >
+                        <Eye className="w-4 h-4 text-white" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Pagination */}
-        <div className="mt-4">
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-          />
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
-
       </Card>
     </Container>
   );

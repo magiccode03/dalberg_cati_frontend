@@ -141,7 +141,7 @@ const TelecallerDailyCallDetailPage = () => {
   const [callDetailData, setCallDetailData] = useState<CallDetailData[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
-    limit: 10,
+    limit: 25,
     total: 0,
     totalPages: 0,
     hasNext: false,

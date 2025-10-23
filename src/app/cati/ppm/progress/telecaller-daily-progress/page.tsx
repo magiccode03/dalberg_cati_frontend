@@ -56,7 +56,7 @@ const TelecallerDailyProgressPage: React.FC = () => {
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 25;
 
   // Sample data for telecaller progress
   const telecallerProgressData: TelecallerProgressData[] = [
@@ -546,54 +546,60 @@ const TelecallerDailyProgressPage: React.FC = () => {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
-            <Table striped bordered hover>
-              <thead>
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">S.No.</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Caller Name</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number of dials</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">IVR Duration</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Talk Duration</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Caller did not pick</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number does not exist</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Respondent did not pick</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Respondent Picked the call</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Picked and Refused</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number Exhausted</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Successful Interviews</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Rejected Interviews</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Incomplete Interviews</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number: Picked The Call</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number: Does Not Working</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number: No Response</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Number: Refused</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Caller Form not Fill</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Caller Name</th>
+                  <th className="text-center">Number of Dials</th>
+                  <th className="text-center">IVR Duration</th>
+                  <th className="text-center">Talk Duration</th>
+                  <th className="text-center">Caller Did Not Pick</th>
+                  <th className="text-center">Number Does Not Exist</th>
+                  <th className="text-center">Respondent Did Not Pick</th>
+                  <th className="text-center">Respondent Picked Call</th>
+                  <th className="text-center">Picked and Refused</th>
+                  <th className="text-center">Number Exhausted</th>
+                  <th className="text-center">Successful Interviews</th>
+                  <th className="text-center">Rejected Interviews</th>
+                  <th className="text-center">Incomplete Interviews</th>
+                  <th className="text-center">Number: Picked The Call</th>
+                  <th className="text-center">Number: Does Not Working</th>
+                  <th className="text-center">Number: No Response</th>
+                  <th className="text-center">Number: Refused</th>
+                  <th className="text-center">Caller Form Not Fill</th>
                 </tr>
               </thead>
               <tbody>
                 {currentData.length > 0 ? (
                   currentData.map((item, index) => (
                     <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 border-b border-gray-200">{startIndex + index + 1}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.callerName}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberOfDials}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.ivrDuration}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.talkDuration}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.callerDidNotPick}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberDoesNotExist}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.respondentDidNotPick}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.respondentPickedCall}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.pickedAndRefused}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberExhausted}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.successfulInterviews}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.rejectedInterviews}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.incompleteInterviews}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberPickedCall}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberDoesNotWorking}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberNoResponse}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.numberRefused}</td>
-                      <td className="px-4 py-3 border-b border-gray-200">{item.callerFormNotFill}</td>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-left">{item.callerName}</td>
+                      <td className="text-center">{item.numberOfDials}</td>
+                      <td className="text-center">{item.ivrDuration}</td>
+                      <td className="text-center">{item.talkDuration}</td>
+                      <td className="text-center">{item.callerDidNotPick}</td>
+                      <td className="text-center">{item.numberDoesNotExist}</td>
+                      <td className="text-center">{item.respondentDidNotPick}</td>
+                      <td className="text-center">{item.respondentPickedCall}</td>
+                      <td className="text-center">{item.pickedAndRefused}</td>
+                      <td className="text-center">{item.numberExhausted}</td>
+                      <td className="text-center">{item.successfulInterviews}</td>
+                      <td className="text-center">{item.rejectedInterviews}</td>
+                      <td className="text-center">{item.incompleteInterviews}</td>
+                      <td className="text-center">{item.numberPickedCall}</td>
+                      <td className="text-center">{item.numberDoesNotWorking}</td>
+                      <td className="text-center">{item.numberNoResponse}</td>
+                      <td className="text-center">{item.numberRefused}</td>
+                      <td className="text-center">{item.callerFormNotFill}</td>
                     </tr>
                   ))
                 ) : (
@@ -608,17 +614,15 @@ const TelecallerDailyProgressPage: React.FC = () => {
           </div>
 
           {/* Pagination */}
-          {totalItems > itemsPerPage && (
-            <div className="mt-6">
-              <PaginationStandard
-                currentPage={currentPage}
-                totalItems={totalItems}
-                totalPages={Math.ceil(totalItems / itemsPerPage)}
-                itemsPerPage={itemsPerPage}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          )}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalItems / itemsPerPage)}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </Card>
       </div>
     </Container>

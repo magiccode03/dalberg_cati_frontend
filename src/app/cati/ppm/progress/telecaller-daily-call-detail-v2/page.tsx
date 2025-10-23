@@ -147,7 +147,7 @@ const TelecallerDailyCallDetailPage = () => {
   const [callDetailData, setCallDetailData] = useState<CallDetailData[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
-    limit: 10,
+    limit: 25,
     total: 0,
     totalPages: 0,
     hasNext: false,
@@ -1065,7 +1065,7 @@ const TelecallerDailyCallDetailPage = () => {
                     <thead className="sticky-header bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>

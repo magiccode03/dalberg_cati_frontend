@@ -46,7 +46,7 @@ export default function MasterACPage() {
   const [acName, setAcName] = useState('');
   const [acCode, setAcCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [data, setData] = useState<APIResponse['data'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -198,58 +198,56 @@ export default function MasterACPage() {
 
       {/* Master AC Table Card */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                List of AC
-              </Heading>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleDownloadAC}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download AC List
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={handleUploadAC}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload AC List
-              </Button>
-            </div>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              List of AC
+            </Heading>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleDownloadAC}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Download AC List
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleUploadAC}
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload AC List
+            </Button>
           </div>
         </div>
         
-        <div className="card-body">
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{data.total_count.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+          
           <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <strong>{data.total_count}</strong> items.
-              </Text>
-            </div>
-            
-            <Table className="table table-striped table-bordered">
-              <thead>
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
                   <th className="text-center">S.No</th>
                   <th className="text-center">Ac Code</th>
-                  <th className="text-left">Ac Name</th>
+                  <th className="text-center">Ac Name</th>
                   <th className="text-center">District Code</th>
-                  <th className="text-left">District Name</th>
-                  <th className="text-left">Pc Name</th>
+                  <th className="text-center">District Name</th>
+                  <th className="text-center">Pc Name</th>
                   <th className="text-center">Pc Code</th>
                   <th className="text-center">Zone Code</th>
-                  <th className="text-left">Zone Name</th>
-                  <th className="text-left">Current Mla</th>
-                  <th className="text-left">Agency</th>
-                  <th className="text-center action-column">Actions</th>
+                  <th className="text-center">Zone Name</th>
+                  <th className="text-center">Current Mla</th>
+                  <th className="text-center">Agency</th>
+                  <th className="text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -281,16 +279,17 @@ export default function MasterACPage() {
                 ))}
               </tbody>
             </Table>
-            
-            <div className="mt-6">
-              <PaginationStandard
-                currentPage={data.current_page}
-                totalPages={data.total_pages}
-                totalItems={data.total_count}
-                itemsPerPage={pageSize}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+          </div>
+
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={data.current_page}
+              totalPages={data.total_pages}
+              totalItems={data.total_count}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </Card>

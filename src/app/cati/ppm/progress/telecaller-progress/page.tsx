@@ -1485,7 +1485,7 @@ const TelecallerProgressPage: React.FC = () => {
           </div>
         )}
 
-        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+        <div className="overflow-x-auto">
           {telecallerDataLoading ? (
             <div className="text-center py-12">
               <LoadingSpinner size="lg" />
@@ -1500,7 +1500,7 @@ const TelecallerProgressPage: React.FC = () => {
           ) : (
                 <div className="table-responsive">
                   <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
+                    <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
