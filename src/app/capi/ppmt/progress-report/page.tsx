@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
