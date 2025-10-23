@@ -130,7 +130,9 @@ const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
     agency_id: '',
     server_id: '',
-    interview_date: '',
+    interview_date: 'all',
+    custom_date: '',
+    custom_date_end: '',
     ac_code: '',
     ps_code: '',
     user_id: '',
@@ -396,7 +398,9 @@ const InterviewLogPage = () => {
       
       if (filters.agency_id) queryParams.append('agency_id', filters.agency_id);
       if (filters.server_id) queryParams.append('server_id', filters.server_id);
-      if (filters.interview_date) queryParams.append('interview_date', filters.interview_date);
+      if (filters.interview_date && filters.interview_date !== 'all') queryParams.append('interview_date', filters.interview_date);
+      if (filters.interview_date === 'custom' && filters.custom_date) queryParams.append('custom_date', filters.custom_date);
+      if (filters.interview_date === 'custom' && filters.custom_date_end) queryParams.append('custom_date_end', filters.custom_date_end);
       if (filters.ac_code) queryParams.append('ac_code', filters.ac_code);
       if (filters.ps_code) queryParams.append('ps_code', filters.ps_code);
       if (filters.user_id) queryParams.append('user_id', filters.user_id);
@@ -679,12 +683,56 @@ const InterviewLogPage = () => {
               {/* Interview Date */}
               <div>
                 <Text className="text-sm font-medium mb-2">Interview Date</Text>
-                <Input
-                  type="date"
+                <SelectDropdown
+                  options={[
+                    { value: 'all', label: 'All' },
+                    { value: 'today', label: 'Today' },
+                    { value: 'yesterday', label: 'Yesterday' },
+                    { value: 'dby', label: 'Day Before Yesterday' },
+                    { value: 'l3', label: 'Last 3 Days' },
+                    { value: 'l7', label: 'Last 7 Days' },
+                    { value: 'l15', label: 'Last 15 Days' },
+                    { value: 'currentmonth', label: 'Current Month' },
+                    { value: 'custom', label: 'Custom' },
+                  ]}
                   value={filters.interview_date}
-                  onChange={(e) => handleFilterChange('interview_date', e.target.value)}
+                  onChange={(value) => handleFilterChange('interview_date', value as string)}
+                  placeholder="All"
+                  className="w-full"
                 />
               </div>
+
+              {/* Custom Date Fields - Only show when custom is selected */}
+              {filters.interview_date === 'custom' && (
+                <>
+                  <div>
+                    <Text className="text-sm font-medium mb-2">
+                      Start Date
+                      <span className="text-red-500 ml-1">*</span>
+                    </Text>
+                    <Input
+                      type="date"
+                      value={filters.custom_date}
+                      onChange={(e) => handleFilterChange('custom_date', e.target.value)}
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Text className="text-sm font-medium mb-2">
+                      End Date
+                      <span className="text-red-500 ml-1">*</span>
+                    </Text>
+                    <Input
+                      type="date"
+                      value={filters.custom_date_end}
+                      onChange={(e) => handleFilterChange('custom_date_end', e.target.value)}
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
               {/* AC Code */}
               <div>
@@ -995,16 +1043,14 @@ const InterviewLogPage = () => {
                     </thead>
                     <tbody>
                       {getSortedData().map((interview, index) => (
-                        <tr key={`interview-${interview.server_id}-${index}`}>
-                          <td className="text-center">{((currentPage - 1) * pageSize) + index + 1}</td>
-                          <td className="text-center">
-                            <a 
-                              href={`/interview-detail?server_id=${interview.server_id}`}
-                              target="_blank"
-                              className="text-blue-600 hover:text-blue-800 font-mono"
-                            >
+                        <tr key={`interview-${interview.server_id}-${index}`} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                            {((currentPage - 1) * pageSize) + index + 1}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            <span className="font-mono text-sm font-medium text-gray-900">
                               {interview.server_id}
-                            </a>
+                            </span>
                           </td>
                           <td className="text-center"><DateFormatter date={interview.interview_date} format="dd/mm/yyyy" /></td>
                           <td className="text-left">{interview.sample_type}</td>

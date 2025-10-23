@@ -406,7 +406,7 @@ const AssignedInterviewerContent = () => {
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">ID</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Full Name</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Zonal Manager</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Assigned ACS</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Codes</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
               </tr>
             </thead>

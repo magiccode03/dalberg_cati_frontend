@@ -122,7 +122,7 @@ const AssignedInterviewerContent = () => {
                 <th className="text-center">S.No</th>
                 <th className="text-center">ID</th>
                 <th className="text-center">Full Name</th>
-                <th className="text-center">Assigned ACS</th>
+                <th className="text-center">AC Codes</th>
                 <th className="text-center">Action</th>
               </tr>
             </thead>

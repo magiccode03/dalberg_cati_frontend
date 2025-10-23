@@ -13,6 +13,7 @@ import { Search, Download, Upload, Edit, RotateCcw } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface PSForForm {
+  id: number;
   ac_code: number;
   lot_no: number;
   ac_lot: string;
@@ -175,8 +176,8 @@ export default function PSForFormPage() {
   };
 
   const handleEditPS = (id: number) => {
-    // Handle edit PS logic here
-    console.log('Edit PS ID:', id);
+    // Navigate to edit page
+    window.location.href = `/capi/ppm/ps-form/edit/${id}`;
   };
 
   const startIndex = (currentPage - 1) * pageSize;
