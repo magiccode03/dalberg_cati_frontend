@@ -997,7 +997,7 @@ const InterviewLogPage = () => {
                             {((currentPage - 1) * pageSize) + index + 1}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <span className="font-mono text-sm font-medium text-blue-600">
+                            <span className="font-mono text-sm font-medium text-gray-900">
                               {interview.server_id}
                             </span>
                           </td>
