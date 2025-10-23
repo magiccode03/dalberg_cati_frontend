@@ -135,7 +135,7 @@ const TeleUserInfoPage: React.FC = () => {
       if (!token) return;
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiBaseUrl}/api/capi/unified-user-statistics?fill_form=1&page=1`, {
+      const response = await fetch(`${apiBaseUrl}/api/teleform-users?limit=1000`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -147,11 +147,11 @@ const TeleUserInfoPage: React.FC = () => {
 
       if (response.ok && result.success) {
         const options: TelecallerOption[] = result.data
-          .map((user: UnifiedUserData) => ({
-            value: user.user_id.toString(),
-            label: `${user.user_name}(${user.user_id})`,
-            user_id: user.user_id,
-            name: user.user_name,
+          .map((user: any) => ({
+            value: user.teleform_user_id.toString(),
+            label: `${user.name}(${user.teleform_user_id})`,
+            user_id: user.teleform_user_id,
+            name: user.name,
             mobile_number: user.mobile_number,
           }))
           .sort((a: TelecallerOption, b: TelecallerOption) => a.name.localeCompare(b.name));
@@ -181,7 +181,7 @@ const TeleUserInfoPage: React.FC = () => {
       };
 
       // Add filters if they have values
-      if (searchFilters.teleform_user_id) params.user_id = searchFilters.teleform_user_id;
+      if (searchFilters.teleform_user_id) params.teleform_user_id = searchFilters.teleform_user_id;
       if (searchFilters.name) params.user_name = searchFilters.name;
       if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
       if (searchFilters.status) params.status = searchFilters.status;
@@ -394,7 +394,7 @@ const TeleUserInfoPage: React.FC = () => {
                   onChange={(value) => {
                     const selectedValue = Array.isArray(value) ? value[0] : value as string;
                     handleInputChange('telecaller', selectedValue);
-                    // Auto-populate user_id when telecaller is selected
+                    // Auto-populate teleform_user_id when telecaller is selected
                     if (selectedValue) {
                       const selectedOption = state.telecallerOptions.find(opt => opt.value === selectedValue);
                       if (selectedOption) {
@@ -404,6 +404,13 @@ const TeleUserInfoPage: React.FC = () => {
                           teleform_user_id: selectedOption.user_id.toString(),
                         }));
                       }
+                    } else {
+                      // Clear teleform_user_id when telecaller is deselected
+                      setSearchFilters(prev => ({
+                        ...prev,
+                        telecaller: '',
+                        teleform_user_id: '',
+                      }));
                     }
                   }}
                   className="w-full"

@@ -23,6 +23,8 @@ import formHiConfig from '../../form-hi-config.json';
 import partyData from '../../../../josn/party_2021_q5.json';
 // @ts-ignore
 import mlaMpData from '../../../../josn/mla-mp-ac-data.json';
+// @ts-ignore
+import casteOptions from '../../../../josn/caste-options.json';
 
 // Type definitions
 interface FormOption {
@@ -134,7 +136,7 @@ export default function TeleFormV2Page() {
   // Get party options for the current AC code
   const getPartyOptions = (acCode: string): FormOption[] => {
     const acCodeNum = parseInt(acCode);
-    const acPartyData = partyData.ac_data[acCodeNum.toString()];
+    const acPartyData = partyData.ac_data[acCodeNum.toString() as keyof typeof partyData.ac_data];
     
     if (!acPartyData) {
       // Return default party options when specific AC data is not available
@@ -199,6 +201,22 @@ export default function TeleFormV2Page() {
     }));
   };
 
+  // Get caste options based on selected religion
+  const getCasteOptions = (religionValue: string): FormOption[] => {
+    if (!religionValue) return [];
+    
+    const religionData = casteOptions[religionValue as keyof typeof casteOptions];
+    if (!religionData || !religionData.castes) return [];
+    
+    return religionData.castes.map((caste: any) => ({
+      label: language === 'bengali' ? caste.caste_name_bangla : 
+             language === 'hindi' ? caste.caste_name_hindi : 
+             caste.caste_name_english,
+      value: caste.caste_code.toString(),
+      tag: `caste_${caste.caste_code}`
+    }));
+  };
+
   // Process form configuration to replace placeholders and add dynamic options
   const processFormConfig = (config: FormField[]): FormField[] => {
     return config.map(field => {
@@ -212,6 +230,12 @@ export default function TeleFormV2Page() {
         processedField.options = getPartyOptions(acCode);
       }
       
+      // Handle dynamic options for caste data
+      if (typeof field.options === 'string' && field.options === `caste-options[resp_religion.value].castes`) {
+        const religionValue = formData.resp_religion;
+        processedField.options = getCasteOptions(religionValue);
+      }
+      
       return processedField;
     });
   };
@@ -219,7 +243,7 @@ export default function TeleFormV2Page() {
   // Get processed form configuration
   const processedFormConfig = React.useMemo(() => {
     return processFormConfig(currentFormConfig);
-  }, [currentFormConfig, acCode, language]);
+  }, [currentFormConfig, acCode, language, formData.resp_religion]);
 
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string): boolean => {
@@ -302,6 +326,12 @@ export default function TeleFormV2Page() {
           newErrors.delete(fieldTag);
           return newErrors;
         });
+      }
+      
+      // Clear caste field when religion changes
+      if (fieldTag === 'resp_religion') {
+        newData.resp_caste_jati = '';
+        newData.resp_caste_jati_oth = '';
       }
       
       // Apply clearing rules
