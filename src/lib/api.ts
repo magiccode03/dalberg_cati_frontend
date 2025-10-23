@@ -118,6 +118,7 @@ export const API_ENDPOINTS = {
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
     PS_FORM_UPDATE: (id: string) => `/dashboard/master-polling-station-dynamic/update?id=${id}`,
     PS_FORM_UPDATE_SUBMIT: '/dashboard/master-polling-station-dynamic/update',
+    PS_FORM_DOWNLOAD: '/dashboard/master-polling-station-dynamic/download',
     TEAM_REGISTRATION: '/dashboard/team-registration',
     TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
@@ -1511,6 +1512,22 @@ class ApiService {
       method: 'PUT',
       body: JSON.stringify(psData),
     });
+  }
+
+  async downloadPSForm(): Promise<Blob> {
+    const response = await fetch(`${this.baseURL}${API_ENDPOINTS.DASHBOARD.PS_FORM_DOWNLOAD}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'text/csv',
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+
+    return response.blob();
   }
 
   // Demographic Methods
