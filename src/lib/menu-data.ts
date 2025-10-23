@@ -280,14 +280,14 @@ export const menuData: MenuItem[] = [
   //   roles: ['ppm'],
   //   system: 'capi',
   // },
-  {
-    id: 'capi-ppm-demographic',
-    label: 'Demographic %',
-    href: '/capi/ppm/demographic',
-    icon: 'Users',
-    roles: ['ppm'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-ppm-demographic',
+  //   label: 'Demographic %',
+  //   href: '/capi/ppm/demographic',
+  //   icon: 'Users',
+  //   roles: ['ppm'],
+  //   system: 'capi',
+  // },
   // {
   //   id: 'capi-ppm-uploads',
   //   label: 'Uploads',
@@ -442,22 +442,22 @@ export const menuData: MenuItem[] = [
     roles: ['ppmt'],
     system: 'capi',
   },
-  {
-    id: 'capi-ppmt-gps-map',
-    label: 'GPS Map',
-    href: '/capi/ppmt/gps-map',
-    icon: 'Map',
-    roles: ['ppmt'],
-    system: 'capi',
-  },
-  {
-    id: 'capi-ppmt-demographic',
-    label: 'Demographic %',
-    href: '/capi/ppmt/demographic',
-    icon: 'Users',
-    roles: ['ppmt'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-ppmt-gps-map',
+  //   label: 'GPS Map',
+  //   href: '/capi/ppmt/gps-map',
+  //   icon: 'Map',
+  //   roles: ['ppmt'],
+  //   system: 'capi',
+  // },
+  // {
+  //   id: 'capi-ppmt-demographic',
+  //   label: 'Demographic %',
+  //   href: '/capi/ppmt/demographic',
+  //   icon: 'Users',
+  //   roles: ['ppmt'],
+  //   system: 'capi',
+  // },
 
   // CAPI Data Quality Management (DQM) Menu
   {
