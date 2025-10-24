@@ -22,7 +22,7 @@ interface AssignedACData {
 
 export default function AssignedACPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [assignedACData, setAssignedACData] = useState<AssignedACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -144,18 +144,14 @@ export default function AssignedACPage() {
   const currentData = assignedACData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={2} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
               Assigned AC
             </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
           </div>
         </div>
 
@@ -182,6 +178,7 @@ export default function AssignedACPage() {
                   onClick={fetchAssignedACData}
                   variant="outline"
                   size="sm"
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
                 >
                   Retry
                 </Button>
@@ -191,66 +188,62 @@ export default function AssignedACPage() {
         )}
 
         {/* Assigned AC Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Assigned AC
-                </Heading>
-                <span className="text-end"></span>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Assigned AC
+              </Heading>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer ID</th>
+          </div>
+          
+          <div className="bg-white">
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{totalCount.toLocaleString()}</strong> items.
+              </Text>
+            </div>
+            
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">QC ID</th>
+                    <th className="text-center">QC User Name</th>
+                    <th className="text-center">AC Code</th>
+                    <th className="text-center">AC Name</th>
+                    <th className="text-center">Interviewer ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((data, index) => (
+                    <tr key={data.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center font-mono font-semibold">{data.qcId}</td>
+                      <td className="text-left font-medium">{data.qcUserName}</td>
+                      <td className="text-center font-mono font-semibold">{data.acCode}</td>
+                      <td className="text-left">{data.acName}</td>
+                      <td className="text-center font-mono">{data.interviewerId}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data, index) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.qcId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-left">{data.qcUserName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{data.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.interviewerId}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+
+            {/* Pagination */}
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        </Card>
+    </Container>
   );
 }

@@ -27,7 +27,7 @@ export default function StartAudioQCPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(50);
+  const [pageSize] = useState(25);
 
   // Sample pending Audio QC data
   const pendingAudioQCData: PendingAudioQCData[] = [
@@ -120,27 +120,23 @@ export default function StartAudioQCPage() {
   const totalPages = Math.ceil(pendingAudioQCData.length / pageSize);
 
   return (
-    <Container maxWidth="full">
-      {/* Breadcrumb Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
             Pending Audio QC
           </Heading>
-        </div>
-        <div className="text-right">
-          <Text className="text-sm text-gray-500 dark:text-gray-400">
-            Start Audio QC Process
-          </Text>
         </div>
       </div>
 
       {/* Search Form */}
-      <Card className="p-6 mb-6">
+      <Card className="mb-6">
         <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <Text className="block text-sm font-medium mb-2 !hidden text-gray-700 dark:text-gray-300">
+              <Text className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Interviewer ID
               </Text>
               <Input
@@ -152,7 +148,7 @@ export default function StartAudioQCPage() {
             </div>
 
             <div>
-              <Text className="block text-sm font-medium mb-2 !hidden text-gray-700 dark:text-gray-300">
+              <Text className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
                 Interview Date
               </Text>
               <SelectDropdown
@@ -174,85 +170,91 @@ export default function StartAudioQCPage() {
       </Card>
 
       {/* Pending Audio QC Table */}
-      <Card className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-            Pending Audio QC
-          </Heading>
-          <div className="text-sm text-gray-500 !hidden dark:text-gray-400">
-            Total Records: {pendingAudioQCData.length}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Pending Audio QC
+            </Heading>
           </div>
         </div>
 
-        <div className="table-responsive">
-          <Table className="table table-centered table-striped dt-responsive nowrap w-100">
-            <thead className="table-light dark:bg-gray-800">
-              <tr>
-                <th className="text-center">S.No</th>
-                <th className="text-center">Server ID</th>
-                <th className="text-center">Interviewer ID</th>
-                <th className="text-center">Ac Code</th>
-                <th className="text-left">Interview Date</th>
-                <th className="text-center">Check Audio</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingAudioQCData.length > 0 ? (
-                pendingAudioQCData.map((row) => (
-                  <tr key={row.srNo} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <td className="text-center">{row.srNo}</td>
-                    <td className="text-center">
-                      <a 
-                        href={`/interview-detail?server_id=${row.serverId}`}
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-800 font-mono"
-                      >
-                        {row.serverId}
-                      </a>
-                    </td>
-                    <td className="text-center font-mono text-gray-700 dark:text-gray-300">{row.interviewerId}</td>
-                    <td className="font-mono text-gray-700 dark:text-gray-300 text-center">{row.acCode}</td>
-                    <td className="text-gray-700 dark:text-gray-300 text-left">{row.interviewDate}</td>
-                    <td className="text-center">
-                      <div className="flex justify-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCheckAudio(row)}
-                          className="bg-green-500 hover:bg-green-600 text-white border-0"
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{pendingAudioQCData.length.toLocaleString()}</strong> records.
+            </Text>
+          </div>
+          
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Server ID</th>
+                  <th className="text-center">Interviewer ID</th>
+                  <th className="text-center">Ac Code</th>
+                  <th className="text-center">Interview Date</th>
+                  <th className="text-center">Check Audio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingAudioQCData.length > 0 ? (
+                  pendingAudioQCData.map((row, index) => (
+                    <tr key={row.srNo}>
+                      <td className="text-center">{index + 1}</td>
+                      <td className="text-center">
+                        <a 
+                          href={`/interview-detail?server_id=${row.serverId}`}
+                          target="_blank"
+                          className="text-blue-600 hover:text-blue-800 font-mono"
                         >
-                          <Volume2 className="w-3 h-3 mr-1" />
-                          Check Audio
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-blue-500 hover:bg-blue-600 text-white border-0"
-                        >
-                          <Eye className="w-3 h-3 mr-1" />
-                          View
-                        </Button>
+                          {row.serverId}
+                        </a>
+                      </td>
+                      <td className="text-center">{row.interviewerId}</td>
+                      <td className="text-center">{row.acCode}</td>
+                      <td className="text-center">{row.interviewDate}</td>
+                      <td className="text-center">
+                        <div className="flex justify-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCheckAudio(row)}
+                            className="bg-green-500 hover:bg-green-600 text-white border-0"
+                          >
+                            <Volume2 className="w-3 h-3 mr-1" />
+                            Check Audio
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center py-8">
+                      <div className="text-gray-500 dark:text-gray-400">
+                        <Volume2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                        <Text className="text-lg font-medium">No results found.</Text>
+                        <Text className="text-sm">Try adjusting your search criteria.</Text>
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="text-center py-8">
-                    <div className="text-gray-500 dark:text-gray-400">
-                      <Volume2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <Text className="text-lg font-medium">No results found.</Text>
-                      <Text className="text-sm">Try adjusting your search criteria.</Text>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
-        </div>
+                )}
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Pagination */}
-        {pendingAudioQCData.length > 0 && (
+          {/* Pagination */}
           <div className="mt-6">
             <PaginationStandard
               currentPage={currentPage}
@@ -262,7 +264,7 @@ export default function StartAudioQCPage() {
               onPageChange={setCurrentPage}
             />
           </div>
-        )}
+        </div>
       </Card>
     </Container>
   );

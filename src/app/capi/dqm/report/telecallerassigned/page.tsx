@@ -67,7 +67,7 @@ interface FilterOptions {
 
 export default function AssignedACPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [assignedACData, setAssignedACData] = useState<AssignedACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -420,249 +420,223 @@ export default function AssignedACPage() {
   const currentData = assignedACData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Assigned AC - Telecaller
+          </Heading>
+        </div>
+        <div className="flex items-center">
+          <Button
+            variant="primary"
+            onClick={downloadAllData}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={loading}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
+      </div>
+
+
+      {/* Error State */}
+      {error && (
+        <Card className="mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Button 
+              onClick={fetchAssignedACData} 
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Filters */}
+      <Card className="mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          {/* QC User Filter */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              QC User
+            </label>
+            <SelectDropdown
+              options={filterOptions.qcUsers}
+              value={selectedQCUser}
+              onChange={(value) => setSelectedQCUser(Array.isArray(value) ? value[0] || '' : value)}
+              placeholder="Select QC User"
+              searchable
+            />
+          </div>
+
+          {/* AC Code Filter */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              AC Code
+            </label>
+            <SelectDropdown
+              options={filterOptions.acCodes}
+              value={selectedACCode}
+              onChange={(value) => setSelectedACCode(Array.isArray(value) ? value[0] || '' : value)}
+              placeholder="Select AC Code"
+              searchable
+            />
+          </div>
+
+          {/* Filter Actions */}
+          <div className="flex space-x-2">
+            <Button
+              onClick={handleFilterChange}
+              className="flex items-center space-x-2"
+              disabled={loading}
+            >
+              <Search className="w-4 h-4" />
+              <span>Search</span>
+            </Button>
+            <Button
+              onClick={clearFilters}
+              variant="outline"
+              className="flex items-center space-x-2"
+              disabled={loading}
+            >
+              <X className="w-4 h-4" />
+              <span>Clear</span>
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Assigned AC Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Assigned AC - Telecaller
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
         </div>
 
-
-        {/* Error State */}
-        {error && (
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
-                    Error Loading Data
-                  </Heading>
-                  <Text className="text-gray-600">{error}</Text>
-                </div>
-                <Button
-                  onClick={fetchAssignedACData}
-                  variant="outline"
-                  size="sm"
-                >
-                  Retry
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <div className="p-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-              {/* QC User Filter */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  QC User
-                </label>
-                <SelectDropdown
-                  options={filterOptions.qcUsers}
-                  value={selectedQCUser}
-                  onChange={(value) => setSelectedQCUser(Array.isArray(value) ? value[0] || '' : value)}
-                  placeholder="Select QC User"
-                  searchable
-                />
-              </div>
-
-              {/* AC Code Filter */}
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  AC Code
-                </label>
-                <SelectDropdown
-                  options={filterOptions.acCodes}
-                  value={selectedACCode}
-                  onChange={(value) => setSelectedACCode(Array.isArray(value) ? value[0] || '' : value)}
-                  placeholder="Select AC Code"
-                  searchable
-                />
-              </div>
-
-              {/* Filter Actions */}
-              <div className="flex space-x-2">
-                <Button
-                  onClick={handleFilterChange}
-                  className="flex items-center space-x-2"
-                  disabled={loading}
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Search</span>
-                </Button>
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                  disabled={loading}
-                >
-                  <X className="w-4 h-4" />
-                  <span>Clear</span>
-                </Button>
-              </div>
-            </div>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalCount.toLocaleString()}</strong> QC Users.
+            </Text>
           </div>
-        </Card>
-
-        {/* Assigned AC Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                Assigned AC - Telecaller
-                </Heading>
-              </div>
-            <div className="flex items-center">
-              <Button
-                variant="primary"
-                onClick={downloadAllData}
-                className="flex items-center"
-                disabled={loading}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
+          
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+              <Text className="text-gray-600">Loading assigned AC data...</Text>
             </div>
-          </div>
-
-          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-            Total <strong>{totalCount}</strong> QC Users.
-          </div>
-              {loading ? (
-                <div className="flex justify-center items-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-                  <Text className="ml-2 text-gray-600">Loading assigned AC data...</Text>
-                </div>
-              ) : (
-                <React.Fragment>
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead className="sticky-header bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Total</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
+          ) : (
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">QC ID</th>
+                    <th className="text-center">QC User Name</th>
+                    <th className="text-center">AC Code</th>
+                    <th className="text-center">AC Name</th>
+                    <th className="text-center">QC Total</th>
+                    <th className="text-center">QC Completed</th>
+                    <th className="text-center">QC Pending</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((data, index) => (
+                    <tr 
+                      key={data.id} 
+                      className={`${
+                        data.isSummaryRow 
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-700' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      {data.isFirstRow && !data.isSummaryRow && (
+                        <td 
+                          rowSpan={data.rowspan || 1} 
+                          className="text-center"
+                        >
+                          {data.qcId}
+                        </td>
+                      )}
+                      {data.isFirstRow && !data.isSummaryRow && (
+                        <td 
+                          rowSpan={data.rowspan || 1} 
+                          className="text-left font-medium"
+                        >
+                          {data.qcUserName}
+                        </td>
+                      )}
+                      <td className={`text-center ${
+                        data.isSummaryRow 
+                          ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                          : ''
+                      }`}>
+                        {data.isSummaryRow ? '-' : data.acCode}
+                      </td>
+                      <td className={`text-left ${
+                        data.isSummaryRow 
+                          ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                          : ''
+                      }`}>
+                        {data.acName}
+                      </td>
+                      <td className={`text-center ${
+                        data.isSummaryRow 
+                          ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                          : ''
+                      }`}>
+                        <FormattedNumber value={data.qcTotal} locale="en-IN" />
+                      </td>
+                      <td className={`text-center ${
+                        data.isSummaryRow 
+                          ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                          : ''
+                      }`}>
+                        <FormattedNumber value={data.qcCompleted} locale="en-IN" />
+                      </td>
+                      <td className={`text-center ${
+                        data.isSummaryRow 
+                          ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                          : ''
+                      }`}>
+                        <FormattedNumber value={data.qcPending} locale="en-IN" />
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
-                      <tr 
-                        key={data.id} 
-                        className={`${
-                          data.isSummaryRow 
-                            ? 'bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-700' 
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        {data.isFirstRow && !data.isSummaryRow && (
-                          <td 
-                            rowSpan={data.rowspan || 1} 
-                            className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center"
-                          >
-                            {data.qcId}
-                          </td>
-                        )}
-                        {data.isFirstRow && !data.isSummaryRow && (
-                          <td 
-                            rowSpan={data.rowspan || 1} 
-                            className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium"
-                          >
-                            {data.qcUserName}
-                          </td>
-                        )}
-                        {/* {data.isSummaryRow && (
-                          <>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-800 dark:text-blue-200 text-center font-bold">
-                              {data.qcId}
-                            </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-800 dark:text-blue-200 font-bold">
-                              {data.qcUserName}
-                            </td>
-                          </>
-                        )} */}
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          {data.isSummaryRow ? '-' : data.acCode}
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          {data.acName}
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          <FormattedNumber value={data.qcTotal} locale="en-IN" />
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          <FormattedNumber value={data.qcCompleted} locale="en-IN" />
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          <FormattedNumber value={data.qcPending} locale="en-IN" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
 
-              {/* Table Footer with Pagination */}
-              <div className="flex justify-between items-center mt-4 px-4 pb-4">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-                </div>
-                {totalPages > 1 && (
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-                )}
-              </div>
-              </React.Fragment>
-              )}
-          </Card>
-      </Container>
-    </div>
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </div>
+      </Card>
+    </Container>
   );
 }

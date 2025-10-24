@@ -295,7 +295,7 @@ export default function InterviewDateWisePage() {
                 {currentData.map((data, index) => (
                   <tr key={data.id}>
                     <td className="text-center">{startIndex + index + 1}</td>
-                    <td className="text-left">
+                    <td className="text-center">
                       <button
                         onClick={() => handleDateClick(data.interviewDate)}
                         className="text-blue-600 hover:text-blue-800 hover:underline font-medium font-mono"

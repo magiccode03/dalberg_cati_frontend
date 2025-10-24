@@ -222,8 +222,8 @@ export default function FieldworkProgressPage() {
               <thead>
                 <tr>
                   <th className="text-center">AC Code</th>
-                  <th className="text-left">AC Name</th>
-                  <th className="text-left">District Name</th>
+                  <th className="text-center">AC Name</th>
+                  <th className="text-center">District Name</th>
                   <th className="text-center">Valid+Under QC</th>
                   <th className="text-center">Reject</th>
                   <th className="text-center">% of Completion</th>
