@@ -12,10 +12,11 @@ import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Plus, Edit, Check, Eye, X } from 'lucide-react';
+import { Search, Plus, Edit, Check, Eye, X, MapPin, Speaker } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
 import CapiQCACAssignModal from '@/components/modals/CapiQCACAssignModal';
+import CapiGPSQCACAssignModal from '@/components/modals/CapiGPSQCACAssignModal';
 
 interface QCUserData {
   id: number;
@@ -139,6 +140,11 @@ export default function QCUserRegistrationPage() {
   const [isACAssignModalOpen, setIsACAssignModalOpen] = useState(false);
   const [selectedQCId, setSelectedQCId] = useState<number | null>(null);
   const [selectedQCName, setSelectedQCName] = useState<string>('');
+  
+  // GPS AC Assignment Modal state
+  const [isGPSACAssignModalOpen, setIsGPSACAssignModalOpen] = useState(false);
+  const [selectedGPSQCId, setSelectedGPSQCId] = useState<number | null>(null);
+  const [selectedGPSQCName, setSelectedGPSQCName] = useState<string>('');
 
   // Fetch data from API
   useEffect(() => {
@@ -266,6 +272,20 @@ export default function QCUserRegistrationPage() {
     setIsACAssignModalOpen(true);
   };
 
+  const handleAssignGPSAC = (userId: number) => {
+    // Find the user data
+    const user = qcUserData.find(u => u.id === userId);
+    if (!user) {
+      console.error('User not found:', userId);
+      return;
+    }
+
+    // Open GPS AC Assignment Modal
+    setSelectedGPSQCId(user.qcId);
+    setSelectedGPSQCName(user.name);
+    setIsGPSACAssignModalOpen(true);
+  };
+
   const handleACAssignSuccess = () => {
     // Refresh the data after successful assignment
     const fetchData = async () => {
@@ -319,6 +339,11 @@ export default function QCUserRegistrationPage() {
     };
 
     fetchData();
+  };
+
+  const handleGPSACAssignSuccess = () => {
+    // Refresh the data after successful GPS AC assignment
+    handleACAssignSuccess(); // Reuse the same refresh logic
   };
 
   const handleViewAssignedAC = (userId: number) => {
@@ -593,14 +618,29 @@ export default function QCUserRegistrationPage() {
                       </Button>
                     </td>
                     <td className="text-center">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => handleAssignAC(user.id)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
+                      <div className="flex flex-row gap-2 items-center justify-center">
+                        {/* GPS Assign AC Button */}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleAssignGPSAC(user.id)}
+                          title={user.gps ? "Assign GPS AC" : "GPS not enabled"}
+                          disabled={!user.gps}
+                          className={`${!user.gps ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <MapPin className="w-4 h-4" />
+                        </Button>
+                        
+                        {/* Regular Assign AC Button */}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleAssignAC(user.id)}
+                          title="Assign AC"
+                        >
+                          <Speaker className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -641,6 +681,20 @@ export default function QCUserRegistrationPage() {
           teleformUserId={selectedQCId}
           telecallerName={selectedQCName}
           onSuccess={handleACAssignSuccess}
+        />
+      )}
+      {/* GPS AC Assignment Modal */}
+      {selectedGPSQCId && (
+        <CapiGPSQCACAssignModal
+          isOpen={isGPSACAssignModalOpen}
+          onClose={() => {
+            setIsGPSACAssignModalOpen(false);
+            setSelectedGPSQCId(null);
+            setSelectedGPSQCName('');
+          }}
+          teleformUserId={selectedGPSQCId}
+          telecallerName={selectedGPSQCName}
+          onSuccess={handleGPSACAssignSuccess}
         />
       )}
     </Container>

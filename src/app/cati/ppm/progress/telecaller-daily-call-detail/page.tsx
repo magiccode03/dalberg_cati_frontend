@@ -499,12 +499,15 @@ const TelecallerDailyCallDetailPage = () => {
   const formatDateTime = (dateTime: string | null) => {
     if (!dateTime) return '-';
     try {
-      return new Date(dateTime).toLocaleString('en-IN', {
+      // Parse the UTC time and format it without timezone conversion
+      const date = new Date(dateTime);
+      return date.toLocaleString('en-IN', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'UTC' // Force UTC timezone to prevent conversion
       });
     } catch {
       return '-';
