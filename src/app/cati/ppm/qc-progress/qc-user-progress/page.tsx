@@ -91,7 +91,7 @@ export default function QCUserProgressPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [hasNext, setHasNext] = useState(false);
@@ -552,14 +552,10 @@ export default function QCUserProgressPage() {
   }
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-        {/* Page Header */}
-        <div className="mb-6">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              QC User Progress
-            </Heading>
-          </div>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        QC User Progress
+      </Heading>
 
         {/* Search Filters */}
         <Card className="p-4 mb-5">
@@ -686,96 +682,72 @@ export default function QCUserProgressPage() {
             </div>
           </Card>
 
-        {/* QC User Progress Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                QC User Progress Summary
-                  </Heading>
-                </div>
-                <div className="flex items-center">
-                  <Button
-                    variant="primary"
-                    onClick={handleDownload}
-                className="flex items-center"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </div>
+      {/* QC User Progress Table */}
+      <Card>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">QC User Progress Summary</Heading>
+          </div>
+          <Button
+            variant="primary"
+            onClick={handleDownload}
+            className="flex items-center bg-blue-600 text-white hover:bg-blue-500"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
 
-          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-            Total <strong>{totalCount}</strong> QC users.
-            </div>
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Total <strong>{totalCount}</strong> items.
+          </Text>
+        </div>
 
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-              <thead className="sticky-header bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">User ID</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">User Name</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                    Total Assigned
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                   QC Pass
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                    QC Fail
-                  </th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                    QC Pending
-                  </th>
+        <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+          <Table className="table table-bordered table-striped table-hover">
+            <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Sr.No.</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">User ID</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">User Name</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Mobile Number</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">Total Assigned</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC Pass</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC Fail</th>
+                <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC Pending</th>
+              </tr>
+            </thead>
+            <tbody>
+              {qcUserProgressData.map((user, index) => (
+                <tr key={`${user.user_id}-${index}`}>
+                  <td className="text-center">{index + 1}</td>
+                  <td className="text-center">{user.user_id}</td>
+                  <td className="text-left">{user.user_name || '-'}</td>
+                  <td className="text-center">{user.mobile_number || '-'}</td>
+                  <td className="text-center">{user.total_qc_assigned.toLocaleString()}</td>
+                  <td className="text-center">{user.total_qc_pass.toLocaleString()}</td>
+                  <td className="text-center">{user.total_qc_fail.toLocaleString()}</td>
+                  <td className="text-center">{user.total_qc_pending.toLocaleString()}</td>
                 </tr>
-              </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                {qcUserProgressData.map((user, index) => (
-                  <tr key={`${user.user_id}-${index}`} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{index + 1}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
-                      {user.user_id}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.user_name || '-'}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobile_number || '-'}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_assigned.toLocaleString()}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pass.toLocaleString()}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_fail.toLocaleString()}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pending.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-                </Table>
-              </div>
+              ))}
+            </tbody>
+          </Table>
+        </div>
 
-          {/* Table Footer with Pagination */}
-          <div className="flex justify-between items-center mt-4 px-4 pb-4">
-                <div className="text-sm text-gray-700">
-              Showing <span className="font-semibold">{((currentPage - 1) * pageSize) + 1}</span> - <span className="font-semibold">{Math.min(currentPage * pageSize, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-                </div>
-            {totalPages > 1 && (
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                  />
-              </div>
-            )}
-            </div>
-          </Card>
-      </Container>
-    </div>
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={pageSize}
+            onPageChange={handlePageChange}
+          />
+        </div>
+
+      </Card>
+    </Container>
   );
 }
