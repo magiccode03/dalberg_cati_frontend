@@ -13,6 +13,7 @@ import { Search, Download, Upload, Edit, RotateCcw } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface PSForForm {
+  id: number;
   ac_code: number;
   lot_no: number;
   ac_lot: string;
@@ -126,47 +127,33 @@ export default function PSForFormPage() {
     console.log('Calculate Valid Interview');
   };
 
-  const generatePSFormCSV = () => {
-    const headers = [
-      'AC Code',
-      'Lot No',
-      'AC Lot',
-      'Polling Station No',
-      'Polling Station Name',
-      'Polling Station Name L2',
-      'Polling Station Location',
-      'Valid Interview',
-      'Valid Interview Limit'
-    ];
-
-    const csvContent = [
-      headers.join(','),
-      ...psFormData.map(ps => [
-        ps.ac_code,
-        ps.lot_no,
-        ps.ac_lot,
-        ps.polling_station_no,
-        `"${ps.polling_station_name}"`,
-        ps.polling_station_name_l2 || '',
-        ps.polling_station_location || '',
-        ps.valid_interview,
-        ps.valid_interview_limit
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `ps-form-data-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleDownloadPS = () => {
-    generatePSFormCSV();
+  const handleDownloadPS = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Call the API to download PS data
+      const blob = await apiService.downloadPSForm();
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `ps-form-data-${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+      
+    } catch (err) {
+      console.error('Error downloading PS data:', err);
+      setError('Failed to download PS data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUploadPS = () => {
@@ -175,8 +162,8 @@ export default function PSForFormPage() {
   };
 
   const handleEditPS = (id: number) => {
-    // Handle edit PS logic here
-    console.log('Edit PS ID:', id);
+    // Navigate to edit page
+    window.location.href = `/capi/ppm/ps-form/edit/${id}`;
   };
 
   const startIndex = (currentPage - 1) * pageSize;
@@ -263,9 +250,10 @@ export default function PSForFormPage() {
                 variant="primary"
                 size="sm"
                 onClick={handleDownloadPS}
+                disabled={loading}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Download PS List
+                {loading ? 'Downloading...' : 'Download PS List'}
               </Button>
               <Button
                 variant="primary"
@@ -345,7 +333,7 @@ export default function PSForFormPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                            onClick={() => handleEditPS(ps.ac_code)}
+                            onClick={() => handleEditPS(ps.id)}
                           className="text-white bg-blue-500 hover:bg-blue-600 border-0"
                             title="Edit PS"
                         >

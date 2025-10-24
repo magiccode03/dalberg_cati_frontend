@@ -124,7 +124,7 @@ const AssignedInterviewerContent = () => {
                 <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">ID</th>
                 <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Assigned ACS</th>
+                <th className="px-4 py-3 font-semibold text-gray-700">AC Codes</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
               </tr>
             </thead>

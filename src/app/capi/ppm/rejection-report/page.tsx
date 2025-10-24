@@ -25,7 +25,7 @@ interface RejectionData {
   interviewerId: string;
   interviewDuration: string;
   respondentName: string;
-  respondentMobile: string;
+  // respondentMobile: string;
   failReason: string;
   audioQcId: string;
   audioFailReason: string;
@@ -274,7 +274,7 @@ export default function RejectionReportPage() {
         interviewerId: item.interviewer_id,
         interviewDuration: item.interview_duration_human || formatDuration(item.total_duration),
         respondentName: item.respondent_name,
-        respondentMobile: item.mobile_no || '',
+        // respondentMobile: item.mobile_no || '',
         failReason: item.fail_reason,
         audioQcId: item.qc_id?.toString() || '',
         audioFailReason: item.audio_qc_rejection_level || '',
@@ -745,7 +745,7 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
+            {/* <div>
               <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
               <Input
                 type="text"
@@ -753,7 +753,7 @@ export default function RejectionReportPage() {
                 value={filters.mobileNo}
                 onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
               />
-            </div>
+            </div> */}
 
             {filters.reportLevel === 'interviewer' && (
               <div>
@@ -899,7 +899,7 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
+            {/* <div>
               <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
               <Input
                 type="text"
@@ -907,7 +907,7 @@ export default function RejectionReportPage() {
                 value={filters.mobileNo}
                 onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
               />
-            </div>
+            </div> */}
 
             {filters.reportLevel === 'interviewer' && (
               <div>
@@ -1071,7 +1071,7 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
+            {/* <div>
               <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
               <Input
                 type="text"
@@ -1079,7 +1079,7 @@ export default function RejectionReportPage() {
                 value={filters.mobileNo}
                 onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
               />
-            </div>
+            </div> */}
 
             {filters.reportLevel === 'interviewer' && (
               <div>
@@ -1157,7 +1157,7 @@ export default function RejectionReportPage() {
                   <th className="text-center">Interviewer ID</th>
                   <th className="text-center">Interview Duration</th>
                   <th className="text-left">Respondent Name</th>
-                  <th className="text-center">Respondent Mobile</th>
+                  {/* <th className="text-center">Respondent Mobile</th> */}
                   <th className="text-left">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
                   <th className="text-left">Audio Fail Reason</th>
@@ -1170,13 +1170,9 @@ export default function RejectionReportPage() {
                   <tr key={row.srNo}>
                     <td className="text-center">{row.srNo}</td>
                     <td className="text-center">
-                      <a 
-                        href={`/interview-detail?server_id=${row.serverId}`}
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-800 font-mono"
-                      >
+                      <span className="font-mono text-sm font-medium text-gray-900">
                         {row.serverId}
-                      </a>
+                      </span>
                     </td>
                     <td>{row.acName}</td>
                     <td className="font-mono">{row.psCode}</td>
@@ -1184,7 +1180,7 @@ export default function RejectionReportPage() {
                     <td>{row.interviewerId}</td>
                     <td className="font-mono">{row.interviewDuration}</td>
                     <td>{row.respondentName}</td>
-                    <td>{row.respondentMobile || '-'}</td>
+                    {/* <td>{row.respondentMobile || '-'}</td> */}
                     <td>{row.failReason}</td>
                     <td>{row.audioQcId || '-'}</td>
                     <td>

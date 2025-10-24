@@ -220,14 +220,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'capi',
       },
-      {
-        id: 'capi-ppm-project-setting',
-        label: 'Project Setting',
-        href: '/capi/ppm/master/project-setting',
-        icon: 'Settings',
-        roles: ['ppm'],
-        system: 'capi',
-      },
+      // {
+      //   id: 'capi-ppm-project-setting',
+      //   label: 'Project Setting',
+      //   href: '/capi/ppm/master/project-setting',
+      //   icon: 'Settings',
+      //   roles: ['ppm'],
+      //   system: 'capi',
+      // },
     ],
   },
   {
@@ -364,14 +364,14 @@ export const menuData: MenuItem[] = [
   //     },
   //   ],
   // },
-  // {
-  //   id: 'capi-ppm-ps-form',
-  //   label: 'PS for Form',
-  //   href: '/capi/ppm/ps-form',
-  //   icon: 'FileText',
-  //   roles: ['ppm'],
-  //   system: 'capi',
-  // },
+  {
+    id: 'capi-ppm-ps-form',
+    label: 'PS for Form',
+    href: '/capi/ppm/ps-form',
+    icon: 'FileText',
+    roles: ['ppm'],
+    system: 'capi',
+  },
 
   // CAPI Project Progress Monitoring Team (PPMT) Menu
   {
@@ -442,22 +442,22 @@ export const menuData: MenuItem[] = [
     roles: ['ppmt'],
     system: 'capi',
   },
-  {
-    id: 'capi-ppmt-gps-map',
-    label: 'GPS Map',
-    href: '/capi/ppmt/gps-map',
-    icon: 'Map',
-    roles: ['ppmt'],
-    system: 'capi',
-  },
-  {
-    id: 'capi-ppmt-demographic',
-    label: 'Demographic %',
-    href: '/capi/ppmt/demographic',
-    icon: 'Users',
-    roles: ['ppmt'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-ppmt-gps-map',
+  //   label: 'GPS Map',
+  //   href: '/capi/ppmt/gps-map',
+  //   icon: 'Map',
+  //   roles: ['ppmt'],
+  //   system: 'capi',
+  // },
+  // {
+  //   id: 'capi-ppmt-demographic',
+  //   label: 'Demographic %',
+  //   href: '/capi/ppmt/demographic',
+  //   icon: 'Users',
+  //   roles: ['ppmt'],
+  //   system: 'capi',
+  // },
 
   // CAPI Data Quality Management (DQM) Menu
   {
