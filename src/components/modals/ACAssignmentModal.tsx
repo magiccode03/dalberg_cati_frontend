@@ -39,19 +39,13 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   onSuccess,
 }) => {
   const [acList, setAcList] = useState<ACData[]>([]);
+  const [allAcList, setAllAcList] = useState<ACData[]>([]); // Store all ACs for client-side filtering
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAcs, setSelectedAcs] = useState<ACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [userStats, setUserStats] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const listRef = React.useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Unassign functionality state
   const [showUnassignModal, setShowUnassignModal] = useState(false);
@@ -61,31 +55,39 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   // Fetch AC details and user statistics on modal open
   useEffect(() => {
     if (isOpen) {
-      setCurrentPage(1);
       setAcList([]);
-      fetchACDetails(1, '');
+      setAllAcList([]);
+      fetchACDetails();
       fetchUserStatistics();
     }
   }, [isOpen]);
 
-  // Handle search with debounce
+  // Client-side search filtering
   useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
+    if (!allAcList.length) return;
+
+    if (!searchTerm.trim()) {
+      setAcList(allAcList);
+      return;
     }
 
-    searchTimeoutRef.current = setTimeout(() => {
-      setCurrentPage(1);
-      setAcList([]);
-      fetchACDetails(1, searchTerm);
-    }, 500); // 500ms debounce
-
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
+    const searchLower = searchTerm.toLowerCase();
+    const filteredACs = allAcList.filter((ac) => {
+      // Try to determine if it's an AC code (number) or name
+      if (!isNaN(Number(searchTerm))) {
+        return ac.ac_code.toString().includes(searchTerm);
+      } else {
+        return (
+          ac.ac_name.toLowerCase().includes(searchLower) ||
+          ac.district_name.toLowerCase().includes(searchLower) ||
+          ac.pc_name.toLowerCase().includes(searchLower) ||
+          ac.mla_name.toLowerCase().includes(searchLower)
+        );
       }
-    };
-  }, [searchTerm]);
+    });
+
+    setAcList(filteredACs);
+  }, [searchTerm, allAcList]);
 
   const fetchUserStatistics = async () => {
     try {
@@ -110,56 +112,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     }
   };
 
-  // Load more data when scrolling
-  const loadMoreData = () => {
-    if (hasMore && !loading && currentPage < totalPages) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-      fetchACDetails(nextPage, searchTerm);
-    }
-  };
 
-  // Scroll handler for lazy loading with throttling
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    // Capture scroll values immediately before they become null
-    const target = e.currentTarget;
-    const scrollTop = target.scrollTop;
-    const scrollHeight = target.scrollHeight;
-    const clientHeight = target.clientHeight;
-    
-    // Clear existing timeout
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    // Throttle scroll events
-    scrollTimeoutRef.current = setTimeout(() => {
-      // Check if user has scrolled to within 100px of the bottom
-      const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100;
-      
-      if (isNearBottom && hasMore && currentPage < totalPages) {
-        console.log('Loading more ACs...', {
-          currentPage,
-          totalPages,
-          scrollTop,
-          scrollHeight,
-          clientHeight
-        });
-        loadMoreData();
-      }
-    }, 100); // 100ms throttle
-  };
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const fetchACDetails = async (page: number = 1, search: string = '') => {
+  const fetchACDetails = async () => {
     setLoading(true);
     setError(null);
 
@@ -167,23 +121,10 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const token = localStorage.getItem('accessToken');
       
-      // Build query parameters
+      // Build query parameters - fetch all ACs at once
       const params = new URLSearchParams({
-        page: page.toString(),
-        limit: '20',
+        limit: '1000', // Fetch all ACs at once
       });
-
-      // Add search parameters if search term exists
-      if (search.trim()) {
-        // Try to determine if it's an AC code (number) or name
-        if (!isNaN(Number(search))) {
-          params.append('ac_code', search);
-        } else {
-          params.append('ac_name', search);
-          params.append('district_name', search);
-          params.append('pc_name', search);
-        }
-      }
 
       const response = await fetch(`${apiUrl}/api/cati/ac-details?${params.toString()}`, {
         method: 'GET',
@@ -202,20 +143,10 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
 
       if (data.success) {
         const acData = Array.isArray(data.data?.data) ? data.data.data : [];
-        const pagination = data.data?.pagination || {};
+        setAllAcList(acData); // Store all ACs for client-side filtering
+        setAcList(acData); // Initially show all ACs
         
-        // Append to existing list for pagination
-        if (page === 1) {
-          setAcList(acData);
-        } else {
-          setAcList(prev => [...prev, ...acData]);
-        }
-        
-        setTotalPages(pagination.totalPages || 1);
-        setTotalItems(pagination.total || acData.length);
-        setHasMore(pagination.page < pagination.totalPages);
-        
-        if (acData.length === 0 && page === 1) {
+        if (acData.length === 0) {
           setError('No Assembly Constituencies found');
         }
       } else {
@@ -454,13 +385,13 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           </p>
         </div>
 
-        {/* AC List with Lazy Loading */}
+        {/* AC List */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Select Assembly Constituency
-            {totalItems > 0 && (
+            {acList.length > 0 && (
               <span className="ml-2 text-xs text-gray-500">
-                (Showing {acList.length} of {totalItems})
+                ({acList.length} ACs)
               </span>
             )}
           </label>
@@ -471,10 +402,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
             </div>
           ) : (
             <div 
-              ref={listRef}
               className="max-h-[45vh] min-h-[200px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg"
-              onScroll={handleScroll}
-              style={{ scrollBehavior: 'smooth' }}
             >
               {acList.length > 0 ? (
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -536,26 +464,6 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                     </div>
                     );
                   })}
-                  
-                  {/* Loading more indicator and manual load button */}
-                  {hasMore && currentPage < totalPages && (
-                    <div className="p-3 text-center border-t border-gray-200 dark:border-gray-700">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="text-sm text-gray-500">
-                          Showing {acList.length} of {totalItems} ACs
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={loadMoreData}
-                          disabled={loading}
-                          className="text-xs"
-                        >
-                          {loading ? 'Loading...' : `Load More (Page ${currentPage + 1}/${totalPages})`}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="p-8 text-center text-gray-500 dark:text-gray-400">

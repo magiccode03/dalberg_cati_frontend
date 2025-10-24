@@ -612,10 +612,10 @@ export default function QCUserRegistrationPage() {
                             </Button>
                           </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                              <div className="flex flex-row gap-2 items-center">
+                              {/* <div className="flex flex-row gap-2 items-center"> */}
                                 
                                 {/* GPS Assign AC Button */}
-                                <Button
+                                {/* <Button
                                   variant="primary"
                                   size="sm"
                                   onClick={() => handleAssignGPSAC(user.id)}
@@ -624,19 +624,19 @@ export default function QCUserRegistrationPage() {
                                   className={`w-full ${!user.gps ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                   <MapPin className="w-4 h-4 mr-1" />
-                                </Button>
-                                
+                                </Button> */}
+
                                 {/* Regular Assign AC Button */}
                                 <Button
                                   variant="primary"
                                   size="sm"
                                   onClick={() => handleAssignAC(user.id)}
                                   title="Assign AC"
-                                  className="w-full"
+                                  // className="w-full"
                                 >
-                                  <Speaker className="w-4 h-4 mr-1" />
+                                  <Speaker className="w-4 h-4" />
                                 </Button>
-                              </div>
+                              {/* </div> */}
                           </td>
                         </tr>
                       ))}
