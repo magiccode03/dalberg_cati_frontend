@@ -14,6 +14,7 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
 import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
+import { apiService } from '@/lib/api';
 
 interface RejectionData {
   srNo: number;
@@ -349,6 +350,65 @@ export default function RejectionReportPage() {
     setAudioModalOpen(false);
     setSelectedServerId('');
     setSelectedAudioFile('');
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      // Use applied filters for download parameters
+      if (!appliedFilters) {
+        console.error('No filters applied');
+        return;
+      }
+
+      const downloadParams: any = {
+        report_days: appliedFilters.reportDays,
+        report_level: appliedFilters.reportLevel,
+        interviewer_id: appliedFilters.interviewerId,
+        enumerator_id: appliedFilters.enumeratorId,
+        district_code: appliedFilters.districtCode,
+        pc_code: appliedFilters.pcCode,
+        supervisor_id: appliedFilters.supervisorId,
+        server_id: appliedFilters.serverId,
+        mobile_no: appliedFilters.mobileNo,
+        fail_reason: appliedFilters.failReason,
+        qualityreportstatus: appliedFilters.qualityreportstatus
+      };
+
+      // Add custom date parameters if applicable
+      if (appliedFilters.reportDays === 'custom') {
+        if (appliedFilters.customDate && appliedFilters.customDate.trim() !== '') {
+          downloadParams.custom_date = appliedFilters.customDate;
+        }
+        if (appliedFilters.customDateEnd && appliedFilters.customDateEnd.trim() !== '') {
+          downloadParams.custom_date_end = appliedFilters.customDateEnd;
+        }
+      }
+
+      // Add AC code if applicable
+      if (appliedFilters.acCode && appliedFilters.acCode.trim() !== '') {
+        downloadParams.ac_code = appliedFilters.acCode;
+      }
+
+      // Call the download API
+      const blob = await apiService.downloadRejectionReport(downloadParams);
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `rejection-report-${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error downloading rejection report:', error);
+      // You could add a toast notification here
+    }
   };
 
   const getFailReasonBadge = (reason: string) => {
@@ -923,9 +983,20 @@ export default function RejectionReportPage() {
         {/* Rejection Report Table */}
         <Card className="">
           <div className="mb-6">
-            <div className="flex items-center mb-2">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleDownloadReport}
+                className="flex items-center"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Report
+              </Button>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400 ml-4">
               Total <span className="font-bold text-black dark:text-white">{totalCount.toLocaleString()}</span> items
