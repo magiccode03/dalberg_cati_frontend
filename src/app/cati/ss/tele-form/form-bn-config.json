@@ -691,12 +691,12 @@
       },
       {
         "label": "ভোট দেবেন না",
-        "value": "67",
+        "value": "66",
         "tag": "opt_will_not_vote"
       },
       {
         "label": "এখনো সিদ্ধান্ত নেননি",
-        "value": "78",
+        "value": "77",
         "tag": "opt_not_decided"
       },
       {

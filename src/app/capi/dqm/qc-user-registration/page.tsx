@@ -240,7 +240,9 @@ export default function QCUserRegistrationPage() {
 
   const handleEditUser = (userId: number) => {
     // Navigate to the update user form page
+    console.log('Editing user:', userId);
     router.push(`/capi/dqm/qc-user-registration/${userId}`);
+
   };
 
   const handleAssignAC = (userId: number) => {
