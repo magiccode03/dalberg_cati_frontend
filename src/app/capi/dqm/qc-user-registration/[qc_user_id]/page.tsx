@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -79,6 +79,9 @@ const QCUserUpdatePage = ({ params }: { params: Promise<{ qc_user_id: string }> 
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   const { success, error: showError } = useToast();
+  
+  // Ref to prevent multiple simultaneous API calls
+  const fetchDataRef = useRef(false);
 
   const statusOptions = [
     { value: '', label: 'Select Status' },
@@ -86,18 +89,16 @@ const QCUserUpdatePage = ({ params }: { params: Promise<{ qc_user_id: string }> 
     { value: '2', label: 'Inactive' }
   ];
 
-  // Fetch QC user data on component mount
+  // Fetch QC user data on component mount - only once
   useEffect(() => {
-    console.log('QC User ID from URL:', qcUserId);
-    console.log('QC User ID type:', typeof qcUserId);
-    
-    if (qcUserId) {
+    if (qcUserId && !fetchDataRef.current && fetchLoading) {
+      fetchDataRef.current = true;
       fetchQCUserData();
-    } else {
+    } else if (!qcUserId) {
       showError('No QC user ID provided');
       router.push('/capi/dqm/qc-user-registration');
     }
-  }, [qcUserId]);
+  }, [qcUserId]); // Only depend on qcUserId
 
   const fetchQCUserData = async () => {
     if (!qcUserId) {
@@ -112,46 +113,54 @@ const QCUserUpdatePage = ({ params }: { params: Promise<{ qc_user_id: string }> 
       
       console.log('🔍 Fetching QC user data for ID:', qcUserId);
       
-      // TODO: Replace with actual API call
-      // const qcUserData = await getQCUserById(parseInt(qcUserId));
+      // Make API call to fetch QC user data
+      const response = await apiClient.get(`/qc-user-registration/${qcUserId}`);
+      const data = response.data;
       
-      // Mock data for now - replace with actual API call
-      const mockQCUserData = {
-        qc_id: '109',
-        name: 'Kundan',
-        mobile_number: '8851258589',
-        status: '1',
-        audio: true,
-        gps: false,
-        tele: false,
-        clientaudiocheck: false
-      };
+      console.log('📊 API Response:', data);
       
-      console.log('📊 Mock QC user data:', mockQCUserData);
-      
-      if (mockQCUserData) {
+      if (data.success && data.data) {
+        const qcUserData = data.data;
+        console.log('✅ QC user data received:', qcUserData);
+        
+        // Map API response to form data
         const mappedData = {
-          qc_id: mockQCUserData.qc_id || '',
-          name: mockQCUserData.name || '',
-          mobile_number: mockQCUserData.mobile_number || '',
-          status: mockQCUserData.status?.toString() || '1',
-          audio: mockQCUserData.audio || false,
-          gps: mockQCUserData.gps || false,
-          tele: mockQCUserData.tele || false,
-          clientaudiocheck: mockQCUserData.clientaudiocheck || false
+          qc_id: qcUserData.qc_id?.toString() || '',
+          name: qcUserData.name || '',
+          mobile_number: qcUserData.mobile_number || '',
+          status: qcUserData.status === 'Active' ? '1' : '2',
+          audio: qcUserData.access_permissions?.audio_qc || false,
+          gps: qcUserData.access_permissions?.gps_qc || false,
+          tele: qcUserData.access_permissions?.tele_qc || false,
+          clientaudiocheck: qcUserData.access_permissions?.rechecking || false
         };
+        
         console.log('✅ Mapped form data:', mappedData);
         setFormData(mappedData);
       } else {
         console.error('❌ No QC user data received from API');
         setFetchError('Failed to fetch QC user data - no data returned');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('❌ Error fetching QC user data:', err);
-      setFetchError(`Failed to fetch QC user data: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setFetchLoading(false);
-    }
+      
+      let errorMessage = 'Failed to fetch QC user data';
+      
+      if (err.response?.status === 404) {
+        errorMessage = `QC User with ID ${qcUserId} not found`;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setFetchError(errorMessage);
+     } finally {
+       setFetchLoading(false);
+       fetchDataRef.current = false; // Reset the flag after completion
+     }
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -493,22 +502,6 @@ const QCUserUpdatePage = ({ params }: { params: Promise<{ qc_user_id: string }> 
                   checked={formData.gps}
                   onCheckedChange={(checked) => handleInputChange('gps', checked as boolean)}
                   label="GPS QC"
-                />
-              </div>
-
-              <div>
-                <Checkbox
-                  checked={formData.tele}
-                  onCheckedChange={(checked) => handleInputChange('tele', checked as boolean)}
-                  label="Tele QC"
-                />
-              </div>
-
-              <div>
-                <Checkbox
-                  checked={formData.clientaudiocheck}
-                  onCheckedChange={(checked) => handleInputChange('clientaudiocheck', checked as boolean)}
-                  label="Re-Checking"
                 />
               </div>
             </div>

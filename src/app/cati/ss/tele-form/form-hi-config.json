@@ -691,12 +691,12 @@
       },
       {
         "label": "Will not vote",
-        "value": "67",
+        "value": "66",
         "tag": "opt_will_not_vote"
       },
       {
         "label": "Not yet decided",
-        "value": "78",
+        "value": "77",
         "tag": "opt_not_decided"
       },
       {
