@@ -92,7 +92,7 @@ export default function InterviewListPage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(50);
+  const [pageSize] = useState(25);
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -334,387 +334,152 @@ export default function InterviewListPage() {
   const currentData = interviewData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={2} className="text-2xl font-semibold text-gray-900">
-              Interview List
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Interview List
+          </Heading>
+        </div>
+      </div>
+
+
+      {/* Interview List Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Interview Details
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
         </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <Text className="ml-2 text-gray-600">Loading interview data...</Text>
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalCount.toLocaleString()}</strong> items.
+            </Text>
           </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
-                    Error Loading Data
-                  </Heading>
-                  <Text className="text-gray-600">{error}</Text>
-                </div>
-                <Button
-                  onClick={fetchInterviewData}
-                  variant="outline"
-                  size="sm"
-                >
-                  Retry
-                </Button>
-              </div>
+          
+          {loading ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
+              <Text className="text-gray-600">Loading interview data...</Text>
             </div>
-          </Card>
-        )}
+          ) : error ? (
+            <div className="text-center py-8">
+              <Text className="text-lg text-red-600">Error: {error}</Text>
+              <Button 
+                onClick={fetchInterviewData}
+                className="mt-4 bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">Server ID</th>
+                    <th className="text-center">Interview Date</th>
+                    <th className="text-center">Sample Type</th>
+                    <th className="text-center">AC Name</th>
+                    <th className="text-center">PS Name</th>
+                    <th className="text-center">Interviewer ID</th>
+                    <th className="text-center">Gender</th>
+                    <th className="text-center">Audio QC</th>
+                    <th className="text-center">Audio QC ID</th>
+                    <th className="text-center">Audio Fail Reason</th>
+                    <th className="text-center">Status</th>
+                    <th className="text-center">QC Outcome</th>
+                    <th className="text-center">Audio</th>
+                    <th className="text-center">Edit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((interview, index) => (
+                    <tr key={interview.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center">{interview.serverId}</td>
+                      <td className="text-left">{interview.interviewDate}</td>
+                      <td className="text-left">{interview.sampleType}</td>
+                      <td className="text-left">{interview.acName}</td>
+                      <td className="text-left">{interview.psName}</td>
+                      <td className="text-center">{interview.interviewerId}</td>
+                      <td className="text-left">
+                        <span className={interview.genderLabel === 'Male' ? 'text-blue-600' : 'text-pink-600'}>
+                          {interview.genderLabel}
+                        </span>
+                      </td>
+                      <td className="text-left">{interview.audioQcLabel}</td>
+                      <td className="text-center">{interview.audioQcId}</td>
+                      <td className="text-left">{interview.audioFailReason}</td>
+                      <td className="text-left">
+                        <Badge variant={interview.statusLabel === 'Valid' ? 'success' : 'secondary'} size="sm">
+                          {interview.statusLabel}
+                        </Badge>
+                      </td>
+                      <td className="text-left">
+                        {getQcOutcomeBadge(interview.qcOutcome)}
+                      </td>
+                      <td className="text-center">
+                        {interview.audioQcLabel === 'Fail' ? (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleMarkAsValid(interview.serverId)}
+                            className="bg-red-500 hover:bg-red-600 text-white"
+                            title="Mark as Valid"
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleAudioView(interview.serverId)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
+                            title="View Audio"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </td>
+                      <td className="text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(interview.serverId)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
+                          title="Edit Response"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-2">
-            <Card className="sticky top-0 overflow-scroll z-10">
-              <div className="py-4 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Filters
-                  </Heading>
-                </div>
-              </div>
-              <div className="p-0">
-                <div className="space-y-4">
-                  {/* Server ID */}
-                  <div>
-                    <Input
-                      type="text"
-                      placeholder="Search by Server ID"
-                      value={filters.server_id}
-                      onChange={(e) => handleFilterChange('server_id', e.target.value)}
-                    />
-                  </div>
-
-                  {/* Interview Date */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.interview_date}
-                      onChange={(value) => handleFilterChange('interview_date', value as string)}
-                      placeholder="Select Interview Date"
-                      options={[
-                        { value: '', label: 'Select Interview Date' },
-                        ...generateDateOptions()
-                      ]}
-                    />
-                  </div>
-
-                  {/* AC Code */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.ac_code}
-                      onChange={(value) => handleFilterChange('ac_code', value as string)}
-                      placeholder="Select AC"
-                      options={[
-                        { value: '', label: 'Select AC' },
-                        { value: '195', label: 'Agiaon (SC) (195)' },
-                        { value: '70', label: 'Alamnagar (70)' },
-                        { value: '148', label: 'Alauli (SC) (148)' },
-                        { value: '11', label: 'Sugauli (11)' },
-                        { value: '79', label: 'Gaura Bauram (79)' },
-                        { value: '172', label: 'Biharsharif (172)' },
-                        { value: '5', label: 'Lauriya (5)' },
-                      ]}
-                    />
-                  </div>
-
-                  {/* Interviewer ID */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.interviewer_id}
-                      onChange={(value) => handleFilterChange('interviewer_id', value as string)}
-                      placeholder="Select Interviewer ID"
-                      options={[
-                        { value: '', label: 'Select Interviewer ID' },
-                        { value: '101', label: '101' },
-                        { value: '102', label: '102' },
-                        { value: '103', label: '103' },
-                        { value: '105', label: '105' },
-                        { value: '106', label: '106' },
-                        { value: '109', label: '109' },
-                        { value: '121', label: '121' },
-                        { value: '122', label: '122' },
-                        { value: '990', label: '990' },
-                        { value: '932', label: '932' },
-                      ]}
-                    />
-                  </div>
-
-                  {/* QC Date */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.qc_date}
-                      onChange={(value) => handleFilterChange('qc_date', value as string)}
-                      placeholder="Select QC Date"
-                      options={[
-                        { value: '', label: 'Select QC Date' },
-                        ...generateDateOptions()
-                      ]}
-                    />
-                  </div>
-
-                  {/* QC ID */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.qc_id}
-                      onChange={(value) => handleFilterChange('qc_id', value as string)}
-                      placeholder="Select QC ID"
-                      options={[
-                        { value: '', label: 'Select QC ID' },
-                        { value: '101', label: 'Komal (101)' },
-                        { value: '102', label: 'Priyanshi (102)' },
-                        { value: '103', label: 'Sonu Kumari (103)' },
-                        { value: '105', label: 'Simran (105)' },
-                        { value: '106', label: 'Swati (106)' },
-                        { value: '109', label: 'Kundan (109)' },
-                        { value: '121', label: 'Ashifa (121)' },
-                        { value: '122', label: 'Rama (122)' },
-                      ]}
-                    />
-                  </div>
-
-                  {/* Audio QC Status */}
-                  <div>
-                    <Text className="text-sm font-medium text-gray-700 mb-2">Audio QC Status</Text>
-                    <div className="space-y-2">
-                      {[
-                        { value: '1', label: 'Pass' },
-                        { value: '2', label: 'Fail' },
-                        { value: '3', label: 'Pending' },
-                        { value: '0', label: 'NA' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
-                          <Checkbox
-                            checked={filters.audio_qc_status.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleFilterChange('audio_qc_status', [...filters.audio_qc_status, option.value]);
-                              } else {
-                                handleFilterChange('audio_qc_status', filters.audio_qc_status.filter(status => status !== option.value));
-                              }
-                            }}
-                          />
-                          <Text className="text-sm text-gray-600 ml-2">{option.label}</Text>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Audio QC Status Details */}
-                  <div>
-                    <Text className="text-sm font-medium text-gray-700 mb-2">Audio QC Status Details</Text>
-                    <div className="space-y-2">
-                      {[
-                        { value: '1', label: 'Survey Conversation can be heard' },
-                        { value: '2', label: 'No Conversation' },
-                        { value: '3', label: 'Irrelevant Conversation' },
-                        { value: '6', label: 'Interviewer acting as respondent' },
-                        { value: '4', label: 'Can hear the interviewer more than the respondent' },
-                        { value: '5', label: 'The interviewer is asking questions mechanically' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
-                          <Checkbox
-                            checked={filters.audio1_status.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleFilterChange('audio1_status', [...filters.audio1_status, option.value]);
-                              } else {
-                                handleFilterChange('audio1_status', filters.audio1_status.filter(status => status !== option.value));
-                              }
-                            }}
-                          />
-                          <Text className="text-sm text-gray-600 ml-2">{option.label}</Text>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* QC Outcome */}
-                  <div>
-                    <Text className="text-sm font-medium text-gray-700 mb-2">QC Outcome</Text>
-                    <div className="space-y-2">
-                      {[
-                        { value: 'blue', label: 'Pending' },
-                        { value: 'red', label: 'Fail' },
-                        { value: 'green', label: 'Pass' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
-                          <Checkbox
-                            checked={filters.qc_scenario_color.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleFilterChange('qc_scenario_color', [...filters.qc_scenario_color, option.value]);
-                              } else {
-                                handleFilterChange('qc_scenario_color', filters.qc_scenario_color.filter(color => color !== option.value));
-                              }
-                            }}
-                          />
-                          <Text className="text-sm text-gray-600 ml-2">{option.label}</Text>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Main Content */}
-          <div className="lg:col-span-10">
-            <Card>
-              <div className="px-6 py-4 border-b border-gray-200">
-                <div className="flex items-center">
-                <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Interview Details
-                  </Heading>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="overflow-x-auto">
-                  <Table
-                    striped
-                    bordered
-                    hover
-                    className="w-full border-collapse"
-                  >
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Server ID</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Interview<br />Date
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample Type</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">PS Name</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Interviewer<br />ID
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Gender</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Audio<br />QC
-                        </th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Audio<br />QC ID
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Audio<br />Fail Reason
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Outcome</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio</th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Edit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {currentData.map((interview, index) => (
-                        <tr key={interview.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{startIndex + index + 1}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.serverId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.interviewDate}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.sampleType}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.acName}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.psName}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.interviewerId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
-                            <span className={interview.genderLabel === 'Male' ? 'text-blue-600' : 'text-pink-600'}>
-                              {interview.genderLabel}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.audioQcLabel}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.audioQcId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.audioFailReason}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
-                            <Badge variant={interview.statusLabel === 'Valid' ? 'success' : 'secondary'} size="sm">
-                              {interview.statusLabel}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
-                            {getQcOutcomeBadge(interview.qcOutcome)}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {interview.audioQcLabel === 'Fail' ? (
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleMarkAsValid(interview.serverId)}
-                                title="Mark as Valid"
-                              >
-                                <Check className="w-4 h-4" />
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleAudioView(interview.serverId)}
-                                title="View Audio"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="relative group">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEdit(interview.serverId)}
-                                className="bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600 p-2"
-                                title="Edit Response"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              {/* Tooltip */}
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                                Edit
-                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
-
-                {/* Table Footer */}
-                <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                  <div className="text-sm text-gray-700">
-                    Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items.
-                  </div>
-                  <div>
-                    <PaginationStandard
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      totalItems={totalCount}
-                      itemsPerPage={pageSize}
-                      onPageChange={setCurrentPage}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
-      </Container>
-    </div>
+      </Card>
+    </Container>
   );
 }
