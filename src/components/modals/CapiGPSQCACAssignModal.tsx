@@ -82,7 +82,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch(`${apiUrl}/api/capi/interviews/qc-user/${teleformUserId}/statistics`, {
+      const response = await fetch(`${apiUrl}/api/capi/interviews/gps-qc-user/${teleformUserId}/statistics`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -314,7 +314,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         throw new Error('API URL not configured');
       }
 
-      const response = await fetch(`${apiUrl}/api/capi/qc/unassign-ac`, {
+      const response = await fetch(`${apiUrl}/api/capi/qc/gps-unassign-ac`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
