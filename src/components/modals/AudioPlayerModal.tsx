@@ -283,9 +283,13 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer ID</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.interviewer_id || '-'}</p>
-              </div>
-            </div>
-          </div>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.status_label || 'Available'}</p>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Audio Player */}
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
