@@ -712,7 +712,7 @@ const TelecallerProgressPage: React.FC = () => {
       // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
-        limit: '100', // API maximum limit
+        limit: '1000', // API maximum limit
       });
       
       // Add filters (only if they have values)
@@ -776,8 +776,6 @@ const TelecallerProgressPage: React.FC = () => {
           'Terminated',
           'Incompleted',
           'No response by Telecaller (Interview)',
-          'Less Than 180 (Sec)',
-          'Greater Than 180 (Sec)',
         ];
 
         const csvRows = [
@@ -809,8 +807,6 @@ const TelecallerProgressPage: React.FC = () => {
             item.terminated || 0,
             item.incompleted || 0,
             Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)),
-            item.less_than_180_sec || 0,
-            item.greater_than_180_sec || 0,
           ].join(','))
         ];
 
@@ -1516,8 +1512,8 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th>
+                        {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -1601,12 +1597,12 @@ const TelecallerProgressPage: React.FC = () => {
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.greater_than_180_sec?.toLocaleString() || 0}
-                          </td>
+                          </td> */}
                         </tr>
                       ))}
                     </tbody>
