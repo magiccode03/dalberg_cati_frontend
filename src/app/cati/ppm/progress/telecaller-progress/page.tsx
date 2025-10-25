@@ -772,7 +772,7 @@ const TelecallerProgressPage: React.FC = () => {
           'Refuse to Respond',
           'Call Back Later',
           'No response by Telecaller (Call Status)',
-          'Successful',
+          'Completed',
           'Terminated',
           'Incompleted',
           'No response by Telecaller (Interview)',
@@ -1508,7 +1508,7 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Refuse to Respond</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Back Later</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Status)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Successful</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Completed</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>

@@ -588,13 +588,13 @@ function QCFormPage() {
   const determineQCOutcome = (): { outcome: number; rejectionLevel: number } => {
     const qcAudioStatus = formData.qc_audio_status; // This is the question answer (1, 2, 3, 4, 7, 8)
     
-    // If qc_audio_status is 2 (No Conversation), 3 (Irrelevant), 7, or 8, it's fail
-    if (qcAudioStatus === '2' || qcAudioStatus === '3' || qcAudioStatus === '7' || qcAudioStatus === '8') {
+    // If qc_audio_status is 2 (No Conversation), 3 (Irrelevant), or 8 (Duplicate), it's fail
+    if (qcAudioStatus === '2' || qcAudioStatus === '3' || qcAudioStatus === '8') {
       return { outcome: 2, rejectionLevel: 1 }; // Fail at audio status level
     }
     
-    // If qc_audio_status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
-    if (qcAudioStatus === '1' || qcAudioStatus === '4') {
+    // If qc_audio_status is 1 (Survey Conversation can be heard), 4 (Interviewer more than respondent), or 7 (Cannot hear clearly), check other mandatory questions
+    if (qcAudioStatus === '1' || qcAudioStatus === '4' || qcAudioStatus === '7') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
       const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
       
