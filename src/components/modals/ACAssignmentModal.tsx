@@ -21,6 +21,7 @@ interface ACData {
   pending_data: number;
   complete_data: number;
   data_available: number;
+  pending_for_assign: number;
 }
 
 interface ACAssignmentModalProps {
@@ -164,7 +165,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     const isAlreadySelected = selectedAcs.some(selected => selected.ac_code === ac.ac_code);
     const isAssigned = assignedACs.some((assigned: any) => assigned.ac_code === ac.ac_code);
     
-    // Don't allow deselecting already assigned ACs
+    // If already assigned (with call_pending > 0), don't allow selection/deselection
     if (isAssigned) return;
     
     if (isAlreadySelected) {
@@ -209,8 +210,21 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       });
 
       if (response.ok) {
+        // Remove the unassigned AC from the local state immediately
+        setUserStats((prevStats: any) => {
+          if (!prevStats || !prevStats.ac_detail) return prevStats;
+          
+          return {
+            ...prevStats,
+            ac_detail: prevStats.ac_detail.filter((ac: any) => ac.ac_code !== acToUnassign.ac_code)
+          };
+        });
+        
         // Refresh the data after successful unassignment
-        fetchUserStatistics();
+        fetchUserStatistics().catch(err => {
+          console.error('Error refreshing user statistics after unassign:', err);
+          // Even if refresh fails, the local state update above will handle the UI
+        });
         onSuccess(); // This will trigger refresh on the main page
         setError(null);
       } else {
@@ -224,6 +238,11 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       setUnassigning(false);
       setAcToUnassign(null);
     }
+  };
+
+  const handleUnassignCancel = () => {
+    setShowUnassignModal(false);
+    setAcToUnassign(null);
   };
 
   const handleSubmit = async () => {
@@ -282,8 +301,8 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     onClose();
   };
 
-  // Get assigned ACs from stats
-  const assignedACs = userStats?.ac_detail || [];
+  // Get assigned ACs from stats - filter out ACs with call_pending=0
+  const assignedACs = (userStats?.ac_detail || []).filter((ac: any) => ac.call_pending > 0);
 
   return (
     <Modal
@@ -456,7 +475,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                           <div className="text-right">
                             <div className="text-xs text-gray-500 dark:text-gray-400">Available</div>
                             <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {ac.total_data}
+                              {ac.pending_for_assign}
                             </div>
                           </div>
                         </div>
@@ -499,10 +518,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       {/* Unassign Confirmation Modal */}
       <ConfirmationModal
         isOpen={showUnassignModal}
-        onClose={() => {
-          setShowUnassignModal(false);
-          setAcToUnassign(null);
-        }}
+        onClose={handleUnassignCancel}
         onConfirm={handleUnassignConfirm}
         title="Unassign Assembly Constituency"
         message={`Are you sure you want to unassign ${acToUnassign?.ac_name} (${acToUnassign?.ac_code}) from ${telecallerName}?`}
