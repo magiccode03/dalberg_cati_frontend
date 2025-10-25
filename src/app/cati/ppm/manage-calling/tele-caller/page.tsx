@@ -135,7 +135,7 @@ const TeleUserInfoPage: React.FC = () => {
       if (!token) return;
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiBaseUrl}/api/capi/unified-user-statistics?fill_form=1&page=1`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/unified-user-statistics?fill_form=1&page=1`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
