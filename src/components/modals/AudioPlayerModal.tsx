@@ -6,6 +6,7 @@ import apiClient from '@/lib/api-client';
 import Modal from '@/components/ui/Modal';
 import Text from '@/components/ui/Text';
 import Heading from '@/components/ui/Heading';
+import Button from '@/components/ui/Button';
 
 interface AudioData {
   ac_name: string;
@@ -41,6 +42,8 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -61,6 +64,8 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
       setCurrentTime(0);
       setDuration(0);
       setShowDropdown(false);
+      setAudioError(false);
+      setUseIframe(false);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
@@ -175,6 +180,17 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
     setShowDropdown(!showDropdown);
   };
 
+  const handleAudioError = () => {
+    console.error('Audio playback failed, switching to iframe mode');
+    setAudioError(true);
+    setUseIframe(true);
+  };
+
+  const handleIframeError = () => {
+    console.error('Iframe audio playback also failed');
+    setAudioError(true);
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -193,199 +209,216 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
   }, [showDropdown]);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Interview Details"
-      size="lg"
-    >
-      {loading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <Text className="ml-2" color="secondary">Loading audio data...</Text>
-        </div>
-      )}
-
-      {error && (
-        <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
-          <div className="text-red-500 mb-2">⚠️</div>
-          <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
-          <Text color="error" size="sm" align="center" className="mb-4">{error}</Text>
-          <button
-            onClick={fetchAudioData}
-            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      {audioData && !loading && (
-        <>
-          {/* Interview Details Table */}
-          <div className="mb-6">
-            <div className="space-y-2">
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">AC Name</Text>
-                <Text color="primary">{audioData.ac_name}</Text>
+    <>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-6 w-6 text-blue-600" />
+                <Heading level={3} className="text-lg font-semibold">
+                  Interview Audio Player
+                </Heading>
               </div>
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">PS Code</Text>
-                <Text color="primary">{audioData.ps_code}</Text>
-              </div>
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">Server Id</Text>
-                <Text color="primary">{audioData.server_id}</Text>
-              </div>
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">Interview Date</Text>
-                <Text color="primary">
-                  {new Date(audioData.interview_date).toLocaleDateString()}
-                </Text>
-              </div>
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">Device Id</Text>
-                <Text color="primary" fontFamily="mono" size="xs">{audioData.device_id}</Text>
-              </div>
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">Interviewer Id</Text>
-                <Text color="primary">{audioData.interviewer_id || '-'}</Text>
-              </div>
-              <div className="flex justify-between items-center bg-blue-50 px-4 py-3 rounded">
-                <Text weight="medium" color="secondary">Status</Text>
-                <Text color="primary">{audioData.status_label || 'Available'}</Text>
-              </div>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
             </div>
-          </div>
 
-          {/* Audio Player Section */}
-          <div className="border-t border-gray-200 pt-6">
-            <Heading level={4} size="lg" weight="medium" className="mb-4">Listen Audio:</Heading>
-                  
-                  {/* Audio Element */}
-                  <audio
-                    ref={audioRef}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onEnded={() => setIsPlaying(false)}
-                    className="hidden"
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {loading && (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  <Text className="ml-2" color="secondary">Loading audio data...</Text>
+                </div>
+              )}
+
+              {error && (
+                <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
+                  <div className="text-red-500 mb-2">⚠️</div>
+                  <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
+                  <Text color="error" size="sm" align="center" className="mb-4">{error}</Text>
+                  <Button
+                    onClick={fetchAudioData}
+                    variant="outline"
+                    className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                   >
-                    {audioData.audio1 && audioData.audio1.trim() !== '' ? (
-                      <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`} type="audio/mpeg" />
-                    ) : (
-                      <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=audio1`} type="audio/mpeg" />
-                    )}
-                    Your browser does not support the audio element.
-                  </audio>
+                    Retry
+                  </Button>
+                </div>
+              )}
 
-                  {/* Audio Player Controls */}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="flex items-center space-x-4">
-                      {/* Play/Pause Button */}
-                      <button
-                        onClick={togglePlayPause}
-                        className="flex-shrink-0 w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors"
-                      >
-                        {isPlaying ? (
-                          <Pause className="w-5 h-5" />
-                        ) : (
-                          <Play className="w-5 h-5 ml-0.5" />
-                        )}
-                      </button>
-
-                      {/* Time Display */}
-                      <div className="flex-shrink-0 text-sm text-gray-600 font-mono">
-                        {formatTime(currentTime)} / {formatTime(duration)}
+              {audioData && !loading && (
+                <>
+                  {/* Interview Details */}
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.server_id}</p>
                       </div>
-
-                      {/* Progress Bar */}
-                      <div className="flex-1">
-                        <input
-                          type="range"
-                          min="0"
-                          max={duration || 0}
-                          value={currentTime}
-                          onChange={handleSeek}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                          style={{
-                            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(currentTime / duration) * 100}%, #e5e7eb ${(currentTime / duration) * 100}%, #e5e7eb 100%)`
-                          }}
-                        />
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {new Date(audioData.interview_date).toLocaleDateString()}
+                        </p>
                       </div>
-
-                      {/* Volume Control */}
-                      <div className="flex items-center space-x-2 flex-shrink-0">
-                        <button
-                          onClick={toggleMute}
-                          className="text-gray-600 hover:text-gray-800"
-                        >
-                          <Volume2 className={`w-5 h-5 ${isMuted ? 'text-red-500' : ''}`} />
-                        </button>
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.1"
-                          value={isMuted ? 0 : volume}
-                          onChange={handleVolumeChange}
-                          className="w-16 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                        />
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.ac_name}</p>
                       </div>
-
-                      {/* More Options */}
-                      <div className="relative flex-shrink-0" ref={dropdownRef}>
-                        <button 
-                          onClick={toggleDropdown}
-                          className="text-gray-600 hover:text-gray-800 p-1 rounded-full hover:bg-gray-100"
-                        >
-                          <MoreVertical className="w-5 h-5" />
-                        </button>
-                        
-                        {/* Dropdown Menu */}
-                        {showDropdown && (
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
-                            <div className="py-1">
-                              <button
-                                onClick={handleDownload}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                              >
-                                <Download className="w-4 h-4 mr-3" />
-                                Download Audio
-                              </button>
-                            </div>
-                          </div>
-                        )}
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">PS Code</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.ps_code}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Device ID</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs">{audioData.device_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer ID</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.interviewer_id || '-'}</p>
                       </div>
                     </div>
                   </div>
-          </div>
-        </>
-      )}
 
-      {/* Custom CSS for slider styling */}
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          height: 16px;
-          width: 16px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          border: 2px solid #ffffff;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .slider::-moz-range-thumb {
-          height: 16px;
-          width: 16px;
-          border-radius: 50%;
-          background: #3b82f6;
-          cursor: pointer;
-          border: 2px solid #ffffff;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
-    </Modal>
+                  {/* Audio Player */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                    <div className="mb-3 text-center">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                      </p>
+                      {audioError && !useIframe && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          Audio player had an issue. Try the alternative options below.
+                        </p>
+                      )}
+                    </div>
+
+                    {!useIframe ? (
+                      audioData.audio1 && audioData.audio1.trim() !== '' ? (
+                        <audio
+                          ref={audioRef}
+                          controls
+                          className="w-full"
+                          controlsList="nodownload"
+                          preload="metadata"
+                          onError={handleAudioError}
+                          onTimeUpdate={handleTimeUpdate}
+                          onLoadedMetadata={handleLoadedMetadata}
+                          onEnded={() => setIsPlaying(false)}
+                          onLoadStart={() => console.log('Audio loading started')}
+                          onCanPlay={() => console.log('Audio can play')}
+                        >
+                          <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`} type="audio/mpeg" />
+                          <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`} type="audio/mp3" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No audio file available for this interview.
+                        </div>
+                      )
+                    ) : (
+                      audioData.audio1 && audioData.audio1.trim() !== '' ? (
+                        <div className="w-full">
+                          <iframe
+                            src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`}
+                            className="w-full h-16 border-0 rounded"
+                            title="Audio Player"
+                            allow="autoplay"
+                            onError={handleIframeError}
+                            onLoad={() => {
+                              // Check if iframe content is just text (not audio player)
+                              setTimeout(() => {
+                                try {
+                                  const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                                  if (iframe && iframe.contentDocument) {
+                                    const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                    if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                      console.warn('Iframe returned text instead of audio player');
+                                      setAudioError(true);
+                                    }
+                                  }
+                                } catch (e) {
+                                  // Cross-origin restrictions, can't access iframe content
+                                  console.log('Cannot access iframe content due to CORS');
+                                }
+                              }, 1000);
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No audio file available for this interview.
+                        </div>
+                      )
+                    )}
+
+                    {/* Error Message for Failed Audio */}
+                    {audioError && (
+                      <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                        <div className="text-center">
+                          <div className="text-red-600 dark:text-red-400 mb-2">
+                            <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="font-semibold">Audio Playback Failed</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Alternative Options */}
+                    <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
+                      {!useIframe && audioError && (
+                        <Button
+                          onClick={() => setUseIframe(true)}
+                          variant="outline"
+                          className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        >
+                          Try Alternative Player
+                        </Button>
+                      )}
+                      <a
+                        href={audioData.audio1 && audioData.audio1.trim() !== '' 
+                          ? `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`
+                          : `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=audio1`
+                        }
+                        download
+                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                        style={{ display: audioData.audio1 && audioData.audio1.trim() !== '' ? 'inline' : 'none' }}
+                      >
+                        Download audio
+                      </a>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="px-4 py-2"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
