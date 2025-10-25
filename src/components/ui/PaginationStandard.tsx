@@ -58,9 +58,9 @@ export default function PaginationStandard({
   return (
     <div className={`px-4 py-3 border-t border-gray-200 dark:border-gray-700 ${className}`}>
       <div className="flex items-center justify-between">
-        {/* <div className="text-sm text-gray-700 dark:text-gray-300">
+        <div className="text-sm text-gray-700 dark:text-gray-300">
           Showing <span className="font-medium">{startItem}-{endItem}</span> of <span className="font-medium">{totalItems.toLocaleString()}</span> items
-        </div> */}
+        </div>
         <div className="flex space-x-1">
           <Button 
             variant="outline" 
