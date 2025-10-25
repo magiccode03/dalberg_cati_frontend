@@ -776,8 +776,6 @@ const TelecallerProgressPage: React.FC = () => {
           'Terminated',
           'Incompleted',
           'No response by Telecaller (Interview)',
-          'Less Than 180 (Sec)',
-          'Greater Than 180 (Sec)',
         ];
 
         const csvRows = [
@@ -809,8 +807,6 @@ const TelecallerProgressPage: React.FC = () => {
             item.terminated || 0,
             item.incompleted || 0,
             Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)),
-            item.less_than_180_sec || 0,
-            item.greater_than_180_sec || 0,
           ].join(','))
         ];
 
