@@ -231,61 +231,61 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
 
             {/* Modal Body */}
             <div className="p-6 space-y-4">
-              {loading && (
-                <div className="flex justify-center items-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <Text className="ml-2" color="secondary">Loading audio data...</Text>
-                </div>
-              )}
+      {loading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <Text className="ml-2" color="secondary">Loading audio data...</Text>
+        </div>
+      )}
 
-              {error && (
-                <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
-                  <div className="text-red-500 mb-2">⚠️</div>
-                  <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
-                  <Text color="error" size="sm" align="center" className="mb-4">{error}</Text>
+      {error && (
+        <div className="flex flex-col items-center py-8 bg-red-50 rounded-lg mb-4">
+          <div className="text-red-500 mb-2">⚠️</div>
+          <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
+          <Text color="error" size="sm" align="center" className="mb-4">{error}</Text>
                   <Button
-                    onClick={fetchAudioData}
+            onClick={fetchAudioData}
                     variant="outline"
                     className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                  >
-                    Retry
+          >
+            Retry
                   </Button>
-                </div>
-              )}
+        </div>
+      )}
 
-              {audioData && !loading && (
-                <>
+      {audioData && !loading && (
+        <>
                   {/* Interview Details */}
                   <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.server_id}</p>
-                      </div>
+              </div>
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100">
                           {new Date(audioData.interview_date).toLocaleDateString()}
                         </p>
-                      </div>
+              </div>
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.ac_name}</p>
-                      </div>
+              </div>
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">PS Code</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.ps_code}</p>
-                      </div>
+              </div>
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Device ID</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100 font-mono text-xs">{audioData.device_id}</p>
-                      </div>
+              </div>
                       <div>
                         <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer ID</p>
                         <p className="font-semibold text-gray-900 dark:text-gray-100">{audioData.interviewer_id || '-'}</p>
-                      </div>
-                    </div>
-                  </div>
+              </div>
+            </div>
+          </div>
 
                   {/* Audio Player */}
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
@@ -302,20 +302,20 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
 
                     {!useIframe ? (
                       audioData.audio1 && audioData.audio1.trim() !== '' ? (
-                        <audio
-                          ref={audioRef}
+                  <audio
+                    ref={audioRef}
                           controls
                           className="w-full"
                           controlsList="nodownload"
                           preload="metadata"
                           onError={handleAudioError}
-                          onTimeUpdate={handleTimeUpdate}
-                          onLoadedMetadata={handleLoadedMetadata}
-                          onEnded={() => setIsPlaying(false)}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onEnded={() => setIsPlaying(false)}
                           onLoadStart={() => console.log('Audio loading started')}
                           onCanPlay={() => console.log('Audio can play')}
-                        >
-                          <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`} type="audio/mpeg" />
+                  >
+                      <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`} type="audio/mpeg" />
                           <source src={`https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`} type="audio/mp3" />
                           Your browser does not support the audio element.
                         </audio>
@@ -373,7 +373,7 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
                               The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
                             </p>
                           </div>
-                        </div>
+                      </div>
                       </div>
                     )}
                     
@@ -414,7 +414,7 @@ const AudioPlayerModal: React.FC<AudioPlayerModalProps> = ({
               >
                 Close
               </Button>
-            </div>
+                  </div>
           </div>
         </div>
       )}

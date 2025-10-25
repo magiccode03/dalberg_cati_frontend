@@ -985,8 +985,8 @@ export default function RejectionReportPage() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
               </div>
               <Button
                 variant="primary"
@@ -1045,8 +1045,8 @@ export default function RejectionReportPage() {
                     <td>
                       <div className="max-w-xs">
                         <span className="text-gray-900 dark:text-gray-100 text-sm">
-                          {getAudioFailReasonDisplayText(row)}
-                        </span>
+                            {getAudioFailReasonDisplayText(row)}
+                          </span>
                       </div>
                     </td>
                     <td>
