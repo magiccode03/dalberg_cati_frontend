@@ -62,6 +62,24 @@
         },
         "value": "8",
         "tag": "opt_duplicate_audio"
+      },
+      {
+        "label": {
+          "en": "Interviewer acting as  respondent ",
+          "hi": "Interviewer acting as  respondent ",
+          "bn": "Interviewer acting as  respondent "
+        },
+        "value": "9",
+        "tag": "opt_int_act_as_resp"
+      },
+      {
+        "label": {
+          "en": "Same respondent as before",
+          "hi": "Same respondent as before",
+          "bn": "Same respondent as before"
+        },
+        "value": "10",
+        "tag": "opt_same_resp_as_before"
       }
     ],
     "tag": "qc_audio_status"
@@ -100,7 +118,7 @@
       "hi": "जाँचकर्ता निर्देश: कृपया सत्यापित करें कि क्या प्रतिवादी का लिंग ऑडियो के अनुसार उल्लिखित था",
       "bn": "পরীক্ষকের নির্দেশনা: অডিও অনুসারে উত্তরদাতার লিঙ্গ উল্লেখ করা হয়েছে কিনা তা যাচাই করুন।"
     },
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "required": true,
     "options": [
       {
@@ -129,6 +147,15 @@
         },
         "value": "3",
         "tag": "opt_male_answer_behalf_female"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "Cannot hear the response clearly",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "4",
+        "tag": "opt_cannot_hear_response"
       }
     ],
     "tag": "qc_q2"
@@ -203,25 +230,25 @@
         {
           "value": 66,
           "lable": {
-            "en": "Did not vote",
-            "hi": "वोट नहीं दिया",
-            "bn": "ভোট দেননি"
+            "en": "Will not vote",
+            "hi": "Will not vote",
+            "bn": "ভোট দেবেন না"
           }
         },
         {
           "value": 77,
           "lable": {
-            "en": "Not eligible for voting",
-            "hi": "मतदान के लिए पात्र नहीं",
-            "bn": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি"
+            "en": "Not yet decided ",
+            "hi": "Not yet decided ",
+            "bn": "এখনো সিদ্ধান্ত নেননি"
           }
         },
         {
           "value": 88,
           "lable": {
-            "en": "No response/Refused to answer",
-            "hi": "कोई प्रतिक्रिया नहीं/उत्तर देने से इनकार",
-            "bn": "কোনো উত্তর নেই/ উত্তর দিতে চাননি"
+            "en": "Refused to answer",
+            "hi": "उत्तर देने से इनकार",
+            "bn": "উত্তর দিতে চাননি"
           }
         }
       ]
@@ -231,7 +258,7 @@
       "hi": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं",
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "required": true,
     "options": [
       {
@@ -379,7 +406,7 @@
       "hi": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं",
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "enable_condition": "resp_age>=22",
     "required": true,
     "options": [
@@ -508,9 +535,9 @@
         {
           "value": 88,
           "lable": {
-            "en": "No response/Refused to answer",
-            "hi": "कोई प्रतिक्रिया नहीं/उत्तर देने से इनकार",
-            "bn": "কোনো উত্তর নেই/ উত্তর দিতে চাননি"
+            "en": "Refused to answer",
+            "hi": "उत्तर देने से इनकार",
+            "bn": "উত্তর দিতে চাননি"
           }
         }
       ]
@@ -520,7 +547,7 @@
       "hi": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं",
       "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
     },
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "enable_condition": "resp_age>=19",
     "required": true,
     "options": [
@@ -572,7 +599,7 @@
       "bn": "6. উত্তরদাতার নাম কি মিলে গেছে?"
     },
     "survey_q_tag": "resp_name",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "required": true,
     "options": [
       {
@@ -623,7 +650,7 @@
       "bn": "7. বয়স কি মিলে গেছে?"
     },
     "survey_q_tag": "resp_age",
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "required": true,
     "options": [
       {
@@ -646,6 +673,15 @@
       },
       {
         "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "3",
+        "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
           "en": "Did not ask",
           "hi": "नहीं पूछा",
           "bn": "জিজ্ঞাসা করা হয়নি"
@@ -664,7 +700,7 @@
       "hi": "8. क्या साक्षात्कारकर्ता ने प्रत्युत्तरदाता का फोन नंबर पूछा?",
       "bn": "8. সাক্ষাৎকারগ্রহণকারী কি উত্তরদাতার ফোন নম্বর জিজ্ঞাসা করেছিলেন?"
     },
-    "conditional": "qc_audio_status === '1' || qc_audio_status === '4'",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
     "required": true,
     "options": [
       {
