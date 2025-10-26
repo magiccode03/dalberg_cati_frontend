@@ -1514,7 +1514,6 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ineligible</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
                         {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
                       </tr>
@@ -1599,9 +1598,6 @@ const TelecallerProgressPage: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.ineligible?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
                           </td>
                           {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
