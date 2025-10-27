@@ -471,7 +471,7 @@ export default function TeleFormV2Page() {
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/comprehensive`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -479,7 +479,7 @@ export default function TeleFormV2Page() {
         },
         body: JSON.stringify({
           ...transformedData,
-          status: 4, // Draft status
+          status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 2 : 4, // Draft status
           form_duration_seconds: timer,
           language_used: language,
         })

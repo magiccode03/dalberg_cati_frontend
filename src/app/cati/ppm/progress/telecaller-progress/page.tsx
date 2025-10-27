@@ -48,6 +48,7 @@ interface PerformanceMetrics {
     successful: number;
     terminated: number;
     incompleted: number;
+    ineligible: number;
   };
   status_metrics: {
     tele_no_response: number;
@@ -99,6 +100,7 @@ interface TelecallerWiseData {
   successful: number;
   terminated: number;
   incompleted: number;
+  ineligible: number;
   less_than_180_sec: number;
   greater_than_180_sec: number;
 }
@@ -772,10 +774,10 @@ const TelecallerProgressPage: React.FC = () => {
           'Refuse to Respond',
           'Call Back Later',
           'No response by Telecaller (Call Status)',
-          'Successful',
+          'Completed',
           'Terminated',
           'Incompleted',
-          'No response by Telecaller (Interview)',
+          'Ineligible',
         ];
 
         const csvRows = [
@@ -806,7 +808,7 @@ const TelecallerProgressPage: React.FC = () => {
             item.successful || 0,
             item.terminated || 0,
             item.incompleted || 0,
-            Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)),
+            item.ineligible || 0
           ].join(','))
         ];
 
@@ -1098,8 +1100,8 @@ const TelecallerProgressPage: React.FC = () => {
               bgColor="bg-sky-500"
             />
             <MetricCard
-              title="No response by Telecaller"
-              value={getValue(Math.max(0, (data?.call_status?.continue || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
+              title="Ineligible"
+              value={getValue(data?.interview_metrics?.ineligible)}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
@@ -1508,10 +1510,10 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Refuse to Respond</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Back Later</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Status)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Successful</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Completed</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ineligible</th>
                         {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
                       </tr>
@@ -1595,7 +1597,7 @@ const TelecallerProgressPage: React.FC = () => {
                             {item.incompleted?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
+                            {item.ineligible?.toLocaleString() || 0}
                           </td>
                           {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
