@@ -479,12 +479,32 @@ export default function RejectionReportPage() {
       return 'Can hear the interviewer more than the respondent | 2024 Election Rejection';
     }
     
-    if (audioQcRejectionLevel === 1 && qcAudioStatus === 7) {
-      return 'Cannot hear the response clearly';
+    if (audioQcRejectionLevel === 2 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Gender Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 3 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Upcoming Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 4 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2021 AE Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 5 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2024 Election Rejection';
     }
     
     if (audioQcRejectionLevel === 1 && qcAudioStatus === 8) {
       return 'Duplicate Audio';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 9) {
+      return 'Interviewer acting as respondent';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 10) {
+      return 'Same respondent as before';
     }
 
     // Fallback to raw value if no mapping matches
