@@ -89,6 +89,11 @@ export const API_ENDPOINTS = {
     REJECTION_REPORT: '/progress/rejectreport/filter-options'
   },
 
+  // Download APIs
+  DOWNLOAD: {
+    REJECTION_REPORT: '/progress/rejectreport/download'
+  },
+
   // QC User Registration
   QC_USER_REGISTRATION: '/qc-user-registration',
 
@@ -1345,6 +1350,43 @@ class ApiService {
         .map(([key, value]) => [key, String(value)])
     ).toString()}` : '';
     return this.request(`/progress/rejectreport${queryString}`);
+  }
+
+  async downloadRejectionReport(params?: {
+    report_days?: string;
+    custom_date?: string;
+    custom_date_end?: string;
+    report_level?: string;
+    interviewer_id?: string;
+    enumerator_id?: string;
+    ac_code?: string;
+    district_code?: string;
+    pc_code?: string;
+    supervisor_id?: string;
+    server_id?: string;
+    mobile_no?: string;
+    fail_reason?: string;
+    qualityreportstatus?: string;
+  }): Promise<Blob> {
+    const queryString = params ? `?${new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)])
+    ).toString()}` : '';
+    
+    const response = await fetch(`${this.baseURL}${API_ENDPOINTS.DOWNLOAD.REJECTION_REPORT}${queryString}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'text/csv',
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+
+    return response.blob();
   }
 
   // Assigned AC Report Methods
