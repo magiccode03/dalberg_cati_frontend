@@ -97,7 +97,8 @@ export default function StartFormFillingPage() {
         return false;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/teleform-users/verify`, {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/teleform-users/verify`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
