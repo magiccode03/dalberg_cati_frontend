@@ -1219,6 +1219,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
+      
       // {
       //   id: 'cati-ppm-monthly-report',
       //   label: 'Monthly Report',
@@ -1414,6 +1415,14 @@ export const menuData: MenuItem[] = [
         label: 'AC Wise Progress',
         href: '/cati/ppm/qc-progress/acwisereport',
         icon: 'BarChart3',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-interview-list',
+        label: 'Interview List',
+        href: '/cati/ppm/qc-progress/interview-list',
+        icon: 'CheckCircle',
         roles: ['ppm'],
         system: 'cati',
       },
