@@ -850,18 +850,17 @@ const InterviewListPage = () => {
                               {getQcOutcomeBadge(item.qc_scenario_color, item.qc_outcome)}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {item.edit_available ? (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="bg-blue-500 hover:bg-blue-600 text-white border-0"
-                                >
-                                  <Edit className="w-4 h-4 mr-1" />
-                                  Edit
-                                </Button>
-                              ) : (
-                                <span className="text-gray-400 text-sm">Form not Assigned</span>
-                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                                onClick={() => {
+                                  window.location.href = `/cati/ss/tele-form/edit/${item.server_id}`;
+                                }}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
                             </td>
                           </tr>
                         ))
