@@ -1494,7 +1494,7 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Not Received to Telecaller</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing</th>
