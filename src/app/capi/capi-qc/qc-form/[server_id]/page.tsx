@@ -26,6 +26,7 @@ interface FormOption {
   label: string | { en?: string; hi?: string; bn?: string };
   value: string;
   tag: string;
+  survey_q_tag?: string;
 }
 
 interface FormField {
@@ -43,6 +44,7 @@ interface FormField {
     options: Array<{
       value: number;
       lable: { en?: string; hi?: string; bn?: string };
+      survey_q_tag?: string;
     }>;
   };
   min?: number;
@@ -237,7 +239,17 @@ function QCFormPage() {
       // Find matching option
       const matchingOption = options.find(opt => opt.value == surveyValue);
       if (matchingOption && matchingOption.lable) {
-        return getLabel(matchingOption.lable);
+        let displayText = getLabel(matchingOption.lable);
+        
+        // Check if this option has a survey_q_tag for "Others" responses
+        if (matchingOption.survey_q_tag && instanceData[matchingOption.survey_q_tag]) {
+          const otherValue = instanceData[matchingOption.survey_q_tag];
+          if (otherValue && otherValue.trim() !== '') {
+            displayText += `: ${otherValue}`;
+          }
+        }
+        
+        return displayText;
       }
       
       // Fallback to raw value if no matching option found

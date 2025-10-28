@@ -213,6 +213,7 @@
         },
         {
           "value": 44,
+          "survey_q_tag": "q8_oth",
           "lable": {
             "en": "Others (specify)",
             "hi": "अन्य (निर्दिष्ट करें)",
@@ -361,6 +362,7 @@
         },
         {
           "value": 44,
+          "survey_q_tag": "q5_oth",
           "lable": {
             "en": "Others (specify)",
             "hi": "अन्य (निर्दिष्ट करें)",
@@ -502,6 +504,7 @@
         },
         {
           "value": 44,
+          "survey_q_tag": "q6_oth",
           "lable": {
             "en": "Others (specify)",
             "hi": "अन्य (निर्दिष्ट करें)",
