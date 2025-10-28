@@ -36,6 +36,8 @@ interface CallDetailData {
   call_received: number;
   ivr_duration: number | null;
   talk_duration: number | null;
+  form_duration: number | null;
+  status: number;
   audio: string | null;
 }
 
@@ -55,6 +57,7 @@ interface PerformanceMetrics {
   totalIvrDuration: string;
   callerDidNotPick: number;
   totalTalkDuration: string;
+  totalFormDuration: string;
 }
 
 interface CallOutcomeMetrics {
@@ -107,6 +110,7 @@ const TelecallerDailyCallDetailPage = () => {
     totalIvrDuration: '00:00:00',
     callerDidNotPick: 0,
     totalTalkDuration: '00:00:00',
+    totalFormDuration: '00:00:00',
   });
 
   const [callOutcomeMetrics, setCallOutcomeMetrics] = useState<CallOutcomeMetrics>({
@@ -377,6 +381,7 @@ const TelecallerDailyCallDetailPage = () => {
           totalIvrDuration: result.data.total_ivr_duration || '00:00:00',
           callerDidNotPick: result.data.caller_did_not_pick || 0,
           totalTalkDuration: result.data.total_talk_duration || '00:00:00',
+          totalFormDuration: result.data.total_form_duration || '00:00:00',
         });
 
         // Update call outcome metrics
@@ -525,6 +530,20 @@ const TelecallerDailyCallDetailPage = () => {
     } catch {
       return '-';
     }
+  };
+
+  const getStatusText = (status: number) => {
+    const statusMap: { [key: number]: string } = {
+      0: 'Default',
+      1: 'Call Initiate',
+      2: 'Completed',
+      3: 'Draft',
+      4: 'Incomplete',
+      5: 'Ineligible',
+      6: 'Terminated',
+      7: 'Draft Pre Consent'
+    };
+    return statusMap[status] || 'Unknown';
   };
 
   const handleSort = (key: keyof CallDetailData) => {
@@ -940,8 +959,8 @@ const TelecallerDailyCallDetailPage = () => {
               />
               <MetricCard
                 icon={Clock}
-                title="Total IVR Duration"
-                value={performanceMetrics.totalIvrDuration}
+                title="Total Form Duration"
+                value={performanceMetrics.totalFormDuration}
                 bgColor="bg-blue-500"
               />
               <MetricCard
@@ -1074,7 +1093,9 @@ const TelecallerDailyCallDetailPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio File</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1099,6 +1120,9 @@ const TelecallerDailyCallDetailPage = () => {
                             {formatDuration(item.talk_duration)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {formatDuration(item.form_duration)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.audio ? (
                               <div className="relative group">
                                 <Button
@@ -1117,6 +1141,9 @@ const TelecallerDailyCallDetailPage = () => {
                             ) : (
                               '-'
                             )}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {getStatusText(item.status)}
                           </td>
                         </tr>
                       ))}

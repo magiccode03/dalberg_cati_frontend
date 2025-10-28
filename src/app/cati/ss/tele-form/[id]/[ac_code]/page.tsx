@@ -481,7 +481,7 @@ export default function TeleFormV2Page() {
           ...transformedData,
           status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 2 : 4, // Draft status
           form_duration_seconds: timer,
-          language_used: language,
+          language_used: language
         })
       });
       

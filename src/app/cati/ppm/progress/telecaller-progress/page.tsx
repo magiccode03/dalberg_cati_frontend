@@ -758,7 +758,7 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller Mobile No.',
           'Number of Dials',
           'Number of Calls Connected',
-          'Talk Duration',
+          'Form Duration',
           'Call Not Received to Telecaller',
           'Ringing',
           'Not Ringing',
@@ -932,7 +932,7 @@ const TelecallerProgressPage: React.FC = () => {
               bgColor="bg-indigo-500"
             />
             <MetricCard
-              title="Total Talk Duration"
+              title="Total Form Duration"
               value={data?.caller_performance?.total_talk_duration ? formatDuration(data.caller_performance.total_talk_duration) : '—'}
               icon={<Clock className="h-6 w-6 text-emerald-600" />}
               color="border-emerald-500"
@@ -1494,7 +1494,7 @@ const TelecallerProgressPage: React.FC = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Not Received to Telecaller</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing</th>
