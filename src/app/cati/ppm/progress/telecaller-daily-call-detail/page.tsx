@@ -527,6 +527,20 @@ const TelecallerDailyCallDetailPage = () => {
     }
   };
 
+  const getStatusText = (status: number) => {
+    const statusMap: { [key: number]: string } = {
+      0: 'Default',
+      1: 'Call Initiate',
+      2: 'Completed',
+      3: 'Draft',
+      4: 'Incomplete',
+      5: 'Ineligible',
+      6: 'Terminated',
+      7: 'Draft Pre Consent'
+    };
+    return statusMap[status] || 'Unknown';
+  };
+
   const handleSort = (key: keyof CallDetailData) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
@@ -1124,7 +1138,7 @@ const TelecallerDailyCallDetailPage = () => {
                             )}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.status}
+                            {getStatusText(item.status)}
                           </td>
                         </tr>
                       ))}
