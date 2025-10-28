@@ -500,14 +500,14 @@ export const menuData: MenuItem[] = [
         roles: ['dqm'],
         system: 'capi',
       },
-      // {
-      //   id: 'capi-dqm-interview-list',
-      //   label: 'Interview List',
-      //   href: '/capi/dqm/progress/interview-list',
-      //   icon: 'FileText',
-      //   roles: ['dqm'],
-      //   system: 'capi',
-      // },
+      {
+        id: 'capi-dqm-interview-list',
+        label: 'Interview List',
+        href: '/capi/dqm/progress/interview-list',
+        icon: 'FileText',
+        roles: ['dqm'],
+        system: 'capi',
+      },
       // // 
       // {
       //   id: 'capi-dqm-qc-user-pending-data',

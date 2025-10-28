@@ -855,7 +855,7 @@ const InterviewListPage = () => {
                                 variant="outline"
                                 className="bg-blue-500 hover:bg-blue-600 text-white border-0"
                                 onClick={() => {
-                                  window.location.href = `/cati/ss/tele-form/edit/${item.server_id}`;
+                                  window.location.href = `/cati/ss/qc-form/edit/${item.server_id}`;
                                 }}
                               >
                                 <Edit className="w-4 h-4 mr-1" />
