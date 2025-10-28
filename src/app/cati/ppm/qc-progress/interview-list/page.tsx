@@ -12,7 +12,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
-import { Search, Download, Eye, Edit, Volume2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -721,16 +721,6 @@ const InterviewListPage = () => {
                 <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   Interview Details
                 </Heading>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
               </div>
             </div>
 
