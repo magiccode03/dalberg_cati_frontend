@@ -138,6 +138,8 @@ const InterviewListPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
 
   // Options for dropdowns
   const audioQcStatusOptions = [
@@ -197,11 +199,26 @@ const InterviewListPage = () => {
   const handlePlayAudio = (audioUrl: string) => {
     setCurrentAudio(audioUrl);
     setShowAudioModal(true);
+    setAudioError(false);
+    setUseIframe(false);
   };
 
   const handleCloseAudioModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
+    setAudioError(false);
+    setUseIframe(false);
+  };
+
+  // Audio error handling
+  const handleAudioError = () => {
+    console.error('Audio playback error');
+    setAudioError(true);
+  };
+
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error');
+    setAudioError(true);
   };
 
   const formatDateTime = (dateTime: string | null) => {
@@ -817,10 +834,10 @@ const InterviewListPage = () => {
                               {getAudioFailReasonDisplayText(item)}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {item.audio === 1 ? (
+                              {(item as any).audio_file ? (
                                 <Button
                                   size="sm"
-                                  onClick={() => handlePlayAudio(`/api/audio/${item.server_id}`)}
+                                  onClick={() => handlePlayAudio((item as any).audio_file)}
                                   className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
                                   <Volume2 className="w-4 h-4" />
@@ -878,7 +895,6 @@ const InterviewListPage = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
               <Heading level={4} className="text-lg sm:text-xl">
-                <Volume2 className="w-5 h-5 mr-2 text-blue-600 inline" />
                 Audio Player
               </Heading>
               <button
@@ -894,26 +910,103 @@ const InterviewListPage = () => {
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
                 <div className="mb-3 text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Click play to start the audio
+                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
                   </p>
+                  {audioError && !useIframe && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      Audio player had an issue. Try the alternative options below.
+                    </p>
+                  )}
                 </div>
 
-                <audio
-                  controls
-                  className="w-full"
-                  controlsList="nodownload"
-                  preload="metadata"
-                >
-                  <source src={currentAudio} type="audio/mpeg" />
-                  <source src={currentAudio} type="audio/mp3" />
-                  Your browser does not support the audio element.
-                </audio>
+                {!useIframe ? (
+                  currentAudio ? (
+                    <audio
+                      controls
+                      className="w-full"
+                      controlsList="nodownload"
+                      preload="metadata"
+                      onError={handleAudioError}
+                      onLoadStart={() => console.log('Audio loading started')}
+                      onCanPlay={() => console.log('Audio can play')}
+                    >
+                      <source src={currentAudio} type="audio/mpeg" />
+                      <source src={currentAudio} type="audio/mp3" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
+                ) : (
+                  currentAudio ? (
+                    <div className="w-full">
+                      <iframe
+                        src={currentAudio}
+                        className="w-full h-16 border-0 rounded"
+                        title="Audio Player"
+                        allow="autoplay"
+                        onError={handleIframeError}
+                        onLoad={() => {
+                          // Check if iframe content is just text (not audio player)
+                          setTimeout(() => {
+                            try {
+                              const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                              if (iframe && iframe.contentDocument) {
+                                const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                  console.warn('Iframe returned text instead of audio player');
+                                  setAudioError(true);
+                                }
+                              }
+                            } catch (e) {
+                              // Cross-origin restrictions, can't access iframe content
+                              console.log('Cannot access iframe content due to CORS');
+                            }
+                          }, 1000);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
+                )}
 
-                <div className="mt-4 flex justify-center">
+                {/* Error Message for Failed Audio */}
+                {audioError && (
+                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                    <div className="text-center">
+                      <div className="text-red-600 dark:text-red-400 mb-2">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold">Audio Playback Failed</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Alternative Options */}
+                <div className="mt-4 flex justify-center items-center">
+                  {!useIframe && audioError && (
+                    <button
+                      onClick={() => setUseIframe(true)}
+                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      Try Alternative Player
+                    </button>
+                  )}
                   <a
                     href={currentAudio}
                     download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline ml-4"
+                    style={{ display: currentAudio ? 'inline' : 'none' }}
                   >
                     Download audio
                   </a>
