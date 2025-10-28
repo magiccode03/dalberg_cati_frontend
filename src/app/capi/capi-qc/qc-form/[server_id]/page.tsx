@@ -12,7 +12,7 @@ import Radio from '@/components/ui/Radio';
 import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
-import { Volume2, Play, Pause } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import AudioPlayer from '@/components/ui/AudioPlayer';
 
 // Import form configurations
@@ -73,6 +73,8 @@ function QCFormPage() {
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
   const hasFetchedData = useRef(false); // Prevent multiple API calls
   const isInitialized = useRef(false); // Prevent multiple initializations
   
@@ -94,6 +96,17 @@ function QCFormPage() {
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   }, []);
+
+  // Audio error handling
+  const handleAudioError = () => {
+    console.error('Audio playback error');
+    setAudioError(true);
+  };
+
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error');
+    setAudioError(true);
+  };
 
   // Fetch instance data from API - memoized to prevent recreation
   const fetchInstanceData = useCallback(async () => {
@@ -922,16 +935,103 @@ function QCFormPage() {
             <Card className={`${isSticky ? 'rounded-none' : ''}`}>
               <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                 <div className="flex items-center gap-4 max-w-7xl mx-auto">
-                  <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <AudioPlayer 
-                      src={audioUrl}
-                      className="w-full"
-                    />
+                    <div className="mb-3 text-center">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                      </p>
+                      {audioError && !useIframe && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          Audio player had an issue. Try the alternative options below.
+                        </p>
+                      )}
+                    </div>
+
+                    {!useIframe ? (
+                      audioUrl ? (
+                        <audio
+                          controls
+                          className="w-full"
+                          controlsList="nodownload"
+                          preload="metadata"
+                          onError={handleAudioError}
+                          onLoadStart={() => console.log('Audio loading started')}
+                          onCanPlay={() => console.log('Audio can play')}
+                        >
+                          <source src={audioUrl} type="audio/mpeg" />
+                          <source src={audioUrl} type="audio/mp3" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No audio file available for this interview.
+                        </div>
+                      )
+                    ) : (
+                      audioUrl ? (
+                        <div className="w-full">
+                          <iframe
+                            src={audioUrl}
+                            className="w-full h-16 border-0 rounded"
+                            title="Audio Player"
+                            allow="autoplay"
+                            onError={handleIframeError}
+                            onLoad={() => {
+                              // Check if iframe content is just text (not audio player)
+                              setTimeout(() => {
+                                try {
+                                  const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                                  if (iframe && iframe.contentDocument) {
+                                    const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                    if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                      console.warn('Iframe returned text instead of audio player');
+                                      setAudioError(true);
+                                    }
+                                  }
+                                } catch (e) {
+                                  // Cross-origin restrictions, can't access iframe content
+                                  console.log('Cannot access iframe content due to CORS');
+                                }
+                              }, 1000);
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No audio file available for this interview.
+                        </div>
+                      )
+                    )}
+
+                    {/* Error Message for Failed Audio */}
+                    {audioError && (
+                      <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                        <div className="text-center">
+                          <div className="text-red-600 dark:text-red-400 mb-2">
+                            <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="font-semibold">Audio Playback Failed</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Alternative Options */}
+                    <div className="mt-4 flex justify-center items-center">
+                      {!useIframe && audioError && (
+                        <button
+                          onClick={() => setUseIframe(true)}
+                          className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        >
+                          Try Alternative Player
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                    Duration: {formatDuration(instanceData.audio1_duration)}
-                  </Text> */}
                 </div>
               </div>
             </Card>
