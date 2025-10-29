@@ -608,8 +608,14 @@ function QCFormPage() {
     // If qc_audio_status is 1 (Survey Conversation can be heard), 4 (Interviewer more than respondent), or 7 (Cannot hear clearly), check other mandatory questions
     if (qcAudioStatus === '1' || qcAudioStatus === '4' || qcAudioStatus === '7') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
-      const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
-      
+      const mandatoryQuestions = ['qc_q2', 'qc_q3']; //'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'
+      if(Number(instanceData.resp_age) >= 19) {
+        mandatoryQuestions.push('qc_q5');
+      }
+      if(Number(instanceData.resp_age) >= 22) {
+        mandatoryQuestions.push('qc_q4');
+      }
+        
       for (const question of mandatoryQuestions) {
         if (formData[question] !== '1') {
           // Find which question failed and set rejection level
