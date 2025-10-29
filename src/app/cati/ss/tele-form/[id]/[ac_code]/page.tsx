@@ -214,7 +214,7 @@ export default function TeleFormV2Page() {
              caste.caste_name_english,
       value: caste.caste_code.toString(),
       tag: `caste_${caste.caste_code}`
-    }));
+    })).sort((a: FormOption, b: FormOption) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
   };
 
   // Process form configuration to replace placeholders and add dynamic options
