@@ -179,6 +179,9 @@ export default function QCFormPage() {
         // Store complete instance data for reference
         setInstanceData(data.data);
         console.log('Instance data loaded:', data.data);
+        
+        // Load existing QC form data if available
+        loadExistingQCData(data.data);
       } else {
         showToast('Failed to load interview data', 'error');
       }
@@ -188,6 +191,28 @@ export default function QCFormPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Load existing QC form data from instance data
+  const loadExistingQCData = (data: any) => {
+    const qcData: Record<string, any> = {};
+    
+    // Map QC form fields from the instance data
+    const qcFields = [
+      'qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8', 'qc_q9'
+    ];
+    
+    qcFields.forEach(field => {
+      if (data[field] !== undefined && data[field] !== null) {
+        // Convert to string for form compatibility
+        qcData[field] = String(data[field]);
+      }
+    });
+    
+    // Set the form data with existing QC responses
+    setFormData(qcData);
+    console.log('Loaded existing QC data:', qcData);
+    console.log('Available QC fields in API response:', qcFields.map(field => ({ field, value: data[field] })));
   };
 
   // Helper function to get label in current language
