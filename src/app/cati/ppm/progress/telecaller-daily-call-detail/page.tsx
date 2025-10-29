@@ -67,6 +67,10 @@ interface CallOutcomeMetrics {
   pickedAndRefused: number;
   totalNumberExhausted: number;
   pickedAndCallContinue: number;
+  completedInterview: number;
+  terminatedInterview: number;
+  incompleteInterview: number;
+  ineligibleInterview: number;
 }
 
 interface Telecaller {
@@ -120,6 +124,10 @@ const TelecallerDailyCallDetailPage = () => {
     pickedAndRefused: 0,
     totalNumberExhausted: 0,
     pickedAndCallContinue: 0,
+    completedInterview: 0,
+    terminatedInterview: 0,
+    incompleteInterview: 0,
+    ineligibleInterview: 0,
   });
 
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -392,6 +400,10 @@ const TelecallerDailyCallDetailPage = () => {
           pickedAndRefused: result.data.picked_and_refused || 0,
           totalNumberExhausted: result.data.total_number_exhausted || 0,
           pickedAndCallContinue: result.data.picked_and_call_continue || 0,
+          completedInterview: result.data.completed_interview || 0,
+          terminatedInterview: result.data.terminated_interview || 0,
+          incompleteInterview: result.data.incomplete_interview || 0,
+          ineligibleInterview: result.data.ineligible_interview || 0,
         });
       } else {
         throw new Error(result.message || 'Failed to fetch dashboard metrics');
@@ -1035,6 +1047,52 @@ const TelecallerDailyCallDetailPage = () => {
         </Card>
       </div>
 
+      {/*        "completed_interview": 1500,
+        "terminated_interview": 3907,
+        "incomplete_interview": 4368,
+        "ineligible_interview": 692, */}
+        <Card>
+          <div className="flex items-center mb-4">
+            <div className="w-1 h-6 bg-orange-600 mr-3"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Interview Metrics
+            </Heading>
+          </div>
+          {metricsLoading ? (
+            <div className="text-center py-12">
+              <i className="fa fa-spinner fa-spin text-3xl text-orange-600 mb-3"></i>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <MetricCard
+                icon={CheckCircle}
+                title="Completed Interview"
+                value={callOutcomeMetrics.completedInterview}
+                bgColor="bg-orange-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Terminated Interview"
+                value={callOutcomeMetrics.terminatedInterview}
+                bgColor="bg-orange-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Incomplete Interview"
+                value={callOutcomeMetrics.incompleteInterview}
+                bgColor="bg-orange-500"
+              />
+              <MetricCard
+                icon={PhoneOff}
+                title="Ineligible Interview"
+                value={callOutcomeMetrics.ineligibleInterview}
+                bgColor="bg-orange-500"
+              />
+            </div>
+          )}
+        </Card>
+
       {/* Error Alert */}
       {error && (
         <div className="mb-4">
@@ -1057,7 +1115,7 @@ const TelecallerDailyCallDetailPage = () => {
       )}
 
       {/* Data Table */}
-      <Card className="">
+      <Card className="mt-4">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>

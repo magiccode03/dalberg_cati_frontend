@@ -200,7 +200,8 @@ export default function NewCallPage() {
             status: 1,
             call_attempt: 1,
             callid: callData.data.callId, // Include callid from click-to-call response
-            call_date: new Date().toISOString()
+            call_date: new Date().toISOString(),
+            call_date_time: new Date().toISOString()
           })
         });
         
