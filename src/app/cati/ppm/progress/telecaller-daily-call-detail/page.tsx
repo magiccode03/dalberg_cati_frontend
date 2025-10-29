@@ -1082,7 +1082,7 @@ const TelecallerDailyCallDetailPage = () => {
                 icon={PhoneOff}
                 title="Ineligible Interview"
                 value={callOutcomeMetrics.ineligibleInterview}
-                bgColor="bg-orange-500"
+                bgColor="bg-gray-500"
               />
             </div>
           )}
