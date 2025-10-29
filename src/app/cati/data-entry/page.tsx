@@ -130,14 +130,14 @@ export default function DataEntryLandingPage() {
         const qc = userData.qc === 1;
         
         if (fillForm && !qc) {
-          // Only Fill Form permission - redirect to new-call
-          router.push(`/cati/data-entry/new-call/${formData.data_entry_id}`);
+          // Only Fill Form permission - redirect to data-entry-list
+          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else if (!fillForm && qc) {
-          // Only QC permission - redirect to qc-call
-          router.push(`/cati/data-entry/qc-call/${formData.data_entry_id}`);
+          // Only QC permission - redirect to data-entry-list
+          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else if (fillForm && qc) {
-          // Both permissions - default to new-call (Fill Form)
-          router.push(`/cati/data-entry/new-call/${formData.data_entry_id}`);
+          // Both permissions - default to data-entry-list (Fill Form)
+          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else {
           // No permissions - show error
           setError('User does not have required permissions');
@@ -203,18 +203,18 @@ export default function DataEntryLandingPage() {
       const qc = userData.qc === 1;
       
       if (fillForm && !qc) {
-        // Only Fill Form permission - redirect to new-call
-        router.push(`/cati/data-entry/new-call/${dataEntryId}`);
+        // Only Fill Form permission - redirect to data-entry-list
+        router.push(`/cati/ss/data-entry-list/${dataEntryId}`);
       } else if (!fillForm && qc) {
-        // Only QC permission - redirect to qc-call
-        router.push(`/cati/data-entry/qc-call/${dataEntryId}`);
+        // Only QC permission - redirect to data-entry-list
+        router.push(`/cati/ss/data-entry-list/${dataEntryId}`);
       } else if (fillForm && qc) {
-        // Both permissions - default to new-call (Fill Form)
-        router.push(`/cati/data-entry/new-call/${dataEntryId}`);
+        // Both permissions - default to data-entry-list (Fill Form)
+        router.push(`/cati/ss/data-entry-list/${dataEntryId}`);
       }
     } else {
       // Fallback to form data
-      router.push(`/cati/data-entry/new-call/${formData.data_entry_id}`);
+      router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
     }
   };
 

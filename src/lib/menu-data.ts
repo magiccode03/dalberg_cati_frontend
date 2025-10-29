@@ -1731,18 +1731,9 @@ export const menuData: MenuItem[] = [
   },
   {
     id: 'cati-data-entry',
-    label: 'Data Entry',
-    href: '/cati/data-entry/new',
-    icon: 'FileText',
-    roles: ['data_entry'],
-    system: 'cati',
-    dynamic: true, // This will be dynamically set based on data entry user data
-  },
-  {
-    id: 'cati-data-entry-view-records',
-    label: 'View Records',
-    href: '/cati/data-entry/records',
-    icon: 'Eye',
+    label: 'Start QC',
+    href: '/cati/ss/data-entry-list',
+    icon: 'CheckCircle',
     roles: ['data_entry'],
     system: 'cati',
     dynamic: true, // This will be dynamically set based on data entry user data

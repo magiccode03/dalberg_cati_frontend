@@ -179,8 +179,8 @@ export default function HorizontalNav() {
       if (dataEntryUserData) {
         try {
           const userData = JSON.parse(dataEntryUserData);
-          const newEntry = userData.new_entry === 1;
-          const viewRecords = userData.view_records === 1;
+          const fillForm = userData.fill_form === 1;
+          const qc = userData.qc === 1;
           
           baseMenuItems = baseMenuItems.filter(item => {
             // Always show non-dynamic items
@@ -188,13 +188,21 @@ export default function HorizontalNav() {
             
             // Filter dynamic items based on permissions
             if (item.id === 'cati-data-entry') {
-              return newEntry;
-            }
-            if (item.id === 'cati-data-entry-view-records') {
-              return viewRecords;
+              return fillForm || qc; // Show if user has either permission
             }
             
             return false;
+          });
+          
+          // Update the href for the Start QC menu item with the actual user ID
+          baseMenuItems = baseMenuItems.map(item => {
+            if (item.id === 'cati-data-entry' && userData.data_entry_user_id) {
+              return {
+                ...item,
+                href: `/cati/ss/data-entry-list/${userData.data_entry_user_id}`
+              };
+            }
+            return item;
           });
         } catch (err) {
           console.error('Error parsing data entry user data:', err);
