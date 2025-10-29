@@ -242,6 +242,15 @@ export default function CATIACWiseDataPage() {
     setToDate(e.target.value);
   };
 
+  const handleClearFilters = () => {
+    setSelectedAcCode('');
+    setCallingDates('all');
+    setFromDate('');
+    setToDate('');
+    fetchCATIData();
+    fetchDashboardMetrics();
+  };
+
   // Create dropdown options from AC data
   const acOptions = [
     { value: '', label: 'All ACs' },
@@ -373,15 +382,26 @@ export default function CATIACWiseDataPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 opacity-0">
                 Action
               </label>
-              <Button 
-                type="button" 
-                onClick={handleSearch}
-                disabled={loading}
-                className="w-full"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  onClick={handleSearch}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handleClearFilters}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  Clear
+                </Button>
+              </div>
             </div>
           </div>
         </div>
