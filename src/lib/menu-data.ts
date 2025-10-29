@@ -1719,7 +1719,34 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     dynamic: true, // This will be dynamically set based on teleform user data
   },
-  
+
+  // Data Entry Role Menu (Simple like SS role)
+  {
+    id: 'cati-data-entry-auth',
+    label: 'Authentication',
+    href: '/cati/data-entry',
+    icon: 'Shield',
+    roles: ['data_entry'],
+    system: 'cati',
+  },
+  {
+    id: 'cati-data-entry',
+    label: 'Data Entry',
+    href: '/cati/data-entry/new',
+    icon: 'FileText',
+    roles: ['data_entry'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on data entry user data
+  },
+  {
+    id: 'cati-data-entry-view-records',
+    label: 'View Records',
+    href: '/cati/data-entry/records',
+    icon: 'Eye',
+    roles: ['data_entry'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on data entry user data
+  },
 
 ];
 

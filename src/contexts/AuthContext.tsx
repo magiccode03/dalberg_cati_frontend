@@ -435,6 +435,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'data_quality': 'DQ',
       'convergent_analysis': 'CA',
       'capi_qc': 'CAPIQC',
+      'data_entry': 'DE',
     };
 
     const prefix = rolePrefix[role as keyof typeof rolePrefix] || 'USER';
@@ -458,6 +459,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // SS role (CATI System Supervisor/Telecaller) goes to start-form-filling page
     if (role === 'ss') return '/cati/ss/start-form-filling';
+    
+    // Data Entry role goes to custom data entry dashboard
+    if (role === 'data_entry') return '/cati/data-entry';
     
     // PPMT role goes directly to fieldwork progress page
     if (role === 'ppmt') return '/capi/ppmt/overview/fieldwork-progress';
