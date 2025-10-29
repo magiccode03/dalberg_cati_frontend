@@ -152,9 +152,9 @@ export default function DataEntryListPage() {
     }
   };
 
-  const handleOpenForm = (dataEntryId: number) => {
-    // Navigate to data entry form page with data entry id
-    router.push(`/cati/ss/data-entry-form/${dataEntryId}`);
+  const handleOpenForm = (dataEntryId: number, acCode: number) => {
+    // Navigate to data entry form page with data entry id and ac_code
+    router.push(`/cati/ss/tele-form-data-entry/${dataEntryId}/${acCode}`);
   };
 
   const handleRefresh = () => {
@@ -289,7 +289,7 @@ export default function DataEntryListPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => handleOpenForm(dataEntry.id)}
+                          onClick={() => handleOpenForm(dataEntry.id, dataEntry.ac_code)}
                           className="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 text-xs"
                           title="Open Data Entry Form"
                         >
