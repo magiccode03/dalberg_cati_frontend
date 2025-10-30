@@ -115,6 +115,16 @@ export default function InterviewListPage() {
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
 
+  // Filter dropdown state
+  const [acList, setAcList] = useState<{ value: string; label: string }[]>([]);
+  const [acLoading, setAcLoading] = useState(false);
+  const [pollingStations, setPollingStations] = useState<{ value: string; label: string }[]>([]);
+  const [pollingStationsLoading, setPollingStationsLoading] = useState(false);
+  const [users, setUsers] = useState<{ value: string; label: string }[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [interviewers, setInterviewers] = useState<{ value: string; label: string }[]>([]);
+  const [interviewersLoading, setInterviewersLoading] = useState(false);
+
   // Helper function to transform API data to UI format
   const transformAPIData = (apiData: any[]): InterviewData[] => {
     return apiData.map((item, index) => ({
@@ -178,19 +188,6 @@ export default function InterviewListPage() {
     return options;
   };
 
-  // Generate AC options - will be populated from API
-  const generateACOptions = () => {
-    return [
-      { value: '', label: 'Select AC' },
-    ];
-  };
-
-  // Generate QC ID options - will be populated from API
-  const generateQCIdOptions = () => {
-    return [
-      { value: '', label: 'Select QC ID' },
-    ];
-  };
 
   const handleFilterChange = (field: string, value: string | string[] | boolean) => {
     setFilters(prev => ({
@@ -287,6 +284,160 @@ export default function InterviewListPage() {
     setAudioModalOpen(true);
   };
 
+  // Fetch AC list from API
+  const fetchAcList = async () => {
+    try {
+      setAcLoading(true);
+      console.log('🔍 Fetching AC list from API...');
+      
+      const response = await apiClient.get('/dropdown/ac-list');
+      console.log('📊 AC List API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const acData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: `${name} (${id})`,
+        }));
+        
+        // Add the default "Select AC" option
+        const acWithDefault = [
+          { value: '', label: 'Select AC' },
+          ...acData,
+        ];
+        
+        setAcList(acWithDefault);
+        console.log('✅ AC list loaded successfully:', acWithDefault);
+      } else {
+        console.error('❌ Invalid AC list API response:', response.data);
+        setAcList([{ value: '', label: 'Select AC' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching AC list:', err);
+      setAcList([{ value: '', label: 'Select AC' }]);
+    } finally {
+      setAcLoading(false);
+    }
+  };
+
+  // Fetch polling stations from API based on selected AC code
+  const fetchPollingStations = async (acCode?: string) => {
+    try {
+      setPollingStationsLoading(true);
+      
+      // If no AC code is provided, clear the polling stations
+      if (!acCode) {
+        setPollingStations([{ value: '', label: 'Select Polling Station' }]);
+        setPollingStationsLoading(false);
+        return;
+      }
+      
+      console.log('🔍 Fetching polling stations for AC code:', acCode);
+      
+      const response = await apiClient.get(`/dropdown/polling-stations?ac_code=${acCode}`);
+      console.log('📊 Polling Stations API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const pollingStationData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: name as string,
+        }));
+        
+        // Add the default "Select Polling Station" option
+        const pollingStationsWithDefault = [
+          { value: '', label: 'Select Polling Station' },
+          ...pollingStationData,
+        ];
+        
+        setPollingStations(pollingStationsWithDefault);
+        console.log('✅ Polling stations loaded successfully for AC', acCode, ':', pollingStationsWithDefault);
+      } else {
+        console.error('❌ Invalid polling stations API response:', response.data);
+        setPollingStations([{ value: '', label: 'Select Polling Station' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching polling stations:', err);
+      setPollingStations([{ value: '', label: 'Select Polling Station' }]);
+    } finally {
+      setPollingStationsLoading(false);
+    }
+  };
+
+  // Fetch users from API
+  const fetchUsers = async () => {
+    try {
+      setUsersLoading(true);
+      console.log('🔍 Fetching users from API...');
+      
+      const response = await apiClient.get('/dropdown/users');
+      console.log('📊 Users API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const userData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: String(name),
+        }));
+        
+        // Add the default "Select Enumerator ID" option
+        const usersWithDefault = [
+          { value: '', label: 'Select Enumerator ID' },
+          ...userData,
+        ];
+        
+        setUsers(usersWithDefault);
+        console.log('✅ Users loaded successfully:', usersWithDefault);
+      } else {
+        console.error('❌ Invalid users API response:', response.data);
+        setUsers([{ value: '', label: 'Select Enumerator ID' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching users:', err);
+      setUsers([{ value: '', label: 'Select Enumerator ID' }]);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // Fetch interviewers from API
+  const fetchInterviewers = async () => {
+    try {
+      setInterviewersLoading(true);
+      console.log('🔍 Fetching interviewers from API...');
+      
+      const response = await apiClient.get('/dropdown/interviewers');
+      console.log('📊 Interviewers API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const interviewerData = Object.entries(response.data.data)
+          .filter(([id, name]) => id !== '') // Filter out empty ID
+          .map(([id, name]) => ({
+            value: id,
+            label: name as string,
+          }));
+        
+        // Add the default "Select Interviewer ID" option
+        const interviewersWithDefault = [
+          { value: '', label: 'Select Interviewer ID' },
+          ...interviewerData,
+        ];
+        
+        setInterviewers(interviewersWithDefault);
+        console.log('✅ Interviewers loaded successfully:', interviewersWithDefault);
+      } else {
+        console.error('❌ Invalid interviewers API response:', response.data);
+        setInterviewers([{ value: '', label: 'Select Interviewer ID' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching interviewers:', err);
+      setInterviewers([{ value: '', label: 'Select Interviewer ID' }]);
+    } finally {
+      setInterviewersLoading(false);
+    }
+  };
+
   const handleMarkAsValid = (serverId: number) => {
     console.log('Mark as valid for server ID:', serverId);
   };
@@ -295,6 +446,27 @@ export default function InterviewListPage() {
     router.push(`/capi/dqm/progress/interview-list/interview-list-tele-form/${serverId}/${acCode}`);
   };
 
+
+  // Load data on component mount
+  useEffect(() => {
+    fetchInterviewData();
+  }, [currentPage, pageSize]);
+
+  // Load filter dropdowns on component mount
+  useEffect(() => {
+    fetchAcList();
+    fetchUsers();
+    fetchInterviewers();
+  }, []);
+
+  // Fetch polling stations when AC code changes
+  useEffect(() => {
+    fetchPollingStations(filters.ac_code);
+    // Reset polling station selection when AC changes
+    if (filters.ps_code) {
+      setFilters(prev => ({ ...prev, ps_code: '' }));
+    }
+  }, [filters.ac_code]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -373,8 +545,11 @@ export default function InterviewListPage() {
                     <SelectDropdown
                       value={filters.ac_code}
                       onChange={(value) => handleFilterChange('ac_code', value as string)}
-                      placeholder="Select AC"
-                      options={generateACOptions()}
+                      placeholder={acLoading ? "Loading ACs..." : "Select AC"}
+                      options={acList}
+                      searchable={true}
+                      clearable={true}
+                      disabled={acLoading}
                     />
                   </div>
 
@@ -383,10 +558,17 @@ export default function InterviewListPage() {
                     <SelectDropdown
                       value={filters.ps_code || ''}
                       onChange={(value) => handleFilterChange('ps_code', value as string)}
-                      placeholder="Select Polling Station"
-                      options={[
-                        { value: '', label: 'Select Polling Station' },
-                      ]}
+                      placeholder={
+                        pollingStationsLoading 
+                          ? "Loading polling stations..." 
+                          : !filters.ac_code 
+                            ? "Select AC first" 
+                            : "Select Polling Station"
+                      }
+                      options={pollingStations}
+                      searchable={true}
+                      clearable={true}
+                      disabled={pollingStationsLoading || !filters.ac_code}
                     />
                   </div>
 
@@ -395,10 +577,11 @@ export default function InterviewListPage() {
                     <SelectDropdown
                       value={filters.user_id || ''}
                       onChange={(value) => handleFilterChange('user_id', value as string)}
-                      placeholder="Select Enumerator ID"
-                      options={[
-                        { value: '', label: 'Select Enumerator ID' },
-                      ]}
+                      placeholder={usersLoading ? "Loading enumerators..." : "Select Enumerator ID"}
+                      options={users}
+                      searchable={true}
+                      clearable={true}
+                      disabled={usersLoading}
                     />
                   </div>
 
@@ -407,10 +590,11 @@ export default function InterviewListPage() {
                     <SelectDropdown
                       value={filters.interviewer_id}
                       onChange={(value) => handleFilterChange('interviewer_id', value as string)}
-                      placeholder="Select Interviewer ID"
-                      options={[
-                        { value: '', label: 'Select Interviewer ID' },
-                      ]}
+                      placeholder={interviewersLoading ? "Loading interviewers..." : "Select Interviewer ID"}
+                      options={interviewers}
+                      searchable={true}
+                      clearable={true}
+                      disabled={interviewersLoading}
                     />
                   </div>
 
