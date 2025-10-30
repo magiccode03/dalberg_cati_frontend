@@ -1080,7 +1080,7 @@ export default function TeleFormV2Page() {
         <Card className="p-3 sm:p-4 md:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             <div>
-              <Heading level={4} className="text-base sm:text-lg md:text-xl">Edit Data Entry Form - WB Opinion Poll CATI 2025</Heading>
+              <Heading level={4} className="text-base sm:text-lg md:text-xl">Edit Interview Form - WB Opinion Poll CAPI 2025</Heading>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
                 <div>Interview ID: <span className="font-mono font-semibold">{interviewId}</span></div>
                 <div>AC Code: <span className="font-semibold">{acCode}</span></div>
