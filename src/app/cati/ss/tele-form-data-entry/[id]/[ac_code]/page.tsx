@@ -12,37 +12,35 @@ import Radio from '@/components/ui/Radio';
 import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
-import { Volume2, Play, Pause } from 'lucide-react';
 
 // Import form configurations
-import formConfig from '../form-config.json';
+import formEnConfig from '../../form-en-config.json';
+import formBnConfig from '../../form-bn-config.json';
+import formHiConfig from '../../form-hi-config.json';
+
+// Import JSON data files
+// @ts-ignore
+import partyData from '../../../../josn/party_2021_q5.json';
+// @ts-ignore
+import mlaMpData from '../../../../josn/mla-mp-ac-data.json';
+// @ts-ignore
+import casteOptions from '../../../../josn/caste-options.json';
 
 // Type definitions
 interface FormOption {
-  label: string | { en?: string; hi?: string; bn?: string };
+  label: string;
   value: string;
   tag: string;
-  survey_q_tag?: string;
 }
 
 interface FormField {
   type: string;
-  label: string | { en?: string; hi?: string; bn?: string };
+  label: string;
   tag: string;
   required?: boolean;
   conditional?: string;
-  enable_condition?: string;
   options?: FormOption[];
   placeholder?: string;
-  hint?: string | { en?: string; hi?: string; bn?: string };
-  survey_q_tag?: string | {
-    tag: string;
-    options: Array<{
-      value: number;
-      lable: { en?: string; hi?: string; bn?: string };
-      survey_q_tag?: string;
-    }>;
-  };
   min?: number;
   max?: number;
   maxLength?: number;
@@ -55,27 +53,32 @@ interface FormField {
   };
 }
 
-export default function QCFormPage() {
+const formConfigs: Record<string, FormField[]> = {
+  english: formEnConfig as FormField[],
+  bengali: formBnConfig as FormField[],
+  hindi: formHiConfig as FormField[],
+};
+
+export default function TeleFormV2Page() {
   const router = useRouter();
   const params = useParams();
   const interviewId = params.id as string;
+  const acCode = params.ac_code as string;
   
-  const [language, setLanguage] = useState<string>('en');
+  const [language, setLanguage] = useState<string>('english');
+  const [timer, setTimer] = useState<number>(0);
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [instanceData, setInstanceData] = useState<Record<string, any>>({});
   const [toasts, setToasts] = useState<any[]>([]);
-  const [qcUserName, setQcUserName] = useState<string>('');
-  const [qcTeleformUserId, setQcTeleformUserId] = useState<string>('');
+  const [teleformUserName, setTeleformUserName] = useState<string>('');
+  const [teleformUserId, setTeleformUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
-  
-  // Use the imported formConfig directly
-  const currentFormConfig = formConfig as FormField[];
+  const [instanceData, setInstanceData] = useState<any>({});
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -104,21 +107,52 @@ export default function QCFormPage() {
     setAudioError(true);
   };
 
-  // Load teleform user data and interview data on mount
+  // Get audio URL from instance data
+  const getAudioUrl = (): string | null => {
+    console.log('Instance data for audio:', instanceData);
+    console.log('Audio URL field:', instanceData.audio_url);
+    console.log('Audio file field:', instanceData.audio_file);
+    
+    // For CATI, use the audio_url field directly
+    if (instanceData.audio_url) {
+      console.log('Using audio_url:', instanceData.audio_url);
+      return instanceData.audio_url;
+    }
+    
+    // Fallback to audio_file if audio_url is not available
+    if (instanceData.audio_file) {
+      const constructedUrl = `https://s-ct3.sarv.com/Audio/v1/recording?data={"userId":"50345024","token":"6JExgLsg6Vlsp5424S9U","file":"${instanceData.audio_file}"}`;
+      console.log('Using constructed audio URL:', constructedUrl);
+      return constructedUrl;
+    }
+    
+    console.log('No audio URL available');
+    return null;
+  };
+
+  const audioUrl = getAudioUrl();
+
+  // Load teleform user data on mount
   useEffect(() => {
     const savedData = localStorage.getItem('teleform_user_data');
     if (savedData) {
       try {
         const userData = JSON.parse(savedData);
-        setQcUserName(userData.name || '');
-        setQcTeleformUserId(userData.teleform_user_id || '');
+        setTeleformUserName(userData.name || '');
+        setTeleformUserId(userData.teleform_user_id || '');
       } catch (err) {
         console.error('Error loading teleform user data:', err);
       }
     }
-    
-    // Fetch instance data
-    fetchInstanceData();
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Handle scroll for sticky audio player
@@ -152,145 +186,213 @@ export default function QCFormPage() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch instance data from API
+  // Load instance data
   const fetchInstanceData = async () => {
     try {
-      setLoading(true);
       const token = localStorage.getItem('accessToken');
-      if (!token || !interviewId) return;
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
       const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
-      
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       
       if (data.success && data.data) {
-        // Store complete instance data for reference
         setInstanceData(data.data);
         console.log('Instance data loaded:', data.data);
+        
+        // Load existing form data if available
+        loadExistingFormData(data.data);
       } else {
-        showToast('Failed to load interview data', 'error');
+        console.error('Failed to load instance data:', data.message);
       }
-    } catch (error) {
-      console.error('Error fetching instance data:', error);
-      showToast('Error loading interview data', 'error');
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching instance data:', err);
     }
   };
 
-  // Helper function to get label in current language
-  const getLabel = (label: string | { en?: string; hi?: string; bn?: string }): string => {
-    if (typeof label === 'string') return label;
-    return label[language as keyof typeof label] || label.en || '';
+  // Load instance data on mount
+  useEffect(() => {
+    fetchInstanceData();
+  }, [interviewId]);
+
+  // Load existing form data from instance data
+  const loadExistingFormData = (data: any) => {
+    const existingData: Record<string, any> = {};
+    
+    // Map all form fields from the instance data
+    // This will populate the form with existing values
+    Object.keys(data).forEach(key => {
+      if (data[key] !== undefined && data[key] !== null) {
+        // Convert to string for form compatibility
+        existingData[key] = String(data[key]);
+      }
+    });
+    
+    setFormData(existingData);
+    console.log('Loaded existing form data:', existingData);
   };
 
-  // Helper function to get survey answer display value
-  const getSurveyAnswerDisplay = (field: FormField): string | null => {
-    if (!field.survey_q_tag) return null;
+  // Get current form configuration based on language
+  const currentFormConfig = formConfigs[language] || formConfigs.english;
+
+  // Get MLA/MP data for the current AC code
+  const getMlaMpData = (acCode: string) => {
+    const acCodeNum = parseInt(acCode);
+    return mlaMpData.find((item: any) => item.ac_code === acCodeNum);
+  };
+
+  // Replace placeholders in labels with actual values
+  const replaceLabelPlaceholders = (label: string, acCode: string): string => {
+    const mlaMpInfo = getMlaMpData(acCode);
+    if (!mlaMpInfo) return label;
     
-    // Handle object structure with options
-    if (typeof field.survey_q_tag === 'object' && field.survey_q_tag.tag && field.survey_q_tag.options) {
-      const tag = field.survey_q_tag.tag;
-      const options = field.survey_q_tag.options;
-      const surveyValue = instanceData[tag];
-      
-      if (surveyValue === undefined || surveyValue === null) return null;
-      
-      // Find matching option
-      const matchingOption = options.find(opt => opt.value == surveyValue);
-      if (matchingOption && matchingOption.lable) {
-        let displayText = getLabel(matchingOption.lable);
-        
-        // Check if this option has a survey_q_tag for "Others" responses
-        if (matchingOption.survey_q_tag && instanceData[matchingOption.survey_q_tag]) {
-          const otherValue = instanceData[matchingOption.survey_q_tag];
-          if (otherValue && otherValue.trim() !== '') {
-            displayText += `: ${otherValue}`;
-          }
+    return label
+      .replace(/\{\{mp_name\}\}/g, `"${mlaMpInfo.mp_name}"`)
+      .replace(/\{\{mla_name\}\}/g, `"${mlaMpInfo.mla_name}"`);
+  };
+
+  // Get party options for the current AC code
+  const getPartyOptions = (acCode: string): FormOption[] => {
+    const acCodeNum = parseInt(acCode);
+    const acPartyData = partyData.ac_data[acCodeNum.toString() as keyof typeof partyData.ac_data];
+    
+    if (!acPartyData) {
+      // Return default party options when specific AC data is not available
+      return [
+        {
+          label: language === 'bengali' ? 'AITC (Trinamool Congress)' : 'AITC (Trinamool Congress)',
+          value: '1',
+          tag: 'party_1'
+        },
+        {
+          label: language === 'bengali' ? 'BJP' : 'BJP',
+          value: '2',
+          tag: 'party_2'
+        },
+        {
+          label: language === 'bengali' ? 'INC (Congress)' : 'INC (Congress)',
+          value: '3',
+          tag: 'party_3'
+        },
+        {
+          label: language === 'bengali' ? 'Left Front' : 'Left Front',
+          value: '4',
+          tag: 'party_4'
+        },
+        {
+          label: language === 'bengali' ? 'Independent' : 'Independent',
+          value: '12',
+          tag: 'party_12'
+        },
+        {
+          label: language === 'bengali' ? 'Others (specify)' : 'Others (specify)',
+          value: '44',
+          tag: 'party_44'
+        },
+        {
+          label: language === 'bengali' ? 'NOTA' : 'NOTA',
+          value: '55',
+          tag: 'party_55'
+        },
+        {
+          label: language === 'bengali' ? 'Did not vote' : 'Did not vote',
+          value: '66',
+          tag: 'party_66'
+        },
+        {
+          label: language === 'bengali' ? 'Not eligible for voting' : 'Not eligible for voting',
+          value: '77',
+          tag: 'party_77'
+        },
+        {
+          label: language === 'bengali' ? 'No response/Refused to answer' : 'No response/Refused to answer',
+          value: '88',
+          tag: 'party_88'
         }
-        
-        return displayText;
+      ];
+    }
+    
+    return acPartyData.parties.map((party: any) => ({
+      label: language === 'bengali' ? party.party_name_bangla : party.party_name_english,
+      value: party.party_code.toString(),
+      tag: `party_${party.party_code}`
+    }));
+  };
+
+  // Get caste options based on selected religion
+  const getCasteOptions = (religionValue: string): FormOption[] => {
+    if (!religionValue) return [];
+    
+    const religionData = casteOptions[religionValue as keyof typeof casteOptions];
+    if (!religionData || !religionData.castes) return [];
+    
+    return religionData.castes.map((caste: any) => ({
+      label: language === 'bengali' ? caste.caste_name_bangla : 
+             language === 'hindi' ? caste.caste_name_hindi : 
+             caste.caste_name_english,
+      value: caste.caste_code.toString(),
+      tag: `caste_${caste.caste_code}`
+    }));
+  };
+
+  // Process form configuration to replace placeholders and add dynamic options
+  const processFormConfig = (config: FormField[]): FormField[] => {
+    return config.map(field => {
+      const processedField = { ...field };
+      
+      // Replace placeholders in label
+      processedField.label = replaceLabelPlaceholders(field.label, acCode);
+      
+      // Handle dynamic options for party data
+      if (typeof field.options === 'string' && field.options === `party_2021_q5.[ac_code]`) {
+        processedField.options = getPartyOptions(acCode);
       }
       
-      // Fallback to raw value if no matching option found
-      return String(surveyValue);
-    }
-    
-    // Handle simple string tag
-    if (typeof field.survey_q_tag === 'string') {
-      const surveyValue = instanceData[field.survey_q_tag];
-      return surveyValue !== undefined && surveyValue !== null ? String(surveyValue) : null;
-    }
-    
-    return null;
+      // Handle dynamic options for caste data
+      if (typeof field.options === 'string' && field.options === `caste-options[resp_religion.value].castes`) {
+        const religionValue = formData.resp_religion;
+        processedField.options = getCasteOptions(religionValue);
+      }
+      
+      return processedField;
+    });
   };
 
-  // Get audio URL from instance data
-  const getAudioUrl = (): string | null => {
-    console.log('Instance data for audio:', instanceData);
-    console.log('Audio URL field:', instanceData.audio_url);
-    console.log('Audio file field:', instanceData.audio_file);
-    
-    // For CATI, use the audio_url field directly
-    if (instanceData.audio_url) {
-      console.log('Using audio_url:', instanceData.audio_url);
-      return instanceData.audio_url;
-    }
-    
-    // Fallback to audio_file if audio_url is not available
-    if (instanceData.audio_file) {
-      const constructedUrl = `https://s-ct3.sarv.com/Audio/v1/recording?data={"userId":"50345024","token":"6JExgLsg6Vlsp5424S9U","file":"${instanceData.audio_file}"}`;
-      console.log('Using constructed audio URL:', constructedUrl);
-      return constructedUrl;
-    }
-    
-    console.log('No audio URL available');
-    return null;
-  };
-
-  // Format duration in hh:mm:ss format
-  const formatDuration = (seconds: string | null | undefined): string => {
-    if (!seconds) return '00:00:00';
-    
-    const totalSeconds = parseInt(seconds);
-    if (isNaN(totalSeconds)) return '00:00:00';
-    
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const remainingSeconds = totalSeconds % 60;
-    
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
-  const audioUrl = getAudioUrl();
+  // Get processed form configuration
+  const processedFormConfig = React.useMemo(() => {
+    return processFormConfig(currentFormConfig);
+  }, [currentFormConfig, acCode, language, formData.resp_religion]);
 
   // Evaluate conditional expressions
-  const evaluateCondition = (condition: string, useInstanceData: boolean = false): boolean => {
+  const evaluateCondition = (condition: string): boolean => {
     if (!condition) return true;
     
     try {
       // Replace field names with their values
       let expr = condition;
       
-      // Choose data source based on flag
-      const dataSource = useInstanceData ? instanceData : formData;
-      
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
-        const fieldValue = dataSource[field];
+        const fieldValue = formData[field];
         if (fieldValue === undefined || fieldValue === '' || fieldValue === null) {
           return 'false';
         }
@@ -310,7 +412,7 @@ export default function QCFormPage() {
       // Handle string comparisons (===, !==)
       const stringPattern = /(\w+)\s*(===|!==)\s*'(\d+)'/g;
       expr = expr.replace(stringPattern, (match, field, operator, value) => {
-        const fieldValue = dataSource[field];
+        const fieldValue = formData[field];
         if (fieldValue === undefined || fieldValue === null) {
           return operator === '!==' ? 'true' : 'false';
         }
@@ -326,7 +428,7 @@ export default function QCFormPage() {
       // Handle array includes
       const includesPattern = /(\w+)\.includes\('(\d+)'\)/g;
       expr = expr.replace(includesPattern, (match, field, value) => {
-        const fieldValue = dataSource[field];
+        const fieldValue = formData[field];
         if (!Array.isArray(fieldValue)) return 'false';
         return fieldValue.includes(value).toString();
       });
@@ -342,19 +444,9 @@ export default function QCFormPage() {
     }
   };
 
-  // Check if field should be visible
+  // Check if field should be visible - for edit page, show all fields
   const isFieldVisible = (field: FormField): boolean => {
-    // Check enable_condition first (based on instance/survey data)
-    if (field.enable_condition) {
-      const isEnabled = evaluateCondition(field.enable_condition, true);
-      if (!isEnabled) return false;
-    }
-    
-    // Check conditional (based on form data)
-    if (field.conditional) {
-      return evaluateCondition(field.conditional, false);
-    }
-    
+    // For edit page, always show all fields regardless of conditions
     return true;
   };
 
@@ -372,6 +464,12 @@ export default function QCFormPage() {
         });
       }
       
+      // Clear caste field when religion changes
+      if (fieldTag === 'resp_religion') {
+        newData.resp_caste_jati = '';
+        newData.resp_caste_jati_oth = '';
+      }
+      
       // Apply clearing rules
       if (field.rules?.clearFields) {
         const clearRules = field.rules.clearFields;
@@ -384,6 +482,26 @@ export default function QCFormPage() {
               newData[fieldToClear] = Array.isArray(newData[fieldToClear]) ? [] : '';
             });
           }
+        }
+      }
+      
+      // Handle excludeOptions logic - clear dependent field if same value is selected
+      if (field.rules?.excludeOptions && field.type === 'radio') {
+        const excludeField = field.rules.excludeOptions;
+        const currentExcludeValue = newData[excludeField];
+        
+        console.log('ExcludeOptions Debug:', {
+          fieldTag,
+          value,
+          excludeField,
+          currentExcludeValue,
+          shouldClear: currentExcludeValue && ['1', '2', '3', '4'].includes(value) && value === currentExcludeValue
+        });
+        
+        // If the selected value in current field matches the value in exclude field, clear the exclude field
+        if (currentExcludeValue && ['1', '2', '3', '4'].includes(value) && value === currentExcludeValue) {
+          console.log('Clearing field:', excludeField);
+          newData[excludeField] = '';
         }
       }
       
@@ -451,7 +569,7 @@ export default function QCFormPage() {
   const transformFormDataForSubmission = (data: Record<string, any>) => {
     const transformed: Record<string, any> = {};
     
-    currentFormConfig.forEach((field) => {
+    processedFormConfig.forEach((field) => {
       const fieldValue = data[field.tag];
       
       if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
@@ -478,9 +596,56 @@ export default function QCFormPage() {
     return transformed;
   };
 
+  // Auto-save function
+  const autoSaveForm = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token || !interviewId) return;
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      
+      // Transform form data to match backend expectations
+      const transformedData = transformFormDataForSubmission(formData);
+      
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/comprehensive`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...transformedData,
+          status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 2 : 4, // Draft status
+          form_duration_seconds: timer,
+          language_used: language
+        })
+      });
+      
+      console.log('Auto-saved draft');
+    } catch (error) {
+      console.error('Auto-save error:', error);
+    }
+  };
+
+  // Trigger auto-save on form data change (debounced)
+  useEffect(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      autoSaveForm();
+    }, 1000);
+    
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData]);
 
   // Save form data
-  const saveFormData = async (qcOutcome: number, rejectionLevel: number) => {
+  const saveFormData = async (finalSubmit: number) => {
     try {
       setIsSubmitting(true);
       
@@ -491,33 +656,30 @@ export default function QCFormPage() {
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const currentDate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const currentTime = new Date().toLocaleString();
       
-      // Build request body with all form data
-      const requestBody: Record<string, any> = {
-        qc_status: qcOutcome, // 1 = Pass, 2 = Fail
-        qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
-        qc_complete_date: currentDate, // Date of submission
+      // Determine status based on submission type
+      // 1 = Call initiated, 2 = Successful submit, 3 = Partial submit, 4 = Draft
+      let status = 4; // Default to draft
+      if (finalSubmit === 1) {
+        status = 2; // Successful submit
+      } else if (finalSubmit === 0) {
+        status = 3; // Partial submit (call dropped)
+      }
+      
+      // Transform form data to match backend expectations
+      const transformedData = transformFormDataForSubmission(formData);
+      
+      const submissionData = {
+        ...transformedData,
+        status: status,
+        form_duration_seconds: timer,
+        final_submit: finalSubmit,
+        language_used: language,
+        user_timezone: timezone,
+        user_localdatetime: currentTime,
       };
-      
-      // Add form field values if they exist
-      const formFields = ['qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8', 'qc_q9'];
-      
-      formFields.forEach(fieldTag => {
-        const fieldValue = formData[fieldTag];
-        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-          // For text fields (like qc_q9), keep as string
-          // For other fields, convert to integer
-          if (fieldTag === 'qc_q9') {
-            requestBody[fieldTag] = fieldValue;
-          } else {
-            const numValue = parseInt(fieldValue);
-            requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
-          }
-        }
-      });
-      
-      console.log('Submitting QC data:', requestBody);
       
       const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
         method: 'PUT',
@@ -525,7 +687,7 @@ export default function QCFormPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(submissionData)
       });
       
       const data = await response.json();
@@ -549,19 +711,19 @@ export default function QCFormPage() {
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    // Get all visible fields that are required
-    currentFormConfig.forEach((field) => {
-      if (field.required && isFieldVisible(field)) {
+    // Get all required fields (all fields are visible in edit mode)
+    processedFormConfig.forEach((field) => {
+      if (field.required) {
         const fieldValue = formData[field.tag];
         
         // Check if field is empty
         if (field.type === 'checkbox') {
           if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
-            errors.push(getLabel(field.label));
+            errors.push(field.label);
           }
         } else {
           if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
-            errors.push(getLabel(field.label));
+            errors.push(field.label);
           }
         }
       }
@@ -573,51 +735,6 @@ export default function QCFormPage() {
     };
   };
 
-  // Determine QC outcome based on form data
-  const determineQCOutcome = (): { outcome: number; rejectionLevel: number } => {
-    const qcAudioStatus = formData.qc_audio_status; // This is the question answer (1, 2, 3, 4, 7, 8)
-    
-    // If qc_audio_status is 2 (No Conversation), 3 (Irrelevant), 7, or 8, it's fail
-    if (qcAudioStatus === '2' || qcAudioStatus === '3' || qcAudioStatus === '7' || qcAudioStatus === '8') {
-      return { outcome: 2, rejectionLevel: 1 }; // Fail at audio status level
-    }
-    
-    // If qc_audio_status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
-    if (qcAudioStatus === '1' || qcAudioStatus === '4') {
-      // Check if all mandatory questions are answered with "Matched" (value "1")
-      const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
-      
-      for (const question of mandatoryQuestions) {
-        if (formData[question] !== '1') {
-          // Find which question failed and set rejection level
-          const questionKey = parseInt(question.replace('qc_q', ''));
-          return { outcome: 2, rejectionLevel: questionKey }; // Fail at specific question level
-        }
-      }
-      
-      // Check for "Cannot hear the response clearly" condition
-      // Count how many questions have value "3" (Cannot hear the response clearly)
-      const allQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6'];
-      let cannotHearCount = 0;
-      
-      allQuestions.forEach(question => {
-        if (formData[question] === '3') {
-          cannotHearCount++;
-        }
-      });
-      
-      // If more than 3 questions have "Cannot hear the response clearly", it's fail
-      if (cannotHearCount > 3) {
-        return { outcome: 2, rejectionLevel: 6 }; // Fail due to too many "cannot hear clearly" responses
-      }
-      
-      return { outcome: 1, rejectionLevel: 0 }; // Pass
-    }
-    
-    // Default to fail
-    return { outcome: 2, rejectionLevel: 1 };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -627,8 +744,8 @@ export default function QCFormPage() {
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
-      currentFormConfig.forEach((field) => {
-        if (field.required && isFieldVisible(field)) {
+      processedFormConfig.forEach((field) => {
+        if (field.required) {
           const fieldValue = formData[field.tag];
           const isEmpty = field.type === 'checkbox' 
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
@@ -644,8 +761,8 @@ export default function QCFormPage() {
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
       
       // Scroll to first error
-      const firstErrorField = currentFormConfig.find(
-        field => field.required && isFieldVisible(field) && 
+      const firstErrorField = processedFormConfig.find(
+        field => field.required && 
         (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
       
@@ -662,19 +779,29 @@ export default function QCFormPage() {
     // Clear validation errors if form is valid
     setValidationErrors(new Set());
     
-    // Determine QC outcome
-    const { outcome, rejectionLevel } = determineQCOutcome();
-    const outcomeText = outcome === 1 ? 'Pass' : 'Fail';
+    showToast('Saving form data...', 'info');
     
-    showToast(`Processing QC evaluation... (${outcomeText})`, 'info');
-    
-    const success = await saveFormData(outcome, rejectionLevel);
+    const success = await saveFormData(1);
     
     if (success) {
-      showToast(`QC evaluation completed! Interview marked as ${outcomeText}.`, 'success');
+      showToast('Form updated successfully! Data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/qc-call/${qcTeleformUserId}`);
+        router.push(`/cati/ss/new-call/${teleformUserId}`);
+      }, 1500);
+    }
+  };
+
+  const handleCallDropped = async () => {
+    showToast('Saving partial data...', 'info');
+    
+    const success = await saveFormData(0);
+    
+    if (success) {
+      showToast('Call dropped. Partial data has been saved.', 'success');
+      
+      setTimeout(() => {
+        router.push(`/cati/ss/new-call/${teleformUserId}`);
       }, 1500);
     }
   };
@@ -707,21 +834,9 @@ export default function QCFormPage() {
                 ? 'text-red-700 dark:text-red-300' 
                 : 'text-blue-600 dark:text-blue-400'
             }`}>
-              {getLabel(field.label)}
+              {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
-            {field.hint && (
-              <Text className="text-xs text-gray-500 dark:text-gray-400 mb-2 italic">
-                {getLabel(field.hint)}
-              </Text>
-            )}
-            {getSurveyAnswerDisplay(field) && (
-              <div className="mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded text-xs">
-                <Text className="text-blue-800 dark:text-blue-300">
-                  Survey Answer: <span className="font-semibold">{getSurveyAnswerDisplay(field)}</span>
-                </Text>
-              </div>
-            )}
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -729,13 +844,23 @@ export default function QCFormPage() {
               </div>
             )}
             <div className="space-y-2 sm:space-y-3">
-              {field.options?.map(option => (
+              {field.options?.filter(option => {
+                // Handle excludeOptions logic - only for option values 1, 2, 3, 4
+                if (field.rules?.excludeOptions) {
+                  const excludeField = field.rules.excludeOptions;
+                  const excludeValue = formData[excludeField];
+                  if (excludeValue && ['1', '2', '3', '4'].includes(excludeValue) && option.value === excludeValue) {
+                    return false; // Hide this option
+                  }
+                }
+                return true;
+              }).map(option => (
                 <Radio
                   key={option.tag}
                   id={`${field.tag}_${option.value}`}
                   name={field.tag}
                   value={option.value}
-                  label={getLabel(option.label)}
+                  label={option.label}
                   checked={fieldValue === option.value}
                   onChange={() => handleInputChange(field.tag, option.value, field)}
                 />
@@ -760,14 +885,9 @@ export default function QCFormPage() {
                 ? 'text-red-700 dark:text-red-300' 
                 : 'text-blue-600 dark:text-blue-400'
             }`}>
-              {getLabel(field.label)}
+              {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
-            {field.hint && (
-              <Text className="text-xs text-gray-500 dark:text-gray-400 mb-2 italic">
-                {getLabel(field.hint)}
-              </Text>
-            )}
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -779,7 +899,7 @@ export default function QCFormPage() {
                 <Checkbox
                   key={option.tag}
                   id={`${field.tag}_${option.value}`}
-                  label={getLabel(option.label)}
+                  label={option.label}
                   checked={(fieldValue as string[]).includes(option.value)}
                   onCheckedChange={(checked) => handleCheckboxChange(field.tag, option.value, checked, field)}
                 />
@@ -806,7 +926,7 @@ export default function QCFormPage() {
               </div>
             )}
             <Input
-              label={getLabel(field.label)}
+              label={field.label}
               value={fieldValue}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               required={field.required}
@@ -836,7 +956,7 @@ export default function QCFormPage() {
             )}
             <Input
               type="number"
-              label={getLabel(field.label)}
+              label={field.label}
               value={fieldValue}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               required={field.required}
@@ -867,7 +987,7 @@ export default function QCFormPage() {
             )}
             <Input
               type="datetime-local"
-              label={getLabel(field.label)}
+              label={field.label}
               value={fieldValue}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               placeholder={field.placeholder}
@@ -881,35 +1001,83 @@ export default function QCFormPage() {
     }
   };
 
+  // Group fields by sections
+  const groupFieldsBySection = () => {
+    const sections: Record<string, FormField[]> = {
+      callStatus: [],
+      consent: [],
+      demographics: [],
+      partyPreferences: [],
+      satisfaction: [],
+      finalDemographics: [],
+    };
 
-  if (loading) {
-    return (
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
-        <div className="flex justify-center items-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <Text className="text-gray-600">Loading interview data...</Text>
-          </div>
-        </div>
-      </Container>
-    );
-  }
+    processedFormConfig.forEach(field => {
+      if (['number_status', 'call_not_ring', 'call_ring_status', 'q_call_status', 'call_reschedule'].includes(field.tag)) {
+        sections.callStatus.push(field);
+      } else if (field.tag === 'consent') {
+        sections.consent.push(field);
+      } else if (['resp_age', 'resp_registered_voter', 'resp_gender'].includes(field.tag)) {
+        sections.demographics.push(field);
+      } else if (['q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'q11', 'q11_oth', 'q12', 'q12_oth', 'q13', 'q13_oth'].includes(field.tag)) {
+        sections.partyPreferences.push(field);
+      } else if (['q14', 'q15', 'q16_a', 'q16_b', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
+        sections.satisfaction.push(field);
+      } else if (['resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'resp_female_edu', 'resp_male_edu', 'resp_occupation', 'thanks_future'].includes(field.tag)) {
+        sections.finalDemographics.push(field);
+      }
+    });
+
+    return sections;
+  };
+
+  const sections = groupFieldsBySection();
+
+  // For edit page, show all sections regardless of conditions
+  const showConsentSection = true;
+  const showDemographicsSection = true;
+  const showPartyPreferencesSection = true;
+  const showSatisfactionSection = true;
+  const showFinalDemographicsSection = true;
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
-      {/* Debug Audio URL */}
-      {(() => { console.log('Audio URL for rendering:', audioUrl); return null; })()}
-      
-      {/* Debug Info Card */}
-      {/* <Card className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-        <div className="text-sm">
-          <div><strong>Audio URL:</strong> {audioUrl || 'No audio URL'}</div>
-          <div><strong>Instance Data Keys:</strong> {Object.keys(instanceData).join(', ')}</div>
-          <div><strong>Audio URL Field:</strong> {instanceData.audio_url || 'Not found'}</div>
-          <div><strong>Audio File Field:</strong> {instanceData.audio_file || 'Not found'}</div>
-        </div>
-      </Card> */}
-      
+      {/* Timer and Language Selector */}
+      <div className="mb-3 sm:mb-4 md:mb-6">
+        <Card className="p-3 sm:p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div>
+              <Heading level={4} className="text-base sm:text-lg md:text-xl">Edit Data Entry Form - WB Opinion Poll CATI 2025</Heading>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
+                <div>Interview ID: <span className="font-mono font-semibold">{interviewId}</span></div>
+                <div>AC Code: <span className="font-semibold">{acCode}</span></div>
+                {instanceData.ac_name && (
+                  <div>AC Name: <span className="font-semibold">{instanceData.ac_name}</span></div>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
+              {/* Language Selector */}
+              <div className="flex items-center gap-2 w-full xs:w-auto">
+                <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
+                <div className="w-full xs:w-40 sm:w-48">
+                  <SelectDropdown
+                    options={[
+                      { value: 'english', label: 'English (English)' },
+                      { value: 'bengali', label: 'Bangla (বাংলা)' },
+                      { value: 'hindi', label: 'Hindi (हिंदी)' },
+                    ]}
+                    value={language}
+                    onChange={(value) => setLanguage(value as string)}
+                    placeholder="Select Language"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       {/* Sticky Audio Player */}
       <div
         ref={audioPlayerRef}
@@ -1026,67 +1194,96 @@ export default function QCFormPage() {
       {/* Spacer to prevent content jump when sticky */}
       {isSticky && <div style={{ height: '64px' }} />}
 
-      {/* Header and Language Selector */}
-      <div className="mb-3 sm:mb-4 md:mb-6">
-        <Card className="p-3 sm:p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <div>
-              <Heading level={4} className="text-base sm:text-lg md:text-xl">Audio QC Form</Heading>
-              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
-                <div>Interview ID: <span className="font-mono font-semibold">{interviewId}</span></div>
-                {instanceData.ac_name && (
-                  <div>AC: <span className="font-semibold">{instanceData.ac_code} - {instanceData.ac_name}</span></div>
-                )}
-                {instanceData.teleform_user_id && (
-                  <div>Teleform User ID: <span className="font-semibold">{instanceData.teleform_user_id}</span></div>
-                )}
-                {/* {instanceData.district_name && (
-                  <div>District: <span className="font-semibold">{instanceData.district_name}</span></div>
-                )}
-                <div>QC User: <span className="font-semibold">{qcUserName} (ID: {qcTeleformUserId})</span></div> */}
-              </div>
-            </div>
-            
-            {/* Language Selector */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
-              <div className="w-full sm:w-48">
-                <SelectDropdown
-                  options={[
-                    { value: 'en', label: 'English' },
-                    { value: 'bn', label: 'বাংলা' },
-                    { value: 'hi', label: 'हिंदी' },
-                  ]}
-                  value={language}
-                  onChange={(value) => setLanguage(value as string)}
-                  placeholder="Select Language"
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
       <form onSubmit={handleSubmit}>
-        {/* QC Questions Card */}
+        {/* Call Status Section */}
         <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
           <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-            Quality Control Questions
+            Call Status
           </Heading>
-          {currentFormConfig.map((field, index) => renderField(field, index))}
+          {sections.callStatus.map((field, index) => renderField(field, index))}
         </Card>
 
-        {/* Submit Button */}
+        {/* Consent Section */}
+        {showConsentSection && sections.consent.length > 0 && (
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
+              Section 2: Interviewer Introduction and Statement of Informed Consent
+            </Heading>
+            <div className="mb-3 sm:mb-4">
+              <Text className="text-sm sm:text-base leading-relaxed font-medium text-blue-600 dark:text-blue-400 mb-3 sm:mb-4">
+                {language === 'hindi' 
+                  ? `नमस्ते, मेरा नाम ${teleformUserName || '[enumerator name]'} है। हम कन्वर्जेंट नाम की एक संस्था से बात कर रहे हैं। हम पश्चिम बंगाल में लोगों से सरकार और राजनीति के बारे में उनकी राय जानने के लिए एक सर्वे कर रहे हैं। मैं आपसे कुछ सवाल पूछूँगा/पूछूँगी। आपके जवाब पूरी तरह गोपनीय रखे जाएंगे — किसी को भी आपकी जानकारी नहीं बताई जाएगी। ये सर्वे लगभग 5 से 10 मिनट का है, और आपकी सच्ची राय हमारे लिए बहुत ज़रूरी है।`
+                  : language === 'bengali'
+                  ? `নমস্কার, আমার নাম ${teleformUserName || '[enumerator name]'}। আমরা কনভার্জেন্ট থেকে এসেছি, একটি স্বতন্ত্র গবেষণা সংস্থা। আমরা পশ্চিমবঙ্গে সামাজিক ও রাজনৈতিক বিষয়ে একটি সমীক্ষা পরিচালনা করছি, হাজার হাজার মানুষের সাক্ষাৎকার নিচ্ছি। আমি আপনাকে সরকারের কর্মক্ষমতা এবং আপনার পছন্দ সম্পর্কে কিছু প্রশ্ন জিজ্ঞাসা করব। আপনার উত্তরগুলি কঠোরভাবে গোপনীয় থাকবে এবং শুধুমাত্র অন্যদের সাথে মিলিয়ে বিশ্লেষণ করা হবে। কোনও ব্যক্তিগত বিবরণ কখনও শেয়ার করা হবে না। সমীক্ষাটি প্রায় ৫-১০ মিনিট সময় নেবে এবং আপনার সৎ মতামত আমাদের অত্যন্ত সাহায্য করবে।`
+                  : `Namaste, my name is ${teleformUserName || '[enumerator name]'}. We are from Convergent, an independent research organization. We are conducting a survey on social and political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about government performance and your preferences. Your responses will remain strictly confidential and will only be analysed in combination with others. No personal details will ever be shared. The survey will take about 5–10 minutes, and your honest opinions will greatly help us.`
+                }
+              </Text>
+            </div>
+            {sections.consent.map((field, index) => renderField(field, index))}
+          </Card>
+        )}
+
+        {/* Demographics Section */}
+        {showDemographicsSection && sections.demographics.length > 0 && (
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
+              Section 3: Basic Demographic
+            </Heading>
+            {sections.demographics.map((field, index) => renderField(field, index))}
+          </Card>
+        )}
+
+        {/* Party Preferences Section */}
+        {showPartyPreferencesSection && sections.partyPreferences.length > 0 && (
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
+              Section 4: Party Preferences
+            </Heading>
+            {sections.partyPreferences.map((field, index) => renderField(field, index))}
+          </Card>
+        )}
+
+        {/* Satisfaction Section */}
+        {showSatisfactionSection && sections.satisfaction.length > 0 && (
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
+              Section 5: Satisfaction and Approval Ratings
+            </Heading>
+            {sections.satisfaction.map((field, index) => renderField(field, index))}
+          </Card>
+        )}
+
+        {/* Final Demographics Section */}
+        {showFinalDemographicsSection && sections.finalDemographics.length > 0 && (
+          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
+              Section 6: Basic Demographic
+            </Heading>
+            {sections.finalDemographics.map((field, index) => renderField(field, index))}
+          </Card>
+        )}
+
+        {/* Submit Buttons */}
         <Card className="p-3 sm:p-4 md:p-6">
-          <div className="flex justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <Button 
               type="submit" 
               size="lg"
               disabled={isSubmitting}
-              className="w-full sm:w-auto sm:min-w-[200px] bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
+              className="w-full sm:w-auto sm:min-w-[150px] bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base"
             >
-              <i className="fa fa-paper-plane mr-2"></i>
-              {isSubmitting ? 'Processing...' : 'Submit'}
+              <i className="fa fa-save mr-2"></i>
+              {isSubmitting ? 'Updating...' : 'Update Form'}
+            </Button>
+            <Button 
+              type="button"
+              onClick={handleCallDropped}
+              size="lg"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto sm:min-w-[150px] bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base"
+            >
+              <i className="fa fa-phone-slash mr-2"></i>
+              {isSubmitting ? 'Saving...' : 'Call Dropped'}
             </Button>
           </div>
         </Card>

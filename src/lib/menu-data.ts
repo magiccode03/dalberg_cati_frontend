@@ -500,14 +500,14 @@ export const menuData: MenuItem[] = [
         roles: ['dqm'],
         system: 'capi',
       },
-      // {
-      //   id: 'capi-dqm-interview-list',
-      //   label: 'Interview List',
-      //   href: '/capi/dqm/progress/interview-list',
-      //   icon: 'FileText',
-      //   roles: ['dqm'],
-      //   system: 'capi',
-      // },
+      {
+        id: 'capi-dqm-interview-list',
+        label: 'Interview List',
+        href: '/capi/dqm/progress/interview-list',
+        icon: 'FileText',
+        roles: ['dqm'],
+        system: 'capi',
+      },
       // // 
       // {
       //   id: 'capi-dqm-qc-user-pending-data',
@@ -1219,6 +1219,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
+      
       // {
       //   id: 'cati-ppm-monthly-report',
       //   label: 'Monthly Report',
@@ -1414,6 +1415,14 @@ export const menuData: MenuItem[] = [
         label: 'AC Wise Progress',
         href: '/cati/ppm/qc-progress/acwisereport',
         icon: 'BarChart3',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-interview-list',
+        label: 'Interview List',
+        href: '/cati/ppm/qc-progress/interview-list',
+        icon: 'CheckCircle',
         roles: ['ppm'],
         system: 'cati',
       },
@@ -1710,7 +1719,25 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     dynamic: true, // This will be dynamically set based on teleform user data
   },
-  
+
+  // Data Entry Role Menu (Simple like SS role)
+  {
+    id: 'cati-data-entry-auth',
+    label: 'Authentication',
+    href: '/cati/data-entry',
+    icon: 'Shield',
+    roles: ['data_entry'],
+    system: 'cati',
+  },
+  {
+    id: 'cati-data-entry',
+    label: 'Start QC',
+    href: '/cati/ss/data-entry-list',
+    icon: 'CheckCircle',
+    roles: ['data_entry'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on data entry user data
+  },
 
 ];
 

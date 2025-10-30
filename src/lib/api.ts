@@ -1292,6 +1292,7 @@ class ApiService {
     mobile_no?: string;
     fail_reason?: string;
     qualityreportstatus?: string;
+    audio_fail_reason?: string;
     page?: number;
     per_page?: number;
   }): Promise<ApiResponse<{
