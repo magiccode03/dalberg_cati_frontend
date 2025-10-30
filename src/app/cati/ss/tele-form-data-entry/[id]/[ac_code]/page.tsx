@@ -607,7 +607,7 @@ export default function TeleFormV2Page() {
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/comprehensive`, {
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
