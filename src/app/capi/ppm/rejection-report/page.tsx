@@ -1040,6 +1040,7 @@ export default function RejectionReportPage() {
                   <th className="text-left">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
                   <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-left">Remark</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>
                 </tr>
@@ -1066,6 +1067,13 @@ export default function RejectionReportPage() {
                       <div className="max-w-xs">
                         <span className="text-gray-900 dark:text-gray-100 text-sm">
                           {getAudioFailReasonDisplayText(row)}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="max-w-xs">
+                        <span className="text-gray-900 dark:text-gray-100 text-sm">
+                          {row.qcData?.qc_q9 || '-'}
                         </span>
                       </div>
                     </td>
