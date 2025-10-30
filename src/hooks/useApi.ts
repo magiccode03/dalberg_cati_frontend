@@ -335,6 +335,7 @@ export function useRejectionReport(params?: any) {
     params?.server_id,
     params?.mobile_no,
     params?.fail_reason,
+    params?.audio_fail_reason,
     params?.qualityreportstatus,
     params?.page,
     params?.per_page
