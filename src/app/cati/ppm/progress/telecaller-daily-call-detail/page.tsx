@@ -132,6 +132,7 @@ const TelecallerDailyCallDetailPage = () => {
   });
 
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Dashboard filters state
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({
@@ -328,6 +329,7 @@ const TelecallerDailyCallDetailPage = () => {
     console.log('Dashboard filters:', dashboardFilters);
     fetchDashboardMetrics();
     fetchCallDetails(1); // Also refresh call details table with filters
+    setMetricsTrigger((t) => t + 1); // trigger TelecallerMetrics fetch explicitly
   };
 
   // Fetch dashboard metrics from API
@@ -653,6 +655,8 @@ const TelecallerDailyCallDetailPage = () => {
     fetchACList();
     fetchDashboardMetrics();
     fetchCallDetails(1);
+    // Trigger initial metrics load for "today" on first mount
+    setMetricsTrigger((t) => (t === 0 ? 1 : t));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -944,6 +948,7 @@ const TelecallerDailyCallDetailPage = () => {
           customDateFrom: dashboardFilters.fromDate,
           customDateTo: dashboardFilters.toDate,
         }}
+        trigger={metricsTrigger}
       />
       {/* Error Alert */}
       {error && (
@@ -1112,31 +1117,31 @@ const TelecallerDailyCallDetailPage = () => {
 
                 {!useIframe ? (
                   currentAudio ? (
-                    <audio
-                      controls
-                      className="w-full"
-                      controlsList="nodownload"
+                  <audio
+                    controls
+                    className="w-full"
+                    controlsList="nodownload"
                       preload="metadata"
-                      onError={handleAudioError}
+                    onError={handleAudioError}
                       onLoadStart={() => console.log('Audio loading started')}
                       onCanPlay={() => console.log('Audio can play')}
-                    >
-                      <source src={currentAudio} type="audio/mpeg" />
-                      <source src={currentAudio} type="audio/mp3" />
-                      Your browser does not support the audio element.
-                    </audio>
+                  >
+                    <source src={currentAudio} type="audio/mpeg" />
+                    <source src={currentAudio} type="audio/mp3" />
+                    Your browser does not support the audio element.
+                  </audio>
                   ) : (
                     <div className="text-center py-4 text-gray-500">
                       No audio file available for this call.
-                    </div>
+                  </div>
                   )
                 ) : (
                   currentAudio ? (
                     <div className="w-full">
-                      <iframe
-                        src={currentAudio}
+                  <iframe
+                    src={currentAudio}
                         className="w-full h-16 border-0 rounded"
-                        title="Audio Player"
+                    title="Audio Player"
                         allow="autoplay"
                         onError={handleAudioError}
                         onLoad={() => {
@@ -1193,16 +1198,16 @@ const TelecallerDailyCallDetailPage = () => {
                       Try Alternative Player
                     </button>
                   )}
-                  <a
-                    href={currentAudio}
-                    download
+                    <a
+                      href={currentAudio}
+                      download
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
                     style={{ display: currentAudio ? 'inline' : 'none' }}
-                  >
+                    >
                     Download audio
-                  </a>
+                    </a>
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>

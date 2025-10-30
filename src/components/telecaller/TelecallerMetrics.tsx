@@ -145,7 +145,7 @@ function getDateRangeForAPI(dateValue?: string, customFrom?: string, customTo?: 
   return {} as Record<string, string>;
 }
 
-export default function TelecallerMetrics({ filters }: { filters?: TelecallerMetricsFilters }) {
+export default function TelecallerMetrics({ filters, trigger }: { filters?: TelecallerMetricsFilters; trigger?: number | string }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<PerformanceMetrics | null>(null);
@@ -165,10 +165,19 @@ export default function TelecallerMetrics({ filters }: { filters?: TelecallerMet
   // Track last requested query to avoid duplicate calls (e.g., StrictMode double effect)
   const lastQueryRef = useRef<string>('');
   const abortRef = useRef<AbortController | null>(null);
+  const lastTriggerRef = useRef<number | string | undefined>(undefined);
 
   useEffect(() => {
-    // Skip only if we've already loaded for this query
-    if (lastQueryRef.current === queryString && metrics !== null) return;
+    // If a trigger is provided, only fetch when trigger changes
+    const hasExternalTrigger = typeof trigger !== 'undefined';
+
+    if (hasExternalTrigger) {
+      if (lastTriggerRef.current === trigger) return; // no new trigger
+      lastTriggerRef.current = trigger;
+    } else {
+      // No external trigger: debounce by query string
+      if (lastQueryRef.current === queryString && metrics !== null) return;
+    }
 
     // Abort any in-flight request
     if (abortRef.current) abortRef.current.abort();
@@ -196,8 +205,10 @@ export default function TelecallerMetrics({ filters }: { filters?: TelecallerMet
         const json = await res.json();
         if (!res.ok || !json.success) throw new Error(json.message || 'Failed to fetch');
         setMetrics(json.data as PerformanceMetrics);
-        // Mark this query as completed successfully
-        lastQueryRef.current = queryString;
+        // Mark this query as completed successfully when using query guard
+        if (!hasExternalTrigger) {
+          lastQueryRef.current = queryString;
+        }
       } catch (e: any) {
         if (e?.name === 'AbortError') return; // ignore aborted requests
         setError(e?.message || 'Failed to fetch');
@@ -210,7 +221,7 @@ export default function TelecallerMetrics({ filters }: { filters?: TelecallerMet
     return () => {
       controller.abort();
     };
-  }, [queryString]);
+  }, [queryString, trigger]);
 
   const getValue = (value: any) => (value === null || value === undefined ? '—' : value);
   const formatDuration = (d?: string) => (d ? d : '00:00:00');

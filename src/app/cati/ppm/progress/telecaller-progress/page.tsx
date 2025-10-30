@@ -154,6 +154,7 @@ const TelecallerProgressPage: React.FC = () => {
   const [telecallerDataLoading, setTelecallerDataLoading] = useState(false);
   const [telecallerDataError, setTelecallerDataError] = useState<string | null>(null);
   const [downloadingCSV, setDownloadingCSV] = useState(false);
+  const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Table sorting state
   const [sortConfig, setSortConfig] = useState<{
@@ -348,7 +349,8 @@ const TelecallerProgressPage: React.FC = () => {
     console.log('Searching with filters:', filters);
     // Trigger API calls with current filters
     if (viewMode === 'overall') {
-    fetchPerformanceData();
+      // For overall view, trigger the TelecallerMetrics component to fetch
+      setMetricsTrigger((t) => t + 1);
     } else {
       fetchDayWiseData();
     }
@@ -853,7 +855,8 @@ const TelecallerProgressPage: React.FC = () => {
   // Fetch initial data on mount
   useEffect(() => {
     if (viewMode === 'overall') {
-      fetchPerformanceData();
+      // Trigger initial metrics load once on mount
+      setMetricsTrigger((t) => (t === 0 ? 1 : t));
     } else {
       fetchDayWiseData();
     }
@@ -1379,6 +1382,7 @@ const TelecallerProgressPage: React.FC = () => {
                   customDateFrom: filters.customDateFrom,
                   customDateTo: filters.customDateTo,
                 }}
+                trigger={metricsTrigger}
               />
             )}
 
