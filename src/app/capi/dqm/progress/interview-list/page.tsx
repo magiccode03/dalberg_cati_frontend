@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -91,6 +92,7 @@ interface APIResponse {
 }
 
 export default function InterviewListPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState({
     server_id: '',
     interview_date: '',
@@ -285,8 +287,8 @@ export default function InterviewListPage() {
     console.log('Mark as valid for server ID:', serverId);
   };
 
-  const handleEdit = (serverId: number) => {
-    console.log('Edit interview for server ID:', serverId);
+  const handleEdit = (serverId: number, acCode: number) => {
+    router.push(`/capi/dqm/progress/interview-list/interview-list-tele-form/${serverId}/${acCode}`);
   };
 
 
@@ -569,7 +571,7 @@ export default function InterviewListPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleEdit(interview.serverId)}
+                                onClick={() => handleEdit(interview.serverId, interview.acCode)}
                                 className="bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600 p-2"
                                 title="Edit Response"
                               >
