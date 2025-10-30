@@ -69,6 +69,7 @@ export default function Header() {
   const [selectedAgency, setSelectedAgency] = useState<string>('all');
   const [teleformUserData, setTeleformUserData] = useState<any>(null);
   const [qcUserData, setQcUserData] = useState<any>(null);
+  const [dataEntryUserData, setDataEntryUserData] = useState<any>(null);
 
   // Check if user is PPM or DQM role and system is CAPI (hide for CATI)
   const showAgencySelector = (user?.role === 'ppm' || user?.role === 'dqm') && user?.system === 'capi';
@@ -100,6 +101,21 @@ export default function Header() {
       }
     } else {
       setQcUserData(null);
+    }
+  };
+
+  const checkDataEntryUserData = () => {
+    const savedData = localStorage.getItem('data_entry_user_data');
+    if (savedData) {
+      try {
+        const userData = JSON.parse(savedData);
+        setDataEntryUserData(userData);
+      } catch (err) {
+        console.error('Error parsing data entry user data:', err);
+        setDataEntryUserData(null);
+      }
+    } else {
+      setDataEntryUserData(null);
     }
   };
 
@@ -140,14 +156,16 @@ export default function Header() {
       document.documentElement.classList.remove('dark');
     }
 
-    // Check for teleform user data and QC user data
+    // Check for teleform user data, QC user data, and data entry user data
     checkTeleformUserData();
     checkQCUserData();
+    checkDataEntryUserData();
     
     // Add storage event listener for real-time updates
     const handleStorageChange = () => {
       checkTeleformUserData();
       checkQCUserData();
+      checkDataEntryUserData();
     };
     
     window.addEventListener('storage', handleStorageChange);
@@ -155,11 +173,13 @@ export default function Header() {
     // Custom events for same-tab updates
     window.addEventListener('teleformUserUpdated', handleStorageChange);
     window.addEventListener('qcUserUpdated', handleStorageChange);
+    window.addEventListener('dataEntryUserUpdated', handleStorageChange);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('teleformUserUpdated', handleStorageChange);
       window.removeEventListener('qcUserUpdated', handleStorageChange);
+      window.removeEventListener('dataEntryUserUpdated', handleStorageChange);
     };
   }, []);
 
@@ -220,6 +240,11 @@ export default function Header() {
     } else {
       router.push('/capi/capi-qc/qc-auth');
     }
+  };
+
+  const handleDataEntryUserClick = () => {
+    // Always redirect to data entry authentication page
+    router.push('/cati/data-entry');
   };
 
   return (
@@ -313,6 +338,25 @@ export default function Header() {
             </button>
           )}
 
+          {/* Data Entry User Button */}
+          {mounted && dataEntryUserData && user?.role === 'data_entry' && (
+            <button
+              onClick={handleDataEntryUserClick}
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 transition-colors"
+              title="View Data Entry User"
+            >
+              <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="text-left">
+                <p className="text-xs font-medium text-green-800 dark:text-green-300">
+                  {dataEntryUserData.name || 'Data Entry User'}
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  ID: {dataEntryUserData.data_entry_user_id}
+                </p>
+              </div>
+            </button>
+          )}
+
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -393,6 +437,20 @@ export default function Header() {
                 <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <span className="text-xs font-medium text-green-800 dark:text-green-300">
                   {teleformUserData.name?.split(' ')[0] || 'User'}
+                </span>
+              </button>
+            )}
+
+            {/* Data Entry User Button - Compact */}
+            {mounted && dataEntryUserData && user?.role === 'data_entry' && (
+              <button
+                onClick={handleDataEntryUserClick}
+                className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800 transition-colors"
+                title="View Data Entry User"
+              >
+                <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                <span className="text-xs font-medium text-green-800 dark:text-green-300">
+                  {dataEntryUserData.name?.split(' ')[0] || 'Data Entry'}
                 </span>
               </button>
             )}

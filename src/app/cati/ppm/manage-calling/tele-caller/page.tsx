@@ -205,7 +205,8 @@ const TeleUserInfoPage: React.FC = () => {
       }
 
       const queryParams = new URLSearchParams(params).toString();
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/cati/unified-user-statistics?${queryParams}`;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const url = `${apiBaseUrl}/api/cati/unified-user-statistics?${queryParams}`;
 
       const response = await fetch(url, {
         method: 'GET',

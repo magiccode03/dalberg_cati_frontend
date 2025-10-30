@@ -19,63 +19,73 @@ import { apiService } from '@/lib/api';
 interface InterviewData {
   id: number;
   serverId: number;
+  serverDate: string;
   interviewDate: string;
-  sampleType: string;
   acCode: number;
   acName: string;
   psName: string;
   deviceId: string;
   interviewerId: string;
-  audioQcLabel: string;
-  audioQcId: string;
-  audioFailReason: string;
-  qcOutcome: string;
-  statusLabel: string;
+  respondentName: string;
+  gender: number;
   genderLabel: string;
-  gpsAvailable: boolean;
-  psImageAvailable: boolean;
-  selfieImageAvailable: boolean;
-  audioPlaybackAvailable: boolean;
+  status: number;
+  statusLabel: string;
+  audioQcStatus: number;
+  audioQcCompleteDate: string;
+  audioQcId: string;
+  audio1Status: number;
+  teleQcStatus: number;
+  gpsQcStatus: number;
+  broadcastStatus: number;
+  overAchievement: number;
+  psCode: string;
+  collectDeviceId: string;
+  teleQcCompleteDate: string;
+  teleQcId: string;
+  qcScenario: number;
 }
 
 interface APIResponse {
   success: boolean;
   data: {
-    interviews: Array<{
+    data: Array<{
       server_id: number;
       interview_date: string;
-      sample_type: string;
       ac_code: number;
       ac_name: string;
+      interviewer_id: string;
+      respondent_name: string;
+      gender: number;
+      audio_qc_complete_date: string;
+      audio_qc_status: number;
+      audio_qc_id: string;
+      audio1_status: number;
+      status: number;
+      tele_qc_status: number;
+      gps_qc_status: number;
+      broadcast_status: number;
+      over_achievement: number;
+      ps_code: string;
       ps_name: string;
       device_id: string;
-      interviewer_id: string;
-      audio_qc_label: string;
-      audio_qc_id: string;
-      audio1_status_label: string;
-      qc_outcome: string;
-      status_label: string;
-      gender_label: string;
-      gps_available: boolean;
-      ps_image_available: boolean;
-      selfie_image_available: boolean;
-      audio_playback_available: boolean;
+      collect_device_id: string;
+      tele_qc_complete_date: string;
+      tele_qc_id: string;
+      qc_scenario: number;
     }>;
     pagination: {
-      current_page: number;
-      per_page: number;
-      total_count: number;
-      total_pages: number;
+      page: number;
+      pageSize: number;
+      totalCount: number;
+      pageCount: number;
     };
-    filters_applied: Record<string, any>;
-    sorting: {
-      field: string;
-      direction: string;
+    sort: {
+      defaultOrder: {
+        server_id: string;
+      };
     };
-    message: string;
   };
-  message: string;
-  timestamp: string;
 }
 
 export default function InterviewListPage() {
@@ -103,24 +113,48 @@ export default function InterviewListPage() {
     return apiData.map((item, index) => ({
       id: index + 1,
       serverId: item.server_id,
+      serverDate: new Date().toISOString().split('T')[0], // Current date as server date
       interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
-      sampleType: item.sample_type,
       acCode: item.ac_code,
       acName: item.ac_name,
       psName: item.ps_name,
       deviceId: item.device_id,
       interviewerId: item.interviewer_id,
-      audioQcLabel: item.audio_qc_label,
-      audioQcId: item.audio_qc_id,
-      audioFailReason: item.audio1_status_label,
-      qcOutcome: item.qc_outcome,
-      statusLabel: item.status_label,
-      genderLabel: item.gender_label,
-      gpsAvailable: item.gps_available,
-      psImageAvailable: item.ps_image_available,
-      selfieImageAvailable: item.selfie_image_available,
-      audioPlaybackAvailable: item.audio_playback_available,
+      respondentName: item.respondent_name,
+      gender: item.gender,
+      genderLabel: item.gender === 1 ? 'Male' : 'Female',
+      status: item.status,
+      statusLabel: getStatusLabel(item.status),
+      audioQcStatus: item.audio_qc_status,
+      audioQcCompleteDate: item.audio_qc_complete_date ? new Date(item.audio_qc_complete_date).toISOString().split('T')[0] : '',
+      audioQcId: item.audio_qc_id || '',
+      audio1Status: item.audio1_status,
+      teleQcStatus: item.tele_qc_status,
+      gpsQcStatus: item.gps_qc_status,
+      broadcastStatus: item.broadcast_status,
+      overAchievement: item.over_achievement,
+      psCode: item.ps_code,
+      collectDeviceId: item.collect_device_id,
+      teleQcCompleteDate: item.tele_qc_complete_date ? new Date(item.tele_qc_complete_date).toISOString().split('T')[0] : '',
+      teleQcId: item.tele_qc_id || '',
+      qcScenario: item.qc_scenario,
     }));
+  };
+
+  // Helper function to get status label
+  const getStatusLabel = (status: number): string => {
+    switch (status) {
+      case 20:
+        return 'Completed';
+      case 10:
+        return 'In Progress';
+      case 5:
+        return 'Started';
+      case 0:
+        return 'Not Started';
+      default:
+        return 'Unknown';
+    }
   };
 
   // Generate date options for dropdowns
@@ -183,14 +217,11 @@ export default function InterviewListPage() {
       console.log('Access token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      console.log('Making API request to: /overview/interview-log');
+      console.log('Making API request to: /progress/interview-list');
       
       // Build query parameters
       const queryParams: any = {
-        page: currentPage,
-        per_page: pageSize,
-        sort_field: 'interview_date',
-        sort_direction: 'DESC'
+        over_achievement: 0
       };
       
       if (filters.server_id) queryParams.server_id = filters.server_id;
@@ -205,17 +236,17 @@ export default function InterviewListPage() {
       
       console.log('API query params:', queryParams);
       
-      const response = await apiService.getInterviewLog(queryParams);
+      const response = await apiClient.get('/progress/interview-list', { params: queryParams });
       
-      const data: APIResponse = response;
+      const data: APIResponse = response.data;
       
       console.log('API Response:', data);
       console.log('Response success:', data.success);
       
-      if (data.success && data.data && Array.isArray(data.data.interviews)) {
-        const transformedData = transformAPIData(data.data.interviews);
+      if (data.success && data.data && Array.isArray(data.data.data)) {
+        const transformedData = transformAPIData(data.data.data);
         setInterviewData(transformedData);
-        setTotalCount(data.data.pagination.total_count);
+        setTotalCount(data.data.pagination.totalCount);
         console.log('Transformed data:', transformedData);
       } else {
         console.error('Invalid API response structure');
@@ -225,23 +256,31 @@ export default function InterviewListPage() {
           { 
             id: 1, 
             serverId: 188970, 
+            serverDate: '2025-01-27',
             interviewDate: '2025-04-05', 
-            sampleType: 'Sample',
             acCode: 11,
             acName: 'Sugauli (11)', 
             psName: 'Government School',
             deviceId: 'DEVICE001',
-            interviewerId: '990', 
-            audioQcLabel: 'Pass', 
-            audioQcId: '101', 
-            audioFailReason: 'Survey Conversation can be heard', 
-            qcOutcome: 'Pass',
-            statusLabel: 'Valid',
+            interviewerId: '990',
+            respondentName: 'John Doe',
+            gender: 1,
             genderLabel: 'Male',
-            gpsAvailable: true,
-            psImageAvailable: true,
-            selfieImageAvailable: true,
-            audioPlaybackAvailable: true
+            status: 20,
+            statusLabel: 'Completed',
+            audioQcStatus: 1,
+            audioQcCompleteDate: '2025-04-06',
+            audioQcId: '101',
+            audio1Status: 1,
+            teleQcStatus: 0,
+            gpsQcStatus: 0,
+            broadcastStatus: 0,
+            overAchievement: 0,
+            psCode: '11_001',
+            collectDeviceId: 'collect:123',
+            teleQcCompleteDate: '',
+            teleQcId: '',
+            qcScenario: 0
           },
         ];
         setInterviewData(fallbackData);
@@ -268,23 +307,31 @@ export default function InterviewListPage() {
         { 
           id: 1, 
           serverId: 188970, 
+          serverDate: '2025-01-27',
           interviewDate: '2025-04-05', 
-          sampleType: 'Sample',
           acCode: 11,
           acName: 'Sugauli (11)', 
           psName: 'Government School',
           deviceId: 'DEVICE001',
-          interviewerId: '990', 
-          audioQcLabel: 'Pass', 
-          audioQcId: '101', 
-          audioFailReason: 'Survey Conversation can be heard', 
-          qcOutcome: 'Pass',
-          statusLabel: 'Valid',
+          interviewerId: '990',
+          respondentName: 'John Doe',
+          gender: 1,
           genderLabel: 'Male',
-          gpsAvailable: true,
-          psImageAvailable: true,
-          selfieImageAvailable: true,
-          audioPlaybackAvailable: true
+          status: 20,
+          statusLabel: 'Completed',
+          audioQcStatus: 1,
+          audioQcCompleteDate: '2025-04-06',
+          audioQcId: '101',
+          audio1Status: 1,
+          teleQcStatus: 0,
+          gpsQcStatus: 0,
+          broadcastStatus: 0,
+          overAchievement: 0,
+          psCode: '11_001',
+          collectDeviceId: 'collect:123',
+          teleQcCompleteDate: '',
+          teleQcId: '',
+          qcScenario: 0
         },
       ];
       setInterviewData(fallbackData);
@@ -317,16 +364,6 @@ export default function InterviewListPage() {
     console.log('Edit interview for server ID:', serverId);
   };
 
-  const getQcOutcomeBadge = (outcome: string) => {
-    switch (outcome) {
-      case 'Pass':
-        return <Badge variant="success" size="sm">Pass</Badge>;
-      case 'Fail':
-        return <Badge variant="error" size="sm">Fail</Badge>;
-      default:
-        return <Badge variant="secondary" size="sm">{outcome}</Badge>;
-    }
-  };
 
   const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -600,26 +637,19 @@ export default function InterviewListPage() {
                         <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
                         <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Server ID</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                          Server<br />Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Interview<br />Date
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample Type</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">PS Name</th>
                         <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                           Interviewer<br />ID
                         </th>
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Device ID</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Gender</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Audio<br />QC
-                        </th>
-                        <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Audio<br />QC ID
-                        </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                          Audio<br />Fail Reason
-                        </th>
                         <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Outcome</th>
                         <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio</th>
                         <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Edit</th>
                       </tr>
@@ -629,29 +659,24 @@ export default function InterviewListPage() {
                         <tr key={interview.id} className="hover:bg-gray-50">
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{startIndex + index + 1}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.serverId}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.serverDate}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.interviewDate}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.sampleType}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.acName}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.psName}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.interviewerId}</td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-left">{interview.deviceId}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
                             <span className={interview.genderLabel === 'Male' ? 'text-blue-600' : 'text-pink-600'}>
                               {interview.genderLabel}
                             </span>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.audioQcLabel}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{interview.audioQcId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{interview.audioFailReason}</td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
-                            <Badge variant={interview.statusLabel === 'Valid' ? 'success' : 'secondary'} size="sm">
+                            <Badge variant={interview.statusLabel === 'Completed' ? 'success' : 'secondary'} size="sm">
                               {interview.statusLabel}
                             </Badge>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
-                            {getQcOutcomeBadge(interview.qcOutcome)}
-                          </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {interview.audioQcLabel === 'Fail' ? (
+                            {interview.audioQcStatus === 2 ? (
                               <Button
                                 variant="destructive"
                                 size="sm"

@@ -11,16 +11,16 @@ import Button from '@/components/ui/Button';
 import { useAuth } from '@/contexts/AuthContext';
 
 
-export default function StartFormFillingPage() {
+export default function DataEntryLandingPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
-    teleform_user_id: '',
+    data_entry_id: '',
     user_phone: ''
   });
 
   const [errors, setErrors] = useState({
-    teleform_user_id: '',
+    data_entry_id: '',
     user_phone: ''
   });
 
@@ -28,18 +28,18 @@ export default function StartFormFillingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Check for teleform user data and auto-fill if exists
+  // Check for data entry user data and auto-fill if exists
   useEffect(() => {
-    const savedData = localStorage.getItem('teleform_user_data');
+    const savedData = localStorage.getItem('data_entry_user_data');
     if (savedData) {
       try {
         const userData = JSON.parse(savedData);
         setFormData({
-          teleform_user_id: userData.teleform_user_id.toString(),
+          data_entry_id: userData.data_entry_user_id.toString(),
           user_phone: userData.mobile_number
         });
       } catch (err) {
-        console.error('Error loading teleform user data:', err);
+        console.error('Error loading data entry user data:', err);
       }
     }
   }, []);
@@ -68,12 +68,12 @@ export default function StartFormFillingPage() {
 
   const validateForm = () => {
     const newErrors = {
-      teleform_user_id: '',
+      data_entry_id: '',
       user_phone: ''
     };
 
-    if (!formData.teleform_user_id.trim()) {
-      newErrors.teleform_user_id = 'Teleuser ID is required';
+    if (!formData.data_entry_id.trim()) {
+      newErrors.data_entry_id = 'Data Entry ID is required';
     }
 
     if (!formData.user_phone.trim()) {
@@ -86,7 +86,7 @@ export default function StartFormFillingPage() {
     return !Object.values(newErrors).some(error => error !== '');
   };
 
-  const verifyTeleformUser = async () => {
+  const verifyDataEntryUser = async () => {
     try {
       setLoading(true);
       setError('');
@@ -98,7 +98,7 @@ export default function StartFormFillingPage() {
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiBaseUrl}/api/teleform-users/verify`, {
+      const response = await fetch(`${apiBaseUrl}/api/data-entry-users/verify`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -106,7 +106,7 @@ export default function StartFormFillingPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          teleform_user_id: parseInt(formData.teleform_user_id),
+          data_entry_user_id: parseInt(formData.data_entry_id),
           mobile_number: formData.user_phone
         })
       });
@@ -119,10 +119,10 @@ export default function StartFormFillingPage() {
       
       if (data.success && data.data) {
         // Save response data to localStorage
-        localStorage.setItem('teleform_user_data', JSON.stringify(data.data));
+        localStorage.setItem('data_entry_user_data', JSON.stringify(data.data));
         
         // Dispatch custom event to update header
-        window.dispatchEvent(new Event('teleformUserUpdated'));
+        window.dispatchEvent(new Event('dataEntryUserUpdated'));
         
         // Determine redirect based on user permissions
         const userData = data.data;
@@ -130,14 +130,14 @@ export default function StartFormFillingPage() {
         const qc = userData.qc === 1;
         
         if (fillForm && !qc) {
-          // Only Fill Form permission - redirect to new-call
-          router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+          // Only Fill Form permission - redirect to data-entry-list
+          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else if (!fillForm && qc) {
-          // Only QC permission - redirect to qc-call
-          router.push(`/cati/ss/qc-call/${formData.teleform_user_id}`);
+          // Only QC permission - redirect to data-entry-list
+          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else if (fillForm && qc) {
-          // Both permissions - default to new-call (Fill Form)
-          router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+          // Both permissions - default to data-entry-list (Fill Form)
+          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else {
           // No permissions - show error
           setError('User does not have required permissions');
@@ -150,8 +150,8 @@ export default function StartFormFillingPage() {
         return false;
       }
     } catch (err) {
-      console.error('Error verifying teleform user:', err);
-      setError('Failed to verify teleform user. Please try again.');
+      console.error('Error verifying data entry user:', err);
+      setError('Failed to verify data entry user. Please try again.');
       return false;
     } finally {
       setLoading(false);
@@ -163,26 +163,26 @@ export default function StartFormFillingPage() {
     
     if (validateForm()) {
       console.log('Form submitted:', formData);
-      await verifyTeleformUser();
+      await verifyDataEntryUser();
     }
   };
 
   const handleClear = () => {
-    // Clear teleform user data from localStorage
-    localStorage.removeItem('teleform_user_data');
+    // Clear data entry user data from localStorage
+    localStorage.removeItem('data_entry_user_data');
     
     // Dispatch custom event to update header
-    window.dispatchEvent(new Event('teleformUserUpdated'));
+    window.dispatchEvent(new Event('dataEntryUserUpdated'));
     
     // Reset form data
     setFormData({
-      teleform_user_id: '',
+      data_entry_id: '',
       user_phone: ''
     });
     
     // Clear errors
     setErrors({
-      teleform_user_id: '',
+      data_entry_id: '',
       user_phone: ''
     });
     
@@ -190,31 +190,31 @@ export default function StartFormFillingPage() {
     setIsLoggedIn(false);
     setError('');
     
-    console.log('Form cleared and teleform user data removed');
+    console.log('Form cleared and data entry user data removed');
   };
 
   const handleGoToNewCall = () => {
-    // Get teleform_user_id from localStorage or form data
-    const teleformUserData = localStorage.getItem('teleform_user_data');
-    if (teleformUserData) {
-      const userData = JSON.parse(teleformUserData);
-      const teleformUserId = userData.teleform_user_id;
+    // Get data_entry_id from localStorage or form data
+    const dataEntryUserData = localStorage.getItem('data_entry_user_data');
+    if (dataEntryUserData) {
+      const userData = JSON.parse(dataEntryUserData);
+      const dataEntryId = userData.data_entry_user_id;
       const fillForm = userData.fill_form === 1;
       const qc = userData.qc === 1;
       
       if (fillForm && !qc) {
-        // Only Fill Form permission - redirect to new-call
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        // Only Fill Form permission - redirect to data-entry-list
+        router.push(`/cati/ss/data-entry-list/${dataEntryId}`);
       } else if (!fillForm && qc) {
-        // Only QC permission - redirect to qc-call
-        router.push(`/cati/ss/qc-call/${teleformUserId}`);
+        // Only QC permission - redirect to data-entry-list
+        router.push(`/cati/ss/data-entry-list/${dataEntryId}`);
       } else if (fillForm && qc) {
-        // Both permissions - default to new-call (Fill Form)
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        // Both permissions - default to data-entry-list (Fill Form)
+        router.push(`/cati/ss/data-entry-list/${dataEntryId}`);
       }
     } else {
       // Fallback to form data
-      router.push(`/cati/ss/new-call/${formData.teleform_user_id}`);
+      router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
     }
   };
 
@@ -223,14 +223,14 @@ export default function StartFormFillingPage() {
   return (
     <Container maxWidth="full">
       <div className="space-y-6">
-        {/* Enter Teleuser ID Section */}
+        {/* Enter Data Entry ID Section */}
         {!isLoggedIn && (
           <>
             {/* Breadcrumb Header */}
             <div className="flex justify-between items-center mb-6">
               <div className="left-content">
                 <Heading level={1} className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Enter Teleuser ID
+                    Enter Data Entry ID
                 </Heading>
               </div>
               <div className="right-content">
@@ -251,22 +251,22 @@ export default function StartFormFillingPage() {
                   
                   {/* Form Elements Row */}
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
-                    {/* Teleuser ID Input */}
+                    {/* Data Entry ID Input */}
                     <div className="w-full sm:w-1/3">
                       <Input
                         type="text"
-                        id="selectteleform-teleform_user_id"
-                        name="teleform_user_id"
-                        value={formData.teleform_user_id}
+                        id="selectdataentry-data_entry_id"
+                        name="data_entry_id"
+                        value={formData.data_entry_id}
                         onChange={handleInputChange}
-                        placeholder="Enter Teleuser ID"
-                        className={`w-full ${errors.teleform_user_id ? 'border-red-500' : ''}`}
+                        placeholder="Enter Data Entry ID"
+                        className={`w-full ${errors.data_entry_id ? 'border-red-500' : ''}`}
                         autoComplete="off"
                         required
                       />
-                      {errors.teleform_user_id && (
+                      {errors.data_entry_id && (
                         <Text className="text-red-500 text-sm mt-1">
-                          {errors.teleform_user_id}
+                          {errors.data_entry_id}
                         </Text>
                       )}
                     </div>
@@ -275,7 +275,7 @@ export default function StartFormFillingPage() {
                     <div className="w-full sm:w-1/3">
                       <Input
                         type="text"
-                        id="selectteleform-user_phone"
+                        id="selectdataentry-user_phone"
                         name="user_phone"
                         value={formData.user_phone}
                         onChange={handleInputChange}
@@ -337,7 +337,7 @@ export default function StartFormFillingPage() {
                     Login Successful!
                   </h3>
                   <p className="text-green-800 dark:text-green-400">
-                    Welcome, {formData.teleform_user_id}! You can now proceed to view your assigned calls.
+                    Welcome, {formData.data_entry_id}! You can now proceed to view your assigned calls.
                   </p>
                 </div>
                 <Button
