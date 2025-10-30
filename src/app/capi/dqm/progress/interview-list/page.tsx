@@ -13,7 +13,8 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Eye, Edit, Check, Loader2 } from 'lucide-react';
+import { Search, Eye, Edit, Check, Loader2, Volume2 } from 'lucide-react';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 import apiClient from '@/lib/api-client';
 import { apiService } from '@/lib/api';
 
@@ -111,6 +112,8 @@ export default function InterviewListPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [selectedServerId, setSelectedServerId] = useState<string>('');
 
   // Helper function to transform API data to UI format
   const transformAPIData = (apiData: any[]): InterviewData[] => {
@@ -280,7 +283,8 @@ export default function InterviewListPage() {
   };
 
   const handleAudioView = (serverId: number) => {
-    console.log('View audio for server ID:', serverId);
+    setSelectedServerId(String(serverId));
+    setAudioModalOpen(true);
   };
 
   const handleMarkAsValid = (serverId: number) => {
@@ -546,25 +550,13 @@ export default function InterviewListPage() {
                             {interview.statusValue}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            {interview.audioQcStatus === 2 ? (
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleMarkAsValid(interview.serverId)}
-                                title="Mark as Valid"
-                              >
-                                <Check className="w-4 h-4" />
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleAudioView(interview.serverId)}
-                                title="View Audio"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </Button>
-                            )}
+                            <button 
+                              className="w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white"
+                              title="Play Audio"
+                              onClick={() => handleAudioView(interview.serverId)}
+                            >
+                              <Volume2 className="w-4 h-4" />
+                            </button>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div className="relative group">
@@ -608,6 +600,12 @@ export default function InterviewListPage() {
               </div>
             </Card>
       </Container>
+      {/* Audio Player Modal */}
+      <AudioPlayerModal
+        isOpen={audioModalOpen}
+        onClose={() => setAudioModalOpen(false)}
+        serverId={selectedServerId}
+      />
     </div>
   );
 }
