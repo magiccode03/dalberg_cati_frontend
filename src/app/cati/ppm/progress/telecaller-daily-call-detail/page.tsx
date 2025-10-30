@@ -13,6 +13,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle, Play, Volume2 } from 'lucide-react';
+import TelecallerMetrics from '@/components/telecaller/TelecallerMetrics';
 
 // Interfaces
 interface SearchFilters {
@@ -131,6 +132,7 @@ const TelecallerDailyCallDetailPage = () => {
   });
 
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Dashboard filters state
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({
@@ -327,6 +329,7 @@ const TelecallerDailyCallDetailPage = () => {
     console.log('Dashboard filters:', dashboardFilters);
     fetchDashboardMetrics();
     fetchCallDetails(1); // Also refresh call details table with filters
+    setMetricsTrigger((t) => t + 1); // trigger TelecallerMetrics fetch explicitly
   };
 
   // Fetch dashboard metrics from API
@@ -549,11 +552,11 @@ const TelecallerDailyCallDetailPage = () => {
       0: 'Default',
       1: 'Call Initiate',
       2: 'Completed',
-      3: 'Draft',
+      3: 'Incomplete',
       4: 'Incomplete',
       5: 'Ineligible',
       6: 'Terminated',
-      7: 'Draft Pre Consent'
+      7: 'Terminated'
     };
     return statusMap[status] || 'Unknown';
   };
@@ -652,6 +655,8 @@ const TelecallerDailyCallDetailPage = () => {
     fetchACList();
     fetchDashboardMetrics();
     fetchCallDetails(1);
+    // Trigger initial metrics load for "today" on first mount
+    setMetricsTrigger((t) => (t === 0 ? 1 : t));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -934,165 +939,17 @@ const TelecallerDailyCallDetailPage = () => {
         </div>
       </Card> */}
 
-      {/* Performance Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
-        {/* Caller Performance */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Caller Performance
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={Users}
-                title="Total Callers"
-                value={performanceMetrics.totalCallers}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Days till now"
-                value={performanceMetrics.daysTillNow}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Number of dials"
-                value={performanceMetrics.numberOfDials}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Total Form Duration"
-                value={performanceMetrics.totalFormDuration}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Caller did not pick"
-                value={performanceMetrics.callerDidNotPick}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Total Talk Duration"
-                value={performanceMetrics.totalTalkDuration}
-                bgColor="bg-blue-500"
-              />
-            </div>
-          )}
-        </Card>
-
-        {/* Call Outcome */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Call Outcome
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-green-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={PhoneOff}
-                title="Number does not exist"
-                value={callOutcomeMetrics.numberDoesNotExist}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Respondent did not pick"
-                value={callOutcomeMetrics.respondentDidNotPick}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Respondent Picked the call"
-                value={callOutcomeMetrics.respondentPickedCall}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Picked and Refused"
-                value={callOutcomeMetrics.pickedAndRefused}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Total Number Exhausted"
-                value={callOutcomeMetrics.totalNumberExhausted}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Picked and Call Continue"
-                value={callOutcomeMetrics.pickedAndCallContinue}
-                bgColor="bg-green-500"
-              />
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/*        "completed_interview": 1500,
-        "terminated_interview": 3907,
-        "incomplete_interview": 4368,
-        "ineligible_interview": 692, */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-orange-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Interview Metrics
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-orange-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <MetricCard
-                icon={CheckCircle}
-                title="Completed Interview"
-                value={callOutcomeMetrics.completedInterview}
-                bgColor="bg-orange-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Terminated Interview"
-                value={callOutcomeMetrics.terminatedInterview}
-                bgColor="bg-orange-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Incomplete Interview"
-                value={callOutcomeMetrics.incompleteInterview}
-                bgColor="bg-orange-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Ineligible Interview"
-                value={callOutcomeMetrics.ineligibleInterview}
-                bgColor="bg-gray-500"
-              />
-            </div>
-          )}
-        </Card>
-
+      {/* Telecaller Progress Metrics */}
+      <TelecallerMetrics
+        filters={{
+          telecaller: dashboardFilters.telecaller,
+          acCode: dashboardFilters.acCode,
+          callingDates: dashboardFilters.callingDates,
+          customDateFrom: dashboardFilters.fromDate,
+          customDateTo: dashboardFilters.toDate,
+        }}
+        trigger={metricsTrigger}
+      />
       {/* Error Alert */}
       {error && (
         <div className="mb-4">
@@ -1260,31 +1117,31 @@ const TelecallerDailyCallDetailPage = () => {
 
                 {!useIframe ? (
                   currentAudio ? (
-                    <audio
-                      controls
-                      className="w-full"
-                      controlsList="nodownload"
+                  <audio
+                    controls
+                    className="w-full"
+                    controlsList="nodownload"
                       preload="metadata"
-                      onError={handleAudioError}
+                    onError={handleAudioError}
                       onLoadStart={() => console.log('Audio loading started')}
                       onCanPlay={() => console.log('Audio can play')}
-                    >
-                      <source src={currentAudio} type="audio/mpeg" />
-                      <source src={currentAudio} type="audio/mp3" />
-                      Your browser does not support the audio element.
-                    </audio>
+                  >
+                    <source src={currentAudio} type="audio/mpeg" />
+                    <source src={currentAudio} type="audio/mp3" />
+                    Your browser does not support the audio element.
+                  </audio>
                   ) : (
                     <div className="text-center py-4 text-gray-500">
                       No audio file available for this call.
-                    </div>
+                  </div>
                   )
                 ) : (
                   currentAudio ? (
                     <div className="w-full">
-                      <iframe
-                        src={currentAudio}
+                  <iframe
+                    src={currentAudio}
                         className="w-full h-16 border-0 rounded"
-                        title="Audio Player"
+                    title="Audio Player"
                         allow="autoplay"
                         onError={handleAudioError}
                         onLoad={() => {
@@ -1341,16 +1198,16 @@ const TelecallerDailyCallDetailPage = () => {
                       Try Alternative Player
                     </button>
                   )}
-                  <a
-                    href={currentAudio}
-                    download
+                    <a
+                      href={currentAudio}
+                      download
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
                     style={{ display: currentAudio ? 'inline' : 'none' }}
-                  >
+                    >
                     Download audio
-                  </a>
+                    </a>
+                  </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>
