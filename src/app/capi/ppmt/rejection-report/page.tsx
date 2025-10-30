@@ -1097,7 +1097,7 @@ export default function RejectionReportPage() {
                   <th className="text-left">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
                   <th className="text-left">Audio Fail Reason</th>
-                  <th className="text-left">Remark</th>
+                  <th className="text-left">QC Remark</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>
                 </tr>
