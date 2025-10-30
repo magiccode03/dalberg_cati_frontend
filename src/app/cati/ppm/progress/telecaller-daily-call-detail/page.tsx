@@ -13,6 +13,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle, Play, Volume2 } from 'lucide-react';
+import TelecallerMetrics from '@/components/telecaller/TelecallerMetrics';
 
 // Interfaces
 interface SearchFilters {
@@ -544,11 +545,11 @@ const TelecallerDailyCallDetailPage = () => {
       0: 'Default',
       1: 'Call Initiate',
       2: 'Completed',
-      3: 'Draft',
+      3: 'Incomplete',
       4: 'Incomplete',
       5: 'Ineligible',
       6: 'Terminated',
-      7: 'Draft Pre Consent'
+      7: 'Terminated'
     };
     return statusMap[status] || 'Unknown';
   };
@@ -929,165 +930,16 @@ const TelecallerDailyCallDetailPage = () => {
         </div>
       </Card> */}
 
-      {/* Performance Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
-        {/* Caller Performance */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Caller Performance
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={Users}
-                title="Total Callers"
-                value={performanceMetrics.totalCallers}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Days till now"
-                value={performanceMetrics.daysTillNow}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Number of dials"
-                value={performanceMetrics.numberOfDials}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Total Form Duration"
-                value={performanceMetrics.totalFormDuration}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Caller did not pick"
-                value={performanceMetrics.callerDidNotPick}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Total Talk Duration"
-                value={performanceMetrics.totalTalkDuration}
-                bgColor="bg-blue-500"
-              />
-            </div>
-          )}
-        </Card>
-
-        {/* Call Outcome */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Call Outcome
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-green-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={PhoneOff}
-                title="Number does not exist"
-                value={callOutcomeMetrics.numberDoesNotExist}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Respondent did not pick"
-                value={callOutcomeMetrics.respondentDidNotPick}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Respondent Picked the call"
-                value={callOutcomeMetrics.respondentPickedCall}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Picked and Refused"
-                value={callOutcomeMetrics.pickedAndRefused}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Total Number Exhausted"
-                value={callOutcomeMetrics.totalNumberExhausted}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Picked and Call Continue"
-                value={callOutcomeMetrics.pickedAndCallContinue}
-                bgColor="bg-green-500"
-              />
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/*        "completed_interview": 1500,
-        "terminated_interview": 3907,
-        "incomplete_interview": 4368,
-        "ineligible_interview": 692, */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-orange-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Interview Metrics
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-orange-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <MetricCard
-                icon={CheckCircle}
-                title="Completed Interview"
-                value={callOutcomeMetrics.completedInterview}
-                bgColor="bg-orange-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Terminated Interview"
-                value={callOutcomeMetrics.terminatedInterview}
-                bgColor="bg-orange-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Incomplete Interview"
-                value={callOutcomeMetrics.incompleteInterview}
-                bgColor="bg-orange-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Ineligible Interview"
-                value={callOutcomeMetrics.ineligibleInterview}
-                bgColor="bg-gray-500"
-              />
-            </div>
-          )}
-        </Card>
-
+      {/* Telecaller Progress Metrics */}
+      <TelecallerMetrics
+        filters={{
+          telecaller: dashboardFilters.telecaller,
+          acCode: dashboardFilters.acCode,
+          callingDates: dashboardFilters.callingDates,
+          customDateFrom: dashboardFilters.fromDate,
+          customDateTo: dashboardFilters.toDate,
+        }}
+      />
       {/* Error Alert */}
       {error && (
         <div className="mb-4">
