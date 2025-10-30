@@ -61,7 +61,8 @@ export default function RejectionReportPage() {
     serverId: '',
     mobileNo: '',
     failReason: '',
-    qualityreportstatus: ''
+    qualityreportstatus: '',
+    audioFailReason: ''
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -92,6 +93,7 @@ export default function RejectionReportPage() {
       mobile_no: appliedFilters.mobileNo,
       fail_reason: appliedFilters.failReason,
       qualityreportstatus: appliedFilters.qualityreportstatus,
+      audio_fail_reason: appliedFilters.audioFailReason,
       page: currentPage,
       per_page: pageSize
     };
@@ -220,6 +222,29 @@ export default function RejectionReportPage() {
     ];
   }, [filterOptionsData]);
 
+  const audioFailReasonOptions = React.useMemo(() => {
+    return [
+      { value: '', label: 'Select Audio Fail Reason' },
+      { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+      { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+      { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+      { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+      { value: 'no_conversation', label: 'No Conversation' },
+      { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+      { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+      { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+      { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+      { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+      { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+      { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+      { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+      { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+      { value: 'duplicate_audio', label: 'Duplicate Audio' },
+      { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+      { value: 'same_respondent_as_before', label: 'Same respondent as before' }
+    ];
+  }, []);
+
   // Auto-load data with default parameters when component mounts
   useEffect(() => {
     // Only auto-load if no filters have been applied yet
@@ -266,7 +291,7 @@ export default function RejectionReportPage() {
         psCode: item.ps_code,
         interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
         interviewerId: item.interviewer_id,
-        interviewDuration: item.interview_duration_human || formatDuration(item.total_duration),
+        interviewDuration: item.interview_duration_human || formatDuration(item.audio_duration),
         respondentName: item.respondent_name,
         // respondentMobile: item.mobile_no || '',
         failReason: item.fail_reason,
@@ -333,7 +358,8 @@ export default function RejectionReportPage() {
       serverId: '',
       mobileNo: '',
       failReason: '',
-      qualityreportstatus: ''
+      qualityreportstatus: '',
+      audioFailReason: ''
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters); // Apply default filters to reload data
@@ -371,7 +397,8 @@ export default function RejectionReportPage() {
         server_id: appliedFilters.serverId,
         mobile_no: appliedFilters.mobileNo,
         fail_reason: appliedFilters.failReason,
-        qualityreportstatus: appliedFilters.qualityreportstatus
+        qualityreportstatus: appliedFilters.qualityreportstatus,
+        audio_fail_reason: appliedFilters.audioFailReason
       };
 
       // Add custom date parameters if applicable
@@ -604,6 +631,16 @@ export default function RejectionReportPage() {
             </div>
 
             <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
               <Text className="block text-sm font-medium mb-2">Server ID</Text>
               <Input
                 type="text"
@@ -753,6 +790,16 @@ export default function RejectionReportPage() {
                 onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
                 clearable={true}
               />
             </div>
@@ -925,6 +972,16 @@ export default function RejectionReportPage() {
                 onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
                 clearable={true}
               />
             </div>
