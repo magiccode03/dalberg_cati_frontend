@@ -77,10 +77,10 @@ interface APIResponse {
       qc_scenario: number;
     }>;
     pagination: {
-      page: number;
-      pageSize: number;
-      totalCount: number;
-      pageCount: number;
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
     };
     sort: {
       defaultOrder: {
@@ -209,7 +209,9 @@ export default function InterviewListPage() {
       
       // Build query parameters
       const queryParams: any = {
-        over_achievement: filters.over_achievement ? 1 : 0
+        over_achievement: filters.over_achievement ? 1 : 0,
+        page: currentPage,
+        limit: pageSize
       };
       
       if (filters.server_id) queryParams.server_id = filters.server_id;
@@ -233,8 +235,9 @@ export default function InterviewListPage() {
       if (data.success && data.data && Array.isArray(data.data.data)) {
         const transformedData = transformAPIData(data.data.data);
         setInterviewData(transformedData);
-        setTotalCount(data.data.pagination.totalCount);
+        setTotalCount(data.data.pagination.total_count);
         console.log('Transformed data:', transformedData);
+        console.log('Pagination info:', data.data.pagination);
       } else {
         console.error('Invalid API response structure');
         setError('Invalid response format from server');
