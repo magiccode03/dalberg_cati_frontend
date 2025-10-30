@@ -12,6 +12,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import TelecallerList from '@/components/telecaller/TelecallerList';
 import { Table } from '@/components/ui/Table';
+import TelecallerMetrics from '@/components/telecaller/TelecallerMetrics';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Text from '@/components/ui/Text';
 
@@ -153,6 +154,7 @@ const TelecallerProgressPage: React.FC = () => {
   const [telecallerDataLoading, setTelecallerDataLoading] = useState(false);
   const [telecallerDataError, setTelecallerDataError] = useState<string | null>(null);
   const [downloadingCSV, setDownloadingCSV] = useState(false);
+  const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Table sorting state
   const [sortConfig, setSortConfig] = useState<{
@@ -347,7 +349,8 @@ const TelecallerProgressPage: React.FC = () => {
     console.log('Searching with filters:', filters);
     // Trigger API calls with current filters
     if (viewMode === 'overall') {
-    fetchPerformanceData();
+      // For overall view, trigger the TelecallerMetrics component to fetch
+      setMetricsTrigger((t) => t + 1);
     } else {
       fetchDayWiseData();
     }
@@ -852,7 +855,8 @@ const TelecallerProgressPage: React.FC = () => {
   // Fetch initial data on mount
   useEffect(() => {
     if (viewMode === 'overall') {
-      fetchPerformanceData();
+      // Trigger initial metrics load once on mount
+      setMetricsTrigger((t) => (t === 0 ? 1 : t));
     } else {
       fetchDayWiseData();
     }
@@ -943,7 +947,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Number Status Section */}
         <div className="mb-8">
-          <SectionHeader title="NUMBER STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+          <SectionHeader title="NUMBER OF DIALS ATTEMPTED METRICS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Call Not Received to Telecaller"
@@ -978,7 +982,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Call Not Ring Status Section */}
         <div className="mb-8">
-          <SectionHeader title="CALL NOT RING STATUS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
+          <SectionHeader title="NOT RINGING METRICS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Switch Off"
@@ -1013,7 +1017,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Call Ring Status Section */}
         <div className="mb-8">
-          <SectionHeader title="CALL RING STATUS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
+          <SectionHeader title="RINGING METRICS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             <MetricCard
               title="Number of Calls Connected"
@@ -1041,10 +1045,10 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Call Status Section */}
         <div className="mb-8">
-          <SectionHeader title="CALL STATUS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <SectionHeader title="NUMBER OF CALLS CONNECTED METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
-              title="Continue"
+              title="Call Continue"
               value={getValue(data?.call_status?.continue)}
               icon={<Phone className="h-6 w-6 text-blue-600" />}
               color="border-blue-500"
@@ -1076,7 +1080,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Interview Metrics Section */}
         <div className="mb-8">
-          <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <SectionHeader title="CALL CONTINUE METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Completed"
@@ -1370,9 +1374,16 @@ const TelecallerProgressPage: React.FC = () => {
 
             {/* Overall View - Show cards even on error */}
             {viewMode === 'overall' && (
-              <Card className="p-4 md:p-6">
-                {renderMetrics(metrics)}
-              </Card>
+              <TelecallerMetrics
+                filters={{
+                  telecaller: filters.telecaller,
+                  acCode: filters.acCode,
+                  callingDates: filters.callingDates,
+                  customDateFrom: filters.customDateFrom,
+                  customDateTo: filters.customDateTo,
+                }}
+                trigger={metricsTrigger}
+              />
             )}
 
             {/* Day-wise View */}
@@ -1488,32 +1499,32 @@ const TelecallerProgressPage: React.FC = () => {
                   <Table className="table table-bordered table-striped table-hover">
                     <thead className="sticky-header bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Duration</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Not Received to Telecaller</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Number Status)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Switch Off</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Not Reachable</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Does Not Exist</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Not Ring)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Not Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Ring)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Continue</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Refuse to Respond</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Back Later</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Status)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Completed</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ineligible</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Ringing</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Not Ringing</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: No Response by Telecaller</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Switch Off</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Not Reachable</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Does Not Exist</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: No Response by Telecaller</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Connected</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Not Connected</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: No Response by Telecaller</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Continue</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Refuse to Respond</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Back Later</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: No Response by Telecaller</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Completed</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Terminated</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Incompleted</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Ineligible</th>
                         {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
                       </tr>
