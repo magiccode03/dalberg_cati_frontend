@@ -31,6 +31,7 @@ interface InterviewData {
   genderLabel: string;
   status: number;
   statusLabel: string;
+  statusValue: string;
   audioQcStatus: number;
   audioQcCompleteDate: string;
   audioQcId: string;
@@ -62,6 +63,7 @@ interface APIResponse {
       audio_qc_id: string;
       audio1_status: number;
       status: number;
+      statusvalue: string;
       tele_qc_status: number;
       gps_qc_status: number;
       broadcast_status: number;
@@ -94,11 +96,11 @@ export default function InterviewListPage() {
     interview_date: '',
     ac_code: '',
     interviewer_id: '',
-    qc_date: '',
-    qc_id: '',
-    audio_qc_status: [] as string[],
-    audio1_status: [] as string[],
-    qc_scenario_color: [] as string[],
+    ps_code: '',
+    user_id: '',
+    status: '',
+    device_id: '',
+    over_achievement: false,
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -125,6 +127,7 @@ export default function InterviewListPage() {
       genderLabel: item.gender === 1 ? 'Male' : 'Female',
       status: item.status,
       statusLabel: getStatusLabel(item.status),
+      statusValue: item.statusvalue,
       audioQcStatus: item.audio_qc_status,
       audioQcCompleteDate: item.audio_qc_complete_date ? new Date(item.audio_qc_complete_date).toISOString().split('T')[0] : '',
       audioQcId: item.audio_qc_id || '',
@@ -170,36 +173,21 @@ export default function InterviewListPage() {
     return options;
   };
 
-  // Generate AC options
+  // Generate AC options - will be populated from API
   const generateACOptions = () => {
     return [
       { value: '', label: 'Select AC' },
-      { value: '195', label: 'Agiaon (SC) (195)' },
-      { value: '70', label: 'Alamnagar (70)' },
-      { value: '148', label: 'Alauli (SC) (148)' },
-      { value: '11', label: 'Sugauli (11)' },
-      { value: '79', label: 'Gaura Bauram (79)' },
-      { value: '172', label: 'Biharsharif (172)' },
-      { value: '5', label: 'Lauriya (5)' },
     ];
   };
 
-  // Generate QC ID options
+  // Generate QC ID options - will be populated from API
   const generateQCIdOptions = () => {
     return [
       { value: '', label: 'Select QC ID' },
-      { value: '101', label: 'Komal (101)' },
-      { value: '102', label: 'Priyanshi (102)' },
-      { value: '103', label: 'Sonu Kumari (103)' },
-      { value: '105', label: 'Simran (105)' },
-      { value: '106', label: 'Swati (106)' },
-      { value: '109', label: 'Kundan (109)' },
-      { value: '121', label: 'Ashifa (121)' },
-      { value: '122', label: 'Rama (122)' },
     ];
   };
 
-  const handleFilterChange = (field: string, value: string | string[]) => {
+  const handleFilterChange = (field: string, value: string | string[] | boolean) => {
     setFilters(prev => ({
       ...prev,
       [field]: value
@@ -221,18 +209,17 @@ export default function InterviewListPage() {
       
       // Build query parameters
       const queryParams: any = {
-        over_achievement: 0
+        over_achievement: filters.over_achievement ? 1 : 0
       };
       
       if (filters.server_id) queryParams.server_id = filters.server_id;
       if (filters.interview_date) queryParams.interview_date = filters.interview_date;
       if (filters.ac_code) queryParams.ac_code = filters.ac_code;
       if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
-      if (filters.qc_date) queryParams.qc_date = filters.qc_date;
-      if (filters.qc_id) queryParams.qc_id = filters.qc_id;
-      if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status.join(',');
-      if (filters.audio1_status.length > 0) queryParams.audio1_status = filters.audio1_status.join(',');
-      if (filters.qc_scenario_color.length > 0) queryParams.qc_scenario_color = filters.qc_scenario_color.join(',');
+      if (filters.ps_code) queryParams.ps_code = filters.ps_code;
+      if (filters.user_id) queryParams.user_id = filters.user_id;
+      if (filters.status) queryParams.status = filters.status;
+      if (filters.device_id) queryParams.device_id = filters.device_id;
       
       console.log('API query params:', queryParams);
       
@@ -251,40 +238,8 @@ export default function InterviewListPage() {
       } else {
         console.error('Invalid API response structure');
         setError('Invalid response format from server');
-        // Use fallback data
-        const fallbackData: InterviewData[] = [
-          { 
-            id: 1, 
-            serverId: 188970, 
-            serverDate: '2025-01-27',
-            interviewDate: '2025-04-05', 
-            acCode: 11,
-            acName: 'Sugauli (11)', 
-            psName: 'Government School',
-            deviceId: 'DEVICE001',
-            interviewerId: '990',
-            respondentName: 'John Doe',
-            gender: 1,
-            genderLabel: 'Male',
-            status: 20,
-            statusLabel: 'Completed',
-            audioQcStatus: 1,
-            audioQcCompleteDate: '2025-04-06',
-            audioQcId: '101',
-            audio1Status: 1,
-            teleQcStatus: 0,
-            gpsQcStatus: 0,
-            broadcastStatus: 0,
-            overAchievement: 0,
-            psCode: '11_001',
-            collectDeviceId: 'collect:123',
-            teleQcCompleteDate: '',
-            teleQcId: '',
-            qcScenario: 0
-          },
-        ];
-        setInterviewData(fallbackData);
-        setTotalCount(fallbackData.length);
+        setInterviewData([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
       console.error('Error fetching data:', err);
@@ -301,41 +256,8 @@ export default function InterviewListPage() {
         setError(err.message || 'An error occurred while fetching data');
       }
       
-      // Use fallback data on error
-      console.log('API request failed, using fallback sample data...');
-      const fallbackData: InterviewData[] = [
-        { 
-          id: 1, 
-          serverId: 188970, 
-          serverDate: '2025-01-27',
-          interviewDate: '2025-04-05', 
-          acCode: 11,
-          acName: 'Sugauli (11)', 
-          psName: 'Government School',
-          deviceId: 'DEVICE001',
-          interviewerId: '990',
-          respondentName: 'John Doe',
-          gender: 1,
-          genderLabel: 'Male',
-          status: 20,
-          statusLabel: 'Completed',
-          audioQcStatus: 1,
-          audioQcCompleteDate: '2025-04-06',
-          audioQcId: '101',
-          audio1Status: 1,
-          teleQcStatus: 0,
-          gpsQcStatus: 0,
-          broadcastStatus: 0,
-          overAchievement: 0,
-          psCode: '11_001',
-          collectDeviceId: 'collect:123',
-          teleQcCompleteDate: '',
-          teleQcId: '',
-          qcScenario: 0
-        },
-      ];
-      setInterviewData(fallbackData);
-      setTotalCount(fallbackData.length);
+      setInterviewData([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
@@ -417,31 +339,15 @@ export default function InterviewListPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-2">
-            <Card className="sticky top-0 overflow-scroll z-10">
-              <div className="py-4 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Filters
-                  </Heading>
-                </div>
-              </div>
-              <div className="p-0">
-                <div className="space-y-4">
-                  {/* Server ID */}
-                  <div>
-                    <Input
-                      type="text"
-                      placeholder="Search by Server ID"
-                      value={filters.server_id}
-                      onChange={(e) => handleFilterChange('server_id', e.target.value)}
-                    />
-                  </div>
-
+        {/* Filter Form */}
+        <Card className="mb-6">
+          <div className="p-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+              <div className="row">
+                {/* First Row - Dropdowns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
                   {/* Interview Date */}
-                  <div>
+                  <div className="form-group">
                     <SelectDropdown
                       value={filters.interview_date}
                       onChange={(value) => handleFilterChange('interview_date', value as string)}
@@ -454,168 +360,129 @@ export default function InterviewListPage() {
                   </div>
 
                   {/* AC Code */}
-                  <div>
+                  <div className="form-group">
                     <SelectDropdown
                       value={filters.ac_code}
                       onChange={(value) => handleFilterChange('ac_code', value as string)}
                       placeholder="Select AC"
+                      options={generateACOptions()}
+                    />
+                  </div>
+
+                  {/* Polling Station */}
+                  <div className="form-group">
+                    <SelectDropdown
+                      value={filters.ps_code || ''}
+                      onChange={(value) => handleFilterChange('ps_code', value as string)}
+                      placeholder="Select Polling Station"
                       options={[
-                        { value: '', label: 'Select AC' },
-                        { value: '195', label: 'Agiaon (SC) (195)' },
-                        { value: '70', label: 'Alamnagar (70)' },
-                        { value: '148', label: 'Alauli (SC) (148)' },
-                        { value: '11', label: 'Sugauli (11)' },
-                        { value: '79', label: 'Gaura Bauram (79)' },
-                        { value: '172', label: 'Biharsharif (172)' },
-                        { value: '5', label: 'Lauriya (5)' },
+                        { value: '', label: 'Select Polling Station' },
+                      ]}
+                    />
+                  </div>
+
+                  {/* Enumerator ID */}
+                  <div className="form-group">
+                    <SelectDropdown
+                      value={filters.user_id || ''}
+                      onChange={(value) => handleFilterChange('user_id', value as string)}
+                      placeholder="Select Enumerator ID"
+                      options={[
+                        { value: '', label: 'Select Enumerator ID' },
                       ]}
                     />
                   </div>
 
                   {/* Interviewer ID */}
-                  <div>
+                  <div className="form-group">
                     <SelectDropdown
                       value={filters.interviewer_id}
                       onChange={(value) => handleFilterChange('interviewer_id', value as string)}
                       placeholder="Select Interviewer ID"
                       options={[
                         { value: '', label: 'Select Interviewer ID' },
-                        { value: '101', label: '101' },
-                        { value: '102', label: '102' },
-                        { value: '103', label: '103' },
-                        { value: '105', label: '105' },
-                        { value: '106', label: '106' },
-                        { value: '109', label: '109' },
-                        { value: '121', label: '121' },
-                        { value: '122', label: '122' },
-                        { value: '990', label: '990' },
-                        { value: '932', label: '932' },
                       ]}
                     />
                   </div>
 
-                  {/* QC Date */}
-                  <div>
+                  {/* Status */}
+                  <div className="form-group">
                     <SelectDropdown
-                      value={filters.qc_date}
-                      onChange={(value) => handleFilterChange('qc_date', value as string)}
-                      placeholder="Select QC Date"
+                      value={filters.status || ''}
+                      onChange={(value) => handleFilterChange('status', value as string)}
+                      placeholder="Select Status"
                       options={[
-                        { value: '', label: 'Select QC Date' },
-                        ...generateDateOptions()
+                        { value: '', label: 'Select Status' },
+                        { value: '40', label: 'Under QC' },
+                        { value: '50', label: 'GPS Pass' },
+                        { value: '60', label: 'QC Completed' },
+                        { value: '70', label: 'Under Re-QC' },
+                        { value: '80', label: 'Re-QC Completed' },
+                        { value: '90', label: 'Remove From QC' },
+                        { value: 'Valid', label: 'Valid' },
+                        { value: 'Rejected', label: 'Rejected' },
+                        { value: 'Terminated', label: 'Terminated' },
                       ]}
                     />
-                  </div>
-
-                  {/* QC ID */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.qc_id}
-                      onChange={(value) => handleFilterChange('qc_id', value as string)}
-                      placeholder="Select QC ID"
-                      options={[
-                        { value: '', label: 'Select QC ID' },
-                        { value: '101', label: 'Komal (101)' },
-                        { value: '102', label: 'Priyanshi (102)' },
-                        { value: '103', label: 'Sonu Kumari (103)' },
-                        { value: '105', label: 'Simran (105)' },
-                        { value: '106', label: 'Swati (106)' },
-                        { value: '109', label: 'Kundan (109)' },
-                        { value: '121', label: 'Ashifa (121)' },
-                        { value: '122', label: 'Rama (122)' },
-                      ]}
-                    />
-                  </div>
-
-                  {/* Audio QC Status */}
-                  <div>
-                    <Text className="text-sm font-medium text-gray-700 mb-2">Audio QC Status</Text>
-                    <div className="space-y-2">
-                      {[
-                        { value: '1', label: 'Pass' },
-                        { value: '2', label: 'Fail' },
-                        { value: '3', label: 'Pending' },
-                        { value: '0', label: 'NA' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
-                          <Checkbox
-                            checked={filters.audio_qc_status.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleFilterChange('audio_qc_status', [...filters.audio_qc_status, option.value]);
-                              } else {
-                                handleFilterChange('audio_qc_status', filters.audio_qc_status.filter(status => status !== option.value));
-                              }
-                            }}
-                          />
-                          <Text className="text-sm text-gray-600 ml-2">{option.label}</Text>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Audio QC Status Details */}
-                  <div>
-                    <Text className="text-sm font-medium text-gray-700 mb-2">Audio QC Status Details</Text>
-                    <div className="space-y-2">
-                      {[
-                        { value: '1', label: 'Survey Conversation can be heard' },
-                        { value: '2', label: 'No Conversation' },
-                        { value: '3', label: 'Irrelevant Conversation' },
-                        { value: '6', label: 'Interviewer acting as respondent' },
-                        { value: '4', label: 'Can hear the interviewer more than the respondent' },
-                        { value: '5', label: 'The interviewer is asking questions mechanically' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
-                          <Checkbox
-                            checked={filters.audio1_status.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleFilterChange('audio1_status', [...filters.audio1_status, option.value]);
-                              } else {
-                                handleFilterChange('audio1_status', filters.audio1_status.filter(status => status !== option.value));
-                              }
-                            }}
-                          />
-                          <Text className="text-sm text-gray-600 ml-2">{option.label}</Text>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* QC Outcome */}
-                  <div>
-                    <Text className="text-sm font-medium text-gray-700 mb-2">QC Outcome</Text>
-                    <div className="space-y-2">
-                      {[
-                        { value: 'blue', label: 'Pending' },
-                        { value: 'red', label: 'Fail' },
-                        { value: 'green', label: 'Pass' },
-                      ].map((option) => (
-                        <label key={option.value} className="flex items-center">
-                          <Checkbox
-                            checked={filters.qc_scenario_color.includes(option.value)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleFilterChange('qc_scenario_color', [...filters.qc_scenario_color, option.value]);
-                              } else {
-                                handleFilterChange('qc_scenario_color', filters.qc_scenario_color.filter(color => color !== option.value));
-                              }
-                            }}
-                          />
-                          <Text className="text-sm text-gray-600 ml-2">{option.label}</Text>
-                        </label>
-                      ))}
-                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-10">
-            <Card>
+                {/* Second Row - Text inputs, checkbox, and search button */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                  {/* Server ID */}
+                  <div className="form-group">
+                    <Input
+                      type="text"
+                      placeholder="Search by Server ID"
+                      value={filters.server_id}
+                      onChange={(e) => handleFilterChange('server_id', e.target.value)}
+                    />
+                  </div>
+
+                  {/* Device ID */}
+                  <div className="form-group">
+                    <Input
+                      type="text"
+                      placeholder="Search by Device ID"
+                      value={filters.device_id || ''}
+                      onChange={(e) => handleFilterChange('device_id', e.target.value)}
+                    />
+                  </div>
+
+                  {/* Over Achievement Checkbox */}
+                  <div className="form-group flex items-center">
+                    <label className="flex items-center">
+                      <Checkbox
+                        checked={filters.over_achievement || false}
+                        onCheckedChange={(checked) => handleFilterChange('over_achievement', checked as boolean)}
+                      />
+                      <Text className="text-sm text-gray-700 ml-2">Over Achievement</Text>
+                    </label>
+                  </div>
+
+                  {/* Search Button */}
+                  <div className="form-group">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      className="w-full"
+                    >
+                      <Search className="w-4 h-4 mr-1" />
+                      Search
+                    </Button>
+                  </div>
+
+                  {/* Empty columns for spacing */}
+                  <div></div>
+                  <div></div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </Card>
+
+        {/* Main Content */}
+        <Card>
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center">
                 <div className="w-1 h-6 bg-blue-500 mr-3"></div>
@@ -671,9 +538,7 @@ export default function InterviewListPage() {
                             </span>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-left">
-                            <Badge variant={interview.statusLabel === 'Completed' ? 'success' : 'secondary'} size="sm">
-                              {interview.statusLabel}
-                            </Badge>
+                            {interview.statusValue}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                             {interview.audioQcStatus === 2 ? (
@@ -737,8 +602,6 @@ export default function InterviewListPage() {
                 </div>
               </div>
             </Card>
-          </div>
-        </div>
       </Container>
     </div>
   );
