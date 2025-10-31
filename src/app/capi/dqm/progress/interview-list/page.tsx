@@ -205,7 +205,8 @@ export default function InterviewListPage() {
       if (filters.interview_date) queryParams.interview_date = filters.interview_date;
       if (filters.ac_code) queryParams.ac_code = filters.ac_code;
       if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
-      if (filters.qc_date.length > 0) queryParams.qc_date = filters.qc_date.join(',');
+      // Send qc_date as array for multi-select (will convert to qc_date=2025-10-31&qc_date=2025-10-30)
+      if (filters.qc_date.length > 0) queryParams.qc_date = filters.qc_date;
       if (filters.qc_id) queryParams.qc_id = filters.qc_id;
       // Send audio_qc_status as array for multi-select (axios will convert to audio_qc_status=1&audio_qc_status=2)
       if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status;
