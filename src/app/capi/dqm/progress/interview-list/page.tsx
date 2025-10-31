@@ -83,7 +83,7 @@ export default function InterviewListPage() {
     audio_qc_status: [] as string[],
     audio_fail_reason: '',
     audio1_status: [] as string[],
-    qc_scenario_color: [] as string[],
+    qc_outcome: [] as string[],
   });
 
   const [pagination, setPagination] = useState({
@@ -122,9 +122,8 @@ export default function InterviewListPage() {
   ];
 
   const qcOutcomeOptions = [
-    { value: 'blue', label: 'Pending' },
-    { value: 'red', label: 'Fail' },
-    { value: 'green', label: 'Pass' },
+    { value: 'Pass', label: 'Pass' },
+    { value: 'Fail', label: 'Fail' },
   ];
 
   // Audio Fail Reason options (matching rejection report)
@@ -212,7 +211,8 @@ export default function InterviewListPage() {
       if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status;
       if (filters.audio_fail_reason) queryParams.audio_fail_reason = filters.audio_fail_reason;
       if (filters.audio1_status.length > 0) queryParams.audio1_status = filters.audio1_status.join(',');
-      if (filters.qc_scenario_color.length > 0) queryParams.qc_scenario_color = filters.qc_scenario_color.join(',');
+      // Send qc_outcome as array for multi-select (will convert to qc_outcome=Pass&qc_outcome=Fail)
+      if (filters.qc_outcome.length > 0) queryParams.qc_outcome = filters.qc_outcome;
       
       console.log('API query params:', queryParams);
       
@@ -681,19 +681,15 @@ export default function InterviewListPage() {
 
                 {/* QC Outcome */}
                 <div>
-                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    QC Outcome
-                  </Text>
-                  <div className="space-y-2">
-                    {qcOutcomeOptions.map((option) => (
-                      <Checkbox
-                        key={option.value}
-                        checked={filters.qc_scenario_color.includes(option.value)}
-                        onCheckedChange={(checked) => handleCheckboxChange('qc_scenario_color', option.value, checked)}
-                        label={option.label}
-                      />
-                    ))}
-                  </div>
+                  <SelectDropdown
+                    value={filters.qc_outcome}
+                    onChange={(value) => handleFilterChange('qc_outcome', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Outcome"
+                    options={qcOutcomeOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
                 </div>
 
                 {/* Search Button */}
