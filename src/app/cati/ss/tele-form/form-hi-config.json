@@ -720,7 +720,7 @@
   {
     "type": "radio",
     "label": "7. 2021 के बाद आपके विधानसभा क्षेत्र में हुए उपचुनाव में आपने किस पार्टी को वोट दिया?",
-    "conditional": "resp_age >= 20 && resp_registered_voter === '1'",
+    "conditional": "resp_age >= 20 && resp_registered_voter === '1' && mla-mp-ac-data.[ac_code].bye_poll === true",
     "required": true,
     "options": [
       {
