@@ -8,7 +8,6 @@ import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
-import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
@@ -25,7 +24,7 @@ interface SearchFilters {
   qc_date: string[];
   qc_id: string;
   audio_qc_status: string[];
-  audio1_status: string[];
+  audio_fail_reason: string;
   qc_scenario_color: string[];
 }
 
@@ -111,7 +110,7 @@ const InterviewListPage = () => {
     qc_date: [],
     qc_id: '',
     audio_qc_status: [],
-    audio1_status: [],
+    audio_fail_reason: '',
     qc_scenario_color: [],
   });
 
@@ -156,6 +155,29 @@ const InterviewListPage = () => {
     { value: '2', label: 'Poor Quality' },
     { value: '3', label: 'No Audio' },
     { value: '4', label: 'Partial Audio' },
+  ];
+
+  // Audio Fail Reason options (matching rejection report)
+  const audioFailReasonOptions = [
+    { value: '', label: 'Select Audio Fail Reason' },
+    { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+    { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+    { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+    { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+    { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
+    { value: 'no_conversation', label: 'No Conversation' },
+    { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+    { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+    { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+    { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+    { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+    { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+    { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+    { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+    { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+    { value: 'duplicate_audio', label: 'Duplicate Audio' },
+    { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+    { value: 'same_respondent_as_before', label: 'Same respondent as before' }
   ];
 
   const qcOutcomeOptions = [
@@ -411,17 +433,23 @@ const InterviewListPage = () => {
       if (filters.interviewer_id) {
         params.append('interviewer_id', filters.interviewer_id);
       }
+      // Send qc_date as repeated parameters (qc_date=2025-10-31&qc_date=2025-10-30)
       if (filters.qc_date.length > 0) {
-        params.append('qc_date', filters.qc_date.join(','));
+        filters.qc_date.forEach(date => {
+          params.append('qc_date', date);
+        });
       }
       if (filters.qc_id) {
         params.append('qc_id', filters.qc_id);
       }
+      // Send audio_qc_status as repeated parameters (audio_qc_status=1&audio_qc_status=2)
       if (filters.audio_qc_status.length > 0) {
-        params.append('audio_qc_status', filters.audio_qc_status.join(','));
+        filters.audio_qc_status.forEach(status => {
+          params.append('audio_qc_status', status);
+        });
       }
-      if (filters.audio1_status.length > 0) {
-        params.append('audio1_status', filters.audio1_status.join(','));
+      if (filters.audio_fail_reason) {
+        params.append('audio_fail_reason', filters.audio_fail_reason);
       }
       if (filters.qc_scenario_color.length > 0) {
         params.append('qc_scenario_color', filters.qc_scenario_color.join(','));
@@ -532,58 +560,111 @@ const InterviewListPage = () => {
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Interview List
         </Heading>
-        <div className="text-sm text-gray-500">
-          QC Progress - Interview List
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filters Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-4">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                Filters
-              </Heading>
-            </div>
-            <div className="p-4 space-y-4">
-              {/* Server ID */}
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Search by Server ID"
-                  value={filters.server_id}
-                  onChange={(e) => handleFilterChange('server_id', e.target.value)}
-                />
-              </div>
+      {/* Filters Card - Horizontal Layout */}
+      <Card className="mb-6">
+        <div className="p-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+            <div className="space-y-4">
+              {/* First Row - Main Dropdown Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                {/* Server ID */}
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Search by Server ID"
+                    value={filters.server_id}
+                    onChange={(e) => handleFilterChange('server_id', e.target.value)}
+                  />
+                </div>
 
-              {/* Interview Date */}
-              <div>
-                <Text className="text-sm font-medium mb-2">Interview Date</Text>
-                <SelectDropdown
-                  options={[
-                    { value: 'all', label: 'All' },
-                    { value: 'today', label: 'Today' },
-                    { value: 'yesterday', label: 'Yesterday' },
-                    { value: 'dby', label: 'Day Before Yesterday' },
-                    { value: 'l3', label: 'Last 3 Days' },
-                    { value: 'l7', label: 'Last 7 Days' },
-                    { value: 'l15', label: 'Last 15 Days' },
-                    { value: 'currentmonth', label: 'Current Month' },
-                    { value: 'custom', label: 'Custom' },
-                  ]}
-                  value={filters.interview_date}
-                  onChange={(value) => handleFilterChange('interview_date', value as string)}
-                  placeholder="All"
-                  className="w-full"
-                />
+                {/* Interview Date */}
+                <div>
+                  <SelectDropdown
+                    value={filters.interview_date}
+                    onChange={(value) => handleFilterChange('interview_date', value as string)}
+                    placeholder="Select Interview Date"
+                    options={[
+                      { value: 'all', label: 'All' },
+                      { value: 'today', label: 'Today' },
+                      { value: 'yesterday', label: 'Yesterday' },
+                      { value: 'dby', label: 'Day Before Yesterday' },
+                      { value: 'l3', label: 'Last 3 Days' },
+                      { value: 'l7', label: 'Last 7 Days' },
+                      { value: 'l15', label: 'Last 15 Days' },
+                      { value: 'currentmonth', label: 'Current Month' },
+                      { value: 'custom', label: 'Custom' },
+                    ]}
+                    searchable={false}
+                    clearable={true}
+                  />
+                </div>
+
+                {/* AC Code */}
+                <div>
+                  <SelectDropdown
+                    value={filters.ac_code}
+                    onChange={(value) => handleFilterChange('ac_code', value as string)}
+                    options={[
+                      { value: '', label: 'Select AC' },
+                      ...filterOptions.acList
+                    ]}
+                    placeholder="Select AC"
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
+
+                {/* Interviewer ID */}
+                <div>
+                  <SelectDropdown
+                    value={filters.interviewer_id}
+                    onChange={(value) => handleFilterChange('interviewer_id', value as string)}
+                    options={[
+                      { value: '', label: 'Select Interviewer ID' },
+                      ...filterOptions.interviewerList
+                    ]}
+                    placeholder="Select Interviewer ID"
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
+
+                {/* QC Date */}
+                <div>
+                  <SelectDropdown
+                    value={filters.qc_date}
+                    onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Date"
+                    options={filterOptions.dateList}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                </div>
+
+                {/* QC ID */}
+                <div>
+                  <SelectDropdown
+                    value={filters.qc_id}
+                    onChange={(value) => handleFilterChange('qc_id', value as string)}
+                    options={[
+                      { value: '', label: 'Select QC ID' },
+                      ...filterOptions.qcIdList
+                    ]}
+                    placeholder="Select QC ID"
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
               </div>
 
               {/* Custom Date Fields - Only show when custom is selected */}
               {filters.interview_date === 'custom' && (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Text className="text-sm font-medium mb-2">
+                    <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Start Date
                       <span className="text-red-500 ml-1">*</span>
                     </Text>
@@ -591,12 +672,11 @@ const InterviewListPage = () => {
                       type="date"
                       value={filters.custom_date}
                       onChange={(e) => handleFilterChange('custom_date', e.target.value)}
-                      className="w-full"
                       required
                     />
                   </div>
                   <div>
-                    <Text className="text-sm font-medium mb-2">
+                    <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       End Date
                       <span className="text-red-500 ml-1">*</span>
                     </Text>
@@ -604,163 +684,80 @@ const InterviewListPage = () => {
                       type="date"
                       value={filters.custom_date_end}
                       onChange={(e) => handleFilterChange('custom_date_end', e.target.value)}
-                      className="w-full"
                       required
                     />
                   </div>
-                </>
+                </div>
               )}
 
-              {/* AC Code */}
-              <div>
-                <SelectDropdown
-                  value={filters.ac_code}
-                  onChange={(value) => handleFilterChange('ac_code', value)}
-                  options={[
-                    { value: '', label: 'Select AC' },
-                    ...filterOptions.acList
-                  ]}
-                  placeholder="Select AC"
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
+              {/* Second Row - Additional Filters and Search */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Audio Fail Reason */}
+                <div>
+                  <SelectDropdown
+                    value={filters.audio_fail_reason}
+                    onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
+                    placeholder="Select Audio Fail Reason"
+                    options={audioFailReasonOptions}
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
 
-              {/* Interviewer ID */}
-              <div>
-                <SelectDropdown
-                  value={filters.interviewer_id}
-                  onChange={(value) => handleFilterChange('interviewer_id', value)}
-                  options={[
-                    { value: '', label: 'Select Interviewer ID' },
-                    ...filterOptions.interviewerList
-                  ]}
-                  placeholder="Select Interviewer ID"
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
+                {/* Audio QC Status */}
+                <div>
+                  <SelectDropdown
+                    value={filters.audio_qc_status}
+                    onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
+                    placeholder="Select Audio Status"
+                    options={audioQcStatusOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                </div>
 
-              {/* QC Date */}
-              <div>
-                <SelectDropdown
-                  value={filters.qc_date}
-                  onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
-                  options={filterOptions.dateList}
-                  placeholder="Select QC Date"
-                  searchable={true}
-                  clearable={true}
-                  multiple={true}
-                />
-              </div>
+                {/* QC Outcome */}
+                <div>
+                  <SelectDropdown
+                    value={filters.qc_scenario_color}
+                    onChange={(value) => handleFilterChange('qc_scenario_color', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Outcome"
+                    options={qcOutcomeOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                </div>
 
-              {/* QC ID */}
-              <div>
-                <SelectDropdown
-                  value={filters.qc_id}
-                  onChange={(value) => handleFilterChange('qc_id', value)}
-                  options={[
-                    { value: '', label: 'Select QC ID' },
-                    ...filterOptions.qcIdList
-                  ]}
-                  placeholder="Select QC ID"
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-
-              {/* Audio QC Status */}
-              <div>
-                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Audio Status
-                </Text>
-                <div className="space-y-2">
-                  {audioQcStatusOptions.map((option) => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc_status.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleFilterChange('audio_qc_status', [...filters.audio_qc_status, option.value]);
-                        } else {
-                          handleFilterChange('audio_qc_status', filters.audio_qc_status.filter(v => v !== option.value));
-                        }
-                      }}
-                      label={option.label}
-                    />
-                  ))}
+                {/* Search Button */}
+                <div>
+                  <Button 
+                    type="submit"
+                    variant="primary" 
+                    onClick={handleSearch}
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </Button>
                 </div>
               </div>
-
-              {/* Audio QC Status */}
-              <div>
-                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Audio QC Status
-                </Text>
-                <div className="space-y-2">
-                  {audio1StatusOptions.map((option) => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio1_status.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleFilterChange('audio1_status', [...filters.audio1_status, option.value]);
-                        } else {
-                          handleFilterChange('audio1_status', filters.audio1_status.filter(v => v !== option.value));
-                        }
-                      }}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* QC Outcome */}
-              <div>
-                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  QC Outcome
-                </Text>
-                <div className="space-y-2">
-                  {qcOutcomeOptions.map((option) => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.qc_scenario_color.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleFilterChange('qc_scenario_color', [...filters.qc_scenario_color, option.value]);
-                        } else {
-                          handleFilterChange('qc_scenario_color', filters.qc_scenario_color.filter(v => v !== option.value));
-                        }
-                      }}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <Button 
-                variant="primary" 
-                onClick={handleSearch}
-                className="w-full flex items-center justify-center"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
             </div>
-          </Card>
+          </form>
         </div>
+      </Card>
 
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          <Card>
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex justify-between items-center">
-                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Interview Details
-                </Heading>
-              </div>
+      {/* Main Content - Table */}
+      <div>
+        <Card>
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Interview Details
+              </Heading>
             </div>
+          </div>
 
             <div className="p-4">
               {/* Error Alert */}
@@ -900,8 +897,7 @@ const InterviewListPage = () => {
                 </div>
               )}
             </div>
-          </Card>
-        </div>
+        </Card>
       </div>
 
       {/* Audio Modal */}
