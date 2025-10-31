@@ -100,7 +100,6 @@ export default function InterviewListPage() {
     ac_code: '',
     interviewer_id: '',
     ps_code: '',
-    user_id: '',
     status: '',
     device_id: '',
     over_achievement: false,
@@ -120,8 +119,6 @@ export default function InterviewListPage() {
   const [acLoading, setAcLoading] = useState(false);
   const [pollingStations, setPollingStations] = useState<{ value: string; label: string }[]>([]);
   const [pollingStationsLoading, setPollingStationsLoading] = useState(false);
-  const [users, setUsers] = useState<{ value: string; label: string }[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
   const [interviewers, setInterviewers] = useState<{ value: string; label: string }[]>([]);
   const [interviewersLoading, setInterviewersLoading] = useState(false);
 
@@ -221,7 +218,6 @@ export default function InterviewListPage() {
       if (filters.ac_code) queryParams.ac_code = filters.ac_code;
       if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
       if (filters.ps_code) queryParams.ps_code = filters.ps_code;
-      if (filters.user_id) queryParams.user_id = filters.user_id;
       if (filters.status) queryParams.status = filters.status;
       if (filters.device_id) queryParams.device_id = filters.device_id;
       
@@ -364,42 +360,6 @@ export default function InterviewListPage() {
     }
   };
 
-  // Fetch users from API
-  const fetchUsers = async () => {
-    try {
-      setUsersLoading(true);
-      console.log('🔍 Fetching users from API...');
-      
-      const response = await apiClient.get('/dropdown/users');
-      console.log('📊 Users API Response:', response);
-      
-      if (response.data.status === 'success' && response.data.data) {
-        // Transform the API response to dropdown format
-        const userData = Object.entries(response.data.data).map(([id, name]) => ({
-          value: id,
-          label: String(name),
-        }));
-        
-        // Add the default "Select Enumerator ID" option
-        const usersWithDefault = [
-          { value: '', label: 'Select Enumerator ID' },
-          ...userData,
-        ];
-        
-        setUsers(usersWithDefault);
-        console.log('✅ Users loaded successfully:', usersWithDefault);
-      } else {
-        console.error('❌ Invalid users API response:', response.data);
-        setUsers([{ value: '', label: 'Select Enumerator ID' }]);
-      }
-    } catch (err: any) {
-      console.error('❌ Error fetching users:', err);
-      setUsers([{ value: '', label: 'Select Enumerator ID' }]);
-    } finally {
-      setUsersLoading(false);
-    }
-  };
-
   // Fetch interviewers from API
   const fetchInterviewers = async () => {
     try {
@@ -455,7 +415,6 @@ export default function InterviewListPage() {
   // Load filter dropdowns on component mount
   useEffect(() => {
     fetchAcList();
-    fetchUsers();
     fetchInterviewers();
   }, []);
 
@@ -572,19 +531,6 @@ export default function InterviewListPage() {
                     />
                   </div>
 
-                  {/* Enumerator ID */}
-                  <div className="form-group">
-                    <SelectDropdown
-                      value={filters.user_id || ''}
-                      onChange={(value) => handleFilterChange('user_id', value as string)}
-                      placeholder={usersLoading ? "Loading enumerators..." : "Select Enumerator ID"}
-                      options={users}
-                      searchable={true}
-                      clearable={true}
-                      disabled={usersLoading}
-                    />
-                  </div>
-
                   {/* Interviewer ID */}
                   <div className="form-group">
                     <SelectDropdown
@@ -607,14 +553,13 @@ export default function InterviewListPage() {
                       options={[
                         { value: '', label: 'Select Status' },
                         { value: '40', label: 'Under QC' },
-                        { value: '50', label: 'GPS Pass' },
+                        { value: '50', label: 'GPS Pass/ Tele/Audio Pending' },
                         { value: '60', label: 'QC Completed' },
                         { value: '70', label: 'Under Re-QC' },
                         { value: '80', label: 'Re-QC Completed' },
-                        { value: '90', label: 'Remove From QC' },
-                        { value: 'Valid', label: 'Valid' },
-                        { value: 'Rejected', label: 'Rejected' },
-                        { value: 'Terminated', label: 'Terminated' },
+                        { value: '10', label: 'Valid' },
+                        { value: '20', label: 'Rejected' },
+                        { value: '0', label: 'Terminated' },
                       ]}
                     />
                   </div>
