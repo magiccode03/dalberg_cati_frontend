@@ -334,7 +334,7 @@ export default function InterviewListPage() {
   };
 
   const handleEdit = (serverId: number, acCode: number) => {
-    router.push(`/capi/dqm/progress/interview-list/interview-list-tele-form/${serverId}/${acCode}`);
+    router.push(`/capi/dqm/progress/interview-list/interview-list-qc-form/${serverId}`);
   };
 
   // Format date to YYYY-MM-DD format
