@@ -207,27 +207,28 @@
           "resp_age",
           "resp_registered_voter",
           "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ]
       },
@@ -254,27 +255,28 @@
           "fields": [
             "resp_registered_voter",
             "resp_gender",
+            "q13",
+            "q16_a",
+            "q16_b",
             "q5",
             "q6",
             "q7",
             "q8",
             "q9",
             "q10",
-            "q11",
-            "q12",
-            "q13",
-            "q14",
-            "q15",
-            "q16_a",
-            "q16_b",
-            "q17",
-            "q19",
             "resp_religion",
             "resp_social_cat",
             "resp_caste_jati",
+            "q11",
+            "q12",
+            "q14",
+            "q15",
+            "q17",
+            "q19",
             "resp_female_edu",
             "resp_male_edu",
             "resp_occupation",
+            "resp_name",
             "thanks_future"
           ]
         }
@@ -311,27 +313,28 @@
       "clearFields": {
         "opt_no": [
           "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ]
       },
@@ -363,56 +366,217 @@
     "rules": {
       "showFields": {
         "opt_male": [
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ],
         "opt_female": [
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ]
       }
     },
     "tag": "resp_gender"
+  },
+  {
+    "type": "checkbox",
+    "label": "13. According to you, what are the three most pressing issues of your assembly constituency?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "maxSelections": 3,
+    "options": [
+      {
+        "label": "Price rise / inflation",
+        "value": "2",
+        "tag": "opt_price_rise"
+      },
+      {
+        "label": "Unemployment / lack of jobs",
+        "value": "3",
+        "tag": "opt_unemployment"
+      },
+      {
+        "label": "Electricity/power problems",
+        "value": "4",
+        "tag": "opt_electricity"
+      },
+      {
+        "label": "Healthcare not good",
+        "value": "5",
+        "tag": "opt_healthcare"
+      },
+      {
+        "label": "Education system issues",
+        "value": "6",
+        "tag": "opt_education"
+      },
+      {
+        "label": "Voter list issues / fear of losing citizenship",
+        "value": "7",
+        "tag": "opt_voter_list"
+      },
+      {
+        "label": "Safety for migrant workers",
+        "value": "8",
+        "tag": "opt_migrant_safety"
+      },
+      {
+        "label": "Teacher protests & job insecurity",
+        "value": "9",
+        "tag": "opt_teacher_protests"
+      },
+      {
+        "label": "Floods and natural disasters",
+        "value": "10",
+        "tag": "opt_floods"
+      },
+      {
+        "label": "Communal tensions / law-and-order concerns",
+        "value": "11",
+        "tag": "opt_communal_tensions"
+      },
+      {
+        "label": "Safety of women (crime / security)",
+        "value": "12",
+        "tag": "opt_women_safety"
+      },
+      {
+        "label": "Infrastructure (roads, connectivity)",
+        "value": "13",
+        "tag": "opt_infrastructure"
+      },
+      {
+        "label": "Others(Specify)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q13_oth"
+        ]
+      }
+    },
+    "tag": "q13"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q13.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q13_oth"
+  },
+  {
+    "type": "radio",
+    "label": "16 A. How satisfied or dissatisfied are you with the work done by Lok Sabha MP {{mp_name}} from your parliament constituency?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don't know/Can't say",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_a"
+  },
+  {
+    "type": "radio",
+    "label": "16 B. How satisfied or dissatisfied are you with the work done by your current MLA {{mla_name}}?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don't know/Can't say",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -746,7 +910,7 @@
   {
     "type": "radio",
     "label": "9. Let us assume that the above party of your choice doesn't contest elections in your assembly constituency, which party would you choose?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -837,7 +1001,7 @@
   {
     "type": "checkbox",
     "label": "10. Could you tell us the reason for choosing the above party as your second choice?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "maxSelections": 6,
     "options": [
@@ -898,6 +1062,129 @@
     "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q10_oth"
+  },
+  {
+    "type": "radio",
+    "label": "20. Could you please tell me the religion that you belong to?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Hindu",
+        "value": "1",
+        "tag": "opt_hindu"
+      },
+      {
+        "label": "Muslim",
+        "value": "2",
+        "tag": "opt_muslim"
+      },
+      {
+        "label": "Christian",
+        "value": "3",
+        "tag": "opt_christian"
+      },
+      {
+        "label": "Sikh",
+        "value": "4",
+        "tag": "opt_sikh"
+      },
+      {
+        "label": "Jain",
+        "value": "5",
+        "tag": "opt_jain"
+      },
+      {
+        "label": "Buddhist",
+        "value": "6",
+        "tag": "opt_buddhist"
+      },
+      {
+        "label": "No response",
+        "value": "7",
+        "tag": "opt_no_response"
+      },
+      {
+        "label": "Others (Specify)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "resp_religion_oth"
+        ]
+      }
+    },
+    "tag": "resp_religion"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "resp_religion === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "resp_religion_oth"
+  },
+  {
+    "type": "radio",
+    "label": "21. Which social category do you belong to?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "General/OC",
+        "value": "1",
+        "tag": "opt_general"
+      },
+      {
+        "label": "Schedule Castes",
+        "value": "2",
+        "tag": "opt_sc"
+      },
+      {
+        "label": "Schedule Tribes",
+        "value": "3",
+        "tag": "opt_st"
+      },
+      {
+        "label": "Other Backward Caste",
+        "value": "4",
+        "tag": "opt_obc"
+      },
+      {
+        "label": "No response",
+        "value": "88",
+        "tag": "opt_no_response"
+      }
+    ],
+    "tag": "resp_social_cat"
+  },
+  {
+    "type": "radio",
+    "label": "22. Could you please tell me your caste?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": "caste-options[resp_religion.value].castes",
+    "rules": {
+      "showFields": {
+        "44": [
+          "resp_caste_jati_oth"
+        ]
+      }
+    },
+    "tag": "resp_caste_jati"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "resp_caste_jati === '44'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "resp_caste_jati_oth"
   },
   {
     "type": "checkbox",
@@ -1098,97 +1385,6 @@
     "tag": "q12_oth"
   },
   {
-    "type": "checkbox",
-    "label": "13. According to you, what are the three most pressing issues of your assembly constituency?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "maxSelections": 3,
-    "options": [
-      {
-        "label": "Price rise / inflation",
-        "value": "2",
-        "tag": "opt_price_rise"
-      },
-      {
-        "label": "Unemployment / lack of jobs",
-        "value": "3",
-        "tag": "opt_unemployment"
-      },
-      {
-        "label": "Electricity/power problems",
-        "value": "4",
-        "tag": "opt_electricity"
-      },
-      {
-        "label": "Healthcare not good",
-        "value": "5",
-        "tag": "opt_healthcare"
-      },
-      {
-        "label": "Education system issues",
-        "value": "6",
-        "tag": "opt_education"
-      },
-      {
-        "label": "Voter list issues / fear of losing citizenship",
-        "value": "7",
-        "tag": "opt_voter_list"
-      },
-      {
-        "label": "Safety for migrant workers",
-        "value": "8",
-        "tag": "opt_migrant_safety"
-      },
-      {
-        "label": "Teacher protests & job insecurity",
-        "value": "9",
-        "tag": "opt_teacher_protests"
-      },
-      {
-        "label": "Floods and natural disasters",
-        "value": "10",
-        "tag": "opt_floods"
-      },
-      {
-        "label": "Communal tensions / law-and-order concerns",
-        "value": "11",
-        "tag": "opt_communal_tensions"
-      },
-      {
-        "label": "Safety of women (crime / security)",
-        "value": "12",
-        "tag": "opt_women_safety"
-      },
-      {
-        "label": "Infrastructure (roads, connectivity)",
-        "value": "13",
-        "tag": "opt_infrastructure"
-      },
-      {
-        "label": "Others(Specify)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "q13_oth"
-        ]
-      }
-    },
-    "tag": "q13"
-  },
-  {
-    "type": "text",
-    "label": "Others (specify)",
-    "conditional": "q13.includes('44')",
-    "required": true,
-    "placeholder": "Please specify",
-    "maxLength": 150,
-    "tag": "q13_oth"
-  },
-  {
     "type": "radio",
     "label": "14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?",
     "conditional": "resp_registered_voter === '1'",
@@ -1255,74 +1451,6 @@
       }
     ],
     "tag": "q15"
-  },
-  {
-    "type": "radio",
-    "label": "16 A. How satisfied or dissatisfied are you with the work done by Lok Sabha MP {{mp_name}} from your parliament constituency?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don't know/Can't say",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_a"
-  },
-  {
-    "type": "radio",
-    "label": "16 B. How satisfied or dissatisfied are you with the work done by your current MLA {{mla_name}}?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don't know/Can't say",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -1471,129 +1599,6 @@
   },
   {
     "type": "radio",
-    "label": "20. Could you please tell me the religion that you belong to?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Hindu",
-        "value": "1",
-        "tag": "opt_hindu"
-      },
-      {
-        "label": "Muslim",
-        "value": "2",
-        "tag": "opt_muslim"
-      },
-      {
-        "label": "Christian",
-        "value": "3",
-        "tag": "opt_christian"
-      },
-      {
-        "label": "Sikh",
-        "value": "4",
-        "tag": "opt_sikh"
-      },
-      {
-        "label": "Jain",
-        "value": "5",
-        "tag": "opt_jain"
-      },
-      {
-        "label": "Buddhist",
-        "value": "6",
-        "tag": "opt_buddhist"
-      },
-      {
-        "label": "No response",
-        "value": "7",
-        "tag": "opt_no_response"
-      },
-      {
-        "label": "Others (Specify)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "resp_religion_oth"
-        ]
-      }
-    },
-    "tag": "resp_religion"
-  },
-  {
-    "type": "text",
-    "label": "Others (specify)",
-    "conditional": "resp_religion === '44'",
-    "required": true,
-    "placeholder": "Please specify",
-    "maxLength": 150,
-    "tag": "resp_religion_oth"
-  },
-  {
-    "type": "radio",
-    "label": "21. Which social category do you belong to?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "General/OC",
-        "value": "1",
-        "tag": "opt_general"
-      },
-      {
-        "label": "Schedule Castes",
-        "value": "2",
-        "tag": "opt_sc"
-      },
-      {
-        "label": "Schedule Tribes",
-        "value": "3",
-        "tag": "opt_st"
-      },
-      {
-        "label": "Other Backward Caste",
-        "value": "4",
-        "tag": "opt_obc"
-      },
-      {
-        "label": "No response",
-        "value": "88",
-        "tag": "opt_no_response"
-      }
-    ],
-    "tag": "resp_social_cat"
-  },
-  {
-    "type": "radio",
-    "label": "22. Could you please tell me your caste?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": "caste-options[resp_religion.value].castes",
-    "rules": {
-      "showFields": {
-        "44": [
-          "resp_caste_jati_oth"
-        ]
-      }
-    },
-    "tag": "resp_caste_jati"
-  },
-  {
-    "type": "text",
-    "label": "Others (specify)",
-    "conditional": "resp_caste_jati === '44'",
-    "required": true,
-    "placeholder": "Please specify",
-    "maxLength": 150,
-    "tag": "resp_caste_jati_oth"
-  },
-  {
-    "type": "radio",
     "label": "23. Could you please tell me the highest educational level of the most educated female of the household?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
@@ -1718,6 +1723,14 @@
       }
     ],
     "tag": "resp_occupation"
+  },
+  {
+    "type": "text",
+    "label": "27. Would You like to share your name with us? We assure you we shall keep it confidential",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "placeholder": "Enter name",
+    "tag": "resp_name"
   },
   {
     "type": "radio",
