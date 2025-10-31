@@ -440,7 +440,7 @@ export default function QCUserProgressPage() {
       }
       
       const queryString = queryParams.toString();
-      const endpoint = `/api/cati/qc/unified-user-statistics?${queryString}`;
+      const endpoint = `/cati/qc/unified-user-statistics?${queryString}`;
       
       console.log('Downloading data from:', endpoint);
       
