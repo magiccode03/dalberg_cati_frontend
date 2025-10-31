@@ -613,12 +613,13 @@ function QCFormPage() {
       
       formFields.forEach(fieldTag => {
         const fieldValue = formData[fieldTag];
-        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-          // For text fields (like qc_q9), keep as string
-          // For other fields, convert to integer
-          if (fieldTag === 'qc_q9') {
-            requestBody[fieldTag] = fieldValue;
-          } else {
+        
+        // For qc_q9 (text/remark field), always include it even if empty to allow clearing the value
+        if (fieldTag === 'qc_q9') {
+          requestBody[fieldTag] = fieldValue !== undefined && fieldValue !== null ? fieldValue : '';
+        } else {
+          // For other fields, only include if they have a value
+          if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
             const numValue = parseInt(fieldValue);
             requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
           }
