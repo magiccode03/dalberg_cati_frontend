@@ -800,21 +800,20 @@ const InterviewListPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio QC ID</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio Fail Reason</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">QC Outcome</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Edit</th>
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={13} className="px-4 py-12 text-center">
+                          <td colSpan={12} className="px-4 py-12 text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                             <p className="text-gray-600 dark:text-gray-400">Loading interview data...</p>
                           </td>
                         </tr>
                       ) : interviewData.length === 0 ? (
                         <tr>
-                          <td colSpan={13} className="px-4 py-12 text-center">
+                          <td colSpan={12} className="px-4 py-12 text-center">
                             <div className="text-6xl text-gray-300 mb-4">📋</div>
                             <p className="text-gray-600 dark:text-gray-400">No interview data found</p>
                           </td>
@@ -866,9 +865,6 @@ const InterviewListPage = () => {
                               ) : (
                                 <span className="text-gray-400">-</span>
                               )}
-                            </td>
-                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {getQcOutcomeBadge(item.qc_scenario_color, item.qc_outcome)}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                               <Button
