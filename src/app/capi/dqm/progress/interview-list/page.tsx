@@ -81,6 +81,7 @@ export default function InterviewListPage() {
     qc_date: [] as string[],
     qc_id: '',
     audio_qc_status: [] as string[],
+    audio_fail_reason: '',
     audio1_status: [] as string[],
     qc_scenario_color: [] as string[],
   });
@@ -124,6 +125,28 @@ export default function InterviewListPage() {
     { value: 'blue', label: 'Pending' },
     { value: 'red', label: 'Fail' },
     { value: 'green', label: 'Pass' },
+  ];
+
+  // Audio Fail Reason options (matching rejection report)
+  const audioFailReasonOptions = [
+    { value: '', label: 'Select Audio Fail Reason' },
+    { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+    { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+    { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+    { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+    { value: 'no_conversation', label: 'No Conversation' },
+    { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+    { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+    { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+    { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+    { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+    { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+    { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+    { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+    { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+    { value: 'duplicate_audio', label: 'Duplicate Audio' },
+    { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+    { value: 'same_respondent_as_before', label: 'Same respondent as before' }
   ];
 
   // Generate date options for dropdowns
@@ -184,13 +207,33 @@ export default function InterviewListPage() {
       if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
       if (filters.qc_date.length > 0) queryParams.qc_date = filters.qc_date.join(',');
       if (filters.qc_id) queryParams.qc_id = filters.qc_id;
-      if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status.join(',');
+      // Send audio_qc_status as array for multi-select (axios will convert to audio_qc_status=1&audio_qc_status=2)
+      if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status;
+      if (filters.audio_fail_reason) queryParams.audio_fail_reason = filters.audio_fail_reason;
       if (filters.audio1_status.length > 0) queryParams.audio1_status = filters.audio1_status.join(',');
       if (filters.qc_scenario_color.length > 0) queryParams.qc_scenario_color = filters.qc_scenario_color.join(',');
       
       console.log('API query params:', queryParams);
       
-      const response = await apiClient.get('/capi/dqm/qc/interview/progress/detail', { params: queryParams });
+      // Configure paramsSerializer to handle arrays as repeated parameters (audio_qc_status=1&audio_qc_status=2)
+      const response = await apiClient.get('/capi/dqm/qc/interview/progress/detail', { 
+        params: queryParams,
+        paramsSerializer: (params) => {
+          const searchParams = new URLSearchParams();
+          Object.keys(params).forEach((key) => {
+            const value = params[key];
+            if (Array.isArray(value)) {
+              // For arrays, add each value as a separate parameter with the same key
+              value.forEach((item) => {
+                searchParams.append(key, item);
+              });
+            } else if (value !== undefined && value !== null && value !== '') {
+              searchParams.append(key, String(value));
+            }
+          });
+          return searchParams.toString();
+        }
+      });
       
       const data: APIResponse = response.data;
       
@@ -610,6 +653,18 @@ export default function InterviewListPage() {
                   />
                 </div>
 
+                {/* Audio Fail Reason */}
+                <div>
+                  <SelectDropdown
+                    value={filters.audio_fail_reason}
+                    onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
+                    placeholder="Select Audio Fail Reason"
+                    options={audioFailReasonOptions}
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
+
                 {/* Audio QC Status */}
                 <div>
                   <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -621,23 +676,6 @@ export default function InterviewListPage() {
                         key={option.value}
                         checked={filters.audio_qc_status.includes(option.value)}
                         onCheckedChange={(checked) => handleCheckboxChange('audio_qc_status', option.value, checked)}
-                        label={option.label}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Audio Fail Reason */}
-                <div>
-                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Audio Fail Reason 
-                  </Text>
-                  <div className="space-y-2">
-                    {audio1StatusOptions.map((option) => (
-                      <Checkbox
-                        key={option.value}
-                        checked={filters.audio1_status.includes(option.value)}
-                        onCheckedChange={(checked) => handleCheckboxChange('audio1_status', option.value, checked)}
                         label={option.label}
                       />
                     ))}
