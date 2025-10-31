@@ -345,6 +345,10 @@ const InterviewListPage = () => {
     if (qcRejectionLevel === 1 && qcAudioStatus === 10) {
       return 'Same respondent as before';
     }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 7) {
+      return 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)';
+    }
 
     // Fallback to raw value if no mapping matches
     return '-';

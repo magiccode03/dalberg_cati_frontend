@@ -229,6 +229,7 @@ export default function RejectionReportPage() {
       { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
       { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
       { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+      { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
       { value: 'no_conversation', label: 'No Conversation' },
       { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
       { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
@@ -532,6 +533,10 @@ export default function RejectionReportPage() {
     
     if (audioQcRejectionLevel === 1 && qcAudioStatus === 10) {
       return 'Same respondent as before';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 7) {
+      return 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)';
     }
 
     // Fallback to raw value if no mapping matches
