@@ -668,19 +668,15 @@ export default function InterviewListPage() {
 
                 {/* Audio QC Status */}
                 <div>
-                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Audio QC Status
-                  </Text>
-                  <div className="space-y-2">
-                    {audioQcStatusOptions.map((option) => (
-                      <Checkbox
-                        key={option.value}
-                        checked={filters.audio_qc_status.includes(option.value)}
-                        onCheckedChange={(checked) => handleCheckboxChange('audio_qc_status', option.value, checked)}
-                        label={option.label}
-                      />
-                    ))}
-                  </div>
+                  <SelectDropdown
+                    value={filters.audio_qc_status}
+                    onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
+                    placeholder="Select Audio QC Status"
+                    options={audioQcStatusOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
                 </div>
 
                 {/* QC Outcome */}
