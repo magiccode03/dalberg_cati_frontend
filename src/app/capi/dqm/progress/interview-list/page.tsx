@@ -571,17 +571,11 @@ export default function InterviewListPage() {
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Interview List
         </Heading>
-        <div className="text-sm text-gray-500">
-          DQM Progress - Interview List
-        </div>
       </div>
 
       {/* Filters Card - Horizontal Layout */}
       <Card className="mb-6">
         <div className="p-4">
-          <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Filters
-          </Heading>
           <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
             <div className="space-y-4">
               {/* First Row - Main Dropdown Filters */}
