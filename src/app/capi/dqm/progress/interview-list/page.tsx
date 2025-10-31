@@ -75,7 +75,9 @@ export default function InterviewListPage() {
   const router = useRouter();
   const [filters, setFilters] = useState({
     server_id: '',
-    interview_date: '',
+    interview_date: 'all',
+    custom_date: '',
+    custom_date_end: '',
     ac_code: '',
     interviewer_id: '',
     qc_date: [] as string[],
@@ -201,7 +203,15 @@ export default function InterviewListPage() {
       };
       
       if (filters.server_id) queryParams.server_id = filters.server_id;
-      if (filters.interview_date) queryParams.interview_date = filters.interview_date;
+      // Handle interview_date: only send if not 'all'
+      if (filters.interview_date && filters.interview_date !== 'all') {
+        queryParams.interview_date = filters.interview_date;
+        // For custom, also send custom_date and custom_date_end
+        if (filters.interview_date === 'custom') {
+          if (filters.custom_date) queryParams.custom_date = filters.custom_date;
+          if (filters.custom_date_end) queryParams.custom_date_end = filters.custom_date_end;
+        }
+      }
       if (filters.ac_code) queryParams.ac_code = filters.ac_code;
       if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
       // Send qc_date as array for multi-select (will convert to qc_date=2025-10-31&qc_date=2025-10-30)
@@ -558,94 +568,131 @@ export default function InterviewListPage() {
     <FluidContainer>
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={2} className="text-2xl font-semibold text-gray-900">
-          Interview List
-        </Heading>
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
+              Interview List
+            </Heading>
         <div className="text-sm text-gray-500">
           DQM Progress - Interview List
         </div>
-      </div>
+          </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filters Sidebar */}
+          {/* Filters Sidebar */}
         <div className="lg:col-span-1">
           <Card className="sticky top-4">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                Filters
-              </Heading>
-            </div>
+                    Filters
+                  </Heading>
+                </div>
             <div className="p-4 space-y-4">
               <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
-                {/* Server ID */}
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="Search by Server ID"
-                    value={filters.server_id}
-                    onChange={(e) => handleFilterChange('server_id', e.target.value)}
-                  />
-                </div>
+                  {/* Server ID */}
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Search by Server ID"
+                      value={filters.server_id}
+                      onChange={(e) => handleFilterChange('server_id', e.target.value)}
+                    />
+                  </div>
 
-                {/* Interview Date */}
-                <div>
-                  <SelectDropdown
-                    value={filters.interview_date}
-                    onChange={(value) => handleFilterChange('interview_date', value as string)}
-                    placeholder="Select Interview Date"
-                    options={[
-                      { value: '', label: 'Select Interview Date' },
-                      ...dateOptions
-                    ]}
-                    searchable={true}
-                    clearable={true}
-                  />
-                </div>
+                  {/* Interview Date */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.interview_date}
+                      onChange={(value) => handleFilterChange('interview_date', value as string)}
+                      placeholder="All"
+                      options={[
+                        { value: 'all', label: 'All' },
+                        { value: 'today', label: 'Today' },
+                        { value: 'yesterday', label: 'Yesterday' },
+                        { value: 'dby', label: 'Day Before Yesterday' },
+                        { value: 'l3', label: 'Last 3 Days' },
+                        { value: 'l7', label: 'Last 7 Days' },
+                        { value: 'l15', label: 'Last 15 Days' },
+                        { value: 'currentmonth', label: 'Current Month' },
+                        { value: 'custom', label: 'Custom' },
+                      ]}
+                      searchable={false}
+                      clearable={true}
+                    />
+                  </div>
 
-                {/* AC Code */}
-                <div>
-                  <SelectDropdown
-                    value={filters.ac_code}
-                    onChange={(value) => handleFilterChange('ac_code', value as string)}
+                  {/* Custom Date Fields - Only show when custom is selected */}
+                  {filters.interview_date === 'custom' && (
+                    <>
+                      <div>
+                        <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Start Date
+                          <span className="text-red-500 ml-1">*</span>
+                        </Text>
+                        <Input
+                          type="date"
+                          value={filters.custom_date}
+                          onChange={(e) => handleFilterChange('custom_date', e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          End Date
+                          <span className="text-red-500 ml-1">*</span>
+                        </Text>
+                        <Input
+                          type="date"
+                          value={filters.custom_date_end}
+                          onChange={(e) => handleFilterChange('custom_date_end', e.target.value)}
+                          required
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* AC Code */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.ac_code}
+                      onChange={(value) => handleFilterChange('ac_code', value as string)}
                     placeholder={acLoading ? "Loading ACs..." : "Select AC"}
                     options={acList}
                     searchable={true}
                     clearable={true}
                     disabled={acLoading}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* Interviewer ID */}
-                <div>
-                  <SelectDropdown
-                    value={filters.interviewer_id}
-                    onChange={(value) => handleFilterChange('interviewer_id', value as string)}
+                  {/* Interviewer ID */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.interviewer_id}
+                      onChange={(value) => handleFilterChange('interviewer_id', value as string)}
                     placeholder={interviewersLoading ? "Loading interviewers..." : "Select Interviewer ID"}
                     options={interviewers}
                     searchable={true}
                     clearable={true}
                     disabled={interviewersLoading}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* QC Date */}
-                <div>
-                  <SelectDropdown
-                    value={filters.qc_date}
+                  {/* QC Date */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.qc_date}
                     onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
-                    placeholder="Select QC Date"
+                      placeholder="Select QC Date"
                     options={dateOptions}
                     searchable={true}
                     clearable={true}
                     multiple={true}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* QC ID */}
-                <div>
-                  <SelectDropdown
-                    value={filters.qc_id}
-                    onChange={(value) => handleFilterChange('qc_id', value as string)}
+                  {/* QC ID */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.qc_id}
+                      onChange={(value) => handleFilterChange('qc_id', value as string)}
                     placeholder={qcIdLoading ? "Loading QC IDs..." : "Select QC ID"}
                     options={qcIdList}
                     searchable={true}
@@ -663,11 +710,11 @@ export default function InterviewListPage() {
                     options={audioFailReasonOptions}
                     searchable={true}
                     clearable={true}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* Audio QC Status */}
-                <div>
+                  {/* Audio QC Status */}
+                  <div>
                   <SelectDropdown
                     value={filters.audio_qc_status}
                     onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
@@ -677,10 +724,10 @@ export default function InterviewListPage() {
                     clearable={true}
                     multiple={true}
                   />
-                </div>
+                  </div>
 
-                {/* QC Outcome */}
-                <div>
+                  {/* QC Outcome */}
+                  <div>
                   <SelectDropdown
                     value={filters.qc_outcome}
                     onChange={(value) => handleFilterChange('qc_outcome', Array.isArray(value) ? value : [value])}
@@ -703,20 +750,20 @@ export default function InterviewListPage() {
                   Search
                 </Button>
               </form>
-            </div>
-          </Card>
-        </div>
+              </div>
+            </Card>
+          </div>
 
-        {/* Main Content */}
+          {/* Main Content */}
         <div className="lg:col-span-3">
-          <Card>
+            <Card>
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center">
                 <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Interview Details
-                </Heading>
+                    Interview Details
+                  </Heading>
+                </div>
               </div>
-            </div>
 
             <div className="p-4">
               {/* Error Alert */}
@@ -740,7 +787,7 @@ export default function InterviewListPage() {
               )}
 
               {/* Data Table */}
-              <div className="overflow-x-auto">
+                <div className="overflow-x-auto">
                 <div className="table-responsive">
                   <Table className="table table-striped table-bordered table-hover">
                     <thead className="bg-gray-50 dark:bg-gray-800">
@@ -810,7 +857,7 @@ export default function InterviewListPage() {
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                               {getQcOutcomeBadge(item.qc_outcome)}
-                            </td>
+                          </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                               <Button
                                 size="sm"
@@ -830,19 +877,19 @@ export default function InterviewListPage() {
                                 <Edit className="w-4 h-4 mr-1" />
                                 Edit
                               </Button>
-                            </td>
-                          </tr>
+                          </td>
+                        </tr>
                         ))
                       )}
                     </tbody>
                   </Table>
                 </div>
-              </div>
+                  </div>
 
               {/* Pagination */}
               {!loading && !error && pagination.total > 0 && (
                 <div className="mt-4">
-                  <PaginationStandard
+                    <PaginationStandard
                     currentPage={pagination.page}
                     totalPages={pagination.totalPages}
                     totalItems={pagination.total}
@@ -851,10 +898,10 @@ export default function InterviewListPage() {
                   />
                 </div>
               )}
-            </div>
-          </Card>
+              </div>
+            </Card>
+          </div>
         </div>
-      </div>
 
       {/* Audio Player Modal */}
       <AudioPlayerModal
