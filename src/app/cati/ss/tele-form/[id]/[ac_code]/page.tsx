@@ -73,6 +73,7 @@ export default function TeleFormV2Page() {
   const [teleformUserId, setTeleformUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
@@ -608,6 +609,7 @@ export default function TeleFormV2Page() {
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
+      const touched = new Set<string>();
       processedFormConfig.forEach((field) => {
         if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
@@ -615,12 +617,16 @@ export default function TeleFormV2Page() {
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
             : fieldValue === undefined || fieldValue === null || fieldValue === '';
           
+          // Mark all required fields as touched when form is submitted
+          touched.add(field.tag);
+          
           if (isEmpty) {
             errorFields.add(field.tag);
           }
         }
       });
       setValidationErrors(errorFields);
+      setTouchedFields(touched);
       
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
       
@@ -679,7 +685,8 @@ export default function TeleFormV2Page() {
       ? !Array.isArray(fieldValue) || fieldValue.length === 0
       : fieldValue === undefined || fieldValue === null || fieldValue === '';
     
-    const hasError = validationErrors.has(field.tag);
+    // Show error if field is in validationErrors OR if it's required, visible, empty, and has been touched
+    const hasError = validationErrors.has(field.tag) || (field.required && isEmpty && touchedFields.has(field.tag));
 
     switch (field.type) {
       case 'radio':
@@ -783,6 +790,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -790,13 +805,28 @@ export default function TeleFormV2Page() {
               </div>
             )}
             <Input
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
-              required={field.required}
               placeholder={field.placeholder}
               maxLength={field.maxLength}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -812,6 +842,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -820,14 +858,29 @@ export default function TeleFormV2Page() {
             )}
             <Input
               type="number"
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
-              required={field.required}
               min={field.min}
               max={field.max}
               placeholder={field.placeholder}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -843,6 +896,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -851,11 +912,27 @@ export default function TeleFormV2Page() {
             )}
             <Input
               type="datetime-local"
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               placeholder={field.placeholder}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -883,11 +960,11 @@ export default function TeleFormV2Page() {
         sections.consent.push(field);
       } else if (['resp_age', 'resp_registered_voter', 'resp_gender'].includes(field.tag)) {
         sections.demographics.push(field);
-      } else if (['q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'q11', 'q11_oth', 'q12', 'q12_oth', 'q13', 'q13_oth'].includes(field.tag)) {
+      } else if (['q13', 'q13_oth', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
         sections.partyPreferences.push(field);
-      } else if (['q14', 'q15', 'q16_a', 'q16_b', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
+      } else if (['q14', 'q15', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
         sections.satisfaction.push(field);
-      } else if (['resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'resp_female_edu', 'resp_male_edu', 'resp_occupation', 'thanks_future'].includes(field.tag)) {
+      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation', 'resp_name', 'thanks_future'].includes(field.tag)) {
         sections.finalDemographics.push(field);
       }
     });
@@ -940,7 +1017,7 @@ export default function TeleFormV2Page() {
         </Card>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Call Status Section */}
         <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
           <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
