@@ -720,7 +720,7 @@
   {
     "type": "radio",
     "label": "৭. 2021 সালের পরে আপনার বিধানসভা কেন্দ্রে হওয়া উপ-নির্বাচনে আপনি কোন দলকে ভোট দিয়েছিলেন?",
-    "conditional": "resp_age >= 20 && resp_registered_voter === '1'",
+    "conditional": "resp_age >= 20 && resp_registered_voter === '1' && mla-mp-ac-data.[ac_code].bye_poll === true",
     "required": true,
     "options": [
       {

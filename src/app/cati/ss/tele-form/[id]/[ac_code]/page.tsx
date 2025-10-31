@@ -254,6 +254,27 @@ export default function TeleFormV2Page() {
       // Replace field names with their values
       let expr = condition;
       
+      // Handle MLA/MP data access pattern: mla-mp-ac-data.[ac_code].bye_poll === true
+      const mlaMpDataPattern = /mla-mp-ac-data\.\[ac_code\]\.(\w+)\s*(===|!==)\s*(true|false)/g;
+      expr = expr.replace(mlaMpDataPattern, (match, fieldName, operator, expectedValue) => {
+        const mlaMpInfo = getMlaMpData(acCode);
+        if (!mlaMpInfo) {
+          return 'false';
+        }
+        // Type-safe access to MLA/MP data fields
+        const fieldValue = (mlaMpInfo as any)[fieldName];
+        if (fieldValue === undefined) {
+          return 'false';
+        }
+        const expectedBool = expectedValue === 'true';
+        
+        if (operator === '===') {
+          return (fieldValue === expectedBool).toString();
+        } else {
+          return (fieldValue !== expectedBool).toString();
+        }
+      });
+      
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
