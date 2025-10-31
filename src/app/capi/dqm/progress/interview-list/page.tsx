@@ -359,11 +359,11 @@ export default function InterviewListPage() {
     
     switch (status) {
       case 1:
-        label = 'Pending';
+        label = 'Pass';
         colorClass = 'bg-blue-100 text-blue-800';
         break;
       case 2:
-        label = 'Pass';
+        label = 'Pending';
         colorClass = 'bg-green-100 text-green-800';
         break;
       case 3:
