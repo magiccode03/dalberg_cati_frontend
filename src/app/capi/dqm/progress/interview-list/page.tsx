@@ -613,7 +613,7 @@ export default function InterviewListPage() {
                 {/* Audio QC Status */}
                 <div>
                   <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Audio Status
+                    Audio QC Status
                   </Text>
                   <div className="space-y-2">
                     {audioQcStatusOptions.map((option) => (
@@ -627,10 +627,10 @@ export default function InterviewListPage() {
                   </div>
                 </div>
 
-                {/* Audio QC Status (Audio1 Status) */}
+                {/* Audio Fail Reason */}
                 <div>
                   <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Audio QC Status
+                  Audio Fail Reason 
                   </Text>
                   <div className="space-y-2">
                     {audio1StatusOptions.map((option) => (
