@@ -207,27 +207,28 @@
           "resp_age",
           "resp_registered_voter",
           "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ]
       },
@@ -254,27 +255,28 @@
           "fields": [
             "resp_registered_voter",
             "resp_gender",
+            "q13",
+            "q16_a",
+            "q16_b",
             "q5",
             "q6",
             "q7",
             "q8",
             "q9",
             "q10",
-            "q11",
-            "q12",
-            "q13",
-            "q14",
-            "q15",
-            "q16_a",
-            "q16_b",
-            "q17",
-            "q19",
             "resp_religion",
             "resp_social_cat",
             "resp_caste_jati",
+            "q11",
+            "q12",
+            "q14",
+            "q15",
+            "q17",
+            "q19",
             "resp_female_edu",
             "resp_male_edu",
             "resp_occupation",
+            "resp_name",
             "thanks_future"
           ]
         }
@@ -311,27 +313,28 @@
       "clearFields": {
         "opt_no": [
           "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ]
       },
@@ -363,56 +366,217 @@
     "rules": {
       "showFields": {
         "opt_male": [
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ],
         "opt_female": [
+          "q13",
+          "q16_a",
+          "q16_b",
           "q5",
           "q6",
           "q7",
           "q8",
           "q9",
           "q10",
-          "q11",
-          "q12",
-          "q13",
-          "q14",
-          "q15",
-          "q16_a",
-          "q16_b",
-          "q17",
-          "q19",
           "resp_religion",
           "resp_social_cat",
           "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
           "resp_female_edu",
           "resp_male_edu",
           "resp_occupation",
+          "resp_name",
           "thanks_future"
         ]
       }
     },
     "tag": "resp_gender"
+  },
+  {
+    "type": "checkbox",
+    "label": "১৩. আপনার মতে, আপনার বিধানসভা কেন্দ্রের তিনটে সবচেয়ে গুরুত্বপূর্ণ সমস্যা কোনগুলো?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "maxSelections": 3,
+    "options": [
+      {
+        "label": "দাম বেড়ে যাওয়া/ মুদ্রাস্ফীতি",
+        "value": "2",
+        "tag": "opt_price_rise"
+      },
+      {
+        "label": "বেকারত্ব/ কাজের অভাব",
+        "value": "3",
+        "tag": "opt_unemployment"
+      },
+      {
+        "label": "বিদ্যুৎ/ পাওয়ার সমস্যা",
+        "value": "4",
+        "tag": "opt_electricity"
+      },
+      {
+        "label": "স্বাস্থ্য পরিসেবা ভাল নয়",
+        "value": "5",
+        "tag": "opt_healthcare"
+      },
+      {
+        "label": "শিক্ষা ব্যবস্থার সমস্যা",
+        "value": "6",
+        "tag": "opt_education"
+      },
+      {
+        "label": "ভোটার লিস্টের সমস্যা/ নাগরিকত্ব হারানোর ভয়",
+        "value": "7",
+        "tag": "opt_voter_list"
+      },
+      {
+        "label": "পরিযায়ী শ্রমিকদের জন্য সুরক্ষা",
+        "value": "8",
+        "tag": "opt_migrant_safety"
+      },
+      {
+        "label": "শিক্ষকদের প্রতিবাদ এবং চাকরির নিরাপত্তাহীনতা",
+        "value": "9",
+        "tag": "opt_teacher_protests"
+      },
+      {
+        "label": "বন্যা এবং প্রাকৃতিক দুর্যোগ",
+        "value": "10",
+        "tag": "opt_floods"
+      },
+      {
+        "label": "সাম্প্রদায়িক উত্তেজনা/ আইন-শৃংখলা নিয়ে উদ্বেগ",
+        "value": "11",
+        "tag": "opt_communal_tensions"
+      },
+      {
+        "label": "মহিলাদের সুরক্ষা (অপরাধ/ নিরাপত্তা)",
+        "value": "12",
+        "tag": "opt_women_safety"
+      },
+      {
+        "label": "পরিকাঠামো (রাস্তা, যোগাযোগ)",
+        "value": "13",
+        "tag": "opt_infrastructure"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q13_oth"
+        ]
+      }
+    },
+    "tag": "q13"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q13.includes('44')",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q13_oth"
+  },
+  {
+    "type": "radio",
+    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরোপুরি সন্তুষ্ট",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "কিছুটা সন্তুষ্ট",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "কিছুটা অসন্তুষ্ট",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "পুরোপুরি অসন্তুষ্ট",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_a"
+  },
+  {
+    "type": "radio",
+    "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরোপুরি সন্তুষ্ট",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "কিছুটা সন্তুষ্ট",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "কিছুটা অসন্তুষ্ট",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "পুরোপুরি অসন্তুষ্ট",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -746,7 +910,7 @@
   {
     "type": "radio",
     "label": "৯. মনে করুন যে, আপনার পছন্দের দলটা আপনার বিধানসভা কেন্দ্রের নির্বাচনে লড়ছে না, তাহলে আপনি কোন দলকে বেছে নেবেন?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -837,7 +1001,7 @@
   {
     "type": "checkbox",
     "label": "১০. আমাদের একটু বলুন, আপনার দ্বিতীয় পছন্দ হিসাবে ওপরের দলকে বেছে নেওয়ার কারনটা কি?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "maxSelections": 6,
     "options": [
@@ -898,6 +1062,129 @@
     "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q10_oth"
+  },
+  {
+    "type": "radio",
+    "label": "২০. আমাকে একটু বলুন, আপনি কোন ধর্ম মেনে চলেন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "হিন্দু",
+        "value": "1",
+        "tag": "opt_hindu"
+      },
+      {
+        "label": "মুসলিম",
+        "value": "2",
+        "tag": "opt_muslim"
+      },
+      {
+        "label": "খ্রীষ্টান",
+        "value": "3",
+        "tag": "opt_christian"
+      },
+      {
+        "label": "শিখ",
+        "value": "4",
+        "tag": "opt_sikh"
+      },
+      {
+        "label": "জৈন",
+        "value": "5",
+        "tag": "opt_jain"
+      },
+      {
+        "label": "বৌদ্ধ",
+        "value": "6",
+        "tag": "opt_buddhist"
+      },
+      {
+        "label": "কোনো উত্তর নেই ",
+        "value": "7",
+        "tag": "opt_no_response"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "resp_religion_oth"
+        ]
+      }
+    },
+    "tag": "resp_religion"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "resp_religion === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "resp_religion_oth"
+  },
+  {
+    "type": "radio",
+    "label": "২১. আপনি কোন সামাজিক শ্রেণীতে পড়েন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "জেনারেল/ ও সি",
+        "value": "1",
+        "tag": "opt_general"
+      },
+      {
+        "label": "তফশিলী জাতি",
+        "value": "2",
+        "tag": "opt_sc"
+      },
+      {
+        "label": "তফশিলী উপজাতি",
+        "value": "3",
+        "tag": "opt_st"
+      },
+      {
+        "label": "অন্যান্য অনগ্রসর শ্রেনী",
+        "value": "4",
+        "tag": "opt_obc"
+      },
+      {
+        "label": "কোনো উত্তর নেই",
+        "value": "88",
+        "tag": "opt_no_response"
+      }
+    ],
+    "tag": "resp_social_cat"
+  },
+  {
+    "type": "radio",
+    "label": "২২. আপনি কি দয়া করে আমাকে আপনার জাতি বলতে পারেন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": "caste-options[resp_religion.value].castes",
+    "rules": {
+      "showFields": {
+        "44": [
+          "resp_caste_jati_oth"
+        ]
+      }
+    },
+    "tag": "resp_caste_jati"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (উল্লেখ করুন)",
+    "conditional": "resp_caste_jati === '44'",
+    "required": true,
+    "placeholder": "উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "resp_caste_jati_oth"
   },
   {
     "type": "checkbox",
@@ -1098,97 +1385,6 @@
     "tag": "q12_oth"
   },
   {
-    "type": "checkbox",
-    "label": "১৩. আপনার মতে, আপনার বিধানসভা কেন্দ্রের তিনটে সবচেয়ে গুরুত্বপূর্ণ সমস্যা কোনগুলো?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "maxSelections": 3,
-    "options": [
-      {
-        "label": "দাম বেড়ে যাওয়া/ মুদ্রাস্ফীতি",
-        "value": "2",
-        "tag": "opt_price_rise"
-      },
-      {
-        "label": "বেকারত্ব/ কাজের অভাব",
-        "value": "3",
-        "tag": "opt_unemployment"
-      },
-      {
-        "label": "বিদ্যুৎ/ পাওয়ার সমস্যা",
-        "value": "4",
-        "tag": "opt_electricity"
-      },
-      {
-        "label": "স্বাস্থ্য পরিসেবা ভাল নয়",
-        "value": "5",
-        "tag": "opt_healthcare"
-      },
-      {
-        "label": "শিক্ষা ব্যবস্থার সমস্যা",
-        "value": "6",
-        "tag": "opt_education"
-      },
-      {
-        "label": "ভোটার লিস্টের সমস্যা/ নাগরিকত্ব হারানোর ভয়",
-        "value": "7",
-        "tag": "opt_voter_list"
-      },
-      {
-        "label": "পরিযায়ী শ্রমিকদের জন্য সুরক্ষা",
-        "value": "8",
-        "tag": "opt_migrant_safety"
-      },
-      {
-        "label": "শিক্ষকদের প্রতিবাদ এবং চাকরির নিরাপত্তাহীনতা",
-        "value": "9",
-        "tag": "opt_teacher_protests"
-      },
-      {
-        "label": "বন্যা এবং প্রাকৃতিক দুর্যোগ",
-        "value": "10",
-        "tag": "opt_floods"
-      },
-      {
-        "label": "সাম্প্রদায়িক উত্তেজনা/ আইন-শৃংখলা নিয়ে উদ্বেগ",
-        "value": "11",
-        "tag": "opt_communal_tensions"
-      },
-      {
-        "label": "মহিলাদের সুরক্ষা (অপরাধ/ নিরাপত্তা)",
-        "value": "12",
-        "tag": "opt_women_safety"
-      },
-      {
-        "label": "পরিকাঠামো (রাস্তা, যোগাযোগ)",
-        "value": "13",
-        "tag": "opt_infrastructure"
-      },
-      {
-        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "q13_oth"
-        ]
-      }
-    },
-    "tag": "q13"
-  },
-  {
-    "type": "text",
-    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-    "conditional": "q13.includes('44')",
-    "required": true,
-    "placeholder": "দয়া করে উল্লেখ করুন",
-    "maxLength": 150,
-    "tag": "q13_oth"
-  },
-  {
     "type": "radio",
     "label": "১৪. মমতা ব্যানার্জির নেতৃত্বাধীন রাজ্য সরকারের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
     "conditional": "resp_registered_voter === '1'",
@@ -1255,74 +1451,6 @@
       }
     ],
     "tag": "q15"
-  },
-  {
-    "type": "radio",
-    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "পুরোপুরি সন্তুষ্ট",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "কিছুটা সন্তুষ্ট",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "কিছুটা অসন্তুষ্ট",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "পুরোপুরি অসন্তুষ্ট",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_a"
-  },
-  {
-    "type": "radio",
-    "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "পুরোপুরি সন্তুষ্ট",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "কিছুটা সন্তুষ্ট",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "কিছুটা অসন্তুষ্ট",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "পুরোপুরি অসন্তুষ্ট",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -1471,129 +1599,6 @@
   },
   {
     "type": "radio",
-    "label": "২০. আমাকে একটু বলুন, আপনি কোন ধর্ম মেনে চলেন?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "হিন্দু",
-        "value": "1",
-        "tag": "opt_hindu"
-      },
-      {
-        "label": "মুসলিম",
-        "value": "2",
-        "tag": "opt_muslim"
-      },
-      {
-        "label": "খ্রীষ্টান",
-        "value": "3",
-        "tag": "opt_christian"
-      },
-      {
-        "label": "শিখ",
-        "value": "4",
-        "tag": "opt_sikh"
-      },
-      {
-        "label": "জৈন",
-        "value": "5",
-        "tag": "opt_jain"
-      },
-      {
-        "label": "বৌদ্ধ",
-        "value": "6",
-        "tag": "opt_buddhist"
-      },
-      {
-        "label": "কোনো উত্তর নেই ",
-        "value": "7",
-        "tag": "opt_no_response"
-      },
-      {
-        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "resp_religion_oth"
-        ]
-      }
-    },
-    "tag": "resp_religion"
-  },
-  {
-    "type": "text",
-    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-    "conditional": "resp_religion === '44'",
-    "required": true,
-    "placeholder": "দয়া করে উল্লেখ করুন",
-    "maxLength": 150,
-    "tag": "resp_religion_oth"
-  },
-  {
-    "type": "radio",
-    "label": "২১. আপনি কোন সামাজিক শ্রেণীতে পড়েন?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "জেনারেল/ ও সি",
-        "value": "1",
-        "tag": "opt_general"
-      },
-      {
-        "label": "তফশিলী জাতি",
-        "value": "2",
-        "tag": "opt_sc"
-      },
-      {
-        "label": "তফশিলী উপজাতি",
-        "value": "3",
-        "tag": "opt_st"
-      },
-      {
-        "label": "অন্যান্য অনগ্রসর শ্রেনী",
-        "value": "4",
-        "tag": "opt_obc"
-      },
-      {
-        "label": "কোনো উত্তর নেই",
-        "value": "88",
-        "tag": "opt_no_response"
-      }
-    ],
-    "tag": "resp_social_cat"
-  },
-  {
-    "type": "radio",
-    "label": "২২. আপনি কি দয়া করে আমাকে আপনার জাতি বলতে পারেন?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": "caste-options[resp_religion.value].castes",
-    "rules": {
-      "showFields": {
-        "44": [
-          "resp_caste_jati_oth"
-        ]
-      }
-    },
-    "tag": "resp_caste_jati"
-  },
-  {
-    "type": "text",
-    "label": "অন্যান্য (উল্লেখ করুন)",
-    "conditional": "resp_caste_jati === '44'",
-    "required": true,
-    "placeholder": "উল্লেখ করুন",
-    "maxLength": 150,
-    "tag": "resp_caste_jati_oth"
-  },
-  {
-    "type": "radio",
     "label": "২৩. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত মহিলা কতদূর পর্যন্ত পড়াশুনো করেছেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
@@ -1718,6 +1723,14 @@
       }
     ],
     "tag": "resp_occupation"
+  },
+    {
+    "type": "text",
+    "label": "২৭. আপনি কি আপনার নাম আমাদের সাথে শেয়ার করতে চান? আমরা আপনাকে আশ্বাস দিচ্ছি যে আমরা এটি গোপন রাখব।",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "placeholder": "Enter name",
+    "tag": "resp_name"
   },
   {
     "type": "radio",
