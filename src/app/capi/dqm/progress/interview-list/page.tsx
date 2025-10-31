@@ -109,9 +109,8 @@ export default function InterviewListPage() {
 
   // Checkbox options
   const audioQcStatusOptions = [
-    { value: '1', label: 'Pending' },
-    { value: '2', label: 'Pass' },
-    { value: '3', label: 'Fail' },
+    { value: '1', label: 'Pass' },
+    { value: '2', label: 'Fail' },
   ];
 
   const audio1StatusOptions = [
@@ -360,15 +359,15 @@ export default function InterviewListPage() {
     switch (status) {
       case 1:
         label = 'Pass';
-        colorClass = 'bg-blue-100 text-blue-800';
+        colorClass = 'bg-green-100 text-green-800';
         break;
       case 2:
         label = 'Fail';
         colorClass = 'bg-red-100 text-red-800';
         break;
-      case 3:
-        label = 'Pending';
-        colorClass = 'bg-green-100 text-green-800';
+      default:
+        label = '-';
+        colorClass = 'bg-gray-100 text-gray-800';
         break;
     }
     
