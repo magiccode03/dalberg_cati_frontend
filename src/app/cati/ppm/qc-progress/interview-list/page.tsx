@@ -31,51 +31,54 @@ interface SearchFilters {
 
 interface InterviewData {
   server_id: number;
-  interview_date: string;
+  call_date: string | null;
   ac_code: number;
   ac_name: string;
   district_name: string;
   pc_name: string;
-  ps_code: string;
-  ps_name: string;
-  interviewer_id: string;
-  supervisor_id: string;
-  user_id: number;
-  respondent_name: string;
-  gender: string;
-  age: number;
-  mobile_no: string;
-  social_category: number;
-  religion: number;
-  audio_qc_complete_date: string;
-  audio_qc_status: string;
-  audio_qc_id: number;
-  audio1_status: string;
-  audio_label: string;
-  audio_qc_rejection_level: number | null;
-  qc_rejection_level: number | null;
-  qc_audio_status: number;
-  tele_qc_complete_date: string | null;
-  tele_qc_status: string;
-  tele_qc_id: number | null;
-  qc_outcome: string;
+  part_no: string | null;
+  poling_station_name: string | null;
+  teleform_user_id: number;
+  supervisor_id: number;
+  resp_gender: number;
+  resp_age: number;
+  phone: string;
+  resp_social_cat: number;
+  resp_religion: number;
+  qc_assign_date: string | null;
+  qc_teleform_user_id: number;
+  qc_rejection_level: number;
+  qc_complete_date: string | null;
+  qc_status: number;
   qc_scenario_color: string;
   outcome_color: string;
-  edit_available: boolean;
-  gps_qc_status: string;
-  broadcast_status: string;
-  audio_1_quality: string;
-  submission_token: string;
-  audio: number;
-  audio_duration: number;
-  start_time: string;
-  end_time: string;
+  q_call_status: number;
+  q_consent: number | null;
+  agency_id: number;
+  qc: number;
   status: number;
-  gps_lat: string;
-  gps_lng: number;
+  callid: string;
+  audio_duration: number;
+  start_time: string | null;
+  end_time: string | null;
+  gps_lat: number | null;
+  gps_lng: number | null;
   gps: string;
-  qc_scenario: number;
-  manual_qc: number;
+  qc_audio_status: number;
+  recordings?: Array<{
+    file: string;
+    time: string;
+    nodeid: string;
+    visitId: string;
+  }>;
+  audio_file?: string;
+  // Additional fields that might be present
+  interview_date?: string;
+  interviewer_id?: string;
+  audio_qc_complete_date?: string;
+  audio_qc_id?: number;
+  audio_label?: string;
+  qc_outcome?: string;
 }
 
 interface PaginationInfo {
@@ -246,11 +249,22 @@ const InterviewListPage = () => {
     }
   };
 
-  const getGenderText = (gender: string) => {
-    return gender || '-';
+  const getGenderText = (gender: string | number) => {
+    if (gender === 1 || gender === '1' || gender === 'Male') return 'Male';
+    if (gender === 2 || gender === '2' || gender === 'Female') return 'Female';
+    return gender?.toString() || '-';
   };
 
-  const getQcOutcomeBadge = (qcScenarioColor: string, qcOutcome: string) => {
+  const getAudioQcStatusText = (status: number): string => {
+    const statusMap: { [key: number]: string } = {
+      1: 'Pending',
+      2: 'Pass',
+      3: 'Fail',
+    };
+    return statusMap[status] || status.toString();
+  };
+
+  const getQcOutcomeBadge = (qcScenarioColor: string, qcOutcome?: string) => {
     const outcomeMap: { [key: string]: { color: string; icon: any } } = {
       'blue': { color: 'bg-blue-100 text-blue-800', icon: Clock },
       'red': { color: 'bg-red-100 text-red-800', icon: XCircle },
@@ -263,14 +277,15 @@ const InterviewListPage = () => {
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         <Icon className="w-3 h-3 mr-1" />
-        {qcOutcome}
+        {qcOutcome || qcScenarioColor}
       </span>
     );
   };
 
   // Function to get the display text for Audio Fail Reason column
   const getAudioFailReasonDisplayText = (row: InterviewData) => {
-    if (!row.qc_rejection_level || !row.qc_audio_status) {
+    // qc_rejection_level can be 0 (no rejection), so check if it exists and is > 0
+    if (row.qc_rejection_level === undefined || row.qc_rejection_level === null || row.qc_rejection_level === 0 || !row.qc_audio_status) {
       return '-';
     }
 
@@ -373,6 +388,8 @@ const InterviewListPage = () => {
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: pagination.limit.toString(),
+        sortBy: 'server_id',
+        sortOrder: 'DESC',
         interview_date: filters.interview_date || 'all', // Always include interview_date parameter
       });
       
@@ -812,36 +829,36 @@ const InterviewListPage = () => {
                               {item.server_id}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {item.interview_date ? formatDate(item.interview_date) : '-'}
+                              {item.call_date || item.interview_date ? formatDate(item.call_date || item.interview_date || '') : '-'}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-left">
                               {item.ac_name || '-'}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {item.interviewer_id}
+                              {item.teleform_user_id || '-'}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {getGenderText(item.gender)}
+                              {getGenderText(item.resp_gender)}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {item.audio_qc_complete_date ? formatDate(item.audio_qc_complete_date) : '-'}
+                              {item.qc_complete_date ? formatDate(item.qc_complete_date) : '-'}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                               <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                                {item.audio_label || '-'}
+                                {item.qc_status !== undefined ? getAudioQcStatusText(item.qc_status) : '-'}
                               </span>
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {item.audio_qc_id || '-'}
+                              {item.qc_teleform_user_id || '-'}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                               {getAudioFailReasonDisplayText(item)}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {(item as any).audio_file ? (
+                              {item.audio_file ? (
                                 <Button
                                   size="sm"
-                                  onClick={() => handlePlayAudio((item as any).audio_file)}
+                                  onClick={() => handlePlayAudio(item.audio_file!)}
                                   className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
                                   <Volume2 className="w-4 h-4" />
