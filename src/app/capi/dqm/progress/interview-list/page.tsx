@@ -542,14 +542,26 @@ export default function InterviewListPage() {
   const fetchQcIds = async () => {
     try {
       setQcIdLoading(true);
-      // TODO: Replace with actual API endpoint for QC IDs
-      // For now, using empty list
-      setQcIdList([
-        { value: '', label: 'Select QC ID' },
-      ]);
+      const response = await apiClient.get('/dropdown/qc-users');
+      
+      if (response.data?.status === 'success' && response.data?.data) {
+        // Transform the response object { "100": "Tanishka", "101": "Priyanka", ... }
+        // into options array with format "Name(ID)"
+        const options = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: `${name}(${id})`
+        }));
+        
+        // Sort by ID (numeric)
+        options.sort((a, b) => parseInt(a.value) - parseInt(b.value));
+        
+        setQcIdList(options);
+      } else {
+        setQcIdList([]);
+      }
     } catch (err: any) {
       console.error('❌ Error fetching QC IDs:', err);
-      setQcIdList([{ value: '', label: 'Select QC ID' }]);
+      setQcIdList([]);
     } finally {
       setQcIdLoading(false);
     }
