@@ -525,6 +525,24 @@ const InterviewListPage = () => {
         }
       }
 
+      // Fetch QC Users for QC ID dropdown
+      const qcUsersResponse = await fetch(`${apiBaseUrl}/api/teleform-users?qc=1&status=1&limit=500`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (qcUsersResponse.ok) {
+        const qcUsersData = await qcUsersResponse.json();
+        if (qcUsersData.success) {
+          const qcUsers = qcUsersData.data || [];
+          setFilterOptions(prev => ({
+            ...prev,
+            qcIdList: qcUsers.map((user: any) => ({
+              value: user.teleform_user_id.toString(),
+              label: `${user.name} (${user.teleform_user_id})`
+            }))
+          }));
+        }
+      }
+
       // Set other options
       setFilterOptions(prev => ({
         ...prev,
