@@ -93,7 +93,7 @@ export default function DataEntryListPage() {
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const apiUrl = `${apiBaseUrl}/api/cati/qc/data-entry-list?qc_teleform_user_id=${currentUserData.data_entry_user_id}&page=${page}&limit=20`;
+      const apiUrl = `${apiBaseUrl}/api/cati/qc/data-entry-list?data_entry_user=${currentUserData.data_entry_user_id}&page=${page}&limit=20`;
 
       const response = await fetch(apiUrl, {
         method: 'GET',
