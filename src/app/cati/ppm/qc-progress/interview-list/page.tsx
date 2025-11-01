@@ -23,7 +23,7 @@ interface SearchFilters {
   interviewer_id: string;
   qc_date: string[];
   qc_id: string;
-  audio_qc_status: string[];
+  qc_status: string[];
   audio_fail_reason: string;
 }
 
@@ -108,7 +108,7 @@ const InterviewListPage = () => {
     interviewer_id: '',
     qc_date: [],
     qc_id: '',
-    audio_qc_status: [],
+    qc_status: [],
     audio_fail_reason: '',
   });
 
@@ -143,9 +143,8 @@ const InterviewListPage = () => {
 
   // Options for dropdowns
   const audioQcStatusOptions = [
-    { value: '1', label: 'Pending' },
-    { value: '2', label: 'Pass' },
-    { value: '3', label: 'Fail' },
+    { value: '1', label: 'Pass' },
+    { value: '2', label: 'Fail' },
   ];
 
   const audio1StatusOptions = [
@@ -272,9 +271,8 @@ const InterviewListPage = () => {
 
   const getAudioQcStatusText = (status: number): string => {
     const statusMap: { [key: number]: string } = {
-      1: 'Pending',
-      2: 'Pass',
-      3: 'Fail',
+      1: 'Pass',
+      2: 'Fail',
     };
     return statusMap[status] || status.toString();
   };
@@ -435,10 +433,10 @@ const InterviewListPage = () => {
       if (filters.qc_id) {
         params.append('qc_id', filters.qc_id);
       }
-      // Send audio_qc_status as repeated parameters (audio_qc_status=1&audio_qc_status=2)
-      if (filters.audio_qc_status.length > 0) {
-        filters.audio_qc_status.forEach(status => {
-          params.append('audio_qc_status', status);
+      // Send qc_status as repeated parameters (qc_status=1&qc_status=2)
+      if (filters.qc_status.length > 0) {
+        filters.qc_status.forEach(status => {
+          params.append('qc_status', status);
         });
       }
       if (filters.audio_fail_reason) {
@@ -712,12 +710,12 @@ const InterviewListPage = () => {
                   />
                 </div>
 
-                {/* Audio QC Status */}
+                {/* QC Status */}
                 <div>
                   <SelectDropdown
-                    value={filters.audio_qc_status}
-                    onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
-                    placeholder="Select Audio Status"
+                    value={filters.qc_status}
+                    onChange={(value) => handleFilterChange('qc_status', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Status"
                     options={audioQcStatusOptions}
                     searchable={true}
                     clearable={true}
