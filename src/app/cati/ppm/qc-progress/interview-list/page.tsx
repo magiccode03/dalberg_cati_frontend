@@ -25,7 +25,6 @@ interface SearchFilters {
   qc_id: string;
   audio_qc_status: string[];
   audio_fail_reason: string;
-  qc_scenario_color: string[];
 }
 
 interface InterviewData {
@@ -111,7 +110,6 @@ const InterviewListPage = () => {
     qc_id: '',
     audio_qc_status: [],
     audio_fail_reason: '',
-    qc_scenario_color: [],
   });
 
   // State for data
@@ -180,11 +178,6 @@ const InterviewListPage = () => {
     { value: 'same_respondent_as_before', label: 'Same respondent as before' }
   ];
 
-  const qcOutcomeOptions = [
-    { value: 'blue', label: 'Pending' },
-    { value: 'red', label: 'Fail' },
-    { value: 'green', label: 'Pass' },
-  ];
 
   // Generate date options
   const generateDateOptions = () => {
@@ -451,9 +444,6 @@ const InterviewListPage = () => {
       if (filters.audio_fail_reason) {
         params.append('audio_fail_reason', filters.audio_fail_reason);
       }
-      if (filters.qc_scenario_color.length > 0) {
-        params.append('qc_scenario_color', filters.qc_scenario_color.join(','));
-      }
       
       const url = `${apiBaseUrl}/api/cati/ppm/qc/agency/progress/detail?${params.toString()}`;
       
@@ -691,7 +681,7 @@ const InterviewListPage = () => {
               )}
 
               {/* Second Row - Additional Filters and Search */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Audio Fail Reason */}
                 <div>
                   <SelectDropdown
@@ -711,19 +701,6 @@ const InterviewListPage = () => {
                     onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
                     placeholder="Select Audio Status"
                     options={audioQcStatusOptions}
-                    searchable={true}
-                    clearable={true}
-                    multiple={true}
-                  />
-                </div>
-
-                {/* QC Outcome */}
-                <div>
-                  <SelectDropdown
-                    value={filters.qc_scenario_color}
-                    onChange={(value) => handleFilterChange('qc_scenario_color', Array.isArray(value) ? value : [value])}
-                    placeholder="Select QC Outcome"
-                    options={qcOutcomeOptions}
                     searchable={true}
                     clearable={true}
                     multiple={true}
