@@ -389,6 +389,27 @@ export default function TeleFormV2Page() {
       // Replace field names with their values
       let expr = condition;
       
+      // Handle MLA/MP data access pattern: mla-mp-ac-data.[ac_code].bye_poll === true
+      const mlaMpDataPattern = /mla-mp-ac-data\.\[ac_code\]\.(\w+)\s*(===|!==)\s*(true|false)/g;
+      expr = expr.replace(mlaMpDataPattern, (match, fieldName, operator, expectedValue) => {
+        const mlaMpInfo = getMlaMpData(acCode);
+        if (!mlaMpInfo) {
+          return 'false';
+        }
+        // Type-safe access to MLA/MP data fields
+        const fieldValue = (mlaMpInfo as any)[fieldName];
+        if (fieldValue === undefined) {
+          return 'false';
+        }
+        const expectedBool = expectedValue === 'true';
+        
+        if (operator === '===') {
+          return (fieldValue === expectedBool).toString();
+        } else {
+          return (fieldValue !== expectedBool).toString();
+        }
+      });
+      
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
@@ -444,10 +465,10 @@ export default function TeleFormV2Page() {
     }
   };
 
-  // Check if field should be visible - for edit page, show all fields
+  // Check if field should be visible
   const isFieldVisible = (field: FormField): boolean => {
-    // For edit page, always show all fields regardless of conditions
-    return true;
+    if (!field.conditional) return true;
+    return evaluateCondition(field.conditional);
   };
 
   // Handle input change
@@ -711,9 +732,9 @@ export default function TeleFormV2Page() {
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    // Get all required fields (all fields are visible in edit mode)
+    // Get all visible fields that are required
     processedFormConfig.forEach((field) => {
-      if (field.required) {
+      if (field.required && isFieldVisible(field)) {
         const fieldValue = formData[field.tag];
         
         // Check if field is empty
@@ -745,7 +766,7 @@ export default function TeleFormV2Page() {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
       processedFormConfig.forEach((field) => {
-        if (field.required) {
+        if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
           const isEmpty = field.type === 'checkbox' 
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
@@ -762,7 +783,7 @@ export default function TeleFormV2Page() {
       
       // Scroll to first error
       const firstErrorField = processedFormConfig.find(
-        field => field.required && 
+        field => field.required && isFieldVisible(field) && 
         (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
       
@@ -1033,12 +1054,12 @@ export default function TeleFormV2Page() {
 
   const sections = groupFieldsBySection();
 
-  // For edit page, show all sections regardless of conditions
-  const showConsentSection = true;
-  const showDemographicsSection = true;
-  const showPartyPreferencesSection = true;
-  const showSatisfactionSection = true;
-  const showFinalDemographicsSection = true;
+  // Check if sections should be visible
+  const showConsentSection = formData.q_call_status === '1';
+  const showDemographicsSection = formData.consent === '1';
+  const showPartyPreferencesSection = formData.resp_registered_voter === '1';
+  const showSatisfactionSection = formData.resp_registered_voter === '1';
+  const showFinalDemographicsSection = formData.resp_registered_voter === '1';
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
