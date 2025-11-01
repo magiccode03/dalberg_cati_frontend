@@ -379,7 +379,7 @@ export default function QCUserProgressPage() {
       const queryParams = new URLSearchParams();
       
       // Add limit for download
-      queryParams.append('limit', '300');
+      queryParams.append('limit', '1000');
       
       // Add filter parameters
       if (filters.acCode) queryParams.append('ac_code', filters.acCode);
