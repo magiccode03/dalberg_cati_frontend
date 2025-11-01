@@ -13,7 +13,7 @@ import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
-import { Search, Edit, Volume2 } from 'lucide-react';
+import { Search, Edit, Volume2, X } from 'lucide-react';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 import apiClient from '@/lib/api-client';
 
@@ -183,10 +183,13 @@ export default function InterviewListPage() {
   };
 
   // Fetch data from API
-  const fetchInterviewData = async (page: number = pagination.page) => {
+  const fetchInterviewData = async (page: number = pagination.page, filtersToUse?: typeof filters) => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Use provided filters or current state filters
+      const activeFilters = filtersToUse || filters;
       
       // Debug: Check if token exists
       const token = localStorage.getItem('accessToken');
@@ -203,27 +206,27 @@ export default function InterviewListPage() {
         sortOrder: 'DESC'
       };
       
-      if (filters.server_id) queryParams.server_id = filters.server_id;
+      if (activeFilters.server_id) queryParams.server_id = activeFilters.server_id;
       // Handle interview_date: only send if not 'all'
-      if (filters.interview_date && filters.interview_date !== 'all') {
-        queryParams.interview_date = filters.interview_date;
+      if (activeFilters.interview_date && activeFilters.interview_date !== 'all') {
+        queryParams.interview_date = activeFilters.interview_date;
         // For custom, also send custom_date and custom_date_end
-        if (filters.interview_date === 'custom') {
-          if (filters.custom_date) queryParams.custom_date = filters.custom_date;
-          if (filters.custom_date_end) queryParams.custom_date_end = filters.custom_date_end;
+        if (activeFilters.interview_date === 'custom') {
+          if (activeFilters.custom_date) queryParams.custom_date = activeFilters.custom_date;
+          if (activeFilters.custom_date_end) queryParams.custom_date_end = activeFilters.custom_date_end;
         }
       }
-      if (filters.ac_code) queryParams.ac_code = filters.ac_code;
-      if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
+      if (activeFilters.ac_code) queryParams.ac_code = activeFilters.ac_code;
+      if (activeFilters.interviewer_id) queryParams.interviewer_id = activeFilters.interviewer_id;
       // Send qc_date as array for multi-select (will convert to qc_date=2025-10-31&qc_date=2025-10-30)
-      if (filters.qc_date.length > 0) queryParams.qc_date = filters.qc_date;
-      if (filters.qc_id) queryParams.qc_id = filters.qc_id;
+      if (activeFilters.qc_date.length > 0) queryParams.qc_date = activeFilters.qc_date;
+      if (activeFilters.qc_id) queryParams.qc_id = activeFilters.qc_id;
       // Send audio_qc_status as array for multi-select (axios will convert to audio_qc_status=1&audio_qc_status=2)
-      if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status;
-      if (filters.audio_fail_reason) queryParams.audio_fail_reason = filters.audio_fail_reason;
-      if (filters.audio1_status.length > 0) queryParams.audio1_status = filters.audio1_status.join(',');
+      if (activeFilters.audio_qc_status.length > 0) queryParams.audio_qc_status = activeFilters.audio_qc_status;
+      if (activeFilters.audio_fail_reason) queryParams.audio_fail_reason = activeFilters.audio_fail_reason;
+      if (activeFilters.audio1_status.length > 0) queryParams.audio1_status = activeFilters.audio1_status.join(',');
       // Send qc_outcome as array for multi-select (will convert to qc_outcome=Pass&qc_outcome=Fail)
-      if (filters.qc_outcome.length > 0) queryParams.qc_outcome = filters.qc_outcome;
+      if (activeFilters.qc_outcome.length > 0) queryParams.qc_outcome = activeFilters.qc_outcome;
       
       console.log('API query params:', queryParams);
       
@@ -301,6 +304,30 @@ export default function InterviewListPage() {
     console.log('Searching with filters:', filters);
     setPagination(prev => ({ ...prev, page: 1 }));
     fetchInterviewData(1);
+  };
+
+  const handleClearFilters = () => {
+    const clearedFilters = {
+      server_id: '',
+      interview_date: 'all',
+      custom_date: '',
+      custom_date_end: '',
+      ac_code: '',
+      interviewer_id: '',
+      qc_date: [] as string[],
+      qc_id: '',
+      audio_qc_status: [] as string[],
+      audio_fail_reason: '',
+      audio1_status: [] as string[],
+      qc_outcome: [] as string[],
+    };
+    
+    // Update filters state
+    setFilters(clearedFilters);
+    
+    // Reset pagination and fetch data with cleared filters
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchInterviewData(1, clearedFilters);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -597,13 +624,29 @@ export default function InterviewListPage() {
             <div className="space-y-4">
               {/* First Row - Main Dropdown Filters */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                {/* Server ID */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Server ID
+                  </Text>
+                  <Input
+                    type="text"
+                    placeholder="Search by Server ID"
+                    value={filters.server_id}
+                    onChange={(e) => handleFilterChange('server_id', e.target.value)}
+                  />
+                </div>
+
                 {/* Interview Date */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.interview_date}
-                      onChange={(value) => handleFilterChange('interview_date', value as string)}
-                      placeholder="Select Interview Date"
-                      options={[
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interview Date
+                  </Text>
+                  <SelectDropdown
+                    value={filters.interview_date}
+                    onChange={(value) => handleFilterChange('interview_date', value as string)}
+                    placeholder="Select Interview Date"
+                    options={[
                       { value: 'all', label: 'All' },
                       { value: 'today', label: 'Today' },
                       { value: 'yesterday', label: 'Yesterday' },
@@ -616,73 +659,73 @@ export default function InterviewListPage() {
                     ]}
                     searchable={false}
                     clearable={true}
-                    />
-                  </div>
+                  />
+                </div>
 
-                  {/* AC Code */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.ac_code}
-                      onChange={(value) => handleFilterChange('ac_code', value as string)}
+                {/* AC Code */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    AC Code
+                  </Text>
+                  <SelectDropdown
+                    value={filters.ac_code}
+                    onChange={(value) => handleFilterChange('ac_code', value as string)}
                     placeholder={acLoading ? "Loading ACs..." : "Select AC"}
                     options={acList}
                     searchable={true}
                     clearable={true}
                     disabled={acLoading}
-                    />
-                  </div>
+                  />
+                </div>
 
-                  {/* Interviewer ID */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.interviewer_id}
-                      onChange={(value) => handleFilterChange('interviewer_id', value as string)}
+                {/* Interviewer ID */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interviewer ID
+                  </Text>
+                  <SelectDropdown
+                    value={filters.interviewer_id}
+                    onChange={(value) => handleFilterChange('interviewer_id', value as string)}
                     placeholder={interviewersLoading ? "Loading interviewers..." : "Select Interviewer ID"}
                     options={interviewers}
                     searchable={true}
                     clearable={true}
                     disabled={interviewersLoading}
-                    />
-                  </div>
+                  />
+                </div>
 
-                  {/* QC Date */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.qc_date}
+                {/* QC Date */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Date
+                  </Text>
+                  <SelectDropdown
+                    value={filters.qc_date}
                     onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
-                      placeholder="Select QC Date"
+                    placeholder="Select QC Date"
                     options={dateOptions}
                     searchable={true}
                     clearable={true}
                     multiple={true}
-                    />
-                  </div>
+                  />
+                </div>
 
-                  {/* QC ID */}
-                  <div>
-                    <SelectDropdown
-                      value={filters.qc_id}
-                      onChange={(value) => handleFilterChange('qc_id', value as string)}
+                {/* QC ID */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC ID
+                  </Text>
+                  <SelectDropdown
+                    value={filters.qc_id}
+                    onChange={(value) => handleFilterChange('qc_id', value as string)}
                     placeholder={qcIdLoading ? "Loading QC IDs..." : "Select QC ID"}
                     options={qcIdList}
                     searchable={true}
                     clearable={true}
                     disabled={qcIdLoading}
-                    />
-                  </div>
-
-                {/* Audio Fail Reason */}
-                  <div>
-                  <SelectDropdown
-                    value={filters.audio_fail_reason}
-                    onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
-                    placeholder="Select Audio Fail Reason"
-                    options={audioFailReasonOptions}
-                    searchable={true}
-                    clearable={true}
                   />
-                    </div>
-                  </div>
+                </div>
+              </div>
 
               {/* Custom Date Fields - Only show when custom is selected */}
               {filters.interview_date === 'custom' && (
@@ -715,19 +758,27 @@ export default function InterviewListPage() {
               )}
 
               {/* Second Row - Additional Filters and Search */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Server ID */}
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="Search by Server ID"
-                    value={filters.server_id}
-                    onChange={(e) => handleFilterChange('server_id', e.target.value)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                {/* Audio Fail Reason */}
+                <div className="md:col-span-1 lg:col-span-2">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Audio Fail Reason
+                  </Text>
+                  <SelectDropdown
+                    value={filters.audio_fail_reason}
+                    onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
+                    placeholder="Select Audio Fail Reason"
+                    options={audioFailReasonOptions}
+                    searchable={true}
+                    clearable={true}
                   />
                 </div>
 
                 {/* Audio QC Status */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Audio QC Status
+                  </Text>
                   <SelectDropdown
                     value={filters.audio_qc_status}
                     onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
@@ -740,7 +791,10 @@ export default function InterviewListPage() {
                 </div>
 
                 {/* QC Outcome */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Outcome
+                  </Text>
                   <SelectDropdown
                     value={filters.qc_outcome}
                     onChange={(value) => handleFilterChange('qc_outcome', Array.isArray(value) ? value : [value])}
@@ -753,7 +807,10 @@ export default function InterviewListPage() {
                 </div>
 
                 {/* Search Button */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
                   <Button 
                     type="submit"
                     variant="primary" 
@@ -762,6 +819,22 @@ export default function InterviewListPage() {
                   >
                     <Search className="w-4 h-4 mr-2" />
                     Search
+                  </Button>
+                </div>
+
+                {/* Clear Button */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={handleClearFilters}
+                    className="w-full flex items-center justify-center bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear
                   </Button>
                 </div>
               </div>
