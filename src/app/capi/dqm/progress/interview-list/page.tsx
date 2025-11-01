@@ -585,25 +585,25 @@ export default function InterviewListPage() {
     <FluidContainer>
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={2} className="text-2xl font-semibold text-gray-900">
-          Interview List
-        </Heading>
-      </div>
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
+              Interview List
+            </Heading>
+        </div>
 
       {/* Filters Card - Horizontal Layout */}
-      <Card className="mb-6">
+          <Card className="mb-6">
         <div className="p-4">
           <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
             <div className="space-y-4">
               {/* First Row - Main Dropdown Filters */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 {/* Interview Date */}
-                <div>
-                  <SelectDropdown
-                    value={filters.interview_date}
-                    onChange={(value) => handleFilterChange('interview_date', value as string)}
-                    placeholder="Select Interview Date"
-                    options={[
+                  <div>
+                    <SelectDropdown
+                      value={filters.interview_date}
+                      onChange={(value) => handleFilterChange('interview_date', value as string)}
+                      placeholder="Select Interview Date"
+                      options={[
                       { value: 'all', label: 'All' },
                       { value: 'today', label: 'Today' },
                       { value: 'yesterday', label: 'Yesterday' },
@@ -616,63 +616,63 @@ export default function InterviewListPage() {
                     ]}
                     searchable={false}
                     clearable={true}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* AC Code */}
-                <div>
-                  <SelectDropdown
-                    value={filters.ac_code}
-                    onChange={(value) => handleFilterChange('ac_code', value as string)}
+                  {/* AC Code */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.ac_code}
+                      onChange={(value) => handleFilterChange('ac_code', value as string)}
                     placeholder={acLoading ? "Loading ACs..." : "Select AC"}
                     options={acList}
                     searchable={true}
                     clearable={true}
                     disabled={acLoading}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* Interviewer ID */}
-                <div>
-                  <SelectDropdown
-                    value={filters.interviewer_id}
-                    onChange={(value) => handleFilterChange('interviewer_id', value as string)}
+                  {/* Interviewer ID */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.interviewer_id}
+                      onChange={(value) => handleFilterChange('interviewer_id', value as string)}
                     placeholder={interviewersLoading ? "Loading interviewers..." : "Select Interviewer ID"}
                     options={interviewers}
                     searchable={true}
                     clearable={true}
                     disabled={interviewersLoading}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* QC Date */}
-                <div>
-                  <SelectDropdown
-                    value={filters.qc_date}
+                  {/* QC Date */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.qc_date}
                     onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
-                    placeholder="Select QC Date"
+                      placeholder="Select QC Date"
                     options={dateOptions}
                     searchable={true}
                     clearable={true}
                     multiple={true}
-                  />
-                </div>
+                    />
+                  </div>
 
-                {/* QC ID */}
-                <div>
-                  <SelectDropdown
-                    value={filters.qc_id}
-                    onChange={(value) => handleFilterChange('qc_id', value as string)}
+                  {/* QC ID */}
+                  <div>
+                    <SelectDropdown
+                      value={filters.qc_id}
+                      onChange={(value) => handleFilterChange('qc_id', value as string)}
                     placeholder={qcIdLoading ? "Loading QC IDs..." : "Select QC ID"}
                     options={qcIdList}
                     searchable={true}
                     clearable={true}
                     disabled={qcIdLoading}
-                  />
-                </div>
+                    />
+                  </div>
 
                 {/* Audio Fail Reason */}
-                <div>
+                  <div>
                   <SelectDropdown
                     value={filters.audio_fail_reason}
                     onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
@@ -681,8 +681,8 @@ export default function InterviewListPage() {
                     searchable={true}
                     clearable={true}
                   />
-                </div>
-              </div>
+                    </div>
+                  </div>
 
               {/* Custom Date Fields - Only show when custom is selected */}
               {filters.interview_date === 'custom' && (
@@ -767,11 +767,11 @@ export default function InterviewListPage() {
               </div>
             </div>
           </form>
-        </div>
-      </Card>
+              </div>
+            </Card>
 
       {/* Main Content - Table */}
-      <Card>
+            <Card>
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center">
                 <div>
@@ -920,8 +920,8 @@ export default function InterviewListPage() {
                   />
                 </div>
               )}
-            </div>
-      </Card>
+              </div>
+            </Card>
 
       {/* Audio Player Modal */}
       <AudioPlayerModal

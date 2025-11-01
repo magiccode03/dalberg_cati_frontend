@@ -11,7 +11,7 @@ import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
-import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock, X } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -137,7 +137,7 @@ const InterviewListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAudioModal, setShowAudioModal] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<string | null>(null);
+  const [selectedInterview, setSelectedInterview] = useState<InterviewData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
 
@@ -213,8 +213,8 @@ const InterviewListPage = () => {
     fetchInterviewData(newPage);
   };
 
-  const handlePlayAudio = (audioUrl: string) => {
-    setCurrentAudio(audioUrl);
+  const handlePlayAudio = (item: InterviewData) => {
+    setSelectedInterview(item);
     setShowAudioModal(true);
     setAudioError(false);
     setUseIframe(false);
@@ -222,7 +222,7 @@ const InterviewListPage = () => {
 
   const handleCloseAudioModal = () => {
     setShowAudioModal(false);
-    setCurrentAudio(null);
+    setSelectedInterview(null);
     setAudioError(false);
     setUseIframe(false);
   };
@@ -275,6 +275,16 @@ const InterviewListPage = () => {
       2: 'Fail',
     };
     return statusMap[status] || status.toString();
+  };
+
+  const getStatusLabel = (status: number): string => {
+    const statusMap: { [key: number]: string } = {
+      1: 'Valid',
+      2: 'Rejected',
+      10: 'Valid',
+      20: 'Rejected',
+    };
+    return statusMap[status] || 'Unknown';
   };
 
   const getQcOutcomeBadge = (qcScenarioColor: string, qcOutcome?: string) => {
@@ -854,7 +864,7 @@ const InterviewListPage = () => {
                               {item.audio_file ? (
                                 <Button
                                   size="sm"
-                                  onClick={() => handlePlayAudio(item.audio_file!)}
+                                  onClick={() => handlePlayAudio(item)}
                                   className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
                                   <Volume2 className="w-4 h-4" />
@@ -901,24 +911,64 @@ const InterviewListPage = () => {
       </div>
 
       {/* Audio Modal */}
-      {showAudioModal && currentAudio && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-auto">
+      {showAudioModal && selectedInterview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <Heading level={4} className="text-lg sm:text-xl">
-                Audio Player
-              </Heading>
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-6 w-6 text-blue-600" />
+                <Heading level={3} className="text-lg font-semibold">
+                  Interview Audio Player
+                </Heading>
+              </div>
               <button
                 onClick={handleCloseAudioModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                &times;
+                <X className="h-6 w-6" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
+            <div className="p-6 space-y-4">
+              {/* Interview Details */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.server_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedInterview.call_date || selectedInterview.interview_date
+                        ? formatDate(selectedInterview.call_date || selectedInterview.interview_date || '')
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.ac_name || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedInterview.teleform_user_id || selectedInterview.interviewer_id || '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedInterview.qc_status !== undefined 
+                        ? getAudioQcStatusText(selectedInterview.qc_status)
+                        : '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audio Player */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
                 <div className="mb-3 text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -932,7 +982,7 @@ const InterviewListPage = () => {
                 </div>
 
                 {!useIframe ? (
-                  currentAudio ? (
+                  selectedInterview.audio_file ? (
                     <audio
                       controls
                       className="w-full"
@@ -942,8 +992,8 @@ const InterviewListPage = () => {
                       onLoadStart={() => console.log('Audio loading started')}
                       onCanPlay={() => console.log('Audio can play')}
                     >
-                      <source src={currentAudio} type="audio/mpeg" />
-                      <source src={currentAudio} type="audio/mp3" />
+                      <source src={selectedInterview.audio_file} type="audio/mpeg" />
+                      <source src={selectedInterview.audio_file} type="audio/mp3" />
                       Your browser does not support the audio element.
                     </audio>
                   ) : (
@@ -952,10 +1002,10 @@ const InterviewListPage = () => {
                     </div>
                   )
                 ) : (
-                  currentAudio ? (
+                  selectedInterview.audio_file ? (
                     <div className="w-full">
                       <iframe
-                        src={currentAudio}
+                        src={selectedInterview.audio_file}
                         className="w-full h-16 border-0 rounded"
                         title="Audio Player"
                         allow="autoplay"
@@ -1005,25 +1055,37 @@ const InterviewListPage = () => {
                 )}
                 
                 {/* Alternative Options */}
-                <div className="mt-4 flex justify-center items-center">
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
                   {!useIframe && audioError && (
-                    <button
+                    <Button
                       onClick={() => setUseIframe(true)}
+                      variant="outline"
                       className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
                       Try Alternative Player
-                    </button>
+                    </Button>
                   )}
                   <a
-                    href={currentAudio}
+                    href={selectedInterview.audio_file || ''}
                     download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline ml-4"
-                    style={{ display: currentAudio ? 'inline' : 'none' }}
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    style={{ display: selectedInterview.audio_file ? 'inline' : 'none' }}
                   >
                     Download audio
                   </a>
                 </div>
               </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={handleCloseAudioModal}
+                variant="outline"
+                className="px-4 py-2"
+              >
+                Close
+              </Button>
             </div>
           </div>
         </div>
