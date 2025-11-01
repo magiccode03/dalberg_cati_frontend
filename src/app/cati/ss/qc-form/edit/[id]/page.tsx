@@ -156,6 +156,54 @@ export default function QCFormPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Clear values for fields that become invisible based on conditions
+  useEffect(() => {
+    // Only run if formData is not empty and we have form config loaded
+    if (!currentFormConfig || currentFormConfig.length === 0) return;
+    if (Object.keys(formData).length === 0) return;
+    
+    let hasChanges = false;
+    const updatedFormData = { ...formData };
+    
+    // Check each field in the form config
+    currentFormConfig.forEach((field) => {
+      const fieldTag = field.tag;
+      const hasValue = formData[fieldTag] !== undefined && 
+                       formData[fieldTag] !== null && 
+                       formData[fieldTag] !== '' &&
+                       !(Array.isArray(formData[fieldTag]) && formData[fieldTag].length === 0);
+      
+      // If field has a value but is not visible, clear it
+      if (hasValue && !isFieldVisible(field)) {
+        // Clear the field value based on its type
+        if (field.type === 'checkbox') {
+          updatedFormData[fieldTag] = [];
+        } else {
+          updatedFormData[fieldTag] = '';
+        }
+        hasChanges = true;
+        console.log(`Clearing hidden field: ${fieldTag}`);
+      }
+    });
+    
+    // Update form data if any fields were cleared
+    if (hasChanges) {
+      setFormData(updatedFormData);
+      // Also clear validation errors for cleared fields
+      const fieldsToClear = Object.keys(updatedFormData).filter(key => {
+        const field = currentFormConfig.find(f => f.tag === key);
+        return field && !isFieldVisible(field);
+      });
+      if (fieldsToClear.length > 0) {
+        setValidationErrors(prev => {
+          const newErrors = new Set(prev);
+          fieldsToClear.forEach(fieldTag => newErrors.delete(fieldTag));
+          return newErrors;
+        });
+      }
+    }
+  }, [formData, instanceData, currentFormConfig]);
+
   // Fetch instance data from API
   const fetchInstanceData = async () => {
     try {
