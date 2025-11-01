@@ -209,6 +209,28 @@ const InterviewListPage = () => {
     fetchInterviewData(1);
   };
 
+  const handleClearFilters = () => {
+    const clearedFilters: SearchFilters = {
+      server_id: '',
+      interview_date: 'all',
+      custom_date: '',
+      custom_date_end: '',
+      ac_code: '',
+      interviewer_id: '',
+      qc_date: [],
+      qc_id: '',
+      qc_status: [],
+      audio_fail_reason: '',
+    };
+    
+    // Update filters state
+    setFilters(clearedFilters);
+    
+    // Reset pagination and fetch data with cleared filters
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchInterviewData(1, clearedFilters);
+  };
+
   const handlePageChange = (newPage: number) => {
     fetchInterviewData(newPage);
   };
@@ -393,7 +415,7 @@ const InterviewListPage = () => {
   };
 
   // Fetch interview data from API
-  const fetchInterviewData = async (page: number = 1) => {
+  const fetchInterviewData = async (page: number = 1, filtersToUse?: SearchFilters) => {
     try {
       setLoading(true);
       setError(null);
@@ -405,6 +427,9 @@ const InterviewListPage = () => {
         return;
       }
 
+      // Use provided filters or current state filters
+      const activeFilters = filtersToUse || filters;
+
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
       // Build URL with filters
@@ -413,44 +438,44 @@ const InterviewListPage = () => {
         pageSize: pagination.limit.toString(),
         sortBy: 'server_id',
         sortOrder: 'DESC',
-        interview_date: filters.interview_date || 'all', // Always include interview_date parameter
+        interview_date: activeFilters.interview_date || 'all', // Always include interview_date parameter
       });
       
       // Apply filters
-      if (filters.server_id) {
-        params.append('server_id', filters.server_id);
+      if (activeFilters.server_id) {
+        params.append('server_id', activeFilters.server_id);
       }
-      if (filters.interview_date === 'custom') {
-        if (filters.custom_date) {
-          params.append('custom_date', filters.custom_date);
+      if (activeFilters.interview_date === 'custom') {
+        if (activeFilters.custom_date) {
+          params.append('custom_date', activeFilters.custom_date);
         }
-        if (filters.custom_date_end) {
-          params.append('custom_date_end', filters.custom_date_end);
+        if (activeFilters.custom_date_end) {
+          params.append('custom_date_end', activeFilters.custom_date_end);
         }
       }
-      if (filters.ac_code) {
-        params.append('ac_code', filters.ac_code);
+      if (activeFilters.ac_code) {
+        params.append('ac_code', activeFilters.ac_code);
       }
-      if (filters.interviewer_id) {
-        params.append('interviewer_id', filters.interviewer_id);
+      if (activeFilters.interviewer_id) {
+        params.append('interviewer_id', activeFilters.interviewer_id);
       }
       // Send qc_date as repeated parameters (qc_date=2025-10-31&qc_date=2025-10-30)
-      if (filters.qc_date.length > 0) {
-        filters.qc_date.forEach(date => {
+      if (activeFilters.qc_date.length > 0) {
+        activeFilters.qc_date.forEach(date => {
           params.append('qc_date', date);
         });
       }
-      if (filters.qc_id) {
-        params.append('qc_id', filters.qc_id);
+      if (activeFilters.qc_id) {
+        params.append('qc_id', activeFilters.qc_id);
       }
       // Send qc_status as repeated parameters (qc_status=1&qc_status=2)
-      if (filters.qc_status.length > 0) {
-        filters.qc_status.forEach(status => {
+      if (activeFilters.qc_status.length > 0) {
+        activeFilters.qc_status.forEach(status => {
           params.append('qc_status', status);
         });
       }
-      if (filters.audio_fail_reason) {
-        params.append('audio_fail_reason', filters.audio_fail_reason);
+      if (activeFilters.audio_fail_reason) {
+        params.append('audio_fail_reason', activeFilters.audio_fail_reason);
       }
       
       const url = `${apiBaseUrl}/api/cati/ppm/qc/agency/progress/detail?${params.toString()}`;
@@ -587,6 +612,9 @@ const InterviewListPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 {/* Server ID */}
                 <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Server ID
+                  </Text>
                   <Input
                     type="text"
                     placeholder="Search by Server ID"
@@ -597,6 +625,9 @@ const InterviewListPage = () => {
 
                 {/* Interview Date */}
                 <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interview Date
+                  </Text>
                   <SelectDropdown
                     value={filters.interview_date}
                     onChange={(value) => handleFilterChange('interview_date', value as string)}
@@ -619,6 +650,9 @@ const InterviewListPage = () => {
 
                 {/* AC Code */}
                 <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    AC Code
+                  </Text>
                   <SelectDropdown
                     value={filters.ac_code}
                     onChange={(value) => handleFilterChange('ac_code', value as string)}
@@ -634,6 +668,9 @@ const InterviewListPage = () => {
 
                 {/* Interviewer ID */}
                 <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interviewer ID
+                  </Text>
                   <SelectDropdown
                     value={filters.interviewer_id}
                     onChange={(value) => handleFilterChange('interviewer_id', value as string)}
@@ -649,6 +686,9 @@ const InterviewListPage = () => {
 
                 {/* QC Date */}
                 <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Date
+                  </Text>
                   <SelectDropdown
                     value={filters.qc_date}
                     onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
@@ -662,6 +702,9 @@ const InterviewListPage = () => {
 
                 {/* QC ID */}
                 <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC ID
+                  </Text>
                   <SelectDropdown
                     value={filters.qc_id}
                     onChange={(value) => handleFilterChange('qc_id', value as string)}
@@ -707,9 +750,12 @@ const InterviewListPage = () => {
               )}
 
               {/* Second Row - Additional Filters and Search */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                 {/* Audio Fail Reason */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-2">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Audio Fail Reason
+                  </Text>
                   <SelectDropdown
                     value={filters.audio_fail_reason}
                     onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
@@ -721,7 +767,10 @@ const InterviewListPage = () => {
                 </div>
 
                 {/* QC Status */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-2">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Status
+                  </Text>
                   <SelectDropdown
                     value={filters.qc_status}
                     onChange={(value) => handleFilterChange('qc_status', Array.isArray(value) ? value : [value])}
@@ -734,7 +783,10 @@ const InterviewListPage = () => {
                 </div>
 
                 {/* Search Button */}
-                <div>
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
                   <Button 
                     type="submit"
                     variant="primary" 
@@ -743,6 +795,22 @@ const InterviewListPage = () => {
                   >
                     <Search className="w-4 h-4 mr-2" />
                     Search
+                  </Button>
+                </div>
+
+                {/* Clear Button */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={handleClearFilters}
+                    className="w-full flex items-center justify-center bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear
                   </Button>
                 </div>
               </div>
