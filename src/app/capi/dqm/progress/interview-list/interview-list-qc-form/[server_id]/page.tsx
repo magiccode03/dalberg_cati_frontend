@@ -262,6 +262,77 @@ function QCFormPage() {
     fetchInterviewQcData();
   }, []); // Empty dependency array - run only once on mount
 
+  // Clear field values when they become hidden due to conditions
+  useEffect(() => {
+    const fieldsToClear: string[] = [];
+    
+    currentFormConfig.forEach((field) => {
+      const isVisible = isFieldVisible(field);
+      const fieldValue = formData[field.tag];
+      
+      // If field is hidden and has a value, mark it for clearing
+      if (!isVisible) {
+        // Check if field has a value that needs to be cleared
+        let hasValue = false;
+        
+        if (field.type === 'checkbox') {
+          hasValue = Array.isArray(fieldValue) && fieldValue.length > 0;
+        } else {
+          hasValue = fieldValue !== undefined && fieldValue !== null && fieldValue !== '';
+        }
+        
+        if (hasValue) {
+          fieldsToClear.push(field.tag);
+        }
+      }
+    });
+    
+    // Clear fields that became hidden (only if there are fields to clear)
+    if (fieldsToClear.length > 0) {
+      setFormData(prev => {
+        const newData = { ...prev };
+        let hasChanges = false;
+        
+        fieldsToClear.forEach(fieldTag => {
+          const field = currentFormConfig.find(f => f.tag === fieldTag);
+          if (field) {
+            const currentValue = prev[fieldTag];
+            // Set appropriate empty value based on field type
+            if (field.type === 'checkbox') {
+              if (Array.isArray(currentValue) && currentValue.length > 0) {
+                newData[fieldTag] = [];
+                hasChanges = true;
+              }
+            } else {
+              if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
+                newData[fieldTag] = '';
+                hasChanges = true;
+              }
+            }
+          }
+        });
+        
+        // Only return new object if there are actual changes to prevent unnecessary re-renders
+        return hasChanges ? newData : prev;
+      });
+      
+      // Clear validation errors for hidden fields
+      setValidationErrors(prev => {
+        const newErrors = new Set(prev);
+        let hasChanges = false;
+        
+        fieldsToClear.forEach(fieldTag => {
+          if (newErrors.has(fieldTag)) {
+            newErrors.delete(fieldTag);
+            hasChanges = true;
+          }
+        });
+        
+        return hasChanges ? newErrors : prev;
+      });
+    }
+  }, [formData, instanceData, currentFormConfig]); // Re-run when formData or instanceData changes
+
   // Handle scroll for sticky audio player - optimized to prevent unnecessary re-renders
   useEffect(() => {
     let ticking = false;

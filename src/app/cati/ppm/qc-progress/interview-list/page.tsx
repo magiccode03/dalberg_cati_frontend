@@ -8,11 +8,10 @@ import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
-import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
-import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock, X } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -24,9 +23,8 @@ interface SearchFilters {
   interviewer_id: string;
   qc_date: string[];
   qc_id: string;
-  audio_qc_status: string[];
-  audio1_status: string[];
-  qc_scenario_color: string[];
+  qc_status: string[];
+  audio_fail_reason: string;
 }
 
 interface InterviewData {
@@ -110,9 +108,8 @@ const InterviewListPage = () => {
     interviewer_id: '',
     qc_date: [],
     qc_id: '',
-    audio_qc_status: [],
-    audio1_status: [],
-    qc_scenario_color: [],
+    qc_status: [],
+    audio_fail_reason: '',
   });
 
   // State for data
@@ -140,15 +137,14 @@ const InterviewListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAudioModal, setShowAudioModal] = useState(false);
-  const [currentAudio, setCurrentAudio] = useState<string | null>(null);
+  const [selectedInterview, setSelectedInterview] = useState<InterviewData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
 
   // Options for dropdowns
   const audioQcStatusOptions = [
-    { value: '1', label: 'Pending' },
-    { value: '2', label: 'Pass' },
-    { value: '3', label: 'Fail' },
+    { value: '1', label: 'Pass' },
+    { value: '2', label: 'Fail' },
   ];
 
   const audio1StatusOptions = [
@@ -158,11 +154,29 @@ const InterviewListPage = () => {
     { value: '4', label: 'Partial Audio' },
   ];
 
-  const qcOutcomeOptions = [
-    { value: 'blue', label: 'Pending' },
-    { value: 'red', label: 'Fail' },
-    { value: 'green', label: 'Pass' },
+  // Audio Fail Reason options (matching rejection report)
+  const audioFailReasonOptions = [
+    { value: '', label: 'Select Audio Fail Reason' },
+    { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+    { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+    { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+    { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+    { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
+    { value: 'no_conversation', label: 'No Conversation' },
+    { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+    { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+    { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+    { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+    { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+    { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+    { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+    { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+    { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+    { value: 'duplicate_audio', label: 'Duplicate Audio' },
+    { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+    { value: 'same_respondent_as_before', label: 'Same respondent as before' }
   ];
+
 
   // Generate date options
   const generateDateOptions = () => {
@@ -195,12 +209,34 @@ const InterviewListPage = () => {
     fetchInterviewData(1);
   };
 
+  const handleClearFilters = () => {
+    const clearedFilters: SearchFilters = {
+      server_id: '',
+      interview_date: 'all',
+      custom_date: '',
+      custom_date_end: '',
+      ac_code: '',
+      interviewer_id: '',
+      qc_date: [],
+      qc_id: '',
+      qc_status: [],
+      audio_fail_reason: '',
+    };
+    
+    // Update filters state
+    setFilters(clearedFilters);
+    
+    // Reset pagination and fetch data with cleared filters
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchInterviewData(1, clearedFilters);
+  };
+
   const handlePageChange = (newPage: number) => {
     fetchInterviewData(newPage);
   };
 
-  const handlePlayAudio = (audioUrl: string) => {
-    setCurrentAudio(audioUrl);
+  const handlePlayAudio = (item: InterviewData) => {
+    setSelectedInterview(item);
     setShowAudioModal(true);
     setAudioError(false);
     setUseIframe(false);
@@ -208,7 +244,7 @@ const InterviewListPage = () => {
 
   const handleCloseAudioModal = () => {
     setShowAudioModal(false);
-    setCurrentAudio(null);
+    setSelectedInterview(null);
     setAudioError(false);
     setUseIframe(false);
   };
@@ -257,11 +293,20 @@ const InterviewListPage = () => {
 
   const getAudioQcStatusText = (status: number): string => {
     const statusMap: { [key: number]: string } = {
-      1: 'Pending',
-      2: 'Pass',
-      3: 'Fail',
+      1: 'Pass',
+      2: 'Fail',
     };
     return statusMap[status] || status.toString();
+  };
+
+  const getStatusLabel = (status: number): string => {
+    const statusMap: { [key: number]: string } = {
+      1: 'Valid',
+      2: 'Rejected',
+      10: 'Valid',
+      20: 'Rejected',
+    };
+    return statusMap[status] || 'Unknown';
   };
 
   const getQcOutcomeBadge = (qcScenarioColor: string, qcOutcome?: string) => {
@@ -370,7 +415,7 @@ const InterviewListPage = () => {
   };
 
   // Fetch interview data from API
-  const fetchInterviewData = async (page: number = 1) => {
+  const fetchInterviewData = async (page: number = 1, filtersToUse?: SearchFilters) => {
     try {
       setLoading(true);
       setError(null);
@@ -382,6 +427,9 @@ const InterviewListPage = () => {
         return;
       }
 
+      // Use provided filters or current state filters
+      const activeFilters = filtersToUse || filters;
+
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
       // Build URL with filters
@@ -390,41 +438,44 @@ const InterviewListPage = () => {
         pageSize: pagination.limit.toString(),
         sortBy: 'server_id',
         sortOrder: 'DESC',
-        interview_date: filters.interview_date || 'all', // Always include interview_date parameter
+        interview_date: activeFilters.interview_date || 'all', // Always include interview_date parameter
       });
       
       // Apply filters
-      if (filters.server_id) {
-        params.append('server_id', filters.server_id);
+      if (activeFilters.server_id) {
+        params.append('server_id', activeFilters.server_id);
       }
-      if (filters.interview_date === 'custom') {
-        if (filters.custom_date) {
-          params.append('custom_date', filters.custom_date);
+      if (activeFilters.interview_date === 'custom') {
+        if (activeFilters.custom_date) {
+          params.append('custom_date', activeFilters.custom_date);
         }
-        if (filters.custom_date_end) {
-          params.append('custom_date_end', filters.custom_date_end);
+        if (activeFilters.custom_date_end) {
+          params.append('custom_date_end', activeFilters.custom_date_end);
         }
       }
-      if (filters.ac_code) {
-        params.append('ac_code', filters.ac_code);
+      if (activeFilters.ac_code) {
+        params.append('ac_code', activeFilters.ac_code);
       }
-      if (filters.interviewer_id) {
-        params.append('interviewer_id', filters.interviewer_id);
+      if (activeFilters.interviewer_id) {
+        params.append('interviewer_id', activeFilters.interviewer_id);
       }
-      if (filters.qc_date.length > 0) {
-        params.append('qc_date', filters.qc_date.join(','));
+      // Send qc_date as repeated parameters (qc_date=2025-10-31&qc_date=2025-10-30)
+      if (activeFilters.qc_date.length > 0) {
+        activeFilters.qc_date.forEach(date => {
+          params.append('qc_date', date);
+        });
       }
-      if (filters.qc_id) {
-        params.append('qc_id', filters.qc_id);
+      if (activeFilters.qc_id) {
+        params.append('qc_id', activeFilters.qc_id);
       }
-      if (filters.audio_qc_status.length > 0) {
-        params.append('audio_qc_status', filters.audio_qc_status.join(','));
+      // Send qc_status as repeated parameters (qc_status=1&qc_status=2)
+      if (activeFilters.qc_status.length > 0) {
+        activeFilters.qc_status.forEach(status => {
+          params.append('qc_status', status);
+        });
       }
-      if (filters.audio1_status.length > 0) {
-        params.append('audio1_status', filters.audio1_status.join(','));
-      }
-      if (filters.qc_scenario_color.length > 0) {
-        params.append('qc_scenario_color', filters.qc_scenario_color.join(','));
+      if (activeFilters.audio_fail_reason) {
+        params.append('audio_fail_reason', activeFilters.audio_fail_reason);
       }
       
       const url = `${apiBaseUrl}/api/cati/ppm/qc/agency/progress/detail?${params.toString()}`;
@@ -507,6 +558,24 @@ const InterviewListPage = () => {
         }
       }
 
+      // Fetch QC Users for QC ID dropdown
+      const qcUsersResponse = await fetch(`${apiBaseUrl}/api/teleform-users?qc=1&status=1&limit=500`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (qcUsersResponse.ok) {
+        const qcUsersData = await qcUsersResponse.json();
+        if (qcUsersData.success) {
+          const qcUsers = qcUsersData.data || [];
+          setFilterOptions(prev => ({
+            ...prev,
+            qcIdList: qcUsers.map((user: any) => ({
+              value: user.teleform_user_id.toString(),
+              label: `${user.name} (${user.teleform_user_id})`
+            }))
+          }));
+        }
+      }
+
       // Set other options
       setFilterOptions(prev => ({
         ...prev,
@@ -532,58 +601,129 @@ const InterviewListPage = () => {
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Interview List
         </Heading>
-        <div className="text-sm text-gray-500">
-          QC Progress - Interview List
-        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filters Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-4">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                Filters
-              </Heading>
-            </div>
-            <div className="p-4 space-y-4">
-              {/* Server ID */}
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Search by Server ID"
-                  value={filters.server_id}
-                  onChange={(e) => handleFilterChange('server_id', e.target.value)}
-                />
-              </div>
+      {/* Filters Card - Horizontal Layout */}
+      <Card className="mb-6">
+        <div className="p-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+            <div className="space-y-4">
+              {/* First Row - Main Dropdown Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                {/* Server ID */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Server ID
+                  </Text>
+                  <Input
+                    type="text"
+                    placeholder="Search by Server ID"
+                    value={filters.server_id}
+                    onChange={(e) => handleFilterChange('server_id', e.target.value)}
+                  />
+                </div>
 
-              {/* Interview Date */}
-              <div>
-                <Text className="text-sm font-medium mb-2">Interview Date</Text>
-                <SelectDropdown
-                  options={[
-                    { value: 'all', label: 'All' },
-                    { value: 'today', label: 'Today' },
-                    { value: 'yesterday', label: 'Yesterday' },
-                    { value: 'dby', label: 'Day Before Yesterday' },
-                    { value: 'l3', label: 'Last 3 Days' },
-                    { value: 'l7', label: 'Last 7 Days' },
-                    { value: 'l15', label: 'Last 15 Days' },
-                    { value: 'currentmonth', label: 'Current Month' },
-                    { value: 'custom', label: 'Custom' },
-                  ]}
-                  value={filters.interview_date}
-                  onChange={(value) => handleFilterChange('interview_date', value as string)}
-                  placeholder="All"
-                  className="w-full"
-                />
+                {/* Interview Date */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interview Date
+                  </Text>
+                  <SelectDropdown
+                    value={filters.interview_date}
+                    onChange={(value) => handleFilterChange('interview_date', value as string)}
+                    placeholder="Select Interview Date"
+                    options={[
+                      { value: 'all', label: 'All' },
+                      { value: 'today', label: 'Today' },
+                      { value: 'yesterday', label: 'Yesterday' },
+                      { value: 'dby', label: 'Day Before Yesterday' },
+                      { value: 'l3', label: 'Last 3 Days' },
+                      { value: 'l7', label: 'Last 7 Days' },
+                      { value: 'l15', label: 'Last 15 Days' },
+                      { value: 'currentmonth', label: 'Current Month' },
+                      { value: 'custom', label: 'Custom' },
+                    ]}
+                    searchable={false}
+                    clearable={true}
+                  />
+                </div>
+
+                {/* AC Code */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    AC Code
+                  </Text>
+                  <SelectDropdown
+                    value={filters.ac_code}
+                    onChange={(value) => handleFilterChange('ac_code', value as string)}
+                    options={[
+                      { value: '', label: 'Select AC' },
+                      ...filterOptions.acList
+                    ]}
+                    placeholder="Select AC"
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
+
+                {/* Interviewer ID */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interviewer ID
+                  </Text>
+                  <SelectDropdown
+                    value={filters.interviewer_id}
+                    onChange={(value) => handleFilterChange('interviewer_id', value as string)}
+                    options={[
+                      { value: '', label: 'Select Interviewer ID' },
+                      ...filterOptions.interviewerList
+                    ]}
+                    placeholder="Select Interviewer ID"
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
+
+                {/* QC Date */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Date
+                  </Text>
+                  <SelectDropdown
+                    value={filters.qc_date}
+                    onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Date"
+                    options={filterOptions.dateList}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                </div>
+
+                {/* QC ID */}
+                <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC ID
+                  </Text>
+                  <SelectDropdown
+                    value={filters.qc_id}
+                    onChange={(value) => handleFilterChange('qc_id', value as string)}
+                    options={[
+                      { value: '', label: 'Select QC ID' },
+                      ...filterOptions.qcIdList
+                    ]}
+                    placeholder="Select QC ID"
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
               </div>
 
               {/* Custom Date Fields - Only show when custom is selected */}
               {filters.interview_date === 'custom' && (
-                <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Text className="text-sm font-medium mb-2">
+                    <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Start Date
                       <span className="text-red-500 ml-1">*</span>
                     </Text>
@@ -591,12 +731,11 @@ const InterviewListPage = () => {
                       type="date"
                       value={filters.custom_date}
                       onChange={(e) => handleFilterChange('custom_date', e.target.value)}
-                      className="w-full"
                       required
                     />
                   </div>
                   <div>
-                    <Text className="text-sm font-medium mb-2">
+                    <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       End Date
                       <span className="text-red-500 ml-1">*</span>
                     </Text>
@@ -604,163 +743,99 @@ const InterviewListPage = () => {
                       type="date"
                       value={filters.custom_date_end}
                       onChange={(e) => handleFilterChange('custom_date_end', e.target.value)}
-                      className="w-full"
                       required
                     />
                   </div>
-                </>
+                </div>
               )}
 
-              {/* AC Code */}
-              <div>
-                <SelectDropdown
-                  value={filters.ac_code}
-                  onChange={(value) => handleFilterChange('ac_code', value)}
-                  options={[
-                    { value: '', label: 'Select AC' },
-                    ...filterOptions.acList
-                  ]}
-                  placeholder="Select AC"
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
+              {/* Second Row - Additional Filters and Search */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                {/* Audio Fail Reason */}
+                <div className="md:col-span-1 lg:col-span-2">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Audio Fail Reason
+                  </Text>
+                  <SelectDropdown
+                    value={filters.audio_fail_reason}
+                    onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
+                    placeholder="Select Audio Fail Reason"
+                    options={audioFailReasonOptions}
+                    searchable={true}
+                    clearable={true}
+                  />
+                </div>
 
-              {/* Interviewer ID */}
-              <div>
-                <SelectDropdown
-                  value={filters.interviewer_id}
-                  onChange={(value) => handleFilterChange('interviewer_id', value)}
-                  options={[
-                    { value: '', label: 'Select Interviewer ID' },
-                    ...filterOptions.interviewerList
-                  ]}
-                  placeholder="Select Interviewer ID"
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
+                {/* QC Status */}
+                <div className="md:col-span-1 lg:col-span-2">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Status
+                  </Text>
+                  <SelectDropdown
+                    value={filters.qc_status}
+                    onChange={(value) => handleFilterChange('qc_status', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Status"
+                    options={audioQcStatusOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                </div>
 
-              {/* QC Date */}
-              <div>
-                <SelectDropdown
-                  value={filters.qc_date}
-                  onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
-                  options={filterOptions.dateList}
-                  placeholder="Select QC Date"
-                  searchable={true}
-                  clearable={true}
-                  multiple={true}
-                />
-              </div>
+                {/* Search Button */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
+                  <Button 
+                    type="submit"
+                    variant="primary" 
+                    onClick={handleSearch}
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </Button>
+                </div>
 
-              {/* QC ID */}
-              <div>
-                <SelectDropdown
-                  value={filters.qc_id}
-                  onChange={(value) => handleFilterChange('qc_id', value)}
-                  options={[
-                    { value: '', label: 'Select QC ID' },
-                    ...filterOptions.qcIdList
-                  ]}
-                  placeholder="Select QC ID"
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-
-              {/* Audio QC Status */}
-              <div>
-                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Audio Status
-                </Text>
-                <div className="space-y-2">
-                  {audioQcStatusOptions.map((option) => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio_qc_status.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleFilterChange('audio_qc_status', [...filters.audio_qc_status, option.value]);
-                        } else {
-                          handleFilterChange('audio_qc_status', filters.audio_qc_status.filter(v => v !== option.value));
-                        }
-                      }}
-                      label={option.label}
-                    />
-                  ))}
+                {/* Clear Button */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={handleClearFilters}
+                    className="w-full flex items-center justify-center bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear
+                  </Button>
                 </div>
               </div>
-
-              {/* Audio QC Status */}
-              <div>
-                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Audio QC Status
-                </Text>
-                <div className="space-y-2">
-                  {audio1StatusOptions.map((option) => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.audio1_status.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleFilterChange('audio1_status', [...filters.audio1_status, option.value]);
-                        } else {
-                          handleFilterChange('audio1_status', filters.audio1_status.filter(v => v !== option.value));
-                        }
-                      }}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* QC Outcome */}
-              <div>
-                <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  QC Outcome
-                </Text>
-                <div className="space-y-2">
-                  {qcOutcomeOptions.map((option) => (
-                    <Checkbox
-                      key={option.value}
-                      checked={filters.qc_scenario_color.includes(option.value)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          handleFilterChange('qc_scenario_color', [...filters.qc_scenario_color, option.value]);
-                        } else {
-                          handleFilterChange('qc_scenario_color', filters.qc_scenario_color.filter(v => v !== option.value));
-                        }
-                      }}
-                      label={option.label}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Search Button */}
-              <Button 
-                variant="primary" 
-                onClick={handleSearch}
-                className="w-full flex items-center justify-center"
-              >
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
             </div>
-          </Card>
+          </form>
         </div>
+      </Card>
 
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          <Card>
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex justify-between items-center">
+      {/* Main Content - Table */}
+      <div>
+        <Card>
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <div>
                 <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   Interview Details
                 </Heading>
+                {!loading && (
+                  <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Total {pagination.total.toLocaleString()} items
+                  </Text>
+                )}
               </div>
             </div>
+          </div>
 
             <div className="p-4">
               {/* Error Alert */}
@@ -800,21 +875,20 @@ const InterviewListPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio QC ID</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio Fail Reason</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">QC Outcome</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Edit</th>
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={13} className="px-4 py-12 text-center">
+                          <td colSpan={12} className="px-4 py-12 text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                             <p className="text-gray-600 dark:text-gray-400">Loading interview data...</p>
                           </td>
                         </tr>
                       ) : interviewData.length === 0 ? (
                         <tr>
-                          <td colSpan={13} className="px-4 py-12 text-center">
+                          <td colSpan={12} className="px-4 py-12 text-center">
                             <div className="text-6xl text-gray-300 mb-4">📋</div>
                             <p className="text-gray-600 dark:text-gray-400">No interview data found</p>
                           </td>
@@ -858,7 +932,7 @@ const InterviewListPage = () => {
                               {item.audio_file ? (
                                 <Button
                                   size="sm"
-                                  onClick={() => handlePlayAudio(item.audio_file!)}
+                                  onClick={() => handlePlayAudio(item)}
                                   className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
                                   <Volume2 className="w-4 h-4" />
@@ -866,9 +940,6 @@ const InterviewListPage = () => {
                               ) : (
                                 <span className="text-gray-400">-</span>
                               )}
-                            </td>
-                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
-                              {getQcOutcomeBadge(item.qc_scenario_color, item.qc_outcome)}
                             </td>
                             <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
                               <Button
@@ -904,29 +975,68 @@ const InterviewListPage = () => {
                 </div>
               )}
             </div>
-          </Card>
-        </div>
+        </Card>
       </div>
 
       {/* Audio Modal */}
-      {showAudioModal && currentAudio && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-auto">
+      {showAudioModal && selectedInterview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <Heading level={4} className="text-lg sm:text-xl">
-                Audio Player
-              </Heading>
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-6 w-6 text-blue-600" />
+                <Heading level={3} className="text-lg font-semibold">
+                  Interview Audio Player
+                </Heading>
+              </div>
               <button
                 onClick={handleCloseAudioModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
-                &times;
+                <X className="h-6 w-6" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
+            <div className="p-6 space-y-4">
+              {/* Interview Details */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.server_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedInterview.call_date || selectedInterview.interview_date
+                        ? formatDate(selectedInterview.call_date || selectedInterview.interview_date || '')
+                        : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.ac_name || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedInterview.teleform_user_id || selectedInterview.interviewer_id || '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      {selectedInterview.qc_status !== undefined 
+                        ? getAudioQcStatusText(selectedInterview.qc_status)
+                        : '-'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audio Player */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
                 <div className="mb-3 text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -940,7 +1050,7 @@ const InterviewListPage = () => {
                 </div>
 
                 {!useIframe ? (
-                  currentAudio ? (
+                  selectedInterview.audio_file ? (
                     <audio
                       controls
                       className="w-full"
@@ -950,8 +1060,8 @@ const InterviewListPage = () => {
                       onLoadStart={() => console.log('Audio loading started')}
                       onCanPlay={() => console.log('Audio can play')}
                     >
-                      <source src={currentAudio} type="audio/mpeg" />
-                      <source src={currentAudio} type="audio/mp3" />
+                      <source src={selectedInterview.audio_file} type="audio/mpeg" />
+                      <source src={selectedInterview.audio_file} type="audio/mp3" />
                       Your browser does not support the audio element.
                     </audio>
                   ) : (
@@ -960,10 +1070,10 @@ const InterviewListPage = () => {
                     </div>
                   )
                 ) : (
-                  currentAudio ? (
+                  selectedInterview.audio_file ? (
                     <div className="w-full">
                       <iframe
-                        src={currentAudio}
+                        src={selectedInterview.audio_file}
                         className="w-full h-16 border-0 rounded"
                         title="Audio Player"
                         allow="autoplay"
@@ -1013,25 +1123,37 @@ const InterviewListPage = () => {
                 )}
                 
                 {/* Alternative Options */}
-                <div className="mt-4 flex justify-center items-center">
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
                   {!useIframe && audioError && (
-                    <button
+                    <Button
                       onClick={() => setUseIframe(true)}
+                      variant="outline"
                       className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
                       Try Alternative Player
-                    </button>
+                    </Button>
                   )}
                   <a
-                    href={currentAudio}
+                    href={selectedInterview.audio_file || ''}
                     download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline ml-4"
-                    style={{ display: currentAudio ? 'inline' : 'none' }}
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    style={{ display: selectedInterview.audio_file ? 'inline' : 'none' }}
                   >
                     Download audio
                   </a>
                 </div>
               </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={handleCloseAudioModal}
+                variant="outline"
+                className="px-4 py-2"
+              >
+                Close
+              </Button>
             </div>
           </div>
         </div>
