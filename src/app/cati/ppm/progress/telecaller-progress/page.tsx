@@ -1548,7 +1548,7 @@ const TelecallerProgressPage: React.FC = () => {
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.caller_mobile_no || '-'}
                           </td>
-x                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                         <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                             {item.telecalling_group_name || '-'}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
