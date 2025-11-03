@@ -155,8 +155,12 @@ export default function CATIInterviewAudioPage() {
           ];
           setAcOptions(acOptionsData);
           
-          // Extract unique dates for filter
-          const uniqueDates = Array.from(new Set(interviewData.map((item: InterviewAudioData) => item.interview_date.split('T')[0])));
+          // Extract unique dates for filter (filter out null/undefined dates)
+          const uniqueDates = Array.from(new Set(
+            interviewData
+              .filter((item: InterviewAudioData) => item.interview_date != null && item.interview_date !== '')
+              .map((item: InterviewAudioData) => item.interview_date.split('T')[0])
+          ));
           const dateOptionsData = [
             { value: '', label: 'Interview Date' },
             ...uniqueDates.map(date => ({
