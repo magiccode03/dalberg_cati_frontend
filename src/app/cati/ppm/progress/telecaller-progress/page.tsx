@@ -1506,7 +1506,7 @@ const TelecallerProgressPage: React.FC = () => {
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Group</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
@@ -1548,7 +1548,7 @@ const TelecallerProgressPage: React.FC = () => {
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.caller_mobile_no || '-'}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+x                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                             {item.telecalling_group_name || '-'}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
