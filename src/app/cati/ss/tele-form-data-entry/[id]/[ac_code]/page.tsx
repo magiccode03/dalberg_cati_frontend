@@ -14,9 +14,9 @@ import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 // Import form configurations
-import formEnConfig from '../../form-en-config.json';
-import formBnConfig from '../../form-bn-config.json';
-import formHiConfig from '../../form-hi-config.json';
+import formEnConfig from '../../../tele-form/form-en-config.json';
+import formBnConfig from '../../../tele-form/form-bn-config.json';
+import formHiConfig from '../../../tele-form/form-hi-config.json';
 
 // Import JSON data files
 // @ts-ignore
@@ -71,14 +71,17 @@ export default function TeleFormV2Page() {
   const [toasts, setToasts] = useState<any[]>([]);
   const [teleformUserName, setTeleformUserName] = useState<string>('');
   const [teleformUserId, setTeleformUserId] = useState<string>('');
+  const [dataEntryUserId, setDataEntryUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
   const [instanceData, setInstanceData] = useState<any>({});
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -142,6 +145,17 @@ export default function TeleFormV2Page() {
         setTeleformUserId(userData.teleform_user_id || '');
       } catch (err) {
         console.error('Error loading teleform user data:', err);
+      }
+    }
+    
+    // Load data entry user data
+    const dataEntryData = localStorage.getItem('data_entry_user_data');
+    if (dataEntryData) {
+      try {
+        const userData = JSON.parse(dataEntryData);
+        setDataEntryUserId(userData.data_entry_user_id?.toString() || '');
+      } catch (err) {
+        console.error('Error loading data entry user data:', err);
       }
     }
   }, []);
@@ -233,25 +247,105 @@ export default function TeleFormV2Page() {
     fetchInstanceData();
   }, [interviewId]);
 
-  // Load existing form data from instance data
-  const loadExistingFormData = (data: any) => {
-    const existingData: Record<string, any> = {};
+  // Get current form configuration based on language
+  const currentFormConfig = formConfigs[language] || formConfigs.english;
+
+  // Transform checkbox fields from API format (q10_99: 1) back to form format (q10: ['99'])
+  // Only load fields that are used in the form configuration
+  const transformApiDataToFormData = (apiData: Record<string, any>): Record<string, any> => {
+    const formData: Record<string, any> = {};
+    const checkboxFields: Record<string, string[]> = {};
     
-    // Map all form fields from the instance data
-    // This will populate the form with existing values
-    Object.keys(data).forEach(key => {
-      if (data[key] !== undefined && data[key] !== null) {
-        // Convert to string for form compatibility
-        existingData[key] = String(data[key]);
+    // Get all field tags from form config to know which fields to load
+    const formFieldTags = new Set<string>();
+    currentFormConfig.forEach(field => {
+      formFieldTags.add(field.tag);
+    });
+    
+    // First pass: identify checkbox fields and collect their values
+    Object.keys(apiData).forEach(key => {
+      // Check if this is a checkbox option field (pattern: fieldName_optionValue, e.g., q10_99, q8_2)
+      const checkboxMatch = key.match(/^(.+)_(\d+)$/);
+      if (checkboxMatch) {
+        const baseFieldName = checkboxMatch[1];
+        const optionValue = checkboxMatch[2];
+        const fieldValue = apiData[key];
+        
+        // Only process if this base field is a checkbox in the form config
+        const checkboxField = currentFormConfig.find(field => 
+          field.tag === baseFieldName && field.type === 'checkbox'
+        );
+        
+        if (checkboxField && fieldValue === 1) {
+          // This is a checked checkbox option
+          if (!checkboxFields[baseFieldName]) {
+            checkboxFields[baseFieldName] = [];
+          }
+          checkboxFields[baseFieldName].push(optionValue);
+        }
       }
     });
     
-    setFormData(existingData);
-    console.log('Loaded existing form data:', existingData);
+    // Second pass: build form data - only load fields that are in the form config
+    Object.keys(apiData).forEach(key => {
+      // Skip checkbox option fields (they'll be handled by checkboxFields)
+      const checkboxMatch = key.match(/^(.+)_(\d+)$/);
+      if (checkboxMatch) {
+        const baseFieldName = checkboxMatch[1];
+        const isCheckboxField = currentFormConfig.some(field => 
+          field.tag === baseFieldName && field.type === 'checkbox'
+        );
+        if (isCheckboxField) {
+          // Skip this - it will be handled as part of the checkbox array
+          return;
+        }
+      }
+      
+      // Only load fields that are in the form configuration
+      if (formFieldTags.has(key) && apiData[key] !== undefined) {
+        if (apiData[key] === null) {
+          formData[key] = '';
+        } else {
+          formData[key] = String(apiData[key]);
+        }
+      }
+    });
+    
+    // Add checkbox fields as arrays (only if they're in form config)
+    Object.keys(checkboxFields).forEach(baseFieldName => {
+      if (formFieldTags.has(baseFieldName)) {
+        formData[baseFieldName] = checkboxFields[baseFieldName];
+      }
+    });
+    
+    return formData;
   };
 
-  // Get current form configuration based on language
-  const currentFormConfig = formConfigs[language] || formConfigs.english;
+  // Load existing form data from instance data
+  // This function loads existing values ONLY for fields that are used in the form configuration
+  // and ensures conditional fields are displayed correctly when editing
+  // IMPORTANT: Do NOT apply clearing rules on initial load - only clear when user updates the form
+  const loadExistingFormData = (data: any) => {
+    // Transform API data format to form data format (especially checkbox fields)
+    // This function only loads fields that are defined in the form configuration
+    const transformedData = transformApiDataToFormData(data);
+    
+    console.log('Loaded form fields from database (only fields used in form):', transformedData);
+    console.log('Total form fields loaded:', Object.keys(transformedData).length);
+    
+    // Set form data directly - this will trigger conditional field evaluation
+    // Conditional fields will show/hide based on these existing values (edit form behavior)
+    // DO NOT apply clearing rules here - let user see existing data first
+    setFormData(transformedData);
+    
+    // Mark initial load as complete after a short delay to allow form to render
+    setTimeout(() => {
+      setIsInitialLoadComplete(true);
+    }, 100);
+    
+    console.log('Form data loaded (only form config fields, no clearing rules applied on initial load)');
+    console.log('Conditional fields will now evaluate based on existing values for edit mode');
+  };
 
   // Get MLA/MP data for the current AC code
   const getMlaMpData = (acCode: string) => {
@@ -350,7 +444,50 @@ export default function TeleFormV2Page() {
              caste.caste_name_english,
       value: caste.caste_code.toString(),
       tag: `caste_${caste.caste_code}`
-    }));
+    })).sort((a: FormOption, b: FormOption) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+  };
+
+  // Apply clearing rules based on current form data
+  // This function applies clearing rules defined in form config (e.g., when number_status is 3, clear consent, resp_age, etc.)
+  const applyClearingRulesToData = (data: Record<string, any>, formConfigToUse?: FormField[]): Record<string, any> => {
+    const clearedData = { ...data };
+    
+    // Use provided config or fall back to currentFormConfig
+    // We can't use processedFormConfig here as it depends on formData
+    const configToUse = formConfigToUse || currentFormConfig;
+    
+    // Iterate through all fields in the form config
+    configToUse.forEach((field) => {
+      // Apply clearing rules for radio fields
+      if (field.type === 'radio' && field.rules?.clearFields) {
+        const fieldValue = clearedData[field.tag];
+        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+          // Find the option that matches the value
+          let selectedOption = null;
+          
+          // Handle both array and string options
+          if (Array.isArray(field.options)) {
+            selectedOption = field.options.find(opt => opt.value === String(fieldValue));
+          } else if (typeof field.options === 'string') {
+            // For dynamic options like party_2021_q5.[ac_code], we need to get them
+            if (field.options === `party_2021_q5.[ac_code]`) {
+              const partyOptions = getPartyOptions(acCode);
+              selectedOption = partyOptions.find(opt => opt.value === String(fieldValue));
+            }
+          }
+          
+          if (selectedOption && field.rules.clearFields[selectedOption.tag]) {
+            // Clear the fields specified in the rules
+            field.rules.clearFields[selectedOption.tag].forEach((fieldToClear: string) => {
+              clearedData[fieldToClear] = null;
+              console.log(`Applied clearing rule: ${field.tag} = ${fieldValue} (${selectedOption.tag}) -> clearing ${fieldToClear}`);
+            });
+          }
+        }
+      }
+    });
+    
+    return clearedData;
   };
 
   // Process form configuration to replace placeholders and add dynamic options
@@ -388,6 +525,27 @@ export default function TeleFormV2Page() {
     try {
       // Replace field names with their values
       let expr = condition;
+      
+      // Handle MLA/MP data access pattern: mla-mp-ac-data.[ac_code].bye_poll === true
+      const mlaMpDataPattern = /mla-mp-ac-data\.\[ac_code\]\.(\w+)\s*(===|!==)\s*(true|false)/g;
+      expr = expr.replace(mlaMpDataPattern, (match, fieldName, operator, expectedValue) => {
+        const mlaMpInfo = getMlaMpData(acCode);
+        if (!mlaMpInfo) {
+          return 'false';
+        }
+        // Type-safe access to MLA/MP data fields
+        const fieldValue = (mlaMpInfo as any)[fieldName];
+        if (fieldValue === undefined) {
+          return 'false';
+        }
+        const expectedBool = expectedValue === 'true';
+        
+        if (operator === '===') {
+          return (fieldValue === expectedBool).toString();
+        } else {
+          return (fieldValue !== expectedBool).toString();
+        }
+      });
       
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
@@ -444,11 +602,16 @@ export default function TeleFormV2Page() {
     }
   };
 
-  // Check if field should be visible - for edit page, show all fields
+  // Check if field should be visible
   const isFieldVisible = (field: FormField): boolean => {
-    // For edit page, always show all fields regardless of conditions
-    return true;
+    if (!field.conditional) return true;
+    return evaluateCondition(field.conditional);
   };
+
+  // REMOVED: Automatic clearing of hidden fields
+  // We should NOT automatically clear fields based on visibility
+  // Clearing should only happen based on explicit clearing rules (e.g., when number_status changes)
+  // Visibility is just for showing/hiding UI - values should remain until user submits
 
   // Handle input change
   const handleInputChange = (fieldTag: string, value: any, field: FormField) => {
@@ -470,18 +633,19 @@ export default function TeleFormV2Page() {
         newData.resp_caste_jati_oth = '';
       }
       
-      // Apply clearing rules
-      if (field.rules?.clearFields) {
+      // Apply clearing rules ONLY when user explicitly changes this field
+      // This ensures clearing happens in real-time when user makes changes
+      if (field.rules?.clearFields && field.type === 'radio') {
         const clearRules = field.rules.clearFields;
+        const selectedOption = field.options?.find(opt => opt.value === value);
         
-        // For radio/select fields
-        if (field.type === 'radio') {
-          const selectedOption = field.options?.find(opt => opt.value === value);
-          if (selectedOption && clearRules[selectedOption.tag]) {
-            clearRules[selectedOption.tag].forEach(fieldToClear => {
-              newData[fieldToClear] = Array.isArray(newData[fieldToClear]) ? [] : '';
-            });
-          }
+        if (selectedOption && clearRules[selectedOption.tag]) {
+          console.log(`User changed ${fieldTag} to ${value}, applying clearing rules for ${selectedOption.tag}`);
+          clearRules[selectedOption.tag].forEach(fieldToClear => {
+            const oldValue = newData[fieldToClear];
+            newData[fieldToClear] = Array.isArray(newData[fieldToClear]) ? [] : '';
+            console.log(`Cleared field ${fieldToClear} (was: ${oldValue}) due to clearing rule`);
+          });
         }
       }
       
@@ -566,33 +730,100 @@ export default function TeleFormV2Page() {
   };
 
   // Transform checkbox data to individual fields and convert string values to integers
+  // IMPORTANT: Do NOT apply clearing rules here - clearing should only happen when user changes fields
+  // The user already applied clearing rules when they changed the field, so data is already correct
   const transformFormDataForSubmission = (data: Record<string, any>) => {
     const transformed: Record<string, any> = {};
     
+    // Get all fields from formData to include ALL fields, not just form config fields
+    const allFields = new Set<string>();
+    
+    // Collect all fields from form config
     processedFormConfig.forEach((field) => {
-      const fieldValue = data[field.tag];
+      allFields.add(field.tag);
       
-      if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
-        // For checkbox fields, create individual fields for each option
-        field.options?.forEach((option) => {
-          const fieldName = `${field.tag}_${option.value}`;
-          transformed[fieldName] = fieldValue.includes(option.value) ? 1 : null;
+      if (field.type === 'checkbox' && field.options) {
+        // For checkbox fields, also include all checkbox option fields
+        field.options.forEach((option) => {
+          allFields.add(`${field.tag}_${option.value}`);
         });
-      } else if (field.type !== 'checkbox') {
-        // For non-checkbox fields, convert to appropriate type
-        if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
-          transformed[field.tag] = null;
-        } else if (field.type === 'radio' || field.type === 'number') {
-          // Convert radio button values and number inputs to integers
-          const numValue = parseInt(fieldValue);
-          transformed[field.tag] = isNaN(numValue) ? null : numValue;
+      }
+    });
+    
+    // Also collect all fields from the data itself (includes fields from API response)
+    // This ensures fields like resp_age, resp_gender, etc. are included even if not in form config
+    Object.keys(data).forEach(key => {
+      allFields.add(key);
+    });
+    
+    // Now transform all fields
+    allFields.forEach((fieldTag) => {
+      // Check if this is a checkbox option field (e.g., q7_1, q8_2, q10_99)
+      const checkboxMatch = fieldTag.match(/^(.+)_(\d+)$/);
+      if (checkboxMatch) {
+        const baseFieldTag = checkboxMatch[1];
+        const optionValue = checkboxMatch[2];
+        const field = processedFormConfig.find(f => f.tag === baseFieldTag);
+        
+        if (field && field.type === 'checkbox') {
+          const fieldValue = data[baseFieldTag];
+          if (Array.isArray(fieldValue)) {
+            transformed[fieldTag] = fieldValue.includes(optionValue) ? 1 : null;
+          } else {
+            transformed[fieldTag] = null;
+          }
         } else {
-          // Keep text and other types as strings
-          transformed[field.tag] = fieldValue;
+          // Not a checkbox option field, treat as regular field (e.g., resp_age, resp_gender)
+          const fieldValue = data[fieldTag];
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            transformed[fieldTag] = null;
+          } else {
+            // Keep the value as-is for non-form-config fields, convert for form config fields
+            const formField = processedFormConfig.find(f => f.tag === fieldTag);
+            if (formField && (formField.type === 'radio' || formField.type === 'number')) {
+              const numValue = parseInt(String(fieldValue));
+              transformed[fieldTag] = isNaN(numValue) ? null : numValue;
+            } else {
+              transformed[fieldTag] = String(fieldValue);
+            }
+          }
+        }
+      } else {
+        // Regular field (not a checkbox option)
+        const field = processedFormConfig.find(f => f.tag === fieldTag);
+        const fieldValue = data[fieldTag];
+        
+        if (field && field.type === 'checkbox') {
+          // Checkbox base field - handled above via option fields
+          return;
+        } else if (field && (field.type === 'radio' || field.type === 'number')) {
+          // Convert radio button values and number inputs to integers
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            transformed[fieldTag] = null;
+          } else {
+            const numValue = parseInt(String(fieldValue));
+            transformed[fieldTag] = isNaN(numValue) ? null : numValue;
+          }
+        } else {
+          // Text or other types, or fields not in form config (like resp_age, resp_gender, etc.)
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            transformed[fieldTag] = null;
+          } else {
+            // For fields not in form config, preserve their type (number stays number, string stays string)
+            const numValue = parseFloat(String(fieldValue));
+            if (!isNaN(numValue) && String(fieldValue).trim() === String(numValue)) {
+              // It's a number
+              transformed[fieldTag] = numValue % 1 === 0 ? parseInt(String(fieldValue)) : numValue;
+            } else {
+              // It's a string
+              transformed[fieldTag] = String(fieldValue);
+            }
+          }
         }
       }
     });
     
+    console.log('Transformed data for submission (all fields included):', transformed);
     return transformed;
   };
 
@@ -607,7 +838,7 @@ export default function TeleFormV2Page() {
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}?exact=1`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -681,7 +912,7 @@ export default function TeleFormV2Page() {
         user_localdatetime: currentTime,
       };
       
-      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}?exact=1`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -711,9 +942,9 @@ export default function TeleFormV2Page() {
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    // Get all required fields (all fields are visible in edit mode)
+    // Get all visible fields that are required
     processedFormConfig.forEach((field) => {
-      if (field.required) {
+      if (field.required && isFieldVisible(field)) {
         const fieldValue = formData[field.tag];
         
         // Check if field is empty
@@ -744,12 +975,16 @@ export default function TeleFormV2Page() {
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
+      const touched = new Set<string>();
       processedFormConfig.forEach((field) => {
-        if (field.required) {
+        if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
           const isEmpty = field.type === 'checkbox' 
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
             : fieldValue === undefined || fieldValue === null || fieldValue === '';
+          
+          // Mark all required fields as touched when form is submitted
+          touched.add(field.tag);
           
           if (isEmpty) {
             errorFields.add(field.tag);
@@ -757,12 +992,13 @@ export default function TeleFormV2Page() {
         }
       });
       setValidationErrors(errorFields);
+      setTouchedFields(touched);
       
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
       
       // Scroll to first error
       const firstErrorField = processedFormConfig.find(
-        field => field.required && 
+        field => field.required && isFieldVisible(field) && 
         (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
       
@@ -787,7 +1023,27 @@ export default function TeleFormV2Page() {
       showToast('Form updated successfully! Data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        if (dataEntryUserId) {
+          router.push(`/cati/ss/data-entry-list/${dataEntryUserId}`);
+        } else {
+          // Fallback: try to get from localStorage again
+          const dataEntryData = localStorage.getItem('data_entry_user_data');
+          if (dataEntryData) {
+            try {
+              const userData = JSON.parse(dataEntryData);
+              const userId = userData.data_entry_user_id?.toString();
+              if (userId) {
+                router.push(`/cati/ss/data-entry-list/${userId}`);
+              } else {
+                router.push('/cati/data-entry');
+              }
+            } catch (err) {
+              router.push('/cati/data-entry');
+            }
+          } else {
+            router.push('/cati/data-entry');
+          }
+        }
       }, 1500);
     }
   };
@@ -801,7 +1057,27 @@ export default function TeleFormV2Page() {
       showToast('Call dropped. Partial data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        if (dataEntryUserId) {
+          router.push(`/cati/ss/data-entry-list/${dataEntryUserId}`);
+        } else {
+          // Fallback: try to get from localStorage again
+          const dataEntryData = localStorage.getItem('data_entry_user_data');
+          if (dataEntryData) {
+            try {
+              const userData = JSON.parse(dataEntryData);
+              const userId = userData.data_entry_user_id?.toString();
+              if (userId) {
+                router.push(`/cati/ss/data-entry-list/${userId}`);
+              } else {
+                router.push('/cati/data-entry');
+              }
+            } catch (err) {
+              router.push('/cati/data-entry');
+            }
+          } else {
+            router.push('/cati/data-entry');
+          }
+        }
       }, 1500);
     }
   };
@@ -815,7 +1091,8 @@ export default function TeleFormV2Page() {
       ? !Array.isArray(fieldValue) || fieldValue.length === 0
       : fieldValue === undefined || fieldValue === null || fieldValue === '';
     
-    const hasError = validationErrors.has(field.tag);
+    // Show error if field is in validationErrors OR if it's required, visible, empty, and has been touched
+    const hasError = validationErrors.has(field.tag) || (field.required && isEmpty && touchedFields.has(field.tag));
 
     switch (field.type) {
       case 'radio':
@@ -919,6 +1196,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -926,13 +1211,28 @@ export default function TeleFormV2Page() {
               </div>
             )}
             <Input
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
-              required={field.required}
               placeholder={field.placeholder}
               maxLength={field.maxLength}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -948,6 +1248,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -956,14 +1264,29 @@ export default function TeleFormV2Page() {
             )}
             <Input
               type="number"
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
-              required={field.required}
               min={field.min}
               max={field.max}
               placeholder={field.placeholder}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -979,6 +1302,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -987,11 +1318,27 @@ export default function TeleFormV2Page() {
             )}
             <Input
               type="datetime-local"
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               placeholder={field.placeholder}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -1019,11 +1366,11 @@ export default function TeleFormV2Page() {
         sections.consent.push(field);
       } else if (['resp_age', 'resp_registered_voter', 'resp_gender'].includes(field.tag)) {
         sections.demographics.push(field);
-      } else if (['q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'q11', 'q11_oth', 'q12', 'q12_oth', 'q13', 'q13_oth'].includes(field.tag)) {
+      } else if (['q13', 'q13_oth', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
         sections.partyPreferences.push(field);
-      } else if (['q14', 'q15', 'q16_a', 'q16_b', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
+      } else if (['q14', 'q15', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
         sections.satisfaction.push(field);
-      } else if (['resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'resp_female_edu', 'resp_male_edu', 'resp_occupation', 'thanks_future'].includes(field.tag)) {
+      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation', 'resp_name', 'thanks_future'].includes(field.tag)) {
         sections.finalDemographics.push(field);
       }
     });
@@ -1033,12 +1380,12 @@ export default function TeleFormV2Page() {
 
   const sections = groupFieldsBySection();
 
-  // For edit page, show all sections regardless of conditions
-  const showConsentSection = true;
-  const showDemographicsSection = true;
-  const showPartyPreferencesSection = true;
-  const showSatisfactionSection = true;
-  const showFinalDemographicsSection = true;
+  // Check if sections should be visible
+  const showConsentSection = formData.q_call_status === '1';
+  const showDemographicsSection = formData.consent === '1';
+  const showPartyPreferencesSection = formData.resp_registered_voter === '1';
+  const showSatisfactionSection = formData.resp_registered_voter === '1';
+  const showFinalDemographicsSection = formData.resp_registered_voter === '1';
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
@@ -1194,7 +1541,7 @@ export default function TeleFormV2Page() {
       {/* Spacer to prevent content jump when sticky */}
       {isSticky && <div style={{ height: '64px' }} />}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Call Status Section */}
         <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
           <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
