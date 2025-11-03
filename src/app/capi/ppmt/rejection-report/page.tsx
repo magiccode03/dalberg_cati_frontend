@@ -229,6 +229,7 @@ export default function RejectionReportPage() {
       { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
       { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
       { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+      { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
       { value: 'no_conversation', label: 'No Conversation' },
       { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
       { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
@@ -533,6 +534,10 @@ export default function RejectionReportPage() {
     if (audioQcRejectionLevel === 1 && qcAudioStatus === 10) {
       return 'Same respondent as before';
     }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 7) {
+      return 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)';
+    }
 
     // Fallback to raw value if no mapping matches
     return row.audioFailReason?.toString() || '-';
@@ -619,6 +624,42 @@ export default function RejectionReportPage() {
               />
             </div>
 
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
+            {filters.reportLevel === 'interviewer' && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
+                <SelectDropdown
+                  value={filters.interviewerId}
+                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
+                    ...interviewerDropdownOptions
+                  ]}
+                  disabled={interviewerDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
             <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
@@ -649,50 +690,6 @@ export default function RejectionReportPage() {
                 onChange={(e) => handleFilterChange('serverId', e.target.value)}
               />
             </div>
-
-            {/* <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div> */}
-
-            {filters.reportLevel === 'interviewer' && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
-                <SelectDropdown
-                  value={filters.interviewerId}
-                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
-                    ...interviewerDropdownOptions
-                  ]}
-                  disabled={interviewerDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
-
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -783,6 +780,42 @@ export default function RejectionReportPage() {
               />
             </div>
 
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
+            {filters.reportLevel === 'interviewer' && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
+                <SelectDropdown
+                  value={filters.interviewerId}
+                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
+                    ...interviewerDropdownOptions
+                  ]}
+                  disabled={interviewerDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
             <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
@@ -813,50 +846,6 @@ export default function RejectionReportPage() {
                 onChange={(e) => handleFilterChange('serverId', e.target.value)}
               />
             </div>
-
-            {/* <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div> */}
-
-            {filters.reportLevel === 'interviewer' && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
-                <SelectDropdown
-                  value={filters.interviewerId}
-                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
-                    ...interviewerDropdownOptions
-                  ]}
-                  disabled={interviewerDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
-
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -965,6 +954,42 @@ export default function RejectionReportPage() {
               />
             </div>
 
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
+            {filters.reportLevel === 'interviewer' && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
+                <SelectDropdown
+                  value={filters.interviewerId}
+                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
+                    ...interviewerDropdownOptions
+                  ]}
+                  disabled={interviewerDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
+
             <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
               <SelectDropdown
@@ -995,50 +1020,6 @@ export default function RejectionReportPage() {
                 onChange={(e) => handleFilterChange('serverId', e.target.value)}
               />
             </div>
-
-            {/* <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div> */}
-
-            {filters.reportLevel === 'interviewer' && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
-                <SelectDropdown
-                  value={filters.interviewerId}
-                  onChange={(value) => handleFilterChange('interviewerId', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: interviewerDropdownLoading ? 'Loading Interviewers...' : 'Select Interviewer ID' },
-                    ...interviewerDropdownOptions
-                  ]}
-                  disabled={interviewerDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
-
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">

@@ -71,6 +71,7 @@ export default function TeleFormV2Page() {
   const [toasts, setToasts] = useState<any[]>([]);
   const [teleformUserName, setTeleformUserName] = useState<string>('');
   const [teleformUserId, setTeleformUserId] = useState<string>('');
+  const [dataEntryUserId, setDataEntryUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -142,6 +143,17 @@ export default function TeleFormV2Page() {
         setTeleformUserId(userData.teleform_user_id || '');
       } catch (err) {
         console.error('Error loading teleform user data:', err);
+      }
+    }
+    
+    // Load data entry user data
+    const dataEntryData = localStorage.getItem('data_entry_user_data');
+    if (dataEntryData) {
+      try {
+        const userData = JSON.parse(dataEntryData);
+        setDataEntryUserId(userData.data_entry_user_id?.toString() || '');
+      } catch (err) {
+        console.error('Error loading data entry user data:', err);
       }
     }
   }, []);
@@ -389,6 +401,27 @@ export default function TeleFormV2Page() {
       // Replace field names with their values
       let expr = condition;
       
+      // Handle MLA/MP data access pattern: mla-mp-ac-data.[ac_code].bye_poll === true
+      const mlaMpDataPattern = /mla-mp-ac-data\.\[ac_code\]\.(\w+)\s*(===|!==)\s*(true|false)/g;
+      expr = expr.replace(mlaMpDataPattern, (match, fieldName, operator, expectedValue) => {
+        const mlaMpInfo = getMlaMpData(acCode);
+        if (!mlaMpInfo) {
+          return 'false';
+        }
+        // Type-safe access to MLA/MP data fields
+        const fieldValue = (mlaMpInfo as any)[fieldName];
+        if (fieldValue === undefined) {
+          return 'false';
+        }
+        const expectedBool = expectedValue === 'true';
+        
+        if (operator === '===') {
+          return (fieldValue === expectedBool).toString();
+        } else {
+          return (fieldValue !== expectedBool).toString();
+        }
+      });
+      
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
@@ -444,11 +477,68 @@ export default function TeleFormV2Page() {
     }
   };
 
-  // Check if field should be visible - for edit page, show all fields
+  // Check if field should be visible
   const isFieldVisible = (field: FormField): boolean => {
-    // For edit page, always show all fields regardless of conditions
-    return true;
+    if (!field.conditional) return true;
+    return evaluateCondition(field.conditional);
   };
+
+  // Clear values for fields that become invisible based on conditions
+  useEffect(() => {
+    // Only run if formData is not empty and we have form config loaded
+    if (!processedFormConfig || processedFormConfig.length === 0) return;
+    if (Object.keys(formData).length === 0) return;
+    
+    let hasChanges = false;
+    const updatedFormData = { ...formData };
+    
+    // Check each field in the form config
+    processedFormConfig.forEach((field) => {
+      const fieldTag = field.tag;
+      const fieldValue = formData[fieldTag];
+      
+      // Check if field has a non-empty value
+      const hasValue = fieldValue !== undefined && 
+                       fieldValue !== null && 
+                       fieldValue !== '' &&
+                       !(Array.isArray(fieldValue) && fieldValue.length === 0);
+      
+      // If field has a value but is not visible, clear it
+      if (hasValue && !isFieldVisible(field)) {
+        // Clear the field value based on its type
+        if (field.type === 'checkbox') {
+          updatedFormData[fieldTag] = [];
+        } else {
+          updatedFormData[fieldTag] = '';
+        }
+        hasChanges = true;
+        console.log(`Clearing hidden field: ${fieldTag} (was: ${fieldValue})`);
+      }
+    });
+    
+    // Update form data if any fields were cleared
+    if (hasChanges) {
+      setFormData(updatedFormData);
+      // Also clear validation errors for cleared fields
+      const fieldsToClear = Object.keys(updatedFormData).filter(key => {
+        const field = processedFormConfig.find(f => f.tag === key);
+        if (!field) return false;
+        const fieldValue = updatedFormData[key];
+        const hasValue = fieldValue !== undefined && 
+                         fieldValue !== null && 
+                         fieldValue !== '' &&
+                         !(Array.isArray(fieldValue) && fieldValue.length === 0);
+        return hasValue && !isFieldVisible(field);
+      });
+      if (fieldsToClear.length > 0) {
+        setValidationErrors(prev => {
+          const newErrors = new Set(prev);
+          fieldsToClear.forEach(fieldTag => newErrors.delete(fieldTag));
+          return newErrors;
+        });
+      }
+    }
+  }, [formData, processedFormConfig, instanceData, acCode]);
 
   // Handle input change
   const handleInputChange = (fieldTag: string, value: any, field: FormField) => {
@@ -607,7 +697,7 @@ export default function TeleFormV2Page() {
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}?exact=1`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -681,7 +771,7 @@ export default function TeleFormV2Page() {
         user_localdatetime: currentTime,
       };
       
-      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}?exact=1`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -711,9 +801,9 @@ export default function TeleFormV2Page() {
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    // Get all required fields (all fields are visible in edit mode)
+    // Get all visible fields that are required
     processedFormConfig.forEach((field) => {
-      if (field.required) {
+      if (field.required && isFieldVisible(field)) {
         const fieldValue = formData[field.tag];
         
         // Check if field is empty
@@ -745,7 +835,7 @@ export default function TeleFormV2Page() {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
       processedFormConfig.forEach((field) => {
-        if (field.required) {
+        if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
           const isEmpty = field.type === 'checkbox' 
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
@@ -762,7 +852,7 @@ export default function TeleFormV2Page() {
       
       // Scroll to first error
       const firstErrorField = processedFormConfig.find(
-        field => field.required && 
+        field => field.required && isFieldVisible(field) && 
         (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
       
@@ -787,7 +877,27 @@ export default function TeleFormV2Page() {
       showToast('Form updated successfully! Data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        if (dataEntryUserId) {
+          router.push(`/cati/ss/data-entry-list/${dataEntryUserId}`);
+        } else {
+          // Fallback: try to get from localStorage again
+          const dataEntryData = localStorage.getItem('data_entry_user_data');
+          if (dataEntryData) {
+            try {
+              const userData = JSON.parse(dataEntryData);
+              const userId = userData.data_entry_user_id?.toString();
+              if (userId) {
+                router.push(`/cati/ss/data-entry-list/${userId}`);
+              } else {
+                router.push('/cati/data-entry');
+              }
+            } catch (err) {
+              router.push('/cati/data-entry');
+            }
+          } else {
+            router.push('/cati/data-entry');
+          }
+        }
       }, 1500);
     }
   };
@@ -801,7 +911,27 @@ export default function TeleFormV2Page() {
       showToast('Call dropped. Partial data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        if (dataEntryUserId) {
+          router.push(`/cati/ss/data-entry-list/${dataEntryUserId}`);
+        } else {
+          // Fallback: try to get from localStorage again
+          const dataEntryData = localStorage.getItem('data_entry_user_data');
+          if (dataEntryData) {
+            try {
+              const userData = JSON.parse(dataEntryData);
+              const userId = userData.data_entry_user_id?.toString();
+              if (userId) {
+                router.push(`/cati/ss/data-entry-list/${userId}`);
+              } else {
+                router.push('/cati/data-entry');
+              }
+            } catch (err) {
+              router.push('/cati/data-entry');
+            }
+          } else {
+            router.push('/cati/data-entry');
+          }
+        }
       }, 1500);
     }
   };
@@ -1033,12 +1163,12 @@ export default function TeleFormV2Page() {
 
   const sections = groupFieldsBySection();
 
-  // For edit page, show all sections regardless of conditions
-  const showConsentSection = true;
-  const showDemographicsSection = true;
-  const showPartyPreferencesSection = true;
-  const showSatisfactionSection = true;
-  const showFinalDemographicsSection = true;
+  // Check if sections should be visible
+  const showConsentSection = formData.q_call_status === '1';
+  const showDemographicsSection = formData.consent === '1';
+  const showPartyPreferencesSection = formData.resp_registered_voter === '1';
+  const showSatisfactionSection = formData.resp_registered_voter === '1';
+  const showFinalDemographicsSection = formData.resp_registered_voter === '1';
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">

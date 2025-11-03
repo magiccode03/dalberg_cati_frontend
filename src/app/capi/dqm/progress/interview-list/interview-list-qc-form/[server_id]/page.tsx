@@ -12,7 +12,7 @@ import Radio from '@/components/ui/Radio';
 import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import AudioPlayer from '@/components/ui/AudioPlayer';
 
 // Import form configurations
@@ -73,16 +73,11 @@ function QCFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
-  const [audioError, setAudioError] = useState<Record<string, boolean>>({});
-  const [useIframe, setUseIframe] = useState<Record<string, boolean>>({});
-  const [activeAudioTab, setActiveAudioTab] = useState<string>('');
-  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
-  const [audioProgress, setAudioProgress] = useState<Record<string, number>>({});
-  const [audioDuration, setAudioDuration] = useState<Record<string, number>>({});
-  const [isPlaying, setIsPlaying] = useState<Record<string, boolean>>({});
-  const [currentTime, setCurrentTime] = useState<Record<string, number>>({});
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
   const hasFetchedData = useRef(false); // Prevent multiple API calls
   const isInitialized = useRef(false); // Prevent multiple initializations
   
@@ -106,91 +101,14 @@ function QCFormPage() {
   }, []);
 
   // Audio error handling
-  const handleAudioError = (audioId: string) => {
-    console.error('Audio playback error for:', audioId);
-    setAudioError(prev => ({ ...prev, [audioId]: true }));
+  const handleAudioError = () => {
+    console.error('Audio playback error');
+    setAudioError(true);
   };
 
-  const handleIframeError = (audioId: string) => {
-    console.error('Iframe audio playback error for:', audioId);
-    setAudioError(prev => ({ ...prev, [audioId]: true }));
-  };
-
-  const handleTryAlternativePlayer = (audioId: string) => {
-    setUseIframe(prev => ({ ...prev, [audioId]: true }));
-  };
-
-  // Audio player handlers
-  const handlePlayPause = (audioId: string) => {
-    const audio = audioRefs.current[audioId];
-    if (!audio) return;
-    
-    if (isPlaying[audioId]) {
-      audio.pause();
-      setIsPlaying(prev => ({ ...prev, [audioId]: false }));
-    } else {
-      audio.play();
-      setIsPlaying(prev => ({ ...prev, [audioId]: true }));
-    }
-  };
-
-  const handleTimeUpdate = (audioId: string, e: React.SyntheticEvent<HTMLAudioElement>) => {
-    const audio = e.currentTarget;
-    const progress = (audio.currentTime / audio.duration) * 100;
-    setCurrentTime(prev => ({ ...prev, [audioId]: audio.currentTime }));
-    setAudioProgress(prev => ({ ...prev, [audioId]: progress || 0 }));
-  };
-
-  const handleLoadedMetadata = (audioId: string, e: React.SyntheticEvent<HTMLAudioElement>) => {
-    const audio = e.currentTarget;
-    setAudioDuration(prev => ({ ...prev, [audioId]: audio.duration }));
-  };
-
-  const handleSeek = (audioId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const audio = audioRefs.current[audioId];
-    if (!audio) return;
-    const seekTime = (parseFloat(e.target.value) / 100) * audio.duration;
-    audio.currentTime = seekTime;
-    setAudioProgress(prev => ({ ...prev, [audioId]: parseFloat(e.target.value) }));
-    setCurrentTime(prev => ({ ...prev, [audioId]: seekTime }));
-  };
-
-  const formatTime = (seconds: number): string => {
-    if (isNaN(seconds)) return '0:00';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleVolumeChange = (audioId: string, e: React.ChangeEvent<HTMLInputElement>) => {
-    const audio = audioRefs.current[audioId];
-    if (!audio) return;
-    audio.volume = parseFloat(e.target.value) / 100;
-  };
-
-  // Handle tab change and auto-play audio
-  const handleTabChange = (audioId: string) => {
-    // Pause currently playing audio if any
-    if (activeAudioTab && activeAudioTab !== audioId) {
-      const currentAudio = audioRefs.current[activeAudioTab];
-      if (currentAudio) {
-        currentAudio.pause();
-        setIsPlaying(prev => ({ ...prev, [activeAudioTab]: false }));
-      }
-    }
-    
-    setActiveAudioTab(audioId);
-    
-    // Auto-play audio when tab is clicked
-    setTimeout(() => {
-      const audio = audioRefs.current[audioId];
-      if (audio) {
-        audio.play().catch((error) => {
-          console.log('Auto-play prevented by browser:', error);
-          // Browser may prevent auto-play, so we don't show error
-        });
-      }
-    }, 100); // Small delay to ensure audio element is ready
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error');
+    setAudioError(true);
   };
 
   // Fetch instance data from API - memoized to prevent recreation
@@ -256,6 +174,76 @@ function QCFormPage() {
     }
   }, [serverId]); // Removed showToast from dependencies to prevent recreation
 
+  // Fetch interview QC data from DQM progress detail endpoint
+  const fetchInterviewQcData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token || !serverId) {
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      
+      // Fetch interview data from DQM progress detail endpoint with server_id filter
+      const response = await fetch(`${apiBaseUrl}/api/capi/dqm/qc/interview/progress/detail?server_id=${serverId}&page=1&pageSize=1`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.success && data.data && Array.isArray(data.data.interviews) && data.data.interviews.length > 0) {
+          const interview = data.data.interviews[0];
+          
+          // Load existing QC form data
+          const qcFormData: Record<string, any> = {};
+          
+          // Load QC fields from interview data
+          if (interview.qc_audio_status !== undefined && interview.qc_audio_status !== null) {
+            qcFormData.qc_audio_status = String(interview.qc_audio_status);
+          }
+          if (interview.qc_q2 !== undefined && interview.qc_q2 !== null) {
+            qcFormData.qc_q2 = String(interview.qc_q2);
+          }
+          if (interview.qc_q3 !== undefined && interview.qc_q3 !== null) {
+            qcFormData.qc_q3 = String(interview.qc_q3);
+          }
+          if (interview.qc_q4 !== undefined && interview.qc_q4 !== null) {
+            qcFormData.qc_q4 = String(interview.qc_q4);
+          }
+          if (interview.qc_q5 !== undefined && interview.qc_q5 !== null) {
+            qcFormData.qc_q5 = String(interview.qc_q5);
+          }
+          if (interview.qc_q6 !== undefined && interview.qc_q6 !== null) {
+            qcFormData.qc_q6 = String(interview.qc_q6);
+          }
+          if (interview.qc_q7 !== undefined && interview.qc_q7 !== null) {
+            qcFormData.qc_q7 = String(interview.qc_q7);
+          }
+          if (interview.qc_q8 !== undefined && interview.qc_q8 !== null) {
+            qcFormData.qc_q8 = String(interview.qc_q8);
+          }
+          if (interview.qc_q9 !== undefined && interview.qc_q9 !== null) {
+            qcFormData.qc_q9 = String(interview.qc_q9);
+          }
+          
+          // Set form data with existing QC values
+          if (Object.keys(qcFormData).length > 0) {
+            setFormData(prev => ({ ...prev, ...qcFormData }));
+            setIsEditMode(true); // Enable edit mode when QC data exists
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching interview QC data:', error);
+      // Don't show error toast as this is optional for editing existing data
+    }
+  }, [serverId]);
+
   // Load QC user data and interview data on mount - run only once
   useEffect(() => {
     const savedData = localStorage.getItem('qc_user_data');
@@ -269,9 +257,81 @@ function QCFormPage() {
       }
     }
     
-    // Fetch instance data
+    // Fetch instance data and QC data
     fetchInstanceData();
+    fetchInterviewQcData();
   }, []); // Empty dependency array - run only once on mount
+
+  // Clear field values when they become hidden due to conditions
+  useEffect(() => {
+    const fieldsToClear: string[] = [];
+    
+    currentFormConfig.forEach((field) => {
+      const isVisible = isFieldVisible(field);
+      const fieldValue = formData[field.tag];
+      
+      // If field is hidden and has a value, mark it for clearing
+      if (!isVisible) {
+        // Check if field has a value that needs to be cleared
+        let hasValue = false;
+        
+        if (field.type === 'checkbox') {
+          hasValue = Array.isArray(fieldValue) && fieldValue.length > 0;
+        } else {
+          hasValue = fieldValue !== undefined && fieldValue !== null && fieldValue !== '';
+        }
+        
+        if (hasValue) {
+          fieldsToClear.push(field.tag);
+        }
+      }
+    });
+    
+    // Clear fields that became hidden (only if there are fields to clear)
+    if (fieldsToClear.length > 0) {
+      setFormData(prev => {
+        const newData = { ...prev };
+        let hasChanges = false;
+        
+        fieldsToClear.forEach(fieldTag => {
+          const field = currentFormConfig.find(f => f.tag === fieldTag);
+          if (field) {
+            const currentValue = prev[fieldTag];
+            // Set appropriate empty value based on field type
+            if (field.type === 'checkbox') {
+              if (Array.isArray(currentValue) && currentValue.length > 0) {
+                newData[fieldTag] = [];
+                hasChanges = true;
+              }
+            } else {
+              if (currentValue !== undefined && currentValue !== null && currentValue !== '') {
+                newData[fieldTag] = '';
+                hasChanges = true;
+              }
+            }
+          }
+        });
+        
+        // Only return new object if there are actual changes to prevent unnecessary re-renders
+        return hasChanges ? newData : prev;
+      });
+      
+      // Clear validation errors for hidden fields
+      setValidationErrors(prev => {
+        const newErrors = new Set(prev);
+        let hasChanges = false;
+        
+        fieldsToClear.forEach(fieldTag => {
+          if (newErrors.has(fieldTag)) {
+            newErrors.delete(fieldTag);
+            hasChanges = true;
+          }
+        });
+        
+        return hasChanges ? newErrors : prev;
+      });
+    }
+  }, [formData, instanceData, currentFormConfig]); // Re-run when formData or instanceData changes
 
   // Handle scroll for sticky audio player - optimized to prevent unnecessary re-renders
   useEffect(() => {
@@ -361,45 +421,16 @@ function QCFormPage() {
     return null;
   }, [instanceData, getLabel]);
 
-  // Get all audio URLs from instance data - memoized to prevent re-renders
-  const audioUrls = useMemo(() => {
-    if (!instanceData.audio1) return [];
+  // Get audio URL from instance data - memoized to prevent re-renders
+  const audioUrl = useMemo(() => {
+    if (!instanceData.audio1) return null;
     
-    // Split comma-separated audio files
-    const audioFiles = instanceData.audio1.split(',').map((file: string) => file.trim()).filter((file: string) => file);
-    if (audioFiles.length === 0) return [];
+    // Get first audio file if comma-separated
+    const audioFile = instanceData.audio1.split(',')[0].trim();
+    if (!audioFile) return null;
     
-    return audioFiles.map((audioFile: string, index: number) => ({
-      id: `audio-${index}`,
-      fileName: audioFile,
-      url: `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`,
-      label: `A ${index + 1}`
-    }));
+    return `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`;
   }, [instanceData.audio1, serverId]);
-
-  // Set default active tab when audio URLs are loaded and auto-play first audio
-  useEffect(() => {
-    if (audioUrls.length > 0 && !activeAudioTab) {
-      const firstAudioId = audioUrls[0].id;
-      setActiveAudioTab(firstAudioId);
-      
-      // Auto-play first audio when loaded
-      setTimeout(() => {
-        const audio = audioRefs.current[firstAudioId];
-        if (audio) {
-          audio.play().catch((error) => {
-            console.log('Auto-play prevented by browser:', error);
-            // Browser may prevent auto-play, so we don't show error
-          });
-        }
-      }, 500); // Delay to ensure audio element is mounted
-    }
-  }, [audioUrls, activeAudioTab]);
-
-  // Get current active audio URL
-  const currentAudioUrl = useMemo(() => {
-    return audioUrls.find((audio: { id: string; url: string }) => audio.id === activeAudioTab)?.url || null;
-  }, [audioUrls, activeAudioTab]);
 
   // Format duration in hh:mm:ss format - memoized to prevent re-creation
   const formatDuration = useCallback((seconds: string | null | undefined): string => {
@@ -653,12 +684,13 @@ function QCFormPage() {
       
       formFields.forEach(fieldTag => {
         const fieldValue = formData[fieldTag];
-        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-          // For text fields (like qc_q9), keep as string
-          // For other fields, convert to integer
-          if (fieldTag === 'qc_q9') {
-            requestBody[fieldTag] = fieldValue;
-          } else {
+        
+        // For qc_q9 (text/remark field), always include it even if empty to allow clearing the value
+        if (fieldTag === 'qc_q9') {
+          requestBody[fieldTag] = fieldValue !== undefined && fieldValue !== null ? fieldValue : '';
+        } else {
+          // For other fields, only include if they have a value
+          if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
             const numValue = parseInt(fieldValue);
             requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
           }
@@ -825,15 +857,13 @@ function QCFormPage() {
     const success = await saveFormData(outcome, rejectionLevel);
     
     if (success) {
-      // Show green toast for Pass, red toast for Fail
-      const toastType = outcome === 1 ? 'success' : 'error';
-      const toastMessage = outcome === 1 
-        ? `QC Passed! Interview has been successfully evaluated.` 
-        : `QC Failed! Interview has been marked as failed.`;
-      showToast(toastMessage, toastType);
+      const message = isEditMode 
+        ? `QC evaluation updated successfully! Interview marked as ${outcomeText}.`
+        : `QC evaluation completed! Interview marked as ${outcomeText}.`;
+      showToast(message, 'success');
       
       setTimeout(() => {
-        router.push(`/capi/capi-qc/new-qc/${qcUserId}`);
+        router.push(`/capi/dqm/progress/interview-list`);
       }, 1500);
     }
   };
@@ -1056,8 +1086,8 @@ function QCFormPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
-      {/* Sticky Audio Player with Tabs */}
-      {audioUrls.length > 0 && (
+      {/* Sticky Audio Player */}
+      {audioUrl && (
         <>
           <div
             ref={audioPlayerRef}
@@ -1068,209 +1098,111 @@ function QCFormPage() {
             } transition-transform duration-200 ease-out`}
           >
             <Card className={`${isSticky ? 'rounded-none' : ''}`}>
-              <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                <div className="max-w-7xl mx-auto">
-                  {/* Audio Tabs - Only show when there are multiple audio files */}
-                  {audioUrls.length > 1 && (
-                    <div className="mb-3 sm:mb-4">
-                      <div className="flex overflow-x-auto scrollbar-hide -mx-2 sm:mx-0">
-                        <div className="flex space-x-1 sm:space-x-2 px-2 sm:px-0 min-w-full sm:min-w-0">
-                          {audioUrls.map((audio: { id: string; label: string }) => {
-                            const isActive = audio.id === activeAudioTab;
-                            return (
-                              <button
-                                key={audio.id}
-                                onClick={() => handleTabChange(audio.id)}
-                                className={`
-                                  flex-shrink-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-all duration-200
-                                  ${isActive 
-                                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 shadow-sm' 
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+              <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="flex items-center gap-4 max-w-7xl mx-auto">
+                  <div className="flex-1 min-w-0">
+                    <div className="mb-3 text-center">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                      </p>
+                      {audioError && !useIframe && (
+                        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                          Audio player had an issue. Try the alternative options below.
+                        </p>
+                      )}
+                    </div>
+
+                    {!useIframe ? (
+                      audioUrl ? (
+                        <audio
+                          controls
+                          className="w-full"
+                          controlsList="nodownload"
+                          preload="metadata"
+                          onError={handleAudioError}
+                          onLoadStart={() => console.log('Audio loading started')}
+                          onCanPlay={() => console.log('Audio can play')}
+                        >
+                          <source src={audioUrl} type="audio/mpeg" />
+                          <source src={audioUrl} type="audio/mp3" />
+                          Your browser does not support the audio element.
+                        </audio>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No audio file available for this interview.
+                        </div>
+                      )
+                    ) : (
+                      audioUrl ? (
+                        <div className="w-full">
+                          <iframe
+                            src={audioUrl}
+                            className="w-full h-16 border-0 rounded"
+                            title="Audio Player"
+                            allow="autoplay"
+                            onError={handleIframeError}
+                            onLoad={() => {
+                              // Check if iframe content is just text (not audio player)
+                              setTimeout(() => {
+                                try {
+                                  const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                                  if (iframe && iframe.contentDocument) {
+                                    const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                    if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                      console.warn('Iframe returned text instead of audio player');
+                                      setAudioError(true);
+                                    }
                                   }
-                                `}
-                              >
-                                {audio.label}
-                              </button>
-                            );
-                          })}
+                                } catch (e) {
+                                  // Cross-origin restrictions, can't access iframe content
+                                  console.log('Cannot access iframe content due to CORS');
+                                }
+                              }, 1000);
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          No audio file available for this interview.
+                        </div>
+                      )
+                    )}
+
+                    {/* Error Message for Failed Audio */}
+                    {audioError && (
+                      <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                        <div className="text-center">
+                          <div className="text-red-600 dark:text-red-400 mb-2">
+                            <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="font-semibold">Audio Playback Failed</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-
-                  {/* Audio Player */}
-                  <div className="flex-1 min-w-0">
-                    {currentAudioUrl && (
-                      <>
-                        <div className="mb-2 text-center">
-                          {/* <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                            {useIframe[activeAudioTab] ? 'Using alternative player' : 'Click play to start the audio'}
-                          </p> */}
-                          {audioError[activeAudioTab] && !useIframe[activeAudioTab] && (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                              Audio player had an issue. Try the alternative options below.
-                            </p>
-                          )}
-                        </div>
-
-                        {!useIframe[activeAudioTab] ? (
-                          <>
-                            {/* Mobile Custom Player */}
-                            <div className="block sm:hidden">
-                              {/* Progress Bar - Full Width */}
-                              <div className="w-full mb-2">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  value={audioProgress[activeAudioTab] || 0}
-                                  onChange={(e) => handleSeek(activeAudioTab, e)}
-                                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                                  style={{
-                                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${audioProgress[activeAudioTab] || 0}%, #e5e7eb ${audioProgress[activeAudioTab] || 0}%, #e5e7eb 100%)`
-                                  }}
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  <span>{formatTime(currentTime[activeAudioTab] || 0)}</span>
-                                  <span>{formatTime(audioDuration[activeAudioTab] || 0)}</span>
-                                </div>
-                              </div>
-
-                              {/* Controls */}
-                              <div className="flex items-center justify-center gap-4">
-                                <button
-                                  onClick={() => handlePlayPause(activeAudioTab)}
-                                  className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
-                                  aria-label={isPlaying[activeAudioTab] ? 'Pause' : 'Play'}
-                                >
-                                  {isPlaying[activeAudioTab] ? (
-                                    <Pause className="w-5 h-5" />
-                                  ) : (
-                                    <Play className="w-5 h-5" />
-                                  )}
-                                </button>
-                                
-                                <div className="flex items-center gap-2 flex-1 max-w-[120px]">
-                                  <Volume2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    defaultValue="100"
-                                    onChange={(e) => handleVolumeChange(activeAudioTab, e)}
-                                    className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Hidden Audio Element */}
-                              <audio
-                                key={activeAudioTab}
-                                ref={(el) => {
-                                  if (el) {
-                                    audioRefs.current[activeAudioTab] = el;
-                                  } else {
-                                    delete audioRefs.current[activeAudioTab];
-                                  }
-                                }}
-                                preload="metadata"
-                                onError={() => handleAudioError(activeAudioTab)}
-                                onTimeUpdate={(e) => handleTimeUpdate(activeAudioTab, e)}
-                                onLoadedMetadata={(e) => handleLoadedMetadata(activeAudioTab, e)}
-                                onPlay={() => setIsPlaying(prev => ({ ...prev, [activeAudioTab]: true }))}
-                                onPause={() => setIsPlaying(prev => ({ ...prev, [activeAudioTab]: false }))}
-                                onEnded={() => setIsPlaying(prev => ({ ...prev, [activeAudioTab]: false }))}
-                              >
-                                <source src={currentAudioUrl} type="audio/mpeg" />
-                                <source src={currentAudioUrl} type="audio/mp3" />
-                                Your browser does not support the audio element.
-                              </audio>
-                            </div>
-
-                            {/* Desktop Native Player */}
-                            <div className="hidden sm:block">
-                              <audio
-                                key={activeAudioTab}
-                                controls
-                                className="w-full h-12"
-                                controlsList="nodownload"
-                                preload="metadata"
-                                onError={() => handleAudioError(activeAudioTab)}
-                                onLoadStart={() => console.log('Audio loading started:', activeAudioTab)}
-                                onCanPlay={() => console.log('Audio can play:', activeAudioTab)}
-                              >
-                                <source src={currentAudioUrl} type="audio/mpeg" />
-                                <source src={currentAudioUrl} type="audio/mp3" />
-                                Your browser does not support the audio element.
-                              </audio>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="w-full">
-                            <iframe
-                              key={activeAudioTab}
-                              src={currentAudioUrl}
-                              className="w-full h-12 sm:h-16 border-0 rounded"
-                              title={`Audio Player - ${audioUrls.find((a: { id: string; label: string }) => a.id === activeAudioTab)?.label}`}
-                              allow="autoplay"
-                              onError={() => handleIframeError(activeAudioTab)}
-                              onLoad={() => {
-                                setTimeout(() => {
-                                  try {
-                                    const iframe = document.querySelector(`iframe[title*="${activeAudioTab}"]`) as HTMLIFrameElement;
-                                    if (iframe && iframe.contentDocument) {
-                                      const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                                      if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                                        console.warn('Iframe returned text instead of audio player');
-                                        handleIframeError(activeAudioTab);
-                                      }
-                                    }
-                                  } catch (e) {
-                                    console.log('Cannot access iframe content due to CORS');
-                                  }
-                                }, 1000);
-                              }}
-                            />
-                          </div>
-                        )}
-
-                        {/* Error Message for Failed Audio */}
-                        {audioError[activeAudioTab] && (
-                          <div className="w-full p-2 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-2 sm:mt-4">
-                            <div className="text-center">
-                              <div className="text-red-600 dark:text-red-400 mb-2">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p className="text-xs sm:text-sm font-semibold">Audio Playback Failed</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                  The audio URL is not serving playable content.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Alternative Options */}
-                        <div className="mt-2 sm:mt-4 flex justify-center items-center">
-                          {!useIframe[activeAudioTab] && audioError[activeAudioTab] && (
-                            <button
-                              onClick={() => handleTryAlternativePlayer(activeAudioTab)}
-                              className="text-xs sm:text-sm bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-blue-700 transition-colors"
-                            >
-                              Try Alternative Player
-                            </button>
-                          )}
-                        </div>
-                      </>
                     )}
+                    
+                    {/* Alternative Options */}
+                    <div className="mt-4 flex justify-center items-center">
+                      {!useIframe && audioError && (
+                        <button
+                          onClick={() => setUseIframe(true)}
+                          className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        >
+                          Try Alternative Player
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </Card>
           </div>
           {/* Spacer to prevent content jump when sticky */}
-          {isSticky && <div style={{ height: '80px' }} />}
+          {isSticky && <div style={{ height: '64px' }} />}
         </>
       )}
 
@@ -1279,7 +1211,9 @@ function QCFormPage() {
         <Card className="p-3 sm:p-4 md:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             <div>
-              <Heading level={4} className="text-base sm:text-lg md:text-xl">Audio QC Form</Heading>
+              <Heading level={4} className="text-base sm:text-lg md:text-xl">
+                {isEditMode ? 'Edit Audio QC Form' : 'Audio QC Form'}
+              </Heading>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
                 <div>Server ID: <span className="font-mono font-semibold">{serverId}</span></div>
                 {instanceData.ac_name && (
@@ -1330,7 +1264,7 @@ function QCFormPage() {
               className="w-full sm:w-auto sm:min-w-[200px] bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base"
             >
               <i className="fa fa-paper-plane mr-2"></i>
-              {isSubmitting ? 'Processing...' : 'Submit'}
+              {isSubmitting ? 'Processing...' : isEditMode ? 'Update QC Evaluation' : 'Submit'}
             </Button>
           </div>
         </Card>

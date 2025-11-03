@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,11 +35,19 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, getRedirectUrl, user } = useAuth();
+  const { login, getRedirectUrl, user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && user) {
+      const redirectUrl = getRedirectUrl(user.role);
+      router.replace(redirectUrl);
+    }
+  }, [isAuthenticated, user, authLoading, router, getRedirectUrl]);
 
   const {
     register,
@@ -70,7 +78,7 @@ export default function LoginPage() {
         setSuccess('Login successful! Redirecting...');
         setTimeout(() => {
           // Get the appropriate redirect URL based on actual user role
-          const redirectUrl = getRedirectUrl(result.user.role);
+          const redirectUrl = getRedirectUrl(result.user!.role);
           router.push(redirectUrl);
         }, 1500);
       } else {
@@ -100,6 +108,18 @@ export default function LoginPage() {
       setValue('password', credentials.password);
     }
   };
+
+  // Show loading spinner while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
