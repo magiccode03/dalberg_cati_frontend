@@ -31,6 +31,7 @@ interface CallDetailData {
   id: number;
   caller_id: number;
   caller_name: string;
+  telecalling_group_name?: string;
   phone: string;
   ac_code: number;
   call_time: string | null;
@@ -1005,6 +1006,7 @@ const TelecallerDailyCallDetailPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
@@ -1024,6 +1026,9 @@ const TelecallerDailyCallDetailPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.caller_id || '-'}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                            {item.telecalling_group_name || '-'}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {formatDateTime(item.call_time)}
