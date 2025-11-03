@@ -81,6 +81,7 @@ export default function TeleFormV2Page() {
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
   const [instanceData, setInstanceData] = useState<any>({});
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -246,40 +247,105 @@ export default function TeleFormV2Page() {
     fetchInstanceData();
   }, [interviewId]);
 
-  // Load existing form data from instance data
-  // This function loads existing values and ensures conditional fields are displayed correctly
-  // when editing (fill form behavior based on existing data)
-  const loadExistingFormData = (data: any) => {
-    const existingData: Record<string, any> = {};
+  // Get current form configuration based on language
+  const currentFormConfig = formConfigs[language] || formConfigs.english;
+
+  // Transform checkbox fields from API format (q10_99: 1) back to form format (q10: ['99'])
+  // Only load fields that are used in the form configuration
+  const transformApiDataToFormData = (apiData: Record<string, any>): Record<string, any> => {
+    const formData: Record<string, any> = {};
+    const checkboxFields: Record<string, string[]> = {};
     
-    // Map all form fields from the instance data
-    // This will populate the form with existing values, enabling conditional logic to work correctly
-    Object.keys(data).forEach(key => {
-      if (data[key] !== undefined && data[key] !== null) {
-        // Convert to string for form compatibility
-        // Convert arrays for checkbox fields
-        if (Array.isArray(data[key])) {
-          existingData[key] = data[key].map((item: any) => String(item));
-        } else {
-          existingData[key] = String(data[key]);
+    // Get all field tags from form config to know which fields to load
+    const formFieldTags = new Set<string>();
+    currentFormConfig.forEach(field => {
+      formFieldTags.add(field.tag);
+    });
+    
+    // First pass: identify checkbox fields and collect their values
+    Object.keys(apiData).forEach(key => {
+      // Check if this is a checkbox option field (pattern: fieldName_optionValue, e.g., q10_99, q8_2)
+      const checkboxMatch = key.match(/^(.+)_(\d+)$/);
+      if (checkboxMatch) {
+        const baseFieldName = checkboxMatch[1];
+        const optionValue = checkboxMatch[2];
+        const fieldValue = apiData[key];
+        
+        // Only process if this base field is a checkbox in the form config
+        const checkboxField = currentFormConfig.find(field => 
+          field.tag === baseFieldName && field.type === 'checkbox'
+        );
+        
+        if (checkboxField && fieldValue === 1) {
+          // This is a checked checkbox option
+          if (!checkboxFields[baseFieldName]) {
+            checkboxFields[baseFieldName] = [];
+          }
+          checkboxFields[baseFieldName].push(optionValue);
         }
       }
     });
     
-    // Apply clearing rules based on loaded values (e.g., if number_status is 3, clear related fields)
-    // Use currentFormConfig directly since processedFormConfig depends on formData which we're setting
-    const clearedData = applyClearingRulesToData(existingData, currentFormConfig);
+    // Second pass: build form data - only load fields that are in the form config
+    Object.keys(apiData).forEach(key => {
+      // Skip checkbox option fields (they'll be handled by checkboxFields)
+      const checkboxMatch = key.match(/^(.+)_(\d+)$/);
+      if (checkboxMatch) {
+        const baseFieldName = checkboxMatch[1];
+        const isCheckboxField = currentFormConfig.some(field => 
+          field.tag === baseFieldName && field.type === 'checkbox'
+        );
+        if (isCheckboxField) {
+          // Skip this - it will be handled as part of the checkbox array
+          return;
+        }
+      }
+      
+      // Only load fields that are in the form configuration
+      if (formFieldTags.has(key) && apiData[key] !== undefined) {
+        if (apiData[key] === null) {
+          formData[key] = '';
+        } else {
+          formData[key] = String(apiData[key]);
+        }
+      }
+    });
     
-    // Set form data - this will trigger conditional field evaluation
-    // Conditional fields will show/hide based on these existing values (edit form behavior)
-    setFormData(clearedData);
-    console.log('Loaded existing form data (before clearing):', existingData);
-    console.log('Loaded existing form data (after clearing rules):', clearedData);
-    console.log('Conditional fields will now evaluate based on existing values for edit mode');
+    // Add checkbox fields as arrays (only if they're in form config)
+    Object.keys(checkboxFields).forEach(baseFieldName => {
+      if (formFieldTags.has(baseFieldName)) {
+        formData[baseFieldName] = checkboxFields[baseFieldName];
+      }
+    });
+    
+    return formData;
   };
 
-  // Get current form configuration based on language
-  const currentFormConfig = formConfigs[language] || formConfigs.english;
+  // Load existing form data from instance data
+  // This function loads existing values ONLY for fields that are used in the form configuration
+  // and ensures conditional fields are displayed correctly when editing
+  // IMPORTANT: Do NOT apply clearing rules on initial load - only clear when user updates the form
+  const loadExistingFormData = (data: any) => {
+    // Transform API data format to form data format (especially checkbox fields)
+    // This function only loads fields that are defined in the form configuration
+    const transformedData = transformApiDataToFormData(data);
+    
+    console.log('Loaded form fields from database (only fields used in form):', transformedData);
+    console.log('Total form fields loaded:', Object.keys(transformedData).length);
+    
+    // Set form data directly - this will trigger conditional field evaluation
+    // Conditional fields will show/hide based on these existing values (edit form behavior)
+    // DO NOT apply clearing rules here - let user see existing data first
+    setFormData(transformedData);
+    
+    // Mark initial load as complete after a short delay to allow form to render
+    setTimeout(() => {
+      setIsInitialLoadComplete(true);
+    }, 100);
+    
+    console.log('Form data loaded (only form config fields, no clearing rules applied on initial load)');
+    console.log('Conditional fields will now evaluate based on existing values for edit mode');
+  };
 
   // Get MLA/MP data for the current AC code
   const getMlaMpData = (acCode: string) => {
@@ -542,68 +608,10 @@ export default function TeleFormV2Page() {
     return evaluateCondition(field.conditional);
   };
 
-  // Clear values for fields that become invisible based on conditions
-  // This ensures that when editing existing data, fields are shown/hidden correctly based on their values
-  useEffect(() => {
-    // Only run if formData is not empty and we have form config loaded
-    if (!processedFormConfig || processedFormConfig.length === 0) return;
-    if (Object.keys(formData).length === 0) return;
-    
-    let hasChanges = false;
-    const updatedFormData = { ...formData };
-    
-    // Check each field in the form config
-    processedFormConfig.forEach((field) => {
-      const fieldTag = field.tag;
-      const fieldValue = formData[fieldTag];
-      
-      // Check if field has a non-empty value
-      const hasValue = fieldValue !== undefined && 
-                       fieldValue !== null && 
-                       fieldValue !== '' &&
-                       !(Array.isArray(fieldValue) && fieldValue.length === 0);
-      
-      // Evaluate visibility based on current formData (which includes existing values when editing)
-      // This ensures conditional fields show/hide correctly when loading existing data
-      const isVisible = isFieldVisible(field);
-      
-      // If field has a value but is not visible (based on conditions), clear it
-      // This handles the case where existing data might have values for fields that should be hidden
-      if (hasValue && !isVisible) {
-        // Clear the field value based on its type
-        if (field.type === 'checkbox') {
-          updatedFormData[fieldTag] = [];
-        } else {
-          updatedFormData[fieldTag] = '';
-        }
-        hasChanges = true;
-        console.log(`Clearing hidden field: ${fieldTag} (was: ${fieldValue}) - condition not met`);
-      }
-    });
-    
-    // Update form data if any fields were cleared
-    if (hasChanges) {
-      setFormData(updatedFormData);
-      // Also clear validation errors for cleared fields
-      const fieldsToClear = Object.keys(updatedFormData).filter(key => {
-        const field = processedFormConfig.find(f => f.tag === key);
-        if (!field) return false;
-        const fieldValue = updatedFormData[key];
-        const hasValue = fieldValue !== undefined && 
-                         fieldValue !== null && 
-                         fieldValue !== '' &&
-                         !(Array.isArray(fieldValue) && fieldValue.length === 0);
-        return hasValue && !isFieldVisible(field);
-      });
-      if (fieldsToClear.length > 0) {
-        setValidationErrors(prev => {
-          const newErrors = new Set(prev);
-          fieldsToClear.forEach(fieldTag => newErrors.delete(fieldTag));
-          return newErrors;
-        });
-      }
-    }
-  }, [formData, processedFormConfig, instanceData, acCode]);
+  // REMOVED: Automatic clearing of hidden fields
+  // We should NOT automatically clear fields based on visibility
+  // Clearing should only happen based on explicit clearing rules (e.g., when number_status changes)
+  // Visibility is just for showing/hiding UI - values should remain until user submits
 
   // Handle input change
   const handleInputChange = (fieldTag: string, value: any, field: FormField) => {
@@ -625,18 +633,19 @@ export default function TeleFormV2Page() {
         newData.resp_caste_jati_oth = '';
       }
       
-      // Apply clearing rules
-      if (field.rules?.clearFields) {
+      // Apply clearing rules ONLY when user explicitly changes this field
+      // This ensures clearing happens in real-time when user makes changes
+      if (field.rules?.clearFields && field.type === 'radio') {
         const clearRules = field.rules.clearFields;
+        const selectedOption = field.options?.find(opt => opt.value === value);
         
-        // For radio/select fields
-        if (field.type === 'radio') {
-          const selectedOption = field.options?.find(opt => opt.value === value);
-          if (selectedOption && clearRules[selectedOption.tag]) {
-            clearRules[selectedOption.tag].forEach(fieldToClear => {
-              newData[fieldToClear] = Array.isArray(newData[fieldToClear]) ? [] : '';
-            });
-          }
+        if (selectedOption && clearRules[selectedOption.tag]) {
+          console.log(`User changed ${fieldTag} to ${value}, applying clearing rules for ${selectedOption.tag}`);
+          clearRules[selectedOption.tag].forEach(fieldToClear => {
+            const oldValue = newData[fieldToClear];
+            newData[fieldToClear] = Array.isArray(newData[fieldToClear]) ? [] : '';
+            console.log(`Cleared field ${fieldToClear} (was: ${oldValue}) due to clearing rule`);
+          });
         }
       }
       
@@ -721,36 +730,100 @@ export default function TeleFormV2Page() {
   };
 
   // Transform checkbox data to individual fields and convert string values to integers
+  // IMPORTANT: Do NOT apply clearing rules here - clearing should only happen when user changes fields
+  // The user already applied clearing rules when they changed the field, so data is already correct
   const transformFormDataForSubmission = (data: Record<string, any>) => {
-    // First apply clearing rules based on current form state
-    const clearedData = applyClearingRulesToData(data);
-    
     const transformed: Record<string, any> = {};
     
+    // Get all fields from formData to include ALL fields, not just form config fields
+    const allFields = new Set<string>();
+    
+    // Collect all fields from form config
     processedFormConfig.forEach((field) => {
-      const fieldValue = clearedData[field.tag];
+      allFields.add(field.tag);
       
-      if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
-        // For checkbox fields, create individual fields for each option
-        field.options?.forEach((option) => {
-          const fieldName = `${field.tag}_${option.value}`;
-          transformed[fieldName] = fieldValue.includes(option.value) ? 1 : null;
+      if (field.type === 'checkbox' && field.options) {
+        // For checkbox fields, also include all checkbox option fields
+        field.options.forEach((option) => {
+          allFields.add(`${field.tag}_${option.value}`);
         });
-      } else if (field.type !== 'checkbox') {
-        // For non-checkbox fields, convert to appropriate type
-        if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
-          transformed[field.tag] = null;
-        } else if (field.type === 'radio' || field.type === 'number') {
-          // Convert radio button values and number inputs to integers
-          const numValue = parseInt(fieldValue);
-          transformed[field.tag] = isNaN(numValue) ? null : numValue;
+      }
+    });
+    
+    // Also collect all fields from the data itself (includes fields from API response)
+    // This ensures fields like resp_age, resp_gender, etc. are included even if not in form config
+    Object.keys(data).forEach(key => {
+      allFields.add(key);
+    });
+    
+    // Now transform all fields
+    allFields.forEach((fieldTag) => {
+      // Check if this is a checkbox option field (e.g., q7_1, q8_2, q10_99)
+      const checkboxMatch = fieldTag.match(/^(.+)_(\d+)$/);
+      if (checkboxMatch) {
+        const baseFieldTag = checkboxMatch[1];
+        const optionValue = checkboxMatch[2];
+        const field = processedFormConfig.find(f => f.tag === baseFieldTag);
+        
+        if (field && field.type === 'checkbox') {
+          const fieldValue = data[baseFieldTag];
+          if (Array.isArray(fieldValue)) {
+            transformed[fieldTag] = fieldValue.includes(optionValue) ? 1 : null;
+          } else {
+            transformed[fieldTag] = null;
+          }
         } else {
-          // Keep text and other types as strings
-          transformed[field.tag] = fieldValue;
+          // Not a checkbox option field, treat as regular field (e.g., resp_age, resp_gender)
+          const fieldValue = data[fieldTag];
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            transformed[fieldTag] = null;
+          } else {
+            // Keep the value as-is for non-form-config fields, convert for form config fields
+            const formField = processedFormConfig.find(f => f.tag === fieldTag);
+            if (formField && (formField.type === 'radio' || formField.type === 'number')) {
+              const numValue = parseInt(String(fieldValue));
+              transformed[fieldTag] = isNaN(numValue) ? null : numValue;
+            } else {
+              transformed[fieldTag] = String(fieldValue);
+            }
+          }
+        }
+      } else {
+        // Regular field (not a checkbox option)
+        const field = processedFormConfig.find(f => f.tag === fieldTag);
+        const fieldValue = data[fieldTag];
+        
+        if (field && field.type === 'checkbox') {
+          // Checkbox base field - handled above via option fields
+          return;
+        } else if (field && (field.type === 'radio' || field.type === 'number')) {
+          // Convert radio button values and number inputs to integers
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            transformed[fieldTag] = null;
+          } else {
+            const numValue = parseInt(String(fieldValue));
+            transformed[fieldTag] = isNaN(numValue) ? null : numValue;
+          }
+        } else {
+          // Text or other types, or fields not in form config (like resp_age, resp_gender, etc.)
+          if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+            transformed[fieldTag] = null;
+          } else {
+            // For fields not in form config, preserve their type (number stays number, string stays string)
+            const numValue = parseFloat(String(fieldValue));
+            if (!isNaN(numValue) && String(fieldValue).trim() === String(numValue)) {
+              // It's a number
+              transformed[fieldTag] = numValue % 1 === 0 ? parseInt(String(fieldValue)) : numValue;
+            } else {
+              // It's a string
+              transformed[fieldTag] = String(fieldValue);
+            }
+          }
         }
       }
     });
     
+    console.log('Transformed data for submission (all fields included):', transformed);
     return transformed;
   };
 
