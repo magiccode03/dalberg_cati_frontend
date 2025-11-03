@@ -14,9 +14,9 @@ import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 // Import form configurations
-import formEnConfig from '../../form-en-config.json';
-import formBnConfig from '../../form-bn-config.json';
-import formHiConfig from '../../form-hi-config.json';
+import formEnConfig from '../../../tele-form/form-en-config.json';
+import formBnConfig from '../../../tele-form/form-bn-config.json';
+import formHiConfig from '../../../tele-form/form-hi-config.json';
 
 // Import JSON data files
 // @ts-ignore
@@ -74,6 +74,7 @@ export default function TeleFormV2Page() {
   const [dataEntryUserId, setDataEntryUserId] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
@@ -246,20 +247,35 @@ export default function TeleFormV2Page() {
   }, [interviewId]);
 
   // Load existing form data from instance data
+  // This function loads existing values and ensures conditional fields are displayed correctly
+  // when editing (fill form behavior based on existing data)
   const loadExistingFormData = (data: any) => {
     const existingData: Record<string, any> = {};
     
     // Map all form fields from the instance data
-    // This will populate the form with existing values
+    // This will populate the form with existing values, enabling conditional logic to work correctly
     Object.keys(data).forEach(key => {
       if (data[key] !== undefined && data[key] !== null) {
         // Convert to string for form compatibility
-        existingData[key] = String(data[key]);
+        // Convert arrays for checkbox fields
+        if (Array.isArray(data[key])) {
+          existingData[key] = data[key].map((item: any) => String(item));
+        } else {
+          existingData[key] = String(data[key]);
+        }
       }
     });
     
-    setFormData(existingData);
-    console.log('Loaded existing form data:', existingData);
+    // Apply clearing rules based on loaded values (e.g., if number_status is 3, clear related fields)
+    // Use currentFormConfig directly since processedFormConfig depends on formData which we're setting
+    const clearedData = applyClearingRulesToData(existingData, currentFormConfig);
+    
+    // Set form data - this will trigger conditional field evaluation
+    // Conditional fields will show/hide based on these existing values (edit form behavior)
+    setFormData(clearedData);
+    console.log('Loaded existing form data (before clearing):', existingData);
+    console.log('Loaded existing form data (after clearing rules):', clearedData);
+    console.log('Conditional fields will now evaluate based on existing values for edit mode');
   };
 
   // Get current form configuration based on language
@@ -362,7 +378,50 @@ export default function TeleFormV2Page() {
              caste.caste_name_english,
       value: caste.caste_code.toString(),
       tag: `caste_${caste.caste_code}`
-    }));
+    })).sort((a: FormOption, b: FormOption) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
+  };
+
+  // Apply clearing rules based on current form data
+  // This function applies clearing rules defined in form config (e.g., when number_status is 3, clear consent, resp_age, etc.)
+  const applyClearingRulesToData = (data: Record<string, any>, formConfigToUse?: FormField[]): Record<string, any> => {
+    const clearedData = { ...data };
+    
+    // Use provided config or fall back to currentFormConfig
+    // We can't use processedFormConfig here as it depends on formData
+    const configToUse = formConfigToUse || currentFormConfig;
+    
+    // Iterate through all fields in the form config
+    configToUse.forEach((field) => {
+      // Apply clearing rules for radio fields
+      if (field.type === 'radio' && field.rules?.clearFields) {
+        const fieldValue = clearedData[field.tag];
+        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+          // Find the option that matches the value
+          let selectedOption = null;
+          
+          // Handle both array and string options
+          if (Array.isArray(field.options)) {
+            selectedOption = field.options.find(opt => opt.value === String(fieldValue));
+          } else if (typeof field.options === 'string') {
+            // For dynamic options like party_2021_q5.[ac_code], we need to get them
+            if (field.options === `party_2021_q5.[ac_code]`) {
+              const partyOptions = getPartyOptions(acCode);
+              selectedOption = partyOptions.find(opt => opt.value === String(fieldValue));
+            }
+          }
+          
+          if (selectedOption && field.rules.clearFields[selectedOption.tag]) {
+            // Clear the fields specified in the rules
+            field.rules.clearFields[selectedOption.tag].forEach((fieldToClear: string) => {
+              clearedData[fieldToClear] = null;
+              console.log(`Applied clearing rule: ${field.tag} = ${fieldValue} (${selectedOption.tag}) -> clearing ${fieldToClear}`);
+            });
+          }
+        }
+      }
+    });
+    
+    return clearedData;
   };
 
   // Process form configuration to replace placeholders and add dynamic options
@@ -484,6 +543,7 @@ export default function TeleFormV2Page() {
   };
 
   // Clear values for fields that become invisible based on conditions
+  // This ensures that when editing existing data, fields are shown/hidden correctly based on their values
   useEffect(() => {
     // Only run if formData is not empty and we have form config loaded
     if (!processedFormConfig || processedFormConfig.length === 0) return;
@@ -503,8 +563,13 @@ export default function TeleFormV2Page() {
                        fieldValue !== '' &&
                        !(Array.isArray(fieldValue) && fieldValue.length === 0);
       
-      // If field has a value but is not visible, clear it
-      if (hasValue && !isFieldVisible(field)) {
+      // Evaluate visibility based on current formData (which includes existing values when editing)
+      // This ensures conditional fields show/hide correctly when loading existing data
+      const isVisible = isFieldVisible(field);
+      
+      // If field has a value but is not visible (based on conditions), clear it
+      // This handles the case where existing data might have values for fields that should be hidden
+      if (hasValue && !isVisible) {
         // Clear the field value based on its type
         if (field.type === 'checkbox') {
           updatedFormData[fieldTag] = [];
@@ -512,7 +577,7 @@ export default function TeleFormV2Page() {
           updatedFormData[fieldTag] = '';
         }
         hasChanges = true;
-        console.log(`Clearing hidden field: ${fieldTag} (was: ${fieldValue})`);
+        console.log(`Clearing hidden field: ${fieldTag} (was: ${fieldValue}) - condition not met`);
       }
     });
     
@@ -657,10 +722,13 @@ export default function TeleFormV2Page() {
 
   // Transform checkbox data to individual fields and convert string values to integers
   const transformFormDataForSubmission = (data: Record<string, any>) => {
+    // First apply clearing rules based on current form state
+    const clearedData = applyClearingRulesToData(data);
+    
     const transformed: Record<string, any> = {};
     
     processedFormConfig.forEach((field) => {
-      const fieldValue = data[field.tag];
+      const fieldValue = clearedData[field.tag];
       
       if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
         // For checkbox fields, create individual fields for each option
@@ -834,6 +902,7 @@ export default function TeleFormV2Page() {
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
+      const touched = new Set<string>();
       processedFormConfig.forEach((field) => {
         if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
@@ -841,12 +910,16 @@ export default function TeleFormV2Page() {
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
             : fieldValue === undefined || fieldValue === null || fieldValue === '';
           
+          // Mark all required fields as touched when form is submitted
+          touched.add(field.tag);
+          
           if (isEmpty) {
             errorFields.add(field.tag);
           }
         }
       });
       setValidationErrors(errorFields);
+      setTouchedFields(touched);
       
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
       
@@ -945,7 +1018,8 @@ export default function TeleFormV2Page() {
       ? !Array.isArray(fieldValue) || fieldValue.length === 0
       : fieldValue === undefined || fieldValue === null || fieldValue === '';
     
-    const hasError = validationErrors.has(field.tag);
+    // Show error if field is in validationErrors OR if it's required, visible, empty, and has been touched
+    const hasError = validationErrors.has(field.tag) || (field.required && isEmpty && touchedFields.has(field.tag));
 
     switch (field.type) {
       case 'radio':
@@ -1049,6 +1123,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -1056,13 +1138,28 @@ export default function TeleFormV2Page() {
               </div>
             )}
             <Input
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
-              required={field.required}
               placeholder={field.placeholder}
               maxLength={field.maxLength}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -1078,6 +1175,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -1086,14 +1191,29 @@ export default function TeleFormV2Page() {
             )}
             <Input
               type="number"
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
-              required={field.required}
               min={field.min}
               max={field.max}
               placeholder={field.placeholder}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -1109,6 +1229,14 @@ export default function TeleFormV2Page() {
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
             }`}
           >
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
+              hasError 
+                ? 'text-red-700 dark:text-red-300' 
+                : 'text-blue-600 dark:text-blue-400'
+            }`}>
+              {field.label}
+              {field.required && <span className="text-red-500 ml-1">*</span>}
+            </Text>
             {hasError && (
               <div className="mb-2 sm:mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-xs sm:text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -1117,11 +1245,27 @@ export default function TeleFormV2Page() {
             )}
             <Input
               type="datetime-local"
-              label={field.label}
-              value={fieldValue}
+              label=""
+              value={fieldValue || ''}
               onChange={(e) => handleInputChange(field.tag, e.target.value, field)}
               placeholder={field.placeholder}
-              className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+              error={hasError ? 'This field is required' : undefined}
+              onBlur={() => {
+                // Mark field as touched
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
             />
           </div>
         );
@@ -1149,11 +1293,11 @@ export default function TeleFormV2Page() {
         sections.consent.push(field);
       } else if (['resp_age', 'resp_registered_voter', 'resp_gender'].includes(field.tag)) {
         sections.demographics.push(field);
-      } else if (['q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'q11', 'q11_oth', 'q12', 'q12_oth', 'q13', 'q13_oth'].includes(field.tag)) {
+      } else if (['q13', 'q13_oth', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
         sections.partyPreferences.push(field);
-      } else if (['q14', 'q15', 'q16_a', 'q16_b', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
+      } else if (['q14', 'q15', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
         sections.satisfaction.push(field);
-      } else if (['resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'resp_female_edu', 'resp_male_edu', 'resp_occupation', 'thanks_future'].includes(field.tag)) {
+      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation', 'resp_name', 'thanks_future'].includes(field.tag)) {
         sections.finalDemographics.push(field);
       }
     });
@@ -1324,7 +1468,7 @@ export default function TeleFormV2Page() {
       {/* Spacer to prevent content jump when sticky */}
       {isSticky && <div style={{ height: '64px' }} />}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Call Status Section */}
         <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
           <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
