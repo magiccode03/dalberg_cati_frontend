@@ -81,7 +81,7 @@ apiClient.interceptors.response.use(
         // Redirect to login (use window.location.href for full page reload to ensure clean state)
         const currentPath = window.location.pathname;
         if (currentPath !== '/login') {
-          window.location.href = '/login';
+        window.location.href = '/login';
         }
         return Promise.reject(refreshError);
       }
