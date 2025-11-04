@@ -518,9 +518,12 @@ export default function TeleFormV2Page() {
     return processFormConfig(currentFormConfig);
   }, [currentFormConfig, acCode, language, formData.resp_religion]);
 
-  // Evaluate conditional expressions
-  const evaluateCondition = (condition: string): boolean => {
+  // Evaluate conditional expressions with optional data parameter
+  const evaluateCondition = (condition: string, data?: Record<string, any>): boolean => {
     if (!condition) return true;
+    
+    // Use provided data or fall back to current formData
+    const dataToUse = data || formData;
     
     try {
       // Replace field names with their values
@@ -550,7 +553,7 @@ export default function TeleFormV2Page() {
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
-        const fieldValue = formData[field];
+        const fieldValue = dataToUse[field];
         if (fieldValue === undefined || fieldValue === '' || fieldValue === null) {
           return 'false';
         }
@@ -570,8 +573,11 @@ export default function TeleFormV2Page() {
       // Handle string comparisons (===, !==)
       const stringPattern = /(\w+)\s*(===|!==)\s*'(\d+)'/g;
       expr = expr.replace(stringPattern, (match, field, operator, value) => {
-        const fieldValue = formData[field];
-        if (fieldValue === undefined || fieldValue === null) {
+        const fieldValue = dataToUse[field];
+        // Handle undefined, null, or empty string
+        if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+          // For !== operator, empty/undefined values are considered "not equal"
+          // For === operator, empty/undefined values are considered "not equal" 
           return operator === '!==' ? 'true' : 'false';
         }
         const stringValue = String(fieldValue);
@@ -586,7 +592,7 @@ export default function TeleFormV2Page() {
       // Handle array includes
       const includesPattern = /(\w+)\.includes\('(\d+)'\)/g;
       expr = expr.replace(includesPattern, (match, field, value) => {
-        const fieldValue = formData[field];
+        const fieldValue = dataToUse[field];
         if (!Array.isArray(fieldValue)) return 'false';
         return fieldValue.includes(value).toString();
       });
@@ -602,16 +608,86 @@ export default function TeleFormV2Page() {
     }
   };
 
-  // Check if field should be visible
-  const isFieldVisible = (field: FormField): boolean => {
+  // Check if field should be visible with optional data parameter
+  const isFieldVisible = (field: FormField, data?: Record<string, any>): boolean => {
     if (!field.conditional) return true;
-    return evaluateCondition(field.conditional);
+    return evaluateCondition(field.conditional, data);
   };
 
-  // REMOVED: Automatic clearing of hidden fields
-  // We should NOT automatically clear fields based on visibility
-  // Clearing should only happen based on explicit clearing rules (e.g., when number_status changes)
-  // Visibility is just for showing/hiding UI - values should remain until user submits
+  // Track previous field visibility to detect when fields become hidden
+  const previousVisibilityRef = useRef<Record<string, boolean>>({});
+
+  // Clear fields that become hidden due to conditional logic
+  // This effect runs when formData changes and clears values for fields that transition from visible to hidden
+  useEffect(() => {
+    // Don't clear fields on initial load - wait for initial load to complete
+    if (!isInitialLoadComplete) {
+      // Initialize visibility tracking
+      processedFormConfig.forEach(field => {
+        if (field.conditional) {
+          previousVisibilityRef.current[field.tag] = isFieldVisible(field, formData);
+        }
+      });
+      return;
+    }
+    
+    // Evaluate current visibility for all conditional fields using current formData
+    const currentVisibility: Record<string, boolean> = {};
+    processedFormConfig.forEach(field => {
+      if (field.conditional) {
+        currentVisibility[field.tag] = isFieldVisible(field, formData);
+      }
+    });
+    
+    // Check if any fields transitioned from visible to hidden
+    let hasFieldsToClear = false;
+    const fieldsToClear: string[] = [];
+    
+    processedFormConfig.forEach(field => {
+      if (field.conditional) {
+        const wasVisible = previousVisibilityRef.current[field.tag] ?? true;
+        const shouldBeVisible = currentVisibility[field.tag];
+        
+        // If field transitioned from visible to hidden and has a value, mark for clearing
+        if (wasVisible && !shouldBeVisible) {
+          const fieldValue = formData[field.tag];
+          const hasValue = fieldValue !== undefined && 
+                          fieldValue !== null && 
+                          fieldValue !== '' && 
+                          !(Array.isArray(fieldValue) && fieldValue.length === 0);
+          
+          if (hasValue) {
+            hasFieldsToClear = true;
+            fieldsToClear.push(field.tag);
+          }
+        }
+        
+        // Update visibility tracking with current visibility
+        previousVisibilityRef.current[field.tag] = shouldBeVisible;
+      }
+    });
+    
+    // Clear fields that became hidden
+    if (hasFieldsToClear) {
+      setFormData(prev => {
+        const newData = { ...prev };
+        fieldsToClear.forEach(fieldTag => {
+          const field = processedFormConfig.find(f => f.tag === fieldTag);
+          if (field) {
+            // Clear the field value based on its type
+            if (field.type === 'checkbox') {
+              newData[fieldTag] = [];
+            } else {
+              newData[fieldTag] = '';
+            }
+            console.log(`Cleared hidden field ${fieldTag} due to conditional logic`);
+          }
+        });
+        return newData;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData, isInitialLoadComplete, processedFormConfig]);
 
   // Handle input change
   const handleInputChange = (fieldTag: string, value: any, field: FormField) => {
