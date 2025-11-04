@@ -914,7 +914,7 @@ export default function TeleFormV2Page() {
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}?exact=1`, {
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -988,7 +988,7 @@ export default function TeleFormV2Page() {
         user_localdatetime: currentTime,
       };
       
-      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}?exact=1`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
