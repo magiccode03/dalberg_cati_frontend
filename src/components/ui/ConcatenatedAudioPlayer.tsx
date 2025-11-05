@@ -26,7 +26,6 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
   // Refs
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
   const progressBarRef = useRef<HTMLDivElement>(null);
-  const progressBarMobileRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   
   // State
@@ -389,7 +388,7 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
 
   // Simplified seek handler - only updates visual position during drag
   const handleSeek = useCallback((clientX: number) => {
-    const bar = progressBarRef.current || progressBarMobileRef.current;
+    const bar = progressBarRef.current;
     if (!bar || totalDuration === 0) return null;
     
     const rect = bar.getBoundingClientRect();
@@ -414,19 +413,19 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
     e.preventDefault();
     e.stopPropagation();
     
-    const x = 'touches' in e && e.touches[0] ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const targetTime = handleSeek(x);
-    
-    if (targetTime === null) return;
+    // Get coordinates - for touch events, use touches[0]
+    const x = 'touches' in e && e.touches && e.touches[0] 
+      ? e.touches[0].clientX 
+      : (e as React.MouseEvent).clientX;
     
     // Remember if we were playing before drag
     wasPlayingBeforeDragRef.current = playingRef.current;
     
-    // Start dragging - don't pause audio yet, just mark as dragging
+    // Start dragging immediately
     draggingRef.current = true;
     setIsDragging(true);
     
-    // Update visual position immediately
+    // Update visual position immediately (don't pause audio yet - only pause on drag)
     handleSeek(x);
   }, [handleSeek]);
 
@@ -434,7 +433,6 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
   const handlePointerMove = useCallback((e: MouseEvent | TouchEvent | React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!draggingRef.current) return;
     
-    // Prevent default to stop scrolling on mobile
     if ('preventDefault' in e) {
       e.preventDefault();
     }
@@ -455,13 +453,19 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
 
   // Pointer end handler - actually seek here
   const handlePointerEnd = useCallback((e: MouseEvent | TouchEvent | React.MouseEvent | React.TouchEvent) => {
-    if (!draggingRef.current) return;
+    // Prevent default to avoid double events
+    if ('preventDefault' in e) {
+      e.preventDefault();
+    }
     
-    const x = 'touches' in e && e.changedTouches?.[0] 
-      ? e.changedTouches[0].clientX 
-      : 'clientX' in e 
-        ? (e as MouseEvent).clientX 
-        : null;
+    // Get coordinates - for touch events, prioritize changedTouches, then touches
+    const x = 'changedTouches' in e && e.changedTouches && e.changedTouches[0]
+      ? e.changedTouches[0].clientX
+      : 'touches' in e && e.touches && e.touches[0]
+        ? e.touches[0].clientX
+        : 'clientX' in e 
+          ? (e as MouseEvent).clientX 
+          : null;
     
     if (x === null) {
       draggingRef.current = false;
@@ -469,15 +473,28 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
       return;
     }
     
-    const targetTime = handleSeek(x);
-    if (targetTime !== null) {
-      // Now actually seek to the position
-      seekToGlobal(targetTime, wasPlayingBeforeDragRef.current);
+    const bar = progressBarRef.current;
+    if (!bar || totalDuration === 0) {
+      draggingRef.current = false;
+      setIsDragging(false);
+      return;
+    }
+    
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
+    const targetTime = ratio * totalDuration;
+    
+    // Only seek if we have a valid target time
+    if (targetTime >= 0 && targetTime <= totalDuration) {
+      // If we were dragging, restore play state
+      // If we were just clicking/tapping, use current play state
+      const shouldPlay = draggingRef.current ? wasPlayingBeforeDragRef.current : playingRef.current;
+      seekToGlobal(targetTime, shouldPlay);
     }
     
     draggingRef.current = false;
     setIsDragging(false);
-  }, [handleSeek, seekToGlobal]);
+  }, [seekToGlobal, totalDuration]);
 
   // Global drag handlers
   useEffect(() => {
@@ -597,9 +614,10 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
       <div className="w-full">
         {/* Mobile Layout */}
         <div className="block sm:hidden">
-          <div className="w-full mb-3">
+          {/* Full Width Progress Bar */}
+          <div className="w-full mb-4">
             <div
-              ref={progressBarMobileRef}
+              ref={progressBarRef}
               className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer relative group touch-none"
               onMouseDown={handlePointerStart}
               onTouchStart={handlePointerStart}
@@ -627,8 +645,14 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
                 style={{ left: `${progressPercent}%` }}
               />
             </div>
+            {/* Time Display */}
+            <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
+              <span>{formatTime(currentGlobalTime)}</span>
+              <span>{formatTime(totalDuration)}</span>
+            </div>
           </div>
 
+          {/* Controls Row */}
           <div className="flex items-center justify-center gap-4">
             <button
               onClick={togglePlayPause}
@@ -656,11 +680,6 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
                 className="w-20 h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
               />
             </div>
-          </div>
-
-          <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
-            <span>{formatTime(currentGlobalTime)}</span>
-            <span>{formatTime(totalDuration)}</span>
           </div>
         </div>
 
