@@ -61,7 +61,8 @@ export default function RejectionReportPage() {
     serverId: '',
     mobileNo: '',
     failReason: '',
-    qualityreportstatus: ''
+    qualityreportstatus: '',
+    audioFailReason: ''
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,6 +95,7 @@ export default function RejectionReportPage() {
       mobile_no: appliedFilters.mobileNo,
       fail_reason: appliedFilters.failReason,
       qualityreportstatus: appliedFilters.qualityreportstatus,
+      audio_fail_reason: appliedFilters.audioFailReason,
       page: currentPage,
       per_page: pageSize
     };
@@ -222,6 +224,30 @@ export default function RejectionReportPage() {
     ];
   }, [filterOptionsData]);
 
+  const audioFailReasonOptions = React.useMemo(() => {
+    return [
+      { value: '', label: 'Select Audio Fail Reason' },
+      { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+      { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+      { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+      { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+      { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
+      { value: 'no_conversation', label: 'No Conversation' },
+      { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+      { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+      { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+      { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+      { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+      { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+      { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+      { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+      { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+      { value: 'duplicate_audio', label: 'Duplicate Audio' },
+      { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+      { value: 'same_respondent_as_before', label: 'Same respondent as before' }
+    ];
+  }, []);
+
   // Auto-load data with default parameters when component mounts
   useEffect(() => {
     // Only auto-load if no filters have been applied yet
@@ -268,7 +294,7 @@ export default function RejectionReportPage() {
         psCode: item.ps_code,
         interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
         interviewerId: item.interviewer_id,
-        interviewDuration: item.interview_duration_human || formatDuration(item.total_duration),
+        interviewDuration: item.interview_duration_human || formatDuration(item.audio_duration),
         respondentName: item.respondent_name,
         // respondentMobile: item.mobile_no || '',
         failReason: item.fail_reason,
@@ -335,7 +361,8 @@ export default function RejectionReportPage() {
       serverId: '',
       mobileNo: '',
       failReason: '',
-      qualityreportstatus: ''
+      qualityreportstatus: '',
+      audioFailReason: ''
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters); // Apply default filters to reload data
@@ -377,7 +404,8 @@ export default function RejectionReportPage() {
         server_id: appliedFilters.serverId,
         mobile_no: appliedFilters.mobileNo,
         fail_reason: appliedFilters.failReason,
-        qualityreportstatus: appliedFilters.qualityreportstatus
+        qualityreportstatus: appliedFilters.qualityreportstatus,
+        audio_fail_reason: appliedFilters.audioFailReason
       };
 
       // Add custom date parameters if applicable
@@ -485,12 +513,36 @@ export default function RejectionReportPage() {
       return 'Can hear the interviewer more than the respondent | 2024 Election Rejection';
     }
     
-    if (audioQcRejectionLevel === 1 && qcAudioStatus === 7) {
-      return 'Cannot hear the response clearly';
+    if (audioQcRejectionLevel === 2 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Gender Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 3 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Upcoming Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 4 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2021 AE Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 5 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2024 Election Rejection';
     }
     
     if (audioQcRejectionLevel === 1 && qcAudioStatus === 8) {
       return 'Duplicate Audio';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 9) {
+      return 'Interviewer acting as respondent';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 10) {
+      return 'Same respondent as before';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 7) {
+      return 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)';
     }
 
     // Fallback to raw value if no mapping matches
@@ -578,37 +630,25 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
-                value={filters.qualityreportstatus}
-                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
-                options={failReasonOptions}
-                disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Server ID</Text>
-              <Input
-                type="text"
-                placeholder="Search by Server ID"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-              />
-            </div>
-
-            {/* <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div> */}
-
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
             {filters.reportLevel === 'interviewer' && (
               <div>
                 <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
@@ -626,22 +666,36 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -732,37 +786,25 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
-                value={filters.qualityreportstatus}
-                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
-                options={failReasonOptions}
-                disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Server ID</Text>
-              <Input
-                type="text"
-                placeholder="Search by Server ID"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-              />
-            </div>
-
-            {/* <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div> */}
-
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
             {filters.reportLevel === 'interviewer' && (
               <div>
                 <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
@@ -780,22 +822,36 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -904,37 +960,25 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
-                value={filters.qualityreportstatus}
-                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
-                options={failReasonOptions}
-                disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Server ID</Text>
-              <Input
-                type="text"
-                placeholder="Search by Server ID"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-              />
-            </div>
-
-            {/* <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div> */}
-
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
             {filters.reportLevel === 'interviewer' && (
               <div>
                 <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
@@ -952,22 +996,36 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -991,8 +1049,8 @@ export default function RejectionReportPage() {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center">
-                <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
               </div>
               <Button
                 variant="primary"
@@ -1032,6 +1090,7 @@ export default function RejectionReportPage() {
                   <th className="text-center">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
                   <th className="text-center">Audio Fail Reason</th>
+                  <th className="text-left">QC Remark</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>
                 </tr>
@@ -1057,7 +1116,14 @@ export default function RejectionReportPage() {
                     <td>
                       <div className="max-w-xs">
                         <span className="text-gray-900 dark:text-gray-100 text-sm">
-                          {getAudioFailReasonDisplayText(row)}
+                            {getAudioFailReasonDisplayText(row)}
+                          </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="max-w-xs">
+                        <span className="text-gray-900 dark:text-gray-100 text-sm">
+                          {row.qcData?.qc_q9 || '-'}
                         </span>
                       </div>
                     </td>

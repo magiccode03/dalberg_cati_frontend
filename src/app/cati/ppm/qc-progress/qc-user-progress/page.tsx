@@ -379,7 +379,7 @@ export default function QCUserProgressPage() {
       const queryParams = new URLSearchParams();
       
       // Add limit for download
-      queryParams.append('limit', '300');
+      queryParams.append('limit', '1000');
       
       // Add filter parameters
       if (filters.acCode) queryParams.append('ac_code', filters.acCode);
@@ -440,7 +440,7 @@ export default function QCUserProgressPage() {
       }
       
       const queryString = queryParams.toString();
-      const endpoint = `/api/cati/qc/unified-user-statistics?${queryString}`;
+      const endpoint = `/cati/qc/unified-user-statistics?${queryString}`;
       
       console.log('Downloading data from:', endpoint);
       

@@ -97,7 +97,8 @@ export default function StartFormFillingPage() {
         return false;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/qc-user-registration/verify`, {
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/qc-user-registration/verify`, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -116,7 +117,7 @@ export default function StartFormFillingPage() {
 
       const data = await response.json();
       
-      if (data.success && data.data && data.data.data) {
+      if (data.success && data.data && data.data.success && data.data.data) {
         // Save response data to localStorage
         localStorage.setItem('qc_user_data', JSON.stringify(data.data.data));
         
@@ -129,7 +130,9 @@ export default function StartFormFillingPage() {
         
         return true;
       } else {
-        setError(data.message || data.data?.message || 'Verification failed');
+        // Check if there's a specific error message in data.data.message
+        const errorMessage = data.data?.message || data.message || 'Verification failed';
+        setError(errorMessage);
         return false;
       }
     } catch (err) {

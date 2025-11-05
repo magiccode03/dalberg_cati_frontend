@@ -121,6 +121,12 @@ interface APIResponse {
       field: string;
       direction: string;
     };
+    pagination?: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
   };
   message: string;
   timestamp: string;
@@ -150,7 +156,6 @@ const InterviewLogPage = () => {
   const [pageSize] = useState(25);
 
   // API state management
-  const [allInterviewData, setAllInterviewData] = useState<DisplayInterviewData[]>([]);
   const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -396,9 +401,15 @@ const InterviewLogPage = () => {
       // Build query parameters based on filters
       const queryParams = new URLSearchParams();
       
+      // Always add interview_date parameter (default to 'all' if not set)
+      queryParams.append('interview_date', filters.interview_date || 'all');
+      
+      // Add pagination parameters
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('limit', pageSize.toString());
+      
       if (filters.agency_id) queryParams.append('agency_id', filters.agency_id);
       if (filters.server_id) queryParams.append('server_id', filters.server_id);
-      if (filters.interview_date && filters.interview_date !== 'all') queryParams.append('interview_date', filters.interview_date);
       if (filters.interview_date === 'custom' && filters.custom_date) queryParams.append('custom_date', filters.custom_date);
       if (filters.interview_date === 'custom' && filters.custom_date_end) queryParams.append('custom_date_end', filters.custom_date_end);
       if (filters.ac_code) queryParams.append('ac_code', filters.ac_code);
@@ -412,8 +423,6 @@ const InterviewLogPage = () => {
       if (filters.audio_qc_status_detailed.length > 0) queryParams.append('audio_qc_status_detailed', filters.audio_qc_status_detailed.join(','));
       if (filters.audio_re_qc_status.length > 0) queryParams.append('audio_re_qc_status', filters.audio_re_qc_status.join(','));
       if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
-      
-      // Note: Backend no longer supports pagination parameters
 
       console.log('🔍 Making API request to:', `/overview/interview-log?${queryParams.toString()}`);
       
@@ -424,13 +433,21 @@ const InterviewLogPage = () => {
       
       if (data.success && data.data.interviews) {
         const transformedData = transformAPIData(data.data.interviews);
-        setAllInterviewData(transformedData);
-        setTotalCount(transformedData.length);
-        setTotalPages(Math.ceil(transformedData.length / pageSize));
+        setInterviewData(transformedData);
+        
+        // Extract pagination info from API response
+        if (data.data.pagination) {
+          setTotalCount(data.data.pagination.total_count || transformedData.length);
+          setTotalPages(data.data.pagination.total_pages || Math.ceil(transformedData.length / pageSize));
+        } else {
+          // Fallback if pagination info is not available
+          setTotalCount(transformedData.length);
+          setTotalPages(Math.ceil(transformedData.length / pageSize));
+        }
+        
         setError(null);
       } else {
         console.error('API did not return interview data:', data);
-        setAllInterviewData([]);
         setInterviewData([]);
         setTotalCount(0);
         setTotalPages(0);
@@ -456,7 +473,6 @@ const InterviewLogPage = () => {
       }
       
       // Set empty data when API fails
-      setAllInterviewData([]);
       setInterviewData([]);
       setTotalCount(0);
       setTotalPages(0);
@@ -512,19 +528,10 @@ const InterviewLogPage = () => {
     }
   };
 
-  // Load data on component mount (pagination is now handled client-side)
+  // Load data on component mount and when pagination changes
   useEffect(() => {
     fetchInterviewLogs();
-  }, []);
-
-  // Handle client-side pagination
-  useEffect(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedData = allInterviewData.slice(startIndex, endIndex);
-    setInterviewData(paginatedData);
-    setTotalPages(Math.ceil(allInterviewData.length / pageSize));
-  }, [allInterviewData, currentPage, pageSize]);
+  }, [currentPage, pageSize]);
 
   // Load agencies, AC list, interviewers, and users on component mount
   useEffect(() => {

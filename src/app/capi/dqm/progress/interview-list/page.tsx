@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Container from '@/components/ui/Container';
+import { useRouter } from 'next/navigation';
+import { FluidContainer } from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -9,33 +10,29 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
-import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Eye, Edit, Check, Loader2 } from 'lucide-react';
+import Alert from '@/components/ui/Alert';
+import { Search, Edit, Volume2, X } from 'lucide-react';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 import apiClient from '@/lib/api-client';
-import { apiService } from '@/lib/api';
 
 interface InterviewData {
-  id: number;
-  serverId: number;
-  interviewDate: string;
-  sampleType: string;
-  acCode: number;
-  acName: string;
-  psName: string;
-  deviceId: string;
-  interviewerId: string;
-  audioQcLabel: string;
-  audioQcId: string;
-  audioFailReason: string;
-  qcOutcome: string;
-  statusLabel: string;
-  genderLabel: string;
-  gpsAvailable: boolean;
-  psImageAvailable: boolean;
-  selfieImageAvailable: boolean;
-  audioPlaybackAvailable: boolean;
+  server_id: number;
+  interview_date: string;
+  ac_code: number;
+  ac_name: string;
+  interviewer_id: string;
+  gender: number;
+  audio_qc_complete_date: string;
+  audio_qc_status: number;
+  qc_id: number;
+  audio1_status: number;
+  qc_outcome: string;
+  qc_audio_status: number;
+  audio_qc_rejection_level: number | null;
+  status: number;
+  audio1: string;
 }
 
 interface APIResponse {
@@ -44,90 +41,121 @@ interface APIResponse {
     interviews: Array<{
       server_id: number;
       interview_date: string;
-      sample_type: string;
       ac_code: number;
       ac_name: string;
-      ps_name: string;
-      device_id: string;
       interviewer_id: string;
-      audio_qc_label: string;
-      audio_qc_id: string;
-      audio1_status_label: string;
+      gender: number;
+      audio_qc_complete_date: string;
+      audio_qc_status: number;
+      qc_id: number;
+      audio1_status: number;
       qc_outcome: string;
-      status_label: string;
-      gender_label: string;
-      gps_available: boolean;
-      ps_image_available: boolean;
-      selfie_image_available: boolean;
-      audio_playback_available: boolean;
+      qc_audio_status: number;
+      audio_qc_rejection_level: number | null;
+      status: number;
+      audio1: string;
     }>;
     pagination: {
       current_page: number;
       per_page: number;
       total_count: number;
       total_pages: number;
+      has_next: boolean;
+      has_previous: boolean;
     };
     filters_applied: Record<string, any>;
     sorting: {
       field: string;
       direction: string;
     };
-    message: string;
   };
-  message: string;
-  timestamp: string;
 }
 
 export default function InterviewListPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState({
     server_id: '',
-    interview_date: '',
+    interview_date: 'all',
+    custom_date: '',
+    custom_date_end: '',
     ac_code: '',
     interviewer_id: '',
-    qc_date: '',
+    qc_date: [] as string[],
     qc_id: '',
     audio_qc_status: [] as string[],
+    audio_fail_reason: '',
     audio1_status: [] as string[],
-    qc_scenario_color: [] as string[],
+    qc_outcome: [] as string[],
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(25);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 50,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  });
   const [interviewData, setInterviewData] = useState<InterviewData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState(0);
+  const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [selectedServerId, setSelectedServerId] = useState<string>('');
 
-  // Helper function to transform API data to UI format
-  const transformAPIData = (apiData: any[]): InterviewData[] => {
-    return apiData.map((item, index) => ({
-      id: index + 1,
-      serverId: item.server_id,
-      interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
-      sampleType: item.sample_type,
-      acCode: item.ac_code,
-      acName: item.ac_name,
-      psName: item.ps_name,
-      deviceId: item.device_id,
-      interviewerId: item.interviewer_id,
-      audioQcLabel: item.audio_qc_label,
-      audioQcId: item.audio_qc_id,
-      audioFailReason: item.audio1_status_label,
-      qcOutcome: item.qc_outcome,
-      statusLabel: item.status_label,
-      genderLabel: item.gender_label,
-      gpsAvailable: item.gps_available,
-      psImageAvailable: item.ps_image_available,
-      selfieImageAvailable: item.selfie_image_available,
-      audioPlaybackAvailable: item.audio_playback_available,
-    }));
-  };
+  // Filter dropdown state
+  const [acList, setAcList] = useState<{ value: string; label: string }[]>([]);
+  const [acLoading, setAcLoading] = useState(false);
+  const [interviewers, setInterviewers] = useState<{ value: string; label: string }[]>([]);
+  const [interviewersLoading, setInterviewersLoading] = useState(false);
+  const [qcIdList, setQcIdList] = useState<{ value: string; label: string }[]>([]);
+  const [qcIdLoading, setQcIdLoading] = useState(false);
+
+  // Checkbox options
+  const audioQcStatusOptions = [
+    { value: '1', label: 'Pass' },
+    { value: '2', label: 'Fail' },
+  ];
+
+  const audio1StatusOptions = [
+    { value: '1', label: 'Good Quality' },
+    { value: '2', label: 'Poor Quality' },
+    { value: '3', label: 'No Audio' },
+    { value: '4', label: 'Partial Audio' },
+  ];
+
+  const qcOutcomeOptions = [
+    { value: 'Pass', label: 'Pass' },
+    { value: 'Fail', label: 'Fail' },
+  ];
+
+  // Audio Fail Reason options (matching rejection report)
+  const audioFailReasonOptions = [
+    { value: '', label: 'Select Audio Fail Reason' },
+    { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+    { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+    { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+    { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+    { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
+    { value: 'no_conversation', label: 'No Conversation' },
+    { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+    { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+    { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+    { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+    { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+    { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+    { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+    { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+    { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+    { value: 'duplicate_audio', label: 'Duplicate Audio' },
+    { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+    { value: 'same_respondent_as_before', label: 'Same respondent as before' }
+  ];
 
   // Generate date options for dropdowns
   const generateDateOptions = () => {
     const options = [];
     const today = new Date();
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateString = date.toISOString().split('T')[0];
@@ -136,116 +164,114 @@ export default function InterviewListPage() {
     return options;
   };
 
-  // Generate AC options
-  const generateACOptions = () => {
-    return [
-      { value: '', label: 'Select AC' },
-      { value: '195', label: 'Agiaon (SC) (195)' },
-      { value: '70', label: 'Alamnagar (70)' },
-      { value: '148', label: 'Alauli (SC) (148)' },
-      { value: '11', label: 'Sugauli (11)' },
-      { value: '79', label: 'Gaura Bauram (79)' },
-      { value: '172', label: 'Biharsharif (172)' },
-      { value: '5', label: 'Lauriya (5)' },
-    ];
-  };
+  const dateOptions = generateDateOptions();
 
-  // Generate QC ID options
-  const generateQCIdOptions = () => {
-    return [
-      { value: '', label: 'Select QC ID' },
-      { value: '101', label: 'Komal (101)' },
-      { value: '102', label: 'Priyanshi (102)' },
-      { value: '103', label: 'Sonu Kumari (103)' },
-      { value: '105', label: 'Simran (105)' },
-      { value: '106', label: 'Swati (106)' },
-      { value: '109', label: 'Kundan (109)' },
-      { value: '121', label: 'Ashifa (121)' },
-      { value: '122', label: 'Rama (122)' },
-    ];
-  };
-
-  const handleFilterChange = (field: string, value: string | string[]) => {
+  const handleFilterChange = (field: string, value: string | string[] | boolean) => {
     setFilters(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
+  const handleCheckboxChange = (field: string, value: string, checked: boolean) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: checked 
+        ? [...(prev[field as keyof typeof prev] as string[]), value]
+        : (prev[field as keyof typeof prev] as string[]).filter(item => item !== value),
+    }));
+  };
+
   // Fetch data from API
-  const fetchInterviewData = async () => {
+  const fetchInterviewData = async (page: number = pagination.page, filtersToUse?: typeof filters) => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Use provided filters or current state filters
+      const activeFilters = filtersToUse || filters;
       
       // Debug: Check if token exists
       const token = localStorage.getItem('accessToken');
       console.log('Access token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      console.log('Making API request to: /overview/interview-log');
+      console.log('Making API request to: /capi/dqm/qc/interview/progress/detail');
       
       // Build query parameters
       const queryParams: any = {
-        page: currentPage,
-        per_page: pageSize,
-        sort_field: 'interview_date',
-        sort_direction: 'DESC'
+        page: page,
+        pageSize: pagination.limit,
+        sortBy: 'server_id',
+        sortOrder: 'DESC'
       };
       
-      if (filters.server_id) queryParams.server_id = filters.server_id;
-      if (filters.interview_date) queryParams.interview_date = filters.interview_date;
-      if (filters.ac_code) queryParams.ac_code = filters.ac_code;
-      if (filters.interviewer_id) queryParams.interviewer_id = filters.interviewer_id;
-      if (filters.qc_date) queryParams.qc_date = filters.qc_date;
-      if (filters.qc_id) queryParams.qc_id = filters.qc_id;
-      if (filters.audio_qc_status.length > 0) queryParams.audio_qc_status = filters.audio_qc_status.join(',');
-      if (filters.audio1_status.length > 0) queryParams.audio1_status = filters.audio1_status.join(',');
-      if (filters.qc_scenario_color.length > 0) queryParams.qc_scenario_color = filters.qc_scenario_color.join(',');
+      if (activeFilters.server_id) queryParams.server_id = activeFilters.server_id;
+      // Handle interview_date: only send if not 'all'
+      if (activeFilters.interview_date && activeFilters.interview_date !== 'all') {
+        queryParams.interview_date = activeFilters.interview_date;
+        // For custom, also send custom_date and custom_date_end
+        if (activeFilters.interview_date === 'custom') {
+          if (activeFilters.custom_date) queryParams.custom_date = activeFilters.custom_date;
+          if (activeFilters.custom_date_end) queryParams.custom_date_end = activeFilters.custom_date_end;
+        }
+      }
+      if (activeFilters.ac_code) queryParams.ac_code = activeFilters.ac_code;
+      if (activeFilters.interviewer_id) queryParams.interviewer_id = activeFilters.interviewer_id;
+      // Send qc_date as array for multi-select (will convert to qc_date=2025-10-31&qc_date=2025-10-30)
+      if (activeFilters.qc_date.length > 0) queryParams.qc_date = activeFilters.qc_date;
+      if (activeFilters.qc_id) queryParams.qc_id = activeFilters.qc_id;
+      // Send audio_qc_status as array for multi-select (axios will convert to audio_qc_status=1&audio_qc_status=2)
+      if (activeFilters.audio_qc_status.length > 0) queryParams.audio_qc_status = activeFilters.audio_qc_status;
+      if (activeFilters.audio_fail_reason) queryParams.audio_fail_reason = activeFilters.audio_fail_reason;
+      if (activeFilters.audio1_status.length > 0) queryParams.audio1_status = activeFilters.audio1_status.join(',');
+      // Send qc_outcome as array for multi-select (will convert to qc_outcome=Pass&qc_outcome=Fail)
+      if (activeFilters.qc_outcome.length > 0) queryParams.qc_outcome = activeFilters.qc_outcome;
       
       console.log('API query params:', queryParams);
       
-      const response = await apiService.getInterviewLog(queryParams);
+      // Configure paramsSerializer to handle arrays as repeated parameters (audio_qc_status=1&audio_qc_status=2)
+      const response = await apiClient.get('/capi/dqm/qc/interview/progress/detail', { 
+        params: queryParams,
+        paramsSerializer: (params) => {
+          const searchParams = new URLSearchParams();
+          Object.keys(params).forEach((key) => {
+            const value = params[key];
+            if (Array.isArray(value)) {
+              // For arrays, add each value as a separate parameter with the same key
+              value.forEach((item) => {
+                searchParams.append(key, item);
+              });
+            } else if (value !== undefined && value !== null && value !== '') {
+              searchParams.append(key, String(value));
+            }
+          });
+          return searchParams.toString();
+        }
+      });
       
-      const data: APIResponse = response;
+      const data: APIResponse = response.data;
       
       console.log('API Response:', data);
       console.log('Response success:', data.success);
       
       if (data.success && data.data && Array.isArray(data.data.interviews)) {
-        const transformedData = transformAPIData(data.data.interviews);
-        setInterviewData(transformedData);
-        setTotalCount(data.data.pagination.total_count);
-        console.log('Transformed data:', transformedData);
+        setInterviewData(data.data.interviews);
+        setPagination({
+          page: data.data.pagination?.current_page || 1,
+          limit: data.data.pagination?.per_page || 50,
+          total: data.data.pagination?.total_count || 0,
+          totalPages: data.data.pagination?.total_pages || 0,
+          hasNext: data.data.pagination?.has_next || false,
+          hasPrev: data.data.pagination?.has_previous || false,
+        });
+        console.log('API data:', data.data.interviews);
+        console.log('Pagination info:', data.data.pagination);
       } else {
         console.error('Invalid API response structure');
         setError('Invalid response format from server');
-        // Use fallback data
-        const fallbackData: InterviewData[] = [
-          { 
-            id: 1, 
-            serverId: 188970, 
-            interviewDate: '2025-04-05', 
-            sampleType: 'Sample',
-            acCode: 11,
-            acName: 'Sugauli (11)', 
-            psName: 'Government School',
-            deviceId: 'DEVICE001',
-            interviewerId: '990', 
-            audioQcLabel: 'Pass', 
-            audioQcId: '101', 
-            audioFailReason: 'Survey Conversation can be heard', 
-            qcOutcome: 'Pass',
-            statusLabel: 'Valid',
-            genderLabel: 'Male',
-            gpsAvailable: true,
-            psImageAvailable: true,
-            selfieImageAvailable: true,
-            audioPlaybackAvailable: true
-          },
-        ];
-        setInterviewData(fallbackData);
-        setTotalCount(fallbackData.length);
+        setInterviewData([]);
+        setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }));
       }
     } catch (err: any) {
       console.error('Error fetching data:', err);
@@ -262,224 +288,720 @@ export default function InterviewListPage() {
         setError(err.message || 'An error occurred while fetching data');
       }
       
-      // Use fallback data on error
-      console.log('API request failed, using fallback sample data...');
-      const fallbackData: InterviewData[] = [
-        { 
-          id: 1, 
-          serverId: 188970, 
-          interviewDate: '2025-04-05', 
-          sampleType: 'Sample',
-          acCode: 11,
-          acName: 'Sugauli (11)', 
-          psName: 'Government School',
-          deviceId: 'DEVICE001',
-          interviewerId: '990', 
-          audioQcLabel: 'Pass', 
-          audioQcId: '101', 
-          audioFailReason: 'Survey Conversation can be heard', 
-          qcOutcome: 'Pass',
-          statusLabel: 'Valid',
-          genderLabel: 'Male',
-          gpsAvailable: true,
-          psImageAvailable: true,
-          selfieImageAvailable: true,
-          audioPlaybackAvailable: true
-        },
-      ];
-      setInterviewData(fallbackData);
-      setTotalCount(fallbackData.length);
+      setInterviewData([]);
+      setPagination(prev => ({ ...prev, total: 0, totalPages: 0 }));
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch data on component mount and when filters change
+  // Fetch data when filters or pagination changes
   useEffect(() => {
-    fetchInterviewData();
-  }, [currentPage, filters]);
+    fetchInterviewData(pagination.page);
+  }, [pagination.page, filters]);
 
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
-    setCurrentPage(1); // Reset to first page when searching
-    fetchInterviewData();
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchInterviewData(1);
+  };
+
+  const handleClearFilters = () => {
+    const clearedFilters = {
+      server_id: '',
+      interview_date: 'all',
+      custom_date: '',
+      custom_date_end: '',
+      ac_code: '',
+      interviewer_id: '',
+      qc_date: [] as string[],
+      qc_id: '',
+      audio_qc_status: [] as string[],
+      audio_fail_reason: '',
+      audio1_status: [] as string[],
+      qc_outcome: [] as string[],
+    };
+    
+    // Update filters state
+    setFilters(clearedFilters);
+    
+    // Reset pagination and fetch data with cleared filters
+    setPagination(prev => ({ ...prev, page: 1 }));
+    fetchInterviewData(1, clearedFilters);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+    fetchInterviewData(newPage);
   };
 
   const handleAudioView = (serverId: number) => {
-    console.log('View audio for server ID:', serverId);
+    setSelectedServerId(String(serverId));
+    setAudioModalOpen(true);
   };
 
-  const handleMarkAsValid = (serverId: number) => {
-    console.log('Mark as valid for server ID:', serverId);
-  };
-
-  const handleEdit = (serverId: number) => {
-    console.log('Edit interview for server ID:', serverId);
-  };
-
-  const getQcOutcomeBadge = (outcome: string) => {
-    switch (outcome) {
-      case 'Pass':
-        return <Badge variant="success" size="sm">Pass</Badge>;
-      case 'Fail':
-        return <Badge variant="error" size="sm">Fail</Badge>;
-      default:
-        return <Badge variant="secondary" size="sm">{outcome}</Badge>;
+  // Fetch AC list from API
+  const fetchAcList = async () => {
+    try {
+      setAcLoading(true);
+      console.log('🔍 Fetching AC list from API...');
+      
+      const response = await apiClient.get('/dropdown/ac-list');
+      console.log('📊 AC List API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const acData = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: `${name} (${id})`,
+        }));
+        
+        // Add the default "Select AC" option
+        const acWithDefault = [
+          { value: '', label: 'Select AC' },
+          ...acData,
+        ];
+        
+        setAcList(acWithDefault);
+        console.log('✅ AC list loaded successfully:', acWithDefault);
+      } else {
+        console.error('❌ Invalid AC list API response:', response.data);
+        setAcList([{ value: '', label: 'Select AC' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching AC list:', err);
+      setAcList([{ value: '', label: 'Select AC' }]);
+    } finally {
+      setAcLoading(false);
     }
   };
 
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentData = interviewData;
+  // Fetch interviewers from API
+  const fetchInterviewers = async () => {
+    try {
+      setInterviewersLoading(true);
+      console.log('🔍 Fetching interviewers from API...');
+      
+      const response = await apiClient.get('/dropdown/interviewers');
+      console.log('📊 Interviewers API Response:', response);
+      
+      if (response.data.status === 'success' && response.data.data) {
+        // Transform the API response to dropdown format
+        const interviewerData = Object.entries(response.data.data)
+          .filter(([id, name]) => id !== '') // Filter out empty ID
+          .map(([id, name]) => ({
+            value: id,
+            label: name as string,
+          }));
+        
+        // Add the default "Select Interviewer ID" option
+        const interviewersWithDefault = [
+          { value: '', label: 'Select Interviewer ID' },
+          ...interviewerData,
+        ];
+        
+        setInterviewers(interviewersWithDefault);
+        console.log('✅ Interviewers loaded successfully:', interviewersWithDefault);
+      } else {
+        console.error('❌ Invalid interviewers API response:', response.data);
+        setInterviewers([{ value: '', label: 'Select Interviewer ID' }]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching interviewers:', err);
+      setInterviewers([{ value: '', label: 'Select Interviewer ID' }]);
+    } finally {
+      setInterviewersLoading(false);
+    }
+  };
+
+  const handleEdit = (serverId: number, acCode: number) => {
+    router.push(`/capi/dqm/progress/interview-list/interview-list-qc-form/${serverId}`);
+  };
+
+  // Format date to YYYY-MM-DD format
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return dateString;
+    }
+  };
+
+  const getGenderText = (gender: number) => {
+    if (gender === 1) return 'Male';
+    if (gender === 2) return 'Female';
+    return '-';
+  };
+
+  const getAudioQcStatusBadge = (status: number) => {
+    let label = '-';
+    let colorClass = 'bg-gray-100 text-gray-800';
+    
+    switch (status) {
+      case 1:
+        label = 'Pass';
+        colorClass = 'bg-green-100 text-green-800';
+        break;
+      case 2:
+        label = 'Fail';
+        colorClass = 'bg-red-100 text-red-800';
+        break;
+      default:
+        label = '-';
+        colorClass = 'bg-gray-100 text-gray-800';
+        break;
+    }
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+        {label}
+      </span>
+    );
+  };
+
+  const getQcOutcomeBadge = (qcOutcome: string) => {
+    if (!qcOutcome) {
+      return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">-</span>;
+    }
+
+    const outcome = qcOutcome.toLowerCase();
+    let colorClass = 'bg-gray-100 text-gray-800';
+    
+    if (outcome === 'pass') {
+      colorClass = 'bg-green-100 text-green-800';
+    } else if (outcome === 'fail' || outcome === 'rejected') {
+      colorClass = 'bg-red-100 text-red-800';
+    } else if (outcome === 'pending') {
+      colorClass = 'bg-blue-100 text-blue-800';
+    }
 
   return (
-    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
-            Interview List
-          </Heading>
-        </div>
-      </div>
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+        {qcOutcome}
+      </span>
+    );
+  };
+
+  // Function to get the display text for Audio Fail Reason column
+  const getAudioFailReasonDisplayText = (item: InterviewData) => {
+    if (!item.audio_qc_rejection_level || !item.qc_audio_status) {
+      return '-';
+    }
+
+    const qcRejectionLevel = item.audio_qc_rejection_level;
+    const qcAudioStatus = item.qc_audio_status;
+
+    // Handle specific mappings based on audio_qc_rejection_level and qc_audio_status
+    if (qcRejectionLevel === 2 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | Gender Rejection';
+    }
+    
+    if (qcRejectionLevel === 3 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | Upcoming Election Rejection';
+    }
+    
+    if (qcRejectionLevel === 4 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | 2021 AE Rejection';
+    }
+    
+    if (qcRejectionLevel === 5 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | 2024 Election Rejection';
+    }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 2) {
+      return 'No Conversation';
+    }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 3) {
+      return 'Irrelevant Conversation';
+    }
+    
+    if (qcRejectionLevel === 2 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | Gender Rejection';
+    }
+    
+    if (qcRejectionLevel === 3 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | Upcoming Election Rejection';
+    }
+    
+    if (qcRejectionLevel === 4 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | 2021 AE Rejection';
+    }
+    
+    if (qcRejectionLevel === 5 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | 2024 Election Rejection';
+    }
+    
+    if (qcRejectionLevel === 2 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Gender Rejection';
+    }
+    
+    if (qcRejectionLevel === 3 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Upcoming Election Rejection';
+    }
+    
+    if (qcRejectionLevel === 4 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2021 AE Rejection';
+    }
+    
+    if (qcRejectionLevel === 5 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2024 Election Rejection';
+    }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 8) {
+      return 'Duplicate Audio';
+    }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 9) {
+      return 'Interviewer acting as respondent';
+    }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 10) {
+      return 'Same respondent as before';
+    }
+    
+    if (qcRejectionLevel === 1 && qcAudioStatus === 7) {
+      return 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)';
+    }
+
+    // Fallback to raw value if no mapping matches
+    return '-';
+  };
 
 
-      {/* Interview List Table */}
-      <Card className="">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Interview Details
-            </Heading>
-          </div>
-        </div>
+  // Fetch QC IDs from API
+  const fetchQcIds = async () => {
+    try {
+      setQcIdLoading(true);
+      const response = await apiClient.get('/dropdown/qc-users');
+      
+      if (response.data?.status === 'success' && response.data?.data) {
+        // Transform the response object { "100": "Tanishka", "101": "Priyanka", ... }
+        // into options array with format "Name(ID)"
+        const options = Object.entries(response.data.data).map(([id, name]) => ({
+          value: id,
+          label: `${name}(${id})`
+        }));
         
-        <div className="bg-white">
-          <div className="mb-4">
-            <Text className="text-sm text-gray-600">
-              Total <strong>{totalCount.toLocaleString()}</strong> items.
-            </Text>
-          </div>
-          
-          {loading ? (
-            <div className="text-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
-              <Text className="text-gray-600">Loading interview data...</Text>
-            </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <Text className="text-lg text-red-600">Error: {error}</Text>
-              <Button 
-                onClick={fetchInterviewData}
-                className="mt-4 bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Retry
-              </Button>
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
-                <thead className="table-light bg-gray-50">
-                  <tr>
-                    <th className="text-center">S.No</th>
-                    <th className="text-center">Server ID</th>
-                    <th className="text-center">Interview Date</th>
-                    <th className="text-center">Sample Type</th>
-                    <th className="text-center">AC Name</th>
-                    <th className="text-center">PS Name</th>
-                    <th className="text-center">Interviewer ID</th>
-                    <th className="text-center">Gender</th>
-                    <th className="text-center">Audio QC</th>
-                    <th className="text-center">Audio QC ID</th>
-                    <th className="text-center">Audio Fail Reason</th>
-                    <th className="text-center">Status</th>
-                    <th className="text-center">QC Outcome</th>
-                    <th className="text-center">Audio</th>
-                    <th className="text-center">Edit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentData.map((interview, index) => (
-                    <tr key={interview.id}>
-                      <td className="text-center">{startIndex + index + 1}</td>
-                      <td className="text-center">{interview.serverId}</td>
-                      <td className="text-left">{interview.interviewDate}</td>
-                      <td className="text-left">{interview.sampleType}</td>
-                      <td className="text-left">{interview.acName}</td>
-                      <td className="text-left">{interview.psName}</td>
-                      <td className="text-center">{interview.interviewerId}</td>
-                      <td className="text-left">
-                        <span className={interview.genderLabel === 'Male' ? 'text-blue-600' : 'text-pink-600'}>
-                          {interview.genderLabel}
-                        </span>
-                      </td>
-                      <td className="text-left">{interview.audioQcLabel}</td>
-                      <td className="text-center">{interview.audioQcId}</td>
-                      <td className="text-left">{interview.audioFailReason}</td>
-                      <td className="text-left">
-                        <Badge variant={interview.statusLabel === 'Valid' ? 'success' : 'secondary'} size="sm">
-                          {interview.statusLabel}
-                        </Badge>
-                      </td>
-                      <td className="text-left">
-                        {getQcOutcomeBadge(interview.qcOutcome)}
-                      </td>
-                      <td className="text-center">
-                        {interview.audioQcLabel === 'Fail' ? (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleMarkAsValid(interview.serverId)}
-                            className="bg-red-500 hover:bg-red-600 text-white"
-                            title="Mark as Valid"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleAudioView(interview.serverId)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
-                            title="View Audio"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </td>
-                      <td className="text-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(interview.serverId)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500"
-                          title="Edit Response"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </div>
-          )}
+        // Sort by ID (numeric)
+        options.sort((a, b) => parseInt(a.value) - parseInt(b.value));
+        
+        setQcIdList(options);
+      } else {
+        setQcIdList([]);
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching QC IDs:', err);
+      setQcIdList([]);
+    } finally {
+      setQcIdLoading(false);
+    }
+  };
 
-          {/* Pagination */}
-          <div className="mt-6">
-            <PaginationStandard
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalCount}
-              itemsPerPage={pageSize}
-              onPageChange={setCurrentPage}
-            />
-          </div>
+  // Load filter dropdowns on component mount
+  useEffect(() => {
+    fetchAcList();
+    fetchInterviewers();
+    fetchQcIds();
+    fetchInterviewData(1);
+  }, []);
+
+
+  return (
+    <FluidContainer>
+      {/* Page Header */}
+      <div className="mb-6">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
+              Interview List
+            </Heading>
         </div>
-      </Card>
-    </Container>
+
+      {/* Filters Card - Horizontal Layout */}
+          <Card className="mb-6">
+        <div className="p-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+                <div className="space-y-4">
+              {/* First Row - Main Dropdown Filters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                  {/* Server ID */}
+                  <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Server ID
+                  </Text>
+                    <Input
+                      type="text"
+                      placeholder="Search by Server ID"
+                      value={filters.server_id}
+                      onChange={(e) => handleFilterChange('server_id', e.target.value)}
+                    />
+                  </div>
+
+                  {/* Interview Date */}
+                  <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interview Date
+                  </Text>
+                    <SelectDropdown
+                      value={filters.interview_date}
+                      onChange={(value) => handleFilterChange('interview_date', value as string)}
+                      placeholder="Select Interview Date"
+                      options={[
+                      { value: 'all', label: 'All' },
+                      { value: 'today', label: 'Today' },
+                      { value: 'yesterday', label: 'Yesterday' },
+                      { value: 'dby', label: 'Day Before Yesterday' },
+                      { value: 'l3', label: 'Last 3 Days' },
+                      { value: 'l7', label: 'Last 7 Days' },
+                      { value: 'l15', label: 'Last 15 Days' },
+                      { value: 'currentmonth', label: 'Current Month' },
+                      { value: 'custom', label: 'Custom' },
+                    ]}
+                    searchable={false}
+                    clearable={true}
+                    />
+                  </div>
+
+                  {/* AC Code */}
+                  <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    AC Code
+                  </Text>
+                    <SelectDropdown
+                      value={filters.ac_code}
+                      onChange={(value) => handleFilterChange('ac_code', value as string)}
+                    placeholder={acLoading ? "Loading ACs..." : "Select AC"}
+                    options={acList}
+                    searchable={true}
+                    clearable={true}
+                    disabled={acLoading}
+                    />
+                  </div>
+
+                  {/* Interviewer ID */}
+                  <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Interviewer ID
+                  </Text>
+                    <SelectDropdown
+                      value={filters.interviewer_id}
+                      onChange={(value) => handleFilterChange('interviewer_id', value as string)}
+                    placeholder={interviewersLoading ? "Loading interviewers..." : "Select Interviewer ID"}
+                    options={interviewers}
+                    searchable={true}
+                    clearable={true}
+                    disabled={interviewersLoading}
+                    />
+                  </div>
+
+                  {/* QC Date */}
+                  <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Date
+                  </Text>
+                    <SelectDropdown
+                      value={filters.qc_date}
+                    onChange={(value) => handleFilterChange('qc_date', Array.isArray(value) ? value : [value])}
+                      placeholder="Select QC Date"
+                    options={dateOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                    />
+                  </div>
+
+                  {/* QC ID */}
+                  <div>
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC ID
+                  </Text>
+                    <SelectDropdown
+                      value={filters.qc_id}
+                      onChange={(value) => handleFilterChange('qc_id', value as string)}
+                    placeholder={qcIdLoading ? "Loading QC IDs..." : "Select QC ID"}
+                    options={qcIdList}
+                    searchable={true}
+                    clearable={true}
+                    disabled={qcIdLoading}
+                  />
+                </div>
+                  </div>
+
+              {/* Custom Date Fields - Only show when custom is selected */}
+              {filters.interview_date === 'custom' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Start Date
+                      <span className="text-red-500 ml-1">*</span>
+                    </Text>
+                    <Input
+                      type="date"
+                      value={filters.custom_date}
+                      onChange={(e) => handleFilterChange('custom_date', e.target.value)}
+                      required
+                    />
+                    </div>
+                  <div>
+                    <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      End Date
+                      <span className="text-red-500 ml-1">*</span>
+                    </Text>
+                    <Input
+                      type="date"
+                      value={filters.custom_date_end}
+                      onChange={(e) => handleFilterChange('custom_date_end', e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Second Row - Additional Filters and Search */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                {/* Audio Fail Reason */}
+                <div className="md:col-span-1 lg:col-span-2">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Audio Fail Reason
+                  </Text>
+                  <SelectDropdown
+                    value={filters.audio_fail_reason}
+                    onChange={(value) => handleFilterChange('audio_fail_reason', value as string)}
+                    placeholder="Select Audio Fail Reason"
+                    options={audioFailReasonOptions}
+                    searchable={true}
+                    clearable={true}
+                  />
+                    </div>
+
+                {/* Audio QC Status */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Audio QC Status
+                  </Text>
+                  <SelectDropdown
+                    value={filters.audio_qc_status}
+                    onChange={(value) => handleFilterChange('audio_qc_status', Array.isArray(value) ? value : [value])}
+                    placeholder="Select Audio QC Status"
+                    options={audioQcStatusOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                  </div>
+
+                  {/* QC Outcome */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    QC Outcome
+                  </Text>
+                  <SelectDropdown
+                    value={filters.qc_outcome}
+                    onChange={(value) => handleFilterChange('qc_outcome', Array.isArray(value) ? value : [value])}
+                    placeholder="Select QC Outcome"
+                    options={qcOutcomeOptions}
+                    searchable={true}
+                    clearable={true}
+                    multiple={true}
+                  />
+                    </div>
+
+                {/* Search Button */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
+                  <Button 
+                    type="submit"
+                    variant="primary" 
+                    onClick={handleSearch}
+                    className="w-full flex items-center justify-center"
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </Button>
+                  </div>
+
+                {/* Clear Button */}
+                <div className="md:col-span-1 lg:col-span-1">
+                  <Text className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    &nbsp;
+                  </Text>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    onClick={handleClearFilters}
+                    className="w-full flex items-center justify-center bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear
+                  </Button>
+                </div>
+              </div>
+          </div>
+          </form>
+              </div>
+            </Card>
+
+      {/* Main Content - Table */}
+            <Card>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex justify-between items-center">
+                <div>
+                  <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Interview Details
+                  </Heading>
+                  {!loading && (
+                    <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Total {pagination.total.toLocaleString()} items
+                    </Text>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4">
+              {/* Error Alert */}
+              {error && (
+                <div className="mb-4">
+                  <Alert type="error">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <strong>Error:</strong> {error}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => fetchInterviewData()}
+                        className="ml-4"
+                      >
+                        Retry
+                      </Button>
+                    </div>
+                  </Alert>
+                </div>
+              )}
+
+              {/* Data Table */}
+                <div className="overflow-x-auto">
+                <div className="table-responsive">
+                  <Table className="table table-striped table-bordered table-hover">
+                    <thead className="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">S.No</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Server ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Interview Date</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-left">AC Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Interviewer ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Gender</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio QC Date</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio QC</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio QC ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio Fail Reason</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">QC Outcome</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Audio</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 dark:text-gray-300 text-center">Edit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr>
+                          <td colSpan={13} className="px-4 py-12 text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                            <p className="text-gray-600 dark:text-gray-400">Loading interview data...</p>
+                          </td>
+                        </tr>
+                      ) : interviewData.length === 0 ? (
+                        <tr>
+                          <td colSpan={13} className="px-4 py-12 text-center">
+                            <div className="text-6xl text-gray-300 mb-4">📋</div>
+                            <p className="text-gray-600 dark:text-gray-400">No interview data found</p>
+                          </td>
+                        </tr>
+                      ) : (
+                        interviewData.map((item, index) => (
+                          <tr key={item.server_id || index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {(pagination.page - 1) * pagination.limit + index + 1}
+                          </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center font-medium">
+                              {item.server_id}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {item.interview_date ? formatDate(item.interview_date) : '-'}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-left">
+                              {item.ac_name || '-'}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {item.interviewer_id || '-'}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {getGenderText(item.gender)}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {item.audio_qc_complete_date ? formatDate(item.audio_qc_complete_date) : '-'}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {getAudioQcStatusBadge(item.audio_qc_status)}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {item.qc_id || '-'}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center text-sm">
+                              {getAudioFailReasonDisplayText(item)}
+                            </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              {getQcOutcomeBadge(item.qc_outcome)}
+                          </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              <Button
+                                size="sm"
+                                onClick={() => handleAudioView(item.server_id)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                              >
+                                <Volume2 className="w-4 h-4" />
+                              </Button>
+                          </td>
+                            <td className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 text-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+                                onClick={() => handleEdit(item.server_id, item.ac_code)}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                          </td>
+                        </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </Table>
+                </div>
+                  </div>
+
+              {/* Pagination */}
+              {!loading && !error && pagination.total > 0 && (
+                <div className="mt-4">
+                    <PaginationStandard
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    totalItems={pagination.total}
+                    itemsPerPage={pagination.limit}
+                    onPageChange={handlePageChange}
+                    />
+                  </div>
+              )}
+              </div>
+            </Card>
+
+      {/* Audio Player Modal */}
+      <AudioPlayerModal
+        isOpen={audioModalOpen}
+        onClose={() => setAudioModalOpen(false)}
+        serverId={selectedServerId}
+      />
+    </FluidContainer>
   );
 }

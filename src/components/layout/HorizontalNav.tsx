@@ -117,18 +117,20 @@ export default function HorizontalNav() {
 
     // Listen for updates
     window.addEventListener('teleformUserUpdated', handleTeleformUserUpdate);
+    window.addEventListener('dataEntryUserUpdated', handleTeleformUserUpdate);
     
     return () => {
       window.removeEventListener('teleformUserUpdated', handleTeleformUserUpdate);
+      window.removeEventListener('dataEntryUserUpdated', handleTeleformUserUpdate);
     };
   }, []);
 
-  // Filter menu items based on teleform user data for SS role
+  // Filter menu items based on user data for SS and Data Entry roles
   const getFilteredMenuItems = () => {
     if (!user) return [];
     
-    // For SS role, force system to 'cati' to ensure menu items are loaded
-    const systemToUse = user.role === 'ss' ? 'cati' : user.system;
+    // For SS and Data Entry roles, force system to 'cati' to ensure menu items are loaded
+    const systemToUse = (user.role === 'ss' || user.role === 'data_entry') ? 'cati' : user.system;
     let baseMenuItems = getMenuByRole(user.role, systemToUse);
     
     // Debug logging (removed to prevent console spam during re-renders)
@@ -168,6 +170,48 @@ export default function HorizontalNav() {
         console.log('No teleform user data, showing non-dynamic items only');
         baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
         console.log('Non-dynamic menu items:', baseMenuItems);
+      }
+    }
+    
+    // For Data Entry role, filter dynamic menu items based on data entry user data
+    if (user.role === 'data_entry') {
+      const dataEntryUserData = localStorage.getItem('data_entry_user_data');
+      if (dataEntryUserData) {
+        try {
+          const userData = JSON.parse(dataEntryUserData);
+          const fillForm = userData.fill_form === 1;
+          const qc = userData.qc === 1;
+          
+          baseMenuItems = baseMenuItems.filter(item => {
+            // Always show non-dynamic items
+            if (!item.dynamic) return true;
+            
+            // Filter dynamic items based on permissions
+            if (item.id === 'cati-data-entry') {
+              return fillForm || qc; // Show if user has either permission
+            }
+            
+            return false;
+          });
+          
+          // Update the href for the Start QC menu item with the actual user ID
+          baseMenuItems = baseMenuItems.map(item => {
+            if (item.id === 'cati-data-entry' && userData.data_entry_user_id) {
+              return {
+                ...item,
+                href: `/cati/ss/data-entry-list/${userData.data_entry_user_id}`
+              };
+            }
+            return item;
+          });
+        } catch (err) {
+          console.error('Error parsing data entry user data:', err);
+          // If parsing fails, show all non-dynamic items only
+          baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
+        }
+      } else {
+        // If no data entry user data, show all non-dynamic items only
+        baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
       }
     }
     
