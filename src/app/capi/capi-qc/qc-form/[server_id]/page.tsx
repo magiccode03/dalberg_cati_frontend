@@ -14,6 +14,7 @@ import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import AudioPlayer from '@/components/ui/AudioPlayer';
+import ConcatenatedAudioPlayer from '@/components/ui/ConcatenatedAudioPlayer';
 
 // Import form configurations
 import formConfig from '../form-config.json';
@@ -1056,7 +1057,7 @@ function QCFormPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
-      {/* Sticky Audio Player with Tabs */}
+      {/* Sticky Concatenated Audio Player */}
       {audioUrls.length > 0 && (
         <>
           <div
@@ -1070,201 +1071,17 @@ function QCFormPage() {
             <Card className={`${isSticky ? 'rounded-none' : ''}`}>
               <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
                 <div className="max-w-7xl mx-auto">
-                  {/* Audio Tabs - Only show when there are multiple audio files */}
-                  {audioUrls.length > 1 && (
-                    <div className="mb-3 sm:mb-4">
-                      <div className="flex overflow-x-auto scrollbar-hide -mx-2 sm:mx-0">
-                        <div className="flex space-x-1 sm:space-x-2 px-2 sm:px-0 min-w-full sm:min-w-0">
-                          {audioUrls.map((audio: { id: string; label: string }) => {
-                            const isActive = audio.id === activeAudioTab;
-                            return (
-                              <button
-                                key={audio.id}
-                                onClick={() => handleTabChange(audio.id)}
-                                className={`
-                                  flex-shrink-0 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-lg transition-all duration-200
-                                  ${isActive 
-                                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 shadow-sm' 
-                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
-                                  }
-                                `}
-                              >
-                                {audio.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Audio Player */}
-                  <div className="flex-1 min-w-0">
-                    {currentAudioUrl && (
-                      <>
-                        <div className="mb-2 text-center">
-                          {/* <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                            {useIframe[activeAudioTab] ? 'Using alternative player' : 'Click play to start the audio'}
-                          </p> */}
-                          {audioError[activeAudioTab] && !useIframe[activeAudioTab] && (
-                            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                              Audio player had an issue. Try the alternative options below.
-                            </p>
-                          )}
-                        </div>
-
-                        {!useIframe[activeAudioTab] ? (
-                          <>
-                            {/* Mobile Custom Player */}
-                            <div className="block sm:hidden">
-                              {/* Progress Bar - Full Width */}
-                              <div className="w-full mb-2">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  value={audioProgress[activeAudioTab] || 0}
-                                  onChange={(e) => handleSeek(activeAudioTab, e)}
-                                  className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-                                  style={{
-                                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${audioProgress[activeAudioTab] || 0}%, #e5e7eb ${audioProgress[activeAudioTab] || 0}%, #e5e7eb 100%)`
-                                  }}
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  <span>{formatTime(currentTime[activeAudioTab] || 0)}</span>
-                                  <span>{formatTime(audioDuration[activeAudioTab] || 0)}</span>
-                                </div>
-                              </div>
-
-                              {/* Controls */}
-                              <div className="flex items-center justify-center gap-4">
-                                <button
-                                  onClick={() => handlePlayPause(activeAudioTab)}
-                                  className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors"
-                                  aria-label={isPlaying[activeAudioTab] ? 'Pause' : 'Play'}
-                                >
-                                  {isPlaying[activeAudioTab] ? (
-                                    <Pause className="w-5 h-5" />
-                                  ) : (
-                                    <Play className="w-5 h-5" />
-                                  )}
-                                </button>
-                                
-                                <div className="flex items-center gap-2 flex-1 max-w-[120px]">
-                                  <Volume2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                                  <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    defaultValue="100"
-                                    onChange={(e) => handleVolumeChange(activeAudioTab, e)}
-                                    className="flex-1 h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                                  />
-                                </div>
-                              </div>
-
-                              {/* Hidden Audio Element */}
-                              <audio
-                                key={activeAudioTab}
-                                ref={(el) => {
-                                  if (el) {
-                                    audioRefs.current[activeAudioTab] = el;
-                                  } else {
-                                    delete audioRefs.current[activeAudioTab];
-                                  }
-                                }}
-                                preload="metadata"
-                                onError={() => handleAudioError(activeAudioTab)}
-                                onTimeUpdate={(e) => handleTimeUpdate(activeAudioTab, e)}
-                                onLoadedMetadata={(e) => handleLoadedMetadata(activeAudioTab, e)}
-                                onPlay={() => setIsPlaying(prev => ({ ...prev, [activeAudioTab]: true }))}
-                                onPause={() => setIsPlaying(prev => ({ ...prev, [activeAudioTab]: false }))}
-                                onEnded={() => setIsPlaying(prev => ({ ...prev, [activeAudioTab]: false }))}
-                              >
-                                <source src={currentAudioUrl} type="audio/mpeg" />
-                                <source src={currentAudioUrl} type="audio/mp3" />
-                                Your browser does not support the audio element.
-                              </audio>
-                            </div>
-
-                            {/* Desktop Native Player */}
-                            <div className="hidden sm:block">
-                              <audio
-                                key={activeAudioTab}
-                                controls
-                                className="w-full h-12"
-                                controlsList="nodownload"
-                                preload="metadata"
-                                onError={() => handleAudioError(activeAudioTab)}
-                                onLoadStart={() => console.log('Audio loading started:', activeAudioTab)}
-                                onCanPlay={() => console.log('Audio can play:', activeAudioTab)}
-                              >
-                                <source src={currentAudioUrl} type="audio/mpeg" />
-                                <source src={currentAudioUrl} type="audio/mp3" />
-                                Your browser does not support the audio element.
-                              </audio>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="w-full">
-                            <iframe
-                              key={activeAudioTab}
-                              src={currentAudioUrl}
-                              className="w-full h-12 sm:h-16 border-0 rounded"
-                              title={`Audio Player - ${audioUrls.find((a: { id: string; label: string }) => a.id === activeAudioTab)?.label}`}
-                              allow="autoplay"
-                              onError={() => handleIframeError(activeAudioTab)}
-                              onLoad={() => {
-                                setTimeout(() => {
-                                  try {
-                                    const iframe = document.querySelector(`iframe[title*="${activeAudioTab}"]`) as HTMLIFrameElement;
-                                    if (iframe && iframe.contentDocument) {
-                                      const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                                      if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                                        console.warn('Iframe returned text instead of audio player');
-                                        handleIframeError(activeAudioTab);
-                                      }
-                                    }
-                                  } catch (e) {
-                                    console.log('Cannot access iframe content due to CORS');
-                                  }
-                                }, 1000);
-                              }}
-                            />
-                          </div>
-                        )}
-
-                        {/* Error Message for Failed Audio */}
-                        {audioError[activeAudioTab] && (
-                          <div className="w-full p-2 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-2 sm:mt-4">
-                            <div className="text-center">
-                              <div className="text-red-600 dark:text-red-400 mb-2">
-                                <svg className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <p className="text-xs sm:text-sm font-semibold">Audio Playback Failed</p>
-                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                                  The audio URL is not serving playable content.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Alternative Options */}
-                        <div className="mt-2 sm:mt-4 flex justify-center items-center">
-                          {!useIframe[activeAudioTab] && audioError[activeAudioTab] && (
-                            <button
-                              onClick={() => handleTryAlternativePlayer(activeAudioTab)}
-                              className="text-xs sm:text-sm bg-blue-600 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-blue-700 transition-colors"
-                            >
-                              Try Alternative Player
-                            </button>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                  <ConcatenatedAudioPlayer
+                    audioTracks={audioUrls.map((audio: { id: string; url: string; label: string }) => ({
+                      id: audio.id,
+                      url: audio.url,
+                      label: audio.label
+                    }))}
+                    onError={(error) => {
+                      console.error('Audio player error:', error);
+                      showToast(error, 'error');
+                    }}
+                  />
                 </div>
               </div>
             </Card>
