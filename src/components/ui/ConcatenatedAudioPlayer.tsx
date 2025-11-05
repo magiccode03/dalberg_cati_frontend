@@ -15,13 +15,19 @@ interface ConcatenatedAudioPlayerProps {
   className?: string;
   onError?: (error: string) => void;
   showTrackTabs?: boolean;
+  showMute?: boolean;
+  showVolume?: boolean;
+  showPlaybackSpeed?: boolean;
 }
 
 const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
   audioTracks,
   className = '',
   onError,
-  showTrackTabs = false
+  showTrackTabs = false,
+  showMute = false,
+  showVolume = false,
+  showPlaybackSpeed = false
 }) => {
   // Refs
   const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
@@ -37,6 +43,7 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [playbackRate, setPlaybackRate] = useState(1);
   
   // Internal refs for performance
   const playingRef = useRef(false);
@@ -137,6 +144,7 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
 
     try {
       audio.currentTime = Math.max(0, localTime);
+      audio.playbackRate = playbackRate; // Apply playback speed
       setCurrentTrackIndex(idx);
       currentTrackIndexRef.current = idx; // Update ref
 
@@ -159,7 +167,7 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
       playingRef.current = false;
       setIsPlaying(false);
     }
-  }, [audioTracks]);
+  }, [audioTracks, playbackRate]);
 
   // Update progress - use refs to avoid stale closures
   const updateProgress = useCallback(() => {
@@ -548,6 +556,26 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
     });
   }, []);
 
+  // Playback speed
+  const handlePlaybackSpeedChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRate = parseFloat(e.target.value);
+    setPlaybackRate(newRate);
+    Object.values(audioRefs.current).forEach(audio => {
+      if (audio) {
+        audio.playbackRate = newRate;
+      }
+    });
+  }, []);
+
+  // Apply playback rate when it changes
+  useEffect(() => {
+    Object.values(audioRefs.current).forEach(audio => {
+      if (audio) {
+        audio.playbackRate = playbackRate;
+      }
+    });
+  }, [playbackRate]);
+
   // Format time
   const formatTime = (seconds: number): string => {
     if (!isFinite(seconds) || seconds < 0) return '0:00';
@@ -612,79 +640,7 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
 
       {/* Main Player Controls */}
       <div className="w-full">
-        {/* Mobile Layout */}
-        <div className="block sm:hidden">
-          {/* Full Width Progress Bar */}
-          <div className="w-full mb-4">
-            <div
-              ref={progressBarRef}
-              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer relative group touch-none"
-              onMouseDown={handlePointerStart}
-              onTouchStart={handlePointerStart}
-              onTouchMove={handlePointerMove}
-              onMouseUp={handlePointerEnd}
-              onTouchEnd={handlePointerEnd}
-              onMouseMove={isDragging ? handlePointerMove : undefined}
-            >
-              <div
-                className="absolute top-0 left-0 h-full bg-blue-500 rounded-full pointer-events-none"
-                style={{ 
-                  width: `${progressPercent}%`,
-                  minWidth: progressPercent > 0 ? '2px' : '0px',
-                  maxWidth: '100%',
-                  boxSizing: 'border-box',
-                  flexShrink: 0,
-                  transition: 'opacity 150ms, background-color 150ms'
-                }}
-              />
-              {renderMarkers()}
-              <div
-                className={`absolute top-1/2 w-3 h-3 bg-blue-500 rounded-full transform -translate-y-1/2 -translate-x-1/2 transition-opacity duration-150 ${
-                  isDragging ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                }`}
-                style={{ left: `${progressPercent}%` }}
-              />
-            </div>
-            {/* Time Display */}
-            <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
-              <span>{formatTime(currentGlobalTime)}</span>
-              <span>{formatTime(totalDuration)}</span>
-            </div>
-          </div>
-
-          {/* Controls Row */}
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={togglePlayPause}
-              className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors flex-shrink-0"
-              aria-label={isPlaying ? 'Pause' : 'Play'}
-            >
-              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-            </button>
-
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <button
-                onClick={toggleMute}
-                className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-                aria-label={isMuted ? 'Unmute' : 'Mute'}
-              >
-                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={isMuted ? 0 : volume * 100}
-                onChange={handleVolumeChange}
-                className="w-20 h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Desktop Layout */}
-        <div className="hidden sm:flex items-center gap-3 w-full">
+        <div className="flex items-center gap-3 w-full">
           <button
             onClick={togglePlayPause}
             className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-colors flex-shrink-0"
@@ -702,6 +658,8 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
             className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer relative group touch-none"
             onMouseDown={handlePointerStart}
             onTouchStart={handlePointerStart}
+            onTouchMove={handlePointerMove}
+            onMouseMove={isDragging ? handlePointerMove : undefined}
             onMouseUp={handlePointerEnd}
             onTouchEnd={handlePointerEnd}
           >
@@ -729,14 +687,19 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
             {formatTime(totalDuration)}
           </span>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Mute Control */}
+          {showMute && (
             <button
               onClick={toggleMute}
-              className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors flex-shrink-0"
               aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
               {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
             </button>
+          )}
+
+          {/* Volume Control */}
+          {showVolume && (
             <input
               type="range"
               min="0"
@@ -746,7 +709,23 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
               onChange={handleVolumeChange}
               className="w-16 h-1 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
             />
-          </div>
+          )}
+
+          {/* Playback Speed Control */}
+          {showPlaybackSpeed && (
+            <select
+              value={playbackRate}
+              onChange={handlePlaybackSpeedChange}
+              className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded text-gray-700 dark:text-gray-300 cursor-pointer flex-shrink-0"
+            >
+              <option value="0.5">0.5x</option>
+              <option value="0.75">0.75x</option>
+              <option value="1">1x</option>
+              <option value="1.25">1.25x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2x</option>
+            </select>
+          )}
         </div>
       </div>
 
@@ -788,6 +767,7 @@ const ConcatenatedAudioPlayer: React.FC<ConcatenatedAudioPlayerProps> = ({
               }
               el.muted = isMuted;
               el.volume = isMuted ? 0 : volume;
+              el.playbackRate = playbackRate;
               el.preload = 'metadata';
               
               // Add ended event listener for automatic track switching

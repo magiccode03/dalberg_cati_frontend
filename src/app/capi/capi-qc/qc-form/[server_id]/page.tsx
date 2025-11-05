@@ -1152,6 +1152,7 @@ function QCFormPage() {
                       showToast(error, 'error');
                     }}
                     key={`player-${serverId}-${audioUrls.length}`}
+                    showPlaybackSpeed={true}
                   />
                 </div>
               </div>
