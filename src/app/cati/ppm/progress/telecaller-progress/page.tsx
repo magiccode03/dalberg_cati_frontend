@@ -84,6 +84,7 @@ interface TelecallerWiseData {
   caller_id: number;
   caller_name: string;
   caller_mobile_no: string;
+  telecalling_group_name?: string;
   number_of_dials: number;
   number_of_calls_connected: number;
   talk_duration: string;
@@ -772,6 +773,7 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller ID',
           'Caller Name',
           'Caller Mobile No.',
+          'Group',
           'Number of Dials',
           'Number of Calls Connected',
           'Form Duration',
@@ -803,6 +805,7 @@ const TelecallerProgressPage: React.FC = () => {
             item.caller_id || '-',
             `"${item.caller_name || '-'}"`,
             `"${item.caller_mobile_no || '-'}"`,
+            `"${item.telecalling_group_name || '-'}"`,
             item.number_of_dials || 0,
             item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
@@ -1515,6 +1518,7 @@ const TelecallerProgressPage: React.FC = () => {
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
@@ -1555,6 +1559,9 @@ const TelecallerProgressPage: React.FC = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.caller_mobile_no || '-'}
+                          </td>
+                         <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                            {item.telecalling_group_name || '-'}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_dials?.toLocaleString() || 0}

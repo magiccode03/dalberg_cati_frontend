@@ -51,6 +51,12 @@ interface SearchFilters {
   status: string;
   telecaller: string;
   permission: string;
+  telecalling_group_id: string;
+}
+
+interface TelecallingGroup {
+  id: number;
+  name: string;
 }
 
 interface TelecallerOption {
@@ -70,16 +76,19 @@ const TeleUserInfoPage: React.FC = () => {
     status: '',
     telecaller: '',
     permission: '', // No default permission filter
+    telecalling_group_id: '',
   });
 
   // Consolidated state management
   const [state, setState] = useState({
     // Data states
     telecallerOptions: [] as TelecallerOption[],
+    telecallingGroups: [] as TelecallingGroup[],
     userData: [] as UnifiedUserData[],
     
     // Loading states
     optionsLoading: false,
+    groupsLoading: false,
     loading: false,
     isFetching: false,
     error: null as string | null,
@@ -166,6 +175,53 @@ const TeleUserInfoPage: React.FC = () => {
     }
   }, [state.optionsLoading, updateState]);
 
+  // Fetch telecalling groups
+  const fetchTelecallingGroups = useCallback(async () => {
+    if (state.groupsLoading) {
+      return;
+    }
+
+    updateState({ groupsLoading: true });
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        updateState({ telecallingGroups: [{ id: 1, name: 'Group 1' }] });
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/teleform-users/telecalling-groups`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success && Array.isArray(result.data)) {
+          const groups: TelecallingGroup[] = result.data.map((item: any) => ({
+            id: item.telecalling_group_id || item.id,
+            name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+          }));
+          updateState({ telecallingGroups: groups });
+        } else {
+          updateState({ telecallingGroups: [{ id: 1, name: 'Group 1' }] });
+        }
+      } else {
+        updateState({ telecallingGroups: [{ id: 1, name: 'Group 1' }] });
+      }
+    } catch (err) {
+      console.error('Error fetching telecalling groups:', err);
+      updateState({ telecallingGroups: [{ id: 1, name: 'Group 1' }] });
+    } finally {
+      updateState({ groupsLoading: false });
+    }
+  }, [state.groupsLoading, updateState]);
+
   // Optimized fetch telecallers with useCallback
   const fetchTelecallers = useCallback(async (page: number = state.currentPage, useDefaultFilter: boolean = false) => {
     if (state.isFetching || (useDefaultFilter && dataFetched.current)) {
@@ -185,6 +241,7 @@ const TeleUserInfoPage: React.FC = () => {
       if (searchFilters.name) params.user_name = searchFilters.name;
       if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
       if (searchFilters.status) params.status = searchFilters.status;
+      if (searchFilters.telecalling_group_id) params.telecalling_group_id = searchFilters.telecalling_group_id;
 
       // Permission filter: fill_form=1 (telecallers) or qc=1 (QC users)
       if (searchFilters.permission) {
@@ -256,8 +313,11 @@ const TeleUserInfoPage: React.FC = () => {
     console.log('Initializing component data...');
 
     const initializeData = async () => {
-      // Fetch telecaller options first
-      await fetchTelecallerOptions();
+      // Fetch telecaller options and telecalling groups
+      await Promise.all([
+        fetchTelecallerOptions(),
+        fetchTelecallingGroups()
+      ]);
       
       // Then fetch initial telecaller data with default filter
       await fetchTelecallers(1, true); // true = use default filter
@@ -305,6 +365,7 @@ const TeleUserInfoPage: React.FC = () => {
       status: '',
       telecaller: '',
       permission: '',
+      telecalling_group_id: '',
     });
     updateState({ currentPage: 1 });
     fetchTelecallers(1);
@@ -387,7 +448,7 @@ const TeleUserInfoPage: React.FC = () => {
         {/* Search Form */}
         <Card className="">
           <form onSubmit={handleSearch}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
               <div className="lg:col-span-1">
                 <SelectDropdown
                   options={state.telecallerOptions}
@@ -435,6 +496,22 @@ const TeleUserInfoPage: React.FC = () => {
                   onChange={(value) => handleInputChange('permission', Array.isArray(value) ? value[0] : value as string)}
                   className="w-full"
                   placeholder="User Type"
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <SelectDropdown
+                  options={[
+                    { value: '', label: 'All Groups' },
+                    ...state.telecallingGroups.map(group => ({
+                      value: group.id.toString(),
+                      label: group.name,
+                    }))
+                  ]}
+                  value={searchFilters.telecalling_group_id}
+                  onChange={(value) => handleInputChange('telecalling_group_id', Array.isArray(value) ? value[0] : value as string)}
+                  className="w-full"
+                  placeholder="Telecalling Group"
+                  disabled={state.groupsLoading}
                 />
               </div>
               <div className="lg:col-span-1">

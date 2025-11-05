@@ -632,9 +632,9 @@ export default function RejectionReportPage() {
 
             {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
             {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
+            <div>
                 <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
+              <SelectDropdown
                   value={filters.acCode}
                   onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
                   options={[
@@ -643,9 +643,9 @@ export default function RejectionReportPage() {
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
                   searchable={true}
-                  clearable={true}
-                />
-              </div>
+                clearable={true}
+              />
+            </div>
             )}
 
             {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
@@ -666,16 +666,16 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            <div>
+              <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
+                <SelectDropdown
                 value={filters.qualityreportstatus}
                 onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+                  clearable={true}
+                />
+              </div>
 
             <div>
               <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
@@ -788,9 +788,9 @@ export default function RejectionReportPage() {
 
             {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
             {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
+            <div>
                 <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
+              <SelectDropdown
                   value={filters.acCode}
                   onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
                   options={[
@@ -799,9 +799,9 @@ export default function RejectionReportPage() {
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
                   searchable={true}
-                  clearable={true}
-                />
-              </div>
+                clearable={true}
+              />
+            </div>
             )}
 
             {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
@@ -822,16 +822,16 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            <div>
+              <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
+                <SelectDropdown
                 value={filters.qualityreportstatus}
                 onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+                  clearable={true}
+                />
+              </div>
 
             <div>
               <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
@@ -962,9 +962,9 @@ export default function RejectionReportPage() {
 
             {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
             {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
+            <div>
                 <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
+              <SelectDropdown
                   value={filters.acCode}
                   onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
                   options={[
@@ -973,9 +973,9 @@ export default function RejectionReportPage() {
                   ]}
                   disabled={acDropdownLoading || filterOptionsLoading}
                   searchable={true}
-                  clearable={true}
-                />
-              </div>
+                clearable={true}
+              />
+            </div>
             )}
 
             {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
@@ -996,16 +996,16 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            <div>
+              <div>
               <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
+                <SelectDropdown
                 value={filters.qualityreportstatus}
                 onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
                 options={failReasonOptions}
                 disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+                  clearable={true}
+                />
+              </div>
 
             <div>
               <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
