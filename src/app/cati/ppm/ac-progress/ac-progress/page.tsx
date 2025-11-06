@@ -8,7 +8,7 @@ import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
-import { Download, Search, CheckCircle, PhoneOff, PhoneForwarded, Phone } from 'lucide-react';
+import { Download, Search, CheckCircle, PhoneOff, PhoneForwarded, Phone, FileCheck, AlertCircle, XCircle, Clock, Database, CheckSquare } from 'lucide-react';
 import { apiService, CATIACData } from '@/lib/api';
 import Input from '@/components/ui/Input';
 
@@ -474,6 +474,44 @@ export default function CATIACWiseDataPage() {
                 title="Ineligible Interview"
                 value={callOutcomeMetrics.ineligibleInterview}
                 bgColor="bg-gray-500"
+              />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
+              <MetricCard
+                icon={CheckSquare}
+                title="Pass"
+                value={filteredData.reduce((sum, item) => sum + (item.pass || 0), 0)}
+                bgColor="bg-green-600"
+              />
+              <MetricCard
+                icon={Clock}
+                title="Under QC"
+                value={filteredData.reduce((sum, item) => sum + (item.under_qc || 0), 0)}
+                bgColor="bg-yellow-500"
+              />
+              <MetricCard
+                icon={XCircle}
+                title="QC Rejected"
+                value={filteredData.reduce((sum, item) => sum + (item.qc_rejected || 0), 0)}
+                bgColor="bg-red-500"
+              />
+              <MetricCard
+                icon={AlertCircle}
+                title="Short Interview"
+                value={filteredData.reduce((sum, item) => sum + (item.short_interview || 0), 0)}
+                bgColor="bg-orange-600"
+              />
+              <MetricCard
+                icon={Database}
+                title="Total Data"
+                value={filteredData.reduce((sum, item) => sum + (item.total_caller_data || 0), 0)}
+                bgColor="bg-blue-600"
+              />
+              <MetricCard
+                icon={FileCheck}
+                title="Data Available"
+                value={filteredData.reduce((sum, item) => sum + (item.total_caller_available || 0), 0)}
+                bgColor="bg-purple-500"
               />
             </div>
             </>
