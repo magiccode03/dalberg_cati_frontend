@@ -254,12 +254,10 @@ export default function CATIACWiseDataPage() {
   // Create dropdown options from AC data
   const acOptions = [
     { value: '', label: 'All ACs' },
-    ...acData
-      .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
-      .map(ac => ({
-        value: ac.ac_code.toString(),
-        label: `${ac.ac_name} (${ac.ac_code})`
-      }))
+    ...acData.map(ac => ({
+      value: ac.ac_code.toString(),
+      label: `${ac.ac_name} (${ac.ac_code})`
+    }))
   ];
 
   const callingDatesOptions = [
@@ -278,15 +276,21 @@ export default function CATIACWiseDataPage() {
     if (filteredData.length === 0) return;
 
     // Create CSV content
-    const headers = ['Sr.No.', 'AC Name', 'Call Attempted', 'Call Connected', 'Completed'];
+    const headers = ['AC Code', 'AC Name', 'Call Attempted', 'Call Connected', 'Completed', 'Pass', 'Under QC', 'QC Rejected', 'Short Interview', 'Total Data', 'Data Available'];
     const csvContent = [
       headers.join(','),
-      ...filteredData.map((item, index) => [
-        index + 1,
+      ...filteredData.map((item) => [
+        item.ac_code,
         `"${item.ac_name}"`,
         item.call_attempt,
         item.call_connected,
-        item.success
+        item.success,
+        item.pass ?? '',
+        item.under_qc ?? '',
+        item.qc_rejected ?? '',
+        item.short_interview ?? '',
+        item.total_caller_data ?? '',
+        item.total_caller_available ?? ''
       ].join(','))
     ].join('\n');
 
@@ -510,28 +514,40 @@ export default function CATIACWiseDataPage() {
             <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="bg-gray-50 sticky top-0 z-20 dark:bg-gray-800 shadow-sm">
                 <tr>
-                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800 text-center">Sr.No.</th>
+                  <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800 text-center">AC Code</th>
                   <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800 text-left">AC Name</th>
                   <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Attempted</th>
                   <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Connected</th>
                   <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800 text-center">Completed</th>
+                  <th className="border border-gray-300 w-20 bg-white dark:bg-gray-800 text-center">Pass</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Under QC</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">QC Rejected</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Short Interview</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Total Data</th>
+                  <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Data Available</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-500 border border-gray-300">
+                    <td colSpan={11} className="text-center py-8 text-gray-500 border border-gray-300">
                       {selectedAcCode ? 'No AC data found matching your selection' : 'No CATI AC data found'}
                     </td>
                   </tr>
                 ) : (
-                  filteredData.map((item, index) => (
+                  filteredData.map((item) => (
                     <tr key={item.ac_code}>
-                      <td className="border border-gray-300 text-center">{index + 1}</td>
+                      <td className="border border-gray-300 text-center">{item.ac_code}</td>
                       <td className="border border-gray-300 text-left">{item.ac_name}</td>
                       <td className="border border-gray-300 text-center">{item.call_attempt}</td>
                       <td className="border border-gray-300 text-center">{item.call_connected}</td>
                       <td className="border border-gray-300 text-center">{item.success}</td>
+                      <td className="border border-gray-300 text-center">{item.pass ?? '-'}</td>
+                      <td className="border border-gray-300 text-center">{item.under_qc ?? '-'}</td>
+                      <td className="border border-gray-300 text-center">{item.qc_rejected ?? '-'}</td>
+                      <td className="border border-gray-300 text-center">{item.short_interview ?? '-'}</td>
+                      <td className="border border-gray-300 text-center">{item.total_caller_data ?? '-'}</td>
+                      <td className="border border-gray-300 text-center">{item.total_caller_available ?? '-'}</td>
                     </tr>
                   ))
                 )}

@@ -552,6 +552,12 @@ export interface CATIACData {
   call_connected: number;
   success: number;
   total_records: number;
+  pass?: number;
+  under_qc?: number;
+  qc_rejected?: number;
+  short_interview?: number;
+  total_caller_data?: number;
+  total_caller_available?: number;
 }
 
 export interface CATIACResponse {

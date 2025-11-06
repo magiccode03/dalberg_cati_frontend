@@ -1331,9 +1331,9 @@ export const menuData: MenuItem[] = [
         system: 'cati',
       },
       {
-        id: 'cati-ppm-interview-ac-progress',
-        label: 'Interview AC Progress',
-        href: '/cati/ppm/ac-progress/interview-ac-progress',
+        id: 'cati-ppm-ac-progress',
+        label: 'AC Progress',
+        href: '/cati/ppm/ac-progress/ac-progress',
         icon: 'BarChart3',
         roles: ['ppm'],
         system: 'cati',
