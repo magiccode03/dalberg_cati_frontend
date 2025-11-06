@@ -792,6 +792,15 @@ export const menuData: MenuItem[] = [
     system: 'capi',
     dynamic: true, // Show only when qc_user_data exists in localStorage
   },
+  {
+    id: 'capi-gps-qc',
+    label: 'GPS QC',
+    href: '/capi/capi-qc/gps-qc/0', // Will be updated dynamically with actual qc_id
+    icon: 'Map',
+    roles: ['capi_qc'],
+    system: 'capi',
+    dynamic: true, // Show only when qc_user_data exists in localStorage
+  },
 
   // CAPI Findings Dashboard Menu
   {
@@ -1728,7 +1737,7 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     dynamic: true, // This will be dynamically set based on teleform user data
   },
-
+  
   // Data Entry Role Menu (Simple like SS role)
   {
     id: 'cati-data-entry-auth',

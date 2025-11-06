@@ -254,20 +254,26 @@ export default function HorizontalNav() {
             // Always show non-dynamic items
             if (!item.dynamic) return true;
             
-            // Filter dynamic items - show Audio QC only if qc_user_data exists
-            if (item.id === 'capi-audio-qc') {
-              return true; // Show Audio QC menu when authenticated
+            // Filter dynamic items - show Audio QC and GPS QC only if qc_user_data exists
+            if (item.id === 'capi-audio-qc' || item.id === 'capi-gps-qc') {
+              return true; // Show Audio QC and GPS QC menu when authenticated
             }
             
             return false;
           });
           
-          // Update the href for the Audio QC menu item with the actual qc_id
+          // Update the href for the Audio QC and GPS QC menu items with the actual qc_id
           baseMenuItems = baseMenuItems.map(item => {
             if (item.id === 'capi-audio-qc' && userData.qc_id) {
               return {
                 ...item,
                 href: `/capi/capi-qc/new-qc/${userData.qc_id}`
+              };
+            }
+            if (item.id === 'capi-gps-qc' && userData.qc_id) {
+              return {
+                ...item,
+                href: `/capi/capi-qc/gps-qc/${userData.qc_id}`
               };
             }
             return item;
