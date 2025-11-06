@@ -783,6 +783,15 @@ export const menuData: MenuItem[] = [
     roles: ['capi_qc'],
     system: 'capi',
   },
+  {
+    id: 'capi-audio-qc',
+    label: 'Audio QC',
+    href: '/capi/capi-qc/new-qc/0', // Will be updated dynamically with actual qc_id
+    icon: 'Mic',
+    roles: ['capi_qc'],
+    system: 'capi',
+    dynamic: true, // Show only when qc_user_data exists in localStorage
+  },
 
   // CAPI Findings Dashboard Menu
   {

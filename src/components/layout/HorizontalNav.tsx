@@ -94,6 +94,7 @@ export default function HorizontalNav() {
   const [isSticky, setIsSticky] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [teleformUserData, setTeleformUserData] = useState<any>(null);
+  const [qcUserData, setQcUserData] = useState<any>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
   // Listen for teleform user data updates
@@ -122,6 +123,33 @@ export default function HorizontalNav() {
     return () => {
       window.removeEventListener('teleformUserUpdated', handleTeleformUserUpdate);
       window.removeEventListener('dataEntryUserUpdated', handleTeleformUserUpdate);
+    };
+  }, []);
+
+  // Listen for QC user data updates
+  useEffect(() => {
+    const handleQcUserUpdate = () => {
+      const savedData = localStorage.getItem('qc_user_data');
+      if (savedData) {
+        try {
+          setQcUserData(JSON.parse(savedData));
+        } catch (err) {
+          console.error('Error parsing qc_user_data:', err);
+          setQcUserData(null);
+        }
+      } else {
+        setQcUserData(null);
+      }
+    };
+
+    // Initial load
+    handleQcUserUpdate();
+
+    // Listen for updates
+    window.addEventListener('qcUserUpdated', handleQcUserUpdate);
+    
+    return () => {
+      window.removeEventListener('qcUserUpdated', handleQcUserUpdate);
     };
   }, []);
 
@@ -211,6 +239,46 @@ export default function HorizontalNav() {
         }
       } else {
         // If no data entry user data, show all non-dynamic items only
+        baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
+      }
+    }
+    
+    // For CAPI QC role, filter dynamic menu items based on qc_user_data
+    if (user.role === 'capi_qc') {
+      const qcUserData = localStorage.getItem('qc_user_data');
+      if (qcUserData) {
+        try {
+          const userData = JSON.parse(qcUserData);
+          
+          baseMenuItems = baseMenuItems.filter(item => {
+            // Always show non-dynamic items
+            if (!item.dynamic) return true;
+            
+            // Filter dynamic items - show Audio QC only if qc_user_data exists
+            if (item.id === 'capi-audio-qc') {
+              return true; // Show Audio QC menu when authenticated
+            }
+            
+            return false;
+          });
+          
+          // Update the href for the Audio QC menu item with the actual qc_id
+          baseMenuItems = baseMenuItems.map(item => {
+            if (item.id === 'capi-audio-qc' && userData.qc_id) {
+              return {
+                ...item,
+                href: `/capi/capi-qc/new-qc/${userData.qc_id}`
+              };
+            }
+            return item;
+          });
+        } catch (err) {
+          console.error('Error parsing qc_user_data:', err);
+          // If parsing fails, show all non-dynamic items only
+          baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
+        }
+      } else {
+        // If no qc_user_data, show all non-dynamic items only
         baseMenuItems = baseMenuItems.filter(item => !item.dynamic);
       }
     }
