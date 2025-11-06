@@ -567,7 +567,7 @@ export default function TeleFormV2Page() {
         user_localdatetime: currentTime,
       };
       
-      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/comprehensive`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
