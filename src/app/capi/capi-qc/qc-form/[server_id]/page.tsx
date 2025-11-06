@@ -45,7 +45,7 @@ interface FormField {
     options: Array<{
       value: number;
       lable: { en?: string; hi?: string; bn?: string };
-      survey_q_tag?: string;
+  survey_q_tag?: string;
     }>;
   };
   min?: number;
@@ -196,6 +196,14 @@ function QCFormPage() {
 
   // Fetch instance data from API - memoized to prevent recreation
   const fetchInstanceData = useCallback(async () => {
+    console.log('fetchInstanceData called with serverId:', serverId);
+    
+    if (!serverId) {
+      console.log('No serverId, returning');
+      setLoading(false);
+      return;
+    }
+    
     // Check if we already have data in localStorage for this serverId
     const cachedDataKey = `instanceData_${serverId}`;
     const cachedData = localStorage.getItem(cachedDataKey);
@@ -205,7 +213,8 @@ function QCFormPage() {
         const parsedData = JSON.parse(cachedData);
         setInstanceData(parsedData);
         setLoading(false);
-        return;
+        console.log('Using cached data, but still fetching fresh data');
+        // Still make API call to get fresh data
       } catch (error) {
         console.error('Error parsing cached data:', error);
         localStorage.removeItem(cachedDataKey);
@@ -214,23 +223,30 @@ function QCFormPage() {
     
     // Prevent multiple API calls using global tracker
     if (globalApiCallTracker.has(serverId)) {
-      setLoading(false); // Ensure loading is set to false if API already called
+      console.log('API call already in progress for serverId:', serverId);
+      setLoading(false);
       return;
     }
     
     globalApiCallTracker.add(serverId);
+    console.log('Making API call for serverId:', serverId);
     
     try {
       setLoading(true);
       const token = localStorage.getItem('accessToken');
       if (!token || !serverId) {
+        console.log('Missing token or serverId');
         setLoading(false);
+        globalApiCallTracker.delete(serverId);
         return;
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const apiUrl = `${apiBaseUrl}/api/capi/instance/${serverId}`;
       
-      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${serverId}`, {
+      console.log('Fetching from:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -238,15 +254,25 @@ function QCFormPage() {
         }
       });
       
+      console.log('API response status:', response.status);
       const data = await response.json();
+      console.log('API response data:', data);
       
       if (data.success && data.data) {
         // Store complete instance data for reference
         setInstanceData(data.data);
         
+        // Debug: Check for audio fields
+        console.log('Instance data keys:', Object.keys(data.data));
+        console.log('audio1 field:', data.data.audio1);
+        console.log('audio field:', data.data.audio);
+        console.log('All instance data:', data.data);
+        
         // Cache the data in localStorage for future use
         localStorage.setItem(cachedDataKey, JSON.stringify(data.data));
+        console.log('Data loaded and cached successfully');
       } else {
+        console.error('API returned unsuccessful response:', data);
         showToast('Failed to load interview data', 'error');
       }
     } catch (error) {
@@ -254,11 +280,21 @@ function QCFormPage() {
       showToast('Error loading interview data', 'error');
     } finally {
       setLoading(false);
+      // Remove from tracker after completion to allow retry if needed
+      globalApiCallTracker.delete(serverId);
+      console.log('API call completed, removed from tracker');
     }
-  }, [serverId]); // Removed showToast from dependencies to prevent recreation
+  }, [serverId, showToast]); // Include showToast in dependencies
 
-  // Load QC user data and interview data on mount - run only once
+  // Load QC user data and interview data on mount
   useEffect(() => {
+    console.log('QC Form useEffect triggered, serverId:', serverId);
+    
+    if (!serverId) {
+      console.log('Waiting for serverId...');
+      return; // Wait for serverId to be available
+    }
+    
     const savedData = localStorage.getItem('qc_user_data');
     if (savedData) {
       try {
@@ -270,9 +306,13 @@ function QCFormPage() {
       }
     }
     
+    // Clear the tracker for this serverId to allow fresh fetch
+    globalApiCallTracker.delete(serverId);
+    
     // Fetch instance data
+    console.log('Calling fetchInstanceData...');
     fetchInstanceData();
-  }, []); // Empty dependency array - run only once on mount
+  }, [serverId, fetchInstanceData]); // Include serverId and fetchInstanceData in dependencies
 
   // Handle scroll for sticky audio player - optimized to prevent unnecessary re-renders
   useEffect(() => {
@@ -364,19 +404,49 @@ function QCFormPage() {
 
   // Get all audio URLs from instance data - memoized to prevent re-renders
   const audioUrls = useMemo(() => {
-    if (!instanceData.audio1) return [];
+    console.log('Generating audioUrls from instanceData:', instanceData);
+    console.log('instanceData.audio1:', instanceData?.audio1);
     
-    // Split comma-separated audio files
-    const audioFiles = instanceData.audio1.split(',').map((file: string) => file.trim()).filter((file: string) => file);
-    if (audioFiles.length === 0) return [];
+    // Check for audio1 field specifically
+    const audioField = instanceData?.audio1;
     
-    return audioFiles.map((audioFile: string, index: number) => ({
+    if (!audioField) {
+      console.log('No audio1 field found in instanceData');
+      if (instanceData && Object.keys(instanceData).length > 0) {
+        console.log('Available fields:', Object.keys(instanceData));
+      }
+      return [];
+    }
+    
+    console.log('Audio field found:', audioField);
+    
+    // Handle both string (comma-separated) and array formats
+    let audioFiles: string[] = [];
+    
+    if (typeof audioField === 'string') {
+      // Split comma-separated audio files
+      audioFiles = audioField.split(',').map((file: string) => file.trim()).filter((file: string) => file);
+    } else if (Array.isArray(audioField)) {
+      audioFiles = audioField.filter((file: string) => file && file.trim());
+    }
+    
+    if (audioFiles.length === 0) {
+      console.log('No audio files found after parsing');
+      return [];
+    }
+    
+    console.log('Parsed audio files:', audioFiles);
+    
+    const urls = audioFiles.map((audioFile: string, index: number) => ({
       id: `audio-${index}`,
       fileName: audioFile,
       url: `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`,
       label: `A ${index + 1}`
     }));
-  }, [instanceData.audio1, serverId]);
+    
+    console.log('Generated audioUrls:', urls);
+    return urls;
+  }, [instanceData, serverId]); // Use full instanceData to properly detect changes
 
   // Set default active tab when audio URLs are loaded and auto-play first audio
   useEffect(() => {
@@ -1081,6 +1151,8 @@ function QCFormPage() {
                       console.error('Audio player error:', error);
                       showToast(error, 'error');
                     }}
+                    key={`player-${serverId}-${audioUrls.length}`}
+                    showPlaybackSpeed={true}
                   />
                 </div>
               </div>
