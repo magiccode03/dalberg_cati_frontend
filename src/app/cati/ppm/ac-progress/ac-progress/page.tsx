@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
@@ -22,6 +22,11 @@ export default function CATIACWiseDataPage() {
   const [callingDates, setCallingDates] = useState<string>('all');
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
+  
+  // Refs to prevent multiple simultaneous API calls
+  const fetchingDataRef = useRef(false);
+  const fetchingMetricsRef = useRef(false);
+  const hasInitialFetchRef = useRef(false);
 
   interface DashboardMetrics {
     numberOfDials: number;
@@ -43,62 +48,8 @@ export default function CATIACWiseDataPage() {
     pickedAndCallContinue: 0,
   });
 
-  useEffect(() => {
-    fetchCATIData();
-    fetchDashboardMetrics();
-  }, []);
-
-  const fetchCATIData = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const params = new URLSearchParams();
-      // Date filter
-      const dateRange = getDateRangeForAPI(callingDates, fromDate, toDate);
-      if (dateRange.start_date && dateRange.end_date) {
-        params.append('start_date', dateRange.start_date);
-        params.append('end_date', dateRange.end_date);
-      }
-      // Optional AC filter (if a single AC selected)
-      if (selectedAcCode) {
-        params.append('ac_code', selectedAcCode);
-      }
-      const url = `${apiBaseUrl}/api/cati/ac-progress-report${params.toString() ? `?${params.toString()}` : ''}`;
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      if (result.success && Array.isArray(result.data)) {
-        setAcData(result.data);
-        // If AC selected, keep server filtered; else show full list
-        setFilteredData(result.data);
-      } else {
-        setError(result.message || 'Failed to fetch CATI AC data');
-      }
-    } catch (err) {
-      console.error('Error fetching CATI AC data:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while fetching data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Helper function to convert calling dates option to start_date and end_date
-  const getDateRangeForAPI = (callingDates: string, fromDate?: string, toDate?: string) => {
+  const getDateRangeForAPI = useCallback((callingDates: string, fromDate?: string, toDate?: string) => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     
@@ -137,14 +88,78 @@ export default function CATIACWiseDataPage() {
       default:
         return { start_date: '', end_date: '' };
     }
-  };
+  }, []);
 
-  const fetchDashboardMetrics = async () => {
+  const fetchCATIData = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (fetchingDataRef.current) {
+      return;
+    }
+    
+    fetchingDataRef.current = true;
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('Authentication required');
+        setLoading(false);
+        fetchingDataRef.current = false;
+        return;
+      }
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const params = new URLSearchParams();
+      // Date filter
+      const dateRange = getDateRangeForAPI(callingDates, fromDate, toDate);
+      if (dateRange.start_date && dateRange.end_date) {
+        params.append('start_date', dateRange.start_date);
+        params.append('end_date', dateRange.end_date);
+      }
+      // Optional AC filter (if a single AC selected)
+      if (selectedAcCode) {
+        params.append('ac_code', selectedAcCode);
+      }
+      const url = `${apiBaseUrl}/api/cati/ac-progress-report${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      if (result.success && Array.isArray(result.data)) {
+        setAcData(result.data);
+        // If AC selected, keep server filtered; else show full list
+        setFilteredData(result.data);
+      } else {
+        setError(result.message || 'Failed to fetch CATI AC data');
+      }
+    } catch (err) {
+      console.error('Error fetching CATI AC data:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching data');
+    } finally {
+      setLoading(false);
+      fetchingDataRef.current = false;
+    }
+  }, [callingDates, fromDate, toDate, selectedAcCode]);
+
+  const fetchDashboardMetrics = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (fetchingMetricsRef.current) {
+      return;
+    }
+    
+    fetchingMetricsRef.current = true;
     try {
       setMetricsLoading(true);
       const token = localStorage.getItem('accessToken');
       if (!token) {
         setMetricsLoading(false);
+        fetchingMetricsRef.current = false;
         return;
       }
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
@@ -186,8 +201,19 @@ export default function CATIACWiseDataPage() {
       console.error('Error fetching dashboard metrics:', err);
     } finally {
       setMetricsLoading(false);
+      fetchingMetricsRef.current = false;
     }
-  };
+  }, [callingDates, fromDate, toDate, selectedAcCode, getDateRangeForAPI]);
+
+  // Initial data fetch on mount (only once)
+  useEffect(() => {
+    if (!hasInitialFetchRef.current) {
+      hasInitialFetchRef.current = true;
+      fetchCATIData();
+      fetchDashboardMetrics();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run on mount
 
   const MetricCard = ({ 
     icon: Icon, 
@@ -251,14 +277,14 @@ export default function CATIACWiseDataPage() {
     fetchDashboardMetrics();
   };
 
-  // Create dropdown options from AC data
-  const acOptions = [
+  // Create dropdown options from AC data (memoized to prevent unnecessary re-renders)
+  const acOptions = useMemo(() => [
     { value: '', label: 'All ACs' },
     ...acData.map(ac => ({
       value: ac.ac_code.toString(),
       label: `${ac.ac_name} (${ac.ac_code})`
     }))
-  ];
+  ], [acData]);
 
   const callingDatesOptions = [
     { value: 'all', label: 'All' },
