@@ -99,7 +99,6 @@ export default function GPSQCPage() {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
       // Fetch enumerator list
-      // Note: Adjust API endpoint based on your backend
       const enumeratorResponse = await fetch(`${apiBaseUrl}/api/capi/enumerators/list?limit=1000`, {
         headers: {
           'Accept': 'application/json',
@@ -109,16 +108,15 @@ export default function GPSQCPage() {
 
       if (enumeratorResponse.ok) {
         const enumeratorData = await enumeratorResponse.json();
-        if (enumeratorData.success && enumeratorData.data) {
-          const enumerators = Array.isArray(enumeratorData.data) 
-            ? enumeratorData.data 
-            : (enumeratorData.data.enumerators || []);
+        if (enumeratorData.success && enumeratorData.data?.enumerators) {
+          // New API format: enumerators is an array of IDs (numbers)
+          const enumeratorIds = enumeratorData.data.enumerators;
           
           setFilterOptions(prev => ({
             ...prev,
-            enumeratorIds: enumerators.map((item: any) => ({
-              value: item.user_id?.toString() || item.id?.toString() || '',
-              label: `${item.name || item.fullname || 'Unknown'} (${item.user_id || item.id || ''})`
+            enumeratorIds: enumeratorIds.map((id: number) => ({
+              value: id.toString(),
+              label: `${id}`
             }))
           }));
         }
