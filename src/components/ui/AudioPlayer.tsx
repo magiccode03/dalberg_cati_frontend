@@ -10,8 +10,6 @@ interface AudioPlayerProps {
 }
 
 const AudioPlayer: React.FC<AudioPlayerProps> = memo(({ src, className = "" }) => {
-  console.log('AudioPlayer: Component rendered with src:', src);
-  
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
