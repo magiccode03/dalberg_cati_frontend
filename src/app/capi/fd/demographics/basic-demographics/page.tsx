@@ -548,7 +548,7 @@ export default function BasicDemographicsPage() {
       { value: '1', label: `${baseLabel} with Low Female Coverage` },
       { value: '2', label: `${baseLabel} with High Female Coverage` },
       { value: '3', label: `${baseLabel} with Balanced Gender Coverage` }
-    ];
+  ];
   };
 
   const getLocalityOptions = () => {
@@ -560,7 +560,7 @@ export default function BasicDemographicsPage() {
       { value: '1', label: `${baseLabel} with Low Urban Coverage` },
       { value: '2', label: `${baseLabel} with High Urban Coverage` },
       { value: '3', label: `${baseLabel} with Balanced Locality Coverage` }
-    ];
+  ];
   };
 
   const getReligionOptions = () => {
@@ -570,7 +570,7 @@ export default function BasicDemographicsPage() {
     return [
       { value: '', label: `All ${baseLabel}` },
       { value: '1', label: `${baseLabel} with Low Muslim Coverage` }
-    ];
+  ];
   };
 
   const getSocialCategoryOptions = () => {
@@ -582,7 +582,7 @@ export default function BasicDemographicsPage() {
       { value: '1', label: `${baseLabel} with Low G+O+E Coverage` },
       { value: '2', label: `${baseLabel} with Low SC Coverage` },
       { value: '3', label: `${baseLabel} with Low ST Coverage` }
-    ];
+  ];
   };
 
   const getAgeOptions = () => {
@@ -595,7 +595,7 @@ export default function BasicDemographicsPage() {
       { value: '2', label: `${baseLabel} with Low 25-34 years Coverage` },
       { value: '3', label: `${baseLabel} with Low 35-50 years Coverage` },
       { value: '4', label: `${baseLabel} with Low 50+ years Coverage` }
-    ];
+  ];
   };
 
   // Gender Coverage Chart
