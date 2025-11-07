@@ -783,6 +783,24 @@ export const menuData: MenuItem[] = [
     roles: ['capi_qc'],
     system: 'capi',
   },
+  {
+    id: 'capi-audio-qc',
+    label: 'Audio QC',
+    href: '/capi/capi-qc/new-qc/0', // Will be updated dynamically with actual qc_id
+    icon: 'Mic',
+    roles: ['capi_qc'],
+    system: 'capi',
+    dynamic: true, // Show only when qc_user_data exists in localStorage
+  },
+  // {
+  //   id: 'capi-gps-qc',
+  //   label: 'GPS QC',
+  //   href: '/capi/capi-qc/gps-qc/0', // Will be updated dynamically with actual qc_id
+  //   icon: 'Map',
+  //   roles: ['capi_qc'],
+  //   system: 'capi',
+  //   dynamic: true, // Show only when qc_user_data exists in localStorage
+  // },
 
   // CAPI Findings Dashboard Menu
   {
@@ -1335,6 +1353,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
+      {
+        id: 'cati-ppm-ac-progress',
+        label: 'AC Progress',
+        href: '/cati/ppm/ac-progress/ac-progress',
+        icon: 'BarChart3',
+        roles: ['ppm'],
+        system: 'cati',
+      },
       // {
       //   id: 'cati-ppm-active-ac-progress',
       //   label: 'Active AC Progress',
@@ -1742,7 +1768,7 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     dynamic: true, // This will be dynamically set based on teleform user data
   },
-
+  
   // Data Entry Role Menu (Simple like SS role)
   {
     id: 'cati-data-entry-auth',
