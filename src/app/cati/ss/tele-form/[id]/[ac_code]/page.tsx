@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -59,6 +59,203 @@ const formConfigs: Record<string, FormField[]> = {
   hindi: formHiConfig as FormField[],
 };
 
+const QUESTION_SETS: Record<number, string[]> = {
+  1: [
+    'call_not_ring',
+    'call_ring_status',
+    'consent',
+    'resp_registered_voter',
+    'resp_gender',
+    'q13',
+    'q16_a',
+    'q16_b',
+    'q5',
+    'q6',
+    'q7',
+    'q8',
+    'resp_age',
+    'resp_religion',
+    'resp_social_cat',
+    'resp_caste_jati',
+    'q14',
+  ],
+  2: [
+    'call_not_ring',
+    'call_ring_status',
+    'consent',
+    'resp_registered_voter',
+    'resp_gender',
+    'q13',
+    'q5',
+    'q6',
+    'q7',
+    'q8',
+    'q9',
+    'q10',
+    'resp_age',
+    'resp_religion',
+    'resp_social_cat',
+    'resp_caste_jati',
+    'q17',
+    'q19',
+  ],
+  3: [
+    'call_not_ring',
+    'call_ring_status',
+    'consent',
+    'resp_registered_voter',
+    'resp_gender',
+    'q13',
+    'q5',
+    'q6',
+    'q7',
+    'q8',
+    'resp_age',
+    'resp_religion',
+    'resp_social_cat',
+    'resp_caste_jati',
+    'resp_female_edu',
+    'resp_male_edu',
+    'resp_occupation',
+  ],
+};
+
+const ALWAYS_PREFIX_FIELDS: string[] = [
+  'number_status',
+  'call_not_ring',
+  'call_ring_status',
+  'q_call_status',
+  'call_reschedule',
+];
+
+const ALWAYS_SUFFIX_FIELDS: string[] = ['resp_name', 'thanks_future'];
+
+const BASE_ORDERING_CONFIG = formEnConfig as FormField[];
+
+const buildTagSequence = (setId: number | null): string[] => {
+  if (setId === null || !QUESTION_SETS[setId]) {
+    return [];
+  }
+
+  const baseSet = QUESTION_SETS[setId];
+  const baseSequence = [
+    ...ALWAYS_PREFIX_FIELDS,
+    ...baseSet.filter(tag => !ALWAYS_PREFIX_FIELDS.includes(tag)),
+    ...ALWAYS_SUFFIX_FIELDS,
+  ];
+
+  const seen = new Set<string>();
+  const orderedBase: string[] = [];
+  baseSequence.forEach(tag => {
+    if (!seen.has(tag)) {
+      orderedBase.push(tag);
+      seen.add(tag);
+    }
+  });
+
+  const configIndexMap = new Map(BASE_ORDERING_CONFIG.map((field, index) => [field.tag, index]));
+  const supportMap = new Map<string, string[]>();
+  const addedSupport = new Set<string>();
+
+  BASE_ORDERING_CONFIG.forEach(field => {
+    const tag = field.tag;
+    if (seen.has(tag) || addedSupport.has(tag)) {
+      return;
+    }
+
+    const parentByPrefix = orderedBase.find(baseTag => tag.startsWith(`${baseTag}_`));
+    if (parentByPrefix) {
+      if (!supportMap.has(parentByPrefix)) {
+        supportMap.set(parentByPrefix, []);
+      }
+      supportMap.get(parentByPrefix)!.push(tag);
+      addedSupport.add(tag);
+      return;
+    }
+
+    if (field.conditional) {
+      const parentByConditional = orderedBase.find(baseTag => field.conditional?.includes(baseTag));
+      if (parentByConditional) {
+        if (!supportMap.has(parentByConditional)) {
+          supportMap.set(parentByConditional, []);
+        }
+        supportMap.get(parentByConditional)!.push(tag);
+        addedSupport.add(tag);
+      }
+    }
+  });
+
+  const expanded: string[] = [];
+  orderedBase.forEach(baseTag => {
+    expanded.push(baseTag);
+    const children = supportMap.get(baseTag);
+    if (children) {
+      children
+        .sort((a, b) => (configIndexMap.get(a) ?? 0) - (configIndexMap.get(b) ?? 0))
+        .forEach(child => {
+          if (!expanded.includes(child)) {
+            expanded.push(child);
+          }
+        });
+    }
+  });
+
+  return expanded;
+};
+
+const transformApiDataToFormData = (
+  apiData: Record<string, any>,
+  allowedTags: Set<string>,
+  config: FormField[],
+): Record<string, any> => {
+  const formData: Record<string, any> = {};
+  const checkboxTags = new Set(config.filter(field => field.type === 'checkbox').map(field => field.tag));
+  const checkboxValues: Record<string, string[]> = {};
+
+  Object.entries(apiData).forEach(([key, value]) => {
+    const checkboxMatch = key.match(/^(.+)_([\w-]+)$/);
+    if (checkboxMatch) {
+      const baseField = checkboxMatch[1];
+      const optionValue = checkboxMatch[2];
+      if (allowedTags.has(baseField) && checkboxTags.has(baseField) && value === 1) {
+        if (!checkboxValues[baseField]) {
+          checkboxValues[baseField] = [];
+        }
+        checkboxValues[baseField].push(optionValue);
+      }
+    }
+  });
+
+  Object.entries(apiData).forEach(([key, value]) => {
+    if (!allowedTags.has(key)) {
+      return;
+    }
+
+    const fieldConfig = config.find(field => field.tag === key);
+    if (!fieldConfig) {
+      return;
+    }
+
+    if (fieldConfig.type === 'checkbox') {
+      formData[key] = checkboxValues[key] ?? [];
+    } else {
+      formData[key] = value === null || value === undefined ? '' : String(value);
+    }
+  });
+
+  Object.entries(checkboxValues).forEach(([baseField, values]) => {
+    if (allowedTags.has(baseField)) {
+      formData[baseField] = values;
+    }
+  });
+
+  if (apiData.web_form_set !== undefined && apiData.web_form_set !== null) {
+    formData.web_form_set = String(apiData.web_form_set);
+  }
+
+  return formData;
+};
+
 export default function TeleFormV2Page() {
   const router = useRouter();
   const params = useParams();
@@ -75,6 +272,11 @@ export default function TeleFormV2Page() {
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [activeSetId, setActiveSetId] = useState<number | null>(null);
+  const [webFormSet, setWebFormSet] = useState<number | null>(null);
+  const [initialApiData, setInitialApiData] = useState<Record<string, any> | null>(null);
+  const [hasLoadedInitialData, setHasLoadedInitialData] = useState(false);
+  const [isLoadingSet, setIsLoadingSet] = useState(true);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -115,8 +317,99 @@ export default function TeleFormV2Page() {
     return () => clearInterval(interval);
   }, []);
 
+  const fetchInterviewData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('No authentication token found');
+        setActiveSetId(1);
+        setWebFormSet(1);
+        setIsLoadingSet(false);
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success && data.data) {
+        const interviewData = data.data;
+        let formSetValue = parseInt(interviewData.web_form_set ?? '', 10);
+        if (![1, 2, 3].includes(formSetValue)) {
+          formSetValue = Math.floor(Math.random() * 3) + 1;
+        }
+
+        interviewData.web_form_set = formSetValue;
+        setActiveSetId(formSetValue);
+        setWebFormSet(formSetValue);
+        setInitialApiData(interviewData);
+      } else {
+        console.error('Failed to load interview data:', data.message);
+        setActiveSetId(1);
+        setWebFormSet(1);
+        setInitialApiData(null);
+        setIsLoadingSet(false);
+        setFormData(prev => ({ ...prev, web_form_set: '1' }));
+      }
+    } catch (error) {
+      console.error('Error fetching interview data:', error);
+      setActiveSetId(1);
+      setWebFormSet(1);
+      setInitialApiData(null);
+      setIsLoadingSet(false);
+      setFormData(prev => ({ ...prev, web_form_set: '1' }));
+    }
+  }, [interviewId]);
+
+  useEffect(() => {
+    fetchInterviewData();
+  }, [fetchInterviewData]);
+
   // Get current form configuration based on language
   const currentFormConfig = formConfigs[language] || formConfigs.english;
+
+  const selectedTags = useMemo(() => buildTagSequence(activeSetId), [activeSetId]);
+  const allowedTags = useMemo(() => new Set(selectedTags), [selectedTags]);
+  const selectedFieldConfigs = useMemo(() => {
+    if (selectedTags.length === 0) {
+      return [] as FormField[];
+    }
+    const fieldMap = new Map(currentFormConfig.map(field => [field.tag, field]));
+    const added = new Set<string>();
+    const result: FormField[] = [];
+    selectedTags.forEach(tag => {
+      const field = fieldMap.get(tag);
+      if (field && !added.has(tag)) {
+        result.push(field);
+        added.add(tag);
+      }
+    });
+    return result;
+  }, [selectedTags, currentFormConfig]);
+
+  useEffect(() => {
+    if (!initialApiData || activeSetId === null || hasLoadedInitialData) {
+      return;
+    }
+
+    const transformed = transformApiDataToFormData(initialApiData, allowedTags, currentFormConfig);
+    if (activeSetId !== null) {
+      transformed.web_form_set = String(activeSetId);
+    }
+    setFormData(transformed);
+    setHasLoadedInitialData(true);
+    setIsLoadingSet(false);
+  }, [initialApiData, activeSetId, allowedTags, currentFormConfig, hasLoadedInitialData]);
 
   // Get MLA/MP data for the current AC code
   const getMlaMpData = (acCode: string) => {
@@ -243,8 +536,8 @@ export default function TeleFormV2Page() {
 
   // Get processed form configuration
   const processedFormConfig = React.useMemo(() => {
-    return processFormConfig(currentFormConfig);
-  }, [currentFormConfig, acCode, language, formData.resp_religion]);
+    return processFormConfig(selectedFieldConfigs);
+  }, [selectedFieldConfigs, acCode, language, formData.resp_religion]);
 
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string): boolean => {
@@ -478,6 +771,10 @@ export default function TeleFormV2Page() {
         }
       }
     });
+
+    if (webFormSet !== null) {
+      transformed.web_form_set = webFormSet;
+    }
     
     return transformed;
   };
@@ -698,7 +995,7 @@ export default function TeleFormV2Page() {
   };
 
   // Render field based on type
-  const renderField = (field: FormField, index: number) => {
+  const renderField = (field: FormField) => {
     if (!isFieldVisible(field)) return null;
 
     const fieldValue = formData[field.tag] || (field.type === 'checkbox' ? [] : '');
@@ -713,7 +1010,7 @@ export default function TeleFormV2Page() {
       case 'radio':
         return (
           <div 
-            key={index} 
+            key={field.tag} 
             id={`${field.tag}_container`} 
             className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
@@ -764,7 +1061,7 @@ export default function TeleFormV2Page() {
       case 'checkbox':
         return (
           <div 
-            key={index} 
+            key={field.tag} 
             id={`${field.tag}_container`} 
             className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
@@ -803,7 +1100,7 @@ export default function TeleFormV2Page() {
       case 'text':
         return (
           <div 
-            key={index} 
+            key={field.tag} 
             id={`${field.tag}_container`} 
             className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
@@ -855,7 +1152,7 @@ export default function TeleFormV2Page() {
       case 'number':
         return (
           <div 
-            key={index} 
+            key={field.tag} 
             id={`${field.tag}_container`} 
             className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
@@ -909,7 +1206,7 @@ export default function TeleFormV2Page() {
       case 'datetime-local':
         return (
           <div 
-            key={index} 
+            key={field.tag} 
             id={`${field.tag}_container`} 
             className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
               hasError 
@@ -963,44 +1260,25 @@ export default function TeleFormV2Page() {
     }
   };
 
-  // Group fields by sections
-  const groupFieldsBySection = () => {
-    const sections: Record<string, FormField[]> = {
-      callStatus: [],
-      consent: [],
-      demographics: [],
-      partyPreferences: [],
-      satisfaction: [],
-      finalDemographics: [],
-    };
+  const getConsentIntroText = () => {
+    if (language === 'hindi') {
+      return `नमस्ते, मेरा नाम ${teleformUserName || '[enumerator name]'} है। हम कन्वर्जेंट नाम की एक संस्था से बात कर रहे हैं। हम पश्चिम बंगाल में लोगों से सरकार और राजनीति के बारे में उनकी राय जानने के लिए एक सर्वे कर रहे हैं। मैं आपसे कुछ सवाल पूछूँगा/पूछूँगी। आपके जवाब पूरी तरह गोपनीय रखे जाएंगे — किसी को भी आपकी जानकारी नहीं बताई जाएगी। ये सर्वे लगभग 5 से 10 मिनट का है, और आपकी सच्ची राय हमारे लिए बहुत ज़रूरी है।`;
+    }
 
-    processedFormConfig.forEach(field => {
-      if (['number_status', 'call_not_ring', 'call_ring_status', 'q_call_status', 'call_reschedule'].includes(field.tag)) {
-        sections.callStatus.push(field);
-      } else if (field.tag === 'consent') {
-        sections.consent.push(field);
-      } else if (['resp_age', 'resp_registered_voter', 'resp_gender'].includes(field.tag)) {
-        sections.demographics.push(field);
-      } else if (['q13', 'q13_oth', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
-        sections.partyPreferences.push(field);
-      } else if (['q14', 'q15', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
-        sections.satisfaction.push(field);
-      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation', 'resp_name', 'thanks_future'].includes(field.tag)) {
-        sections.finalDemographics.push(field);
-      }
-    });
+    if (language === 'bengali') {
+      return `নমস্কার, আমার নাম ${teleformUserName || '[enumerator name]'}। আমরা কনভার্জেন্ট থেকে এসেছি, একটি স্বতন্ত্র গবেষণা সংস্থা। আমরা পশ্চিমবঙ্গে সামাজিক ও রাজনৈতিক বিষয়ে একটি সমীক্ষা পরিচালনা করছি, হাজার হাজার মানুষের সাক্ষাৎকার নিচ্ছি। আমি আপনাকে সরকারের কর্মক্ষমতা এবং আপনার পছন্দ সম্পর্কে কিছু প্রশ্ন জিজ্ঞাসা করব। আপনার উত্তরগুলি কঠোরভাবে গোপনীয় থাকবে এবং শুধুমাত্র অন্যদের সাথে মিলিয়ে বিশ্লেষণ করা হবে। কোনও ব্যক্তিগত বিবরণ কখনও শেয়ার করা হবে না। সমীক্ষাটি প্রায় ৫-১০ মিনিট সময় নেবে এবং আপনার সৎ মতামত আমাদের অত্যন্ত সাহায্য করবে।`;
+    }
 
-    return sections;
+    return `Namaste, my name is ${teleformUserName || '[enumerator name]'}. We are from Convergent, an independent research organization. We are conducting a survey on social and political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about government performance and your preferences. Your responses will remain strictly confidential and will only be analysed in combination with others. No personal details will ever be shared. The survey will take about 5–10 minutes, and your honest opinions will greatly help us.`;
   };
 
-  const sections = groupFieldsBySection();
-
-  // Check if sections should be visible
-  const showConsentSection = formData.q_call_status === '1';
-  const showDemographicsSection = formData.consent === '1';
-  const showPartyPreferencesSection = formData.resp_registered_voter === '1';
-  const showSatisfactionSection = formData.resp_registered_voter === '1';
-  const showFinalDemographicsSection = formData.resp_registered_voter === '1';
+  const renderConsentIntro = () => (
+    <div className="mb-3 sm:mb-4">
+      <Text className="text-sm sm:text-base leading-relaxed font-medium text-blue-600 dark:text-blue-400 mb-3 sm:mb-4">
+        {getConsentIntroText()}
+      </Text>
+    </div>
+  );
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
@@ -1038,74 +1316,29 @@ export default function TeleFormV2Page() {
         </Card>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate>
-        {/* Call Status Section */}
+      {isLoadingSet ? (
         <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
-          <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-            Call Status
-          </Heading>
-          {sections.callStatus.map((field, index) => renderField(field, index))}
+          <Text className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
+            Loading question set...
+          </Text>
         </Card>
-
-        {/* Consent Section */}
-        {showConsentSection && sections.consent.length > 0 && (
+      ) : (
+        <form onSubmit={handleSubmit} noValidate>
           <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
-            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-              Section 2: Interviewer Introduction and Statement of Informed Consent
-            </Heading>
-            <div className="mb-3 sm:mb-4">
-              <Text className="text-sm sm:text-base leading-relaxed font-medium text-blue-600 dark:text-blue-400 mb-3 sm:mb-4">
-                {language === 'hindi' 
-                  ? `नमस्ते, मेरा नाम ${teleformUserName || '[enumerator name]'} है। हम कन्वर्जेंट नाम की एक संस्था से बात कर रहे हैं। हम पश्चिम बंगाल में लोगों से सरकार और राजनीति के बारे में उनकी राय जानने के लिए एक सर्वे कर रहे हैं। मैं आपसे कुछ सवाल पूछूँगा/पूछूँगी। आपके जवाब पूरी तरह गोपनीय रखे जाएंगे — किसी को भी आपकी जानकारी नहीं बताई जाएगी। ये सर्वे लगभग 5 से 10 मिनट का है, और आपकी सच्ची राय हमारे लिए बहुत ज़रूरी है।`
-                  : language === 'bengali'
-                  ? `নমস্কার, আমার নাম ${teleformUserName || '[enumerator name]'}। আমরা কনভার্জেন্ট থেকে এসেছি, একটি স্বতন্ত্র গবেষণা সংস্থা। আমরা পশ্চিমবঙ্গে সামাজিক ও রাজনৈতিক বিষয়ে একটি সমীক্ষা পরিচালনা করছি, হাজার হাজার মানুষের সাক্ষাৎকার নিচ্ছি। আমি আপনাকে সরকারের কর্মক্ষমতা এবং আপনার পছন্দ সম্পর্কে কিছু প্রশ্ন জিজ্ঞাসা করব। আপনার উত্তরগুলি কঠোরভাবে গোপনীয় থাকবে এবং শুধুমাত্র অন্যদের সাথে মিলিয়ে বিশ্লেষণ করা হবে। কোনও ব্যক্তিগত বিবরণ কখনও শেয়ার করা হবে না। সমীক্ষাটি প্রায় ৫-১০ মিনিট সময় নেবে এবং আপনার সৎ মতামত আমাদের অত্যন্ত সাহায্য করবে।`
-                  : `Namaste, my name is ${teleformUserName || '[enumerator name]'}. We are from Convergent, an independent research organization. We are conducting a survey on social and political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about government performance and your preferences. Your responses will remain strictly confidential and will only be analysed in combination with others. No personal details will ever be shared. The survey will take about 5–10 minutes, and your honest opinions will greatly help us.`
-                }
-              </Text>
-            </div>
-            {sections.consent.map((field, index) => renderField(field, index))}
-          </Card>
-        )}
+            {processedFormConfig.map((field) => {
+              const fieldElement = renderField(field);
+              if (!fieldElement) {
+                return null;
+              }
 
-        {/* Demographics Section */}
-        {showDemographicsSection && sections.demographics.length > 0 && (
-          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
-            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-              Section 3: Basic Demographic
-            </Heading>
-            {sections.demographics.map((field, index) => renderField(field, index))}
+              return (
+                <React.Fragment key={field.tag}>
+                  {field.tag === 'consent' && formData.q_call_status === '1' && renderConsentIntro()}
+                  {fieldElement}
+                </React.Fragment>
+              );
+            })}
           </Card>
-        )}
-
-        {/* Party Preferences Section */}
-        {showPartyPreferencesSection && sections.partyPreferences.length > 0 && (
-          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
-            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-              Section 4: Party Preferences
-            </Heading>
-            {sections.partyPreferences.map((field, index) => renderField(field, index))}
-          </Card>
-        )}
-
-        {/* Satisfaction Section */}
-        {showSatisfactionSection && sections.satisfaction.length > 0 && (
-          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
-            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-              Section 5: Satisfaction and Approval Ratings
-            </Heading>
-            {sections.satisfaction.map((field, index) => renderField(field, index))}
-          </Card>
-        )}
-
-        {/* Final Demographics Section */}
-        {showFinalDemographicsSection && sections.finalDemographics.length > 0 && (
-          <Card className="p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
-            <Heading level={4} className="text-base sm:text-lg md:text-xl text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
-              Section 6: Basic Demographic
-            </Heading>
-            {sections.finalDemographics.map((field, index) => renderField(field, index))}
-          </Card>
-        )}
 
         {/* Submit Buttons */}
         <Card className="p-3 sm:p-4 md:p-6">
@@ -1132,6 +1365,7 @@ export default function TeleFormV2Page() {
           </div>
         </Card>
       </form>
+      )}
       
       {/* Toast Container */}
       <ToastContainer
