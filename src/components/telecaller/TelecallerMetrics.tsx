@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
-import { BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { BarChart3, Phone, Clock, Users, TrendingUp, TrendingDown, Activity, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 interface PerformanceMetrics {
   number_status: {
@@ -45,6 +45,12 @@ interface PerformanceMetrics {
     partial_system: number;
     partial_tele: number;
     submitted: number;
+  };
+  final_status: {
+    pass: number;
+    under_qc: number;
+    qc_rejected: number;
+    short_interview: number;
   };
 }
 
@@ -294,13 +300,23 @@ export default function TelecallerMetrics({ filters, trigger }: { filters?: Tele
             </div>
           </div>
 
-          <div className="mb-2">
+          <div className="mb-8">
             <SectionHeader title="CALL CONTINUE METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
               <MetricCard title="Completed" value={getValue(metrics?.interview_metrics?.successful)} icon={<TrendingUp className="h-6 w-6 text-cyan-600" />} color="border-cyan-500" bgColor="bg-cyan-500" />
               <MetricCard title="Terminated" value={getValue(metrics?.interview_metrics?.terminated)} icon={<TrendingDown className="h-6 w-6 text-fuchsia-600" />} color="border-fuchsia-500" bgColor="bg-fuchsia-500" />
               <MetricCard title="Incompleted" value={getValue(metrics?.interview_metrics?.incompleted)} icon={<TrendingDown className="h-6 w-6 text-sky-600" />} color="border-sky-500" bgColor="bg-sky-500" />
               <MetricCard title="Ineligible" value={getValue(metrics?.interview_metrics?.ineligible)} icon={<Phone className="h-6 w-6 text-gray-600" />} color="border-gray-600" bgColor="bg-gray-600" />
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <SectionHeader title="FINAL STATUS" icon={<CheckCircle className="h-6 w-6 text-green-600" />} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+              <MetricCard title="Successful" value={getValue(metrics?.final_status?.pass)} icon={<CheckCircle className="h-6 w-6 text-green-600" />} color="border-green-500" bgColor="bg-green-500" />
+              <MetricCard title="Under QC" value={getValue(metrics?.final_status?.under_qc)} icon={<Clock className="h-6 w-6 text-yellow-600" />} color="border-yellow-500" bgColor="bg-yellow-500" />
+              <MetricCard title="QC Rejected" value={getValue(metrics?.final_status?.qc_rejected)} icon={<XCircle className="h-6 w-6 text-red-600" />} color="border-red-500" bgColor="bg-red-500" />
+              <MetricCard title="Short Interview" value={getValue(metrics?.final_status?.short_interview)} icon={<AlertCircle className="h-6 w-6 text-orange-600" />} color="border-orange-500" bgColor="bg-orange-500" />
             </div>
           </div>
         </>
