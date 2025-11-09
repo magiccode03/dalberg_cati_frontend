@@ -75,7 +75,6 @@ export default function TeleFormV2Page() {
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [webFormSet, setWebFormSet] = useState<string | null>(null);
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -118,81 +117,6 @@ export default function TeleFormV2Page() {
 
   // Get current form configuration based on language
   const currentFormConfig = formConfigs[language] || formConfigs.english;
-
-  useEffect(() => {
-    if (!interviewId) {
-      return;
-    }
-
-    const determineSet = async () => {
-      const getRandomSet = () => Math.floor(Math.random() * 3) + 1;
-
-      const assignSet = (setValue: number | null) => {
-        if (!setValue) {
-          setWebFormSet(null);
-          setFormData(prev => {
-            if (prev.web_form_set === undefined) {
-              return prev;
-            }
-            const next = { ...prev };
-            delete next.web_form_set;
-            return next;
-          });
-          return;
-        }
-
-        const valueString = String(setValue);
-        setWebFormSet(valueString);
-        setFormData(prev => {
-          if (prev.web_form_set === valueString) {
-            return prev;
-          }
-          return { ...prev, web_form_set: valueString };
-        });
-      };
-
-      try {
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
-          assignSet(getRandomSet());
-          return;
-        }
-
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-        const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = await response.json();
-        if (data.success && data.data) {
-          const rawSet = parseInt(data.data.web_form_set ?? '', 10);
-          if ([1, 2, 3].includes(rawSet)) {
-            assignSet(rawSet);
-            return;
-          }
-        }
-
-        assignSet(getRandomSet());
-        return;
-      } catch (error) {
-        console.error('Error determining web_form_set:', error);
-        assignSet(getRandomSet());
-        return;
-      }
-
-      assignSet(null);
-    };
-
-    determineSet();
-  }, [interviewId]);
 
   // Get MLA/MP data for the current AC code
   const getMlaMpData = (acCode: string) => {
@@ -579,8 +503,7 @@ export default function TeleFormV2Page() {
           ...transformedData,
           status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 2 : 4, // Draft status
           form_duration_seconds: timer,
-          language_used: language,
-          web_form_set: webFormSet ? parseInt(webFormSet, 10) : null,
+          language_used: language
         })
       });
       
@@ -642,7 +565,6 @@ export default function TeleFormV2Page() {
         language_used: language,
         user_timezone: timezone,
         user_localdatetime: currentTime,
-        web_form_set: webFormSet ? parseInt(webFormSet, 10) : null,
       };
       
       const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/comprehensive`, {
@@ -1053,21 +975,17 @@ export default function TeleFormV2Page() {
     };
 
     processedFormConfig.forEach(field => {
-      if (!isFieldVisible(field)) {
-        return;
-      }
-
       if (['number_status', 'call_not_ring', 'call_ring_status', 'q_call_status', 'call_reschedule'].includes(field.tag)) {
         sections.callStatus.push(field);
       } else if (field.tag === 'consent') {
         sections.consent.push(field);
-      } else if (['resp_registered_voter', 'resp_gender', 'resp_age'].includes(field.tag)) {
+      } else if (['resp_age', 'resp_registered_voter', 'resp_gender'].includes(field.tag)) {
         sections.demographics.push(field);
       } else if (['q13', 'q13_oth', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
         sections.partyPreferences.push(field);
       } else if (['q14', 'q15', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
         sections.satisfaction.push(field);
-      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation'].includes(field.tag)) {
+      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation', 'resp_name', 'thanks_future'].includes(field.tag)) {
         sections.finalDemographics.push(field);
       }
     });
@@ -1078,11 +996,11 @@ export default function TeleFormV2Page() {
   const sections = groupFieldsBySection();
 
   // Check if sections should be visible
-  const showConsentSection = formData.q_call_status === '1' && sections.consent.length > 0;
-  const showDemographicsSection = formData.consent === '1' && sections.demographics.length > 0;
-  const showPartyPreferencesSection = formData.resp_registered_voter === '1' && sections.partyPreferences.length > 0;
-  const showSatisfactionSection = formData.resp_registered_voter === '1' && sections.satisfaction.length > 0;
-  const showFinalDemographicsSection = formData.resp_registered_voter === '1' && sections.finalDemographics.length > 0;
+  const showConsentSection = formData.q_call_status === '1';
+  const showDemographicsSection = formData.consent === '1';
+  const showPartyPreferencesSection = formData.resp_registered_voter === '1';
+  const showSatisfactionSection = formData.resp_registered_voter === '1';
+  const showFinalDemographicsSection = formData.resp_registered_voter === '1';
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
