@@ -234,7 +234,7 @@
       },
       "showFields": {
         "opt_yes": [
-          "resp_registered_voter"
+          "resp_age"
         ]
       }
     },
@@ -243,7 +243,7 @@
   {
     "type": "number",
     "label": "आप कितने साल के हो अभी?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "consent === '1'",
     "required": true,
     "min": 10,
     "max": 99,
@@ -291,6 +291,60 @@
       }
     },
     "tag": "resp_age"
+  },
+  {
+    "type": "radio",
+    "label": "क्या आपका नाम इस विधानसभा में वोटर लिस्ट में है?",
+    "conditional": "resp_age >= 18",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_gender"
+        ]
+      }
+    },
+    "tag": "resp_registered_voter"
   },
   {
     "type": "radio",
@@ -459,7 +513,7 @@
   {
     "type": "radio",
     "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद {{mp_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -493,7 +547,7 @@
   {
     "type": "radio",
     "label": "16 B. आपके वर्तमान विधायक (MLA) {{mla_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -856,7 +910,7 @@
   {
     "type": "radio",
     "label": "9. मान लीजिए कि आपकी पसंदीदा पार्टी आपके विधानसभा क्षेत्र से चुनाव नहीं लड़ती है, तो आप किस पार्टी को चुनेंगे?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -947,7 +1001,7 @@
   {
     "type": "checkbox",
     "label": "10. आपने जिस पार्टी को अपनी दूसरी पसंद चुना है, उसके पीछे क्या कारण हैं?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "maxSelections": 6,
     "options": [
@@ -1135,7 +1189,7 @@
   {
     "type": "checkbox",
     "label": "11. आपकी राय में तृणमूल कांग्रेस (AITC) को वोट देने के शीर्ष 3 कारण क्या हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1239,7 +1293,7 @@
   {
     "type": "checkbox",
     "label": "12. आपकी राय में भारतीय जनता पार्टी (भाजपा) को वोट देने के शीर्ष 3 कारण क्या हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1333,7 +1387,7 @@
   {
     "type": "radio",
     "label": "14. ममता बनर्जी की सरकार के काम से आप कितने खुश या नाखुश हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1367,7 +1421,7 @@
   {
     "type": "radio",
     "label": "15. भाजपा ने राज्य में विपक्ष का जो काम किया है, उससे आप कितने खुश या नाखुश हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1401,7 +1455,7 @@
   {
     "type": "radio",
     "label": "17. आपके विचार में पश्चिम बंगाल का मुख्यमंत्री बनने के लिए सबसे अच्छा नेता कौन है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1491,7 +1545,7 @@
   {
     "type": "radio",
     "label": "19. आपके अनुसार, जब अगला विधानसभा चुनाव होगा, तो आपके क्षेत्र से कौन-सी पार्टी जीत सकती है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1546,7 +1600,7 @@
   {
     "type": "radio",
     "label": "23. आपके घर की सबसे पढ़ी-लिखी महिला ने कितनी पढ़ाई की है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1590,7 +1644,7 @@
   {
     "type": "radio",
     "label": "24. आपके घर के सबसे पढ़े-लिखे पुरुष की पढ़ाई कितनी हुई है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1634,7 +1688,7 @@
   {
     "type": "radio",
     "label": "25. आपके घर में जो मुख्य कमाने वाले हैं, वे क्या काम करते हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1673,7 +1727,7 @@
   {
     "type": "text",
     "label": "27. क्या आप अपना नाम हमारे साथ साझा करना चाहेंगे? हम आपको आश्वस्त करते हैं कि हम इसे गोपनीय रखेंगे।",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "placeholder": "Enter name",
     "tag": "resp_name"
@@ -1681,7 +1735,7 @@
   {
     "type": "radio",
     "label": "26. आपके अच्छे सुझावों के लिए धन्यवाद। क्या हम आगे भी आपसे ऐसे ही सर्वे के लिए राय ले सकते हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {

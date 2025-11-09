@@ -142,6 +142,7 @@ const TelecallerProgressPage: React.FC = () => {
     phone: '',
     callOutcome: '',
     talkDuration: '',
+    telecallerStatus: '1',
   });
 
   // Telecaller-wise data states
@@ -190,6 +191,12 @@ const TelecallerProgressPage: React.FC = () => {
     { value: '4', label: 'Number Exhausted' },
     { value: '3', label: 'Reject Interview' },
     { value: '1', label: 'Successful Interview' },
+  ];
+
+  const telecallerStatusOptions = [
+    { value: '', label: 'All' },
+    { value: '1', label: 'Active' },
+    { value: '0', label: 'Inactive' },
   ];
 
   const talkDurationOptions = [
@@ -339,6 +346,14 @@ const TelecallerProgressPage: React.FC = () => {
   // Filter change handler
   const handleFilterChange = (field: string, value: string | string[]) => {
     const newValue = Array.isArray(value) ? value[0] || '' : value;
+    if (field === 'telecallerStatus') {
+      setFilters((prev) => ({
+        ...prev,
+        telecallerStatus: newValue,
+        telecaller: '',
+      }));
+      return;
+    }
     setFilters((prev) => ({
       ...prev,
       [field]: newValue,
@@ -386,6 +401,11 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('ac_code', filters.acCode);
       }
       
+      // Telecaller status filter
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
       // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -471,6 +491,10 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('ac_code', filters.acCode);
       }
       
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
       // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -522,14 +546,20 @@ const TelecallerProgressPage: React.FC = () => {
   };
 
   // Fetch telecallers list
-  const fetchTelecallers = async () => {
+  const fetchTelecallers = async (statusFilter?: string) => {
     setLoadingTelecallers(true);
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiUrl}/api/teleform-users?status=1&limit=1000`, {
+      const params = new URLSearchParams({ limit: '1000' });
+      const statusParam = typeof statusFilter === 'string' ? statusFilter : filters.telecallerStatus;
+      if (statusParam && statusParam !== '') {
+        params.append('status', statusParam);
+      }
+
+      const response = await fetch(`${apiUrl}/api/teleform-users?${params.toString()}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -620,6 +650,10 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('teleform_user_id', filters.telecaller);
       }
       
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
         // Date filter - handle custom dates and predefined ranges
         const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
         Object.entries(dateRange).forEach(([key, value]) => {
@@ -730,6 +764,10 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('teleform_user_id', filters.telecaller);
       }
       
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
       // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -851,7 +889,10 @@ const TelecallerProgressPage: React.FC = () => {
 
   // Fetch telecallers and ACs on mount
   useEffect(() => {
-    fetchTelecallers();
+    fetchTelecallers(filters.telecallerStatus);
+  }, [filters.telecallerStatus]);
+
+  useEffect(() => {
     fetchACList();
   }, []);
 
@@ -1268,7 +1309,21 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            
+            {/* Telecaller Status */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Telecaller Status
+              </label>
+              <SelectDropdown
+                value={filters.telecallerStatus}
+                onChange={(value) => handleFilterChange('telecallerStatus', value)}
+                options={telecallerStatusOptions}
+                placeholder="Select Status"
+                searchable={false}
+                clearable={true}
+                maxHeight={300}
+              />
+            </div>
 
             {/* Call Outcome */}
             <div className="flex-1 min-w-[200px]">
@@ -1384,6 +1439,7 @@ const TelecallerProgressPage: React.FC = () => {
                   callingDates: filters.callingDates,
                   customDateFrom: filters.customDateFrom,
                   customDateTo: filters.customDateTo,
+                  telecallerStatus: filters.telecallerStatus,
                 }}
                 trigger={metricsTrigger}
               />

@@ -10,7 +10,7 @@
         "tag": "opt_call_not_received"
       },
       {
-        "label": "Ringing (Respondent Call)",
+        "label": "Ringing (Respondent Call))",
         "value": "1",
         "tag": "opt_ringing"
       },
@@ -99,7 +99,7 @@
       {
         "label": "Did not picked",
         "value": "2",
-        "tag": "opt_did_not_picked"
+        "tag": "opt_not_picked_up"
       }
     ],
     "rules": {
@@ -131,7 +131,7 @@
   },
   {
     "type": "radio",
-    "label": "Q Call Status",
+    "label": "Call Status",
     "conditional": "call_ring_status === '1'",
     "options": [
       {
@@ -186,17 +186,17 @@
   },
   {
     "type": "radio",
-    "label": "Should I continue?",
+    "label": "আমি কি চালিয়ে যাব?",
     "conditional": "q_call_status === '1'",
     "required": true,
     "options": [
       {
-        "label": "Yes",
+        "label": "হ্যাঁ",
         "value": "1",
         "tag": "opt_yes"
       },
       {
-        "label": "No",
+        "label": "না",
         "value": "2",
         "tag": "opt_no"
       }
@@ -234,7 +234,7 @@
       },
       "showFields": {
         "opt_yes": [
-          "resp_registered_voter"
+          "resp_age"
         ]
       }
     },
@@ -242,12 +242,12 @@
   },
   {
     "type": "number",
-    "label": "आप कितने साल के हो अभी?",
-    "conditional": "resp_registered_voter === '1'",
+    "label": "আমাকে একটু বলুন, সম্পূর্ণ বছরে আপনার বয়স কত?",
+    "conditional": "consent === '1'",
     "required": true,
     "min": 10,
     "max": 99,
-    "placeholder": "Please write your age",
+    "placeholder": "বয়স লিখুন",
     "rules": {
       "clearFields": {
         "age_validation": {
@@ -294,17 +294,71 @@
   },
   {
     "type": "radio",
-    "label": "जवाब देने वाला महिला है या पुरुष, ये नोट कर लीजिए।",
+    "label": "এই বিধানসভা কেন্দ্রে আপনার নাম কি ভোটার হিসাবে তোলা আছে?",
+    "conditional": "resp_age >= 18",
+    "required": true,
+    "options": [
+      {
+        "label": "হ্যাঁ",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "না",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_gender"
+        ]
+      }
+    },
+    "tag": "resp_registered_voter"
+  },
+  {
+    "type": "radio",
+    "label": "উত্তরদাতা পুরুষ/ মহিলা সেটা লিখুন",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "पुरुष",
+        "label": "পুরুষ",
         "value": "1",
         "tag": "opt_male"
       },
       {
-        "label": "महिला",
+        "label": "মহিলা",
         "value": "2",
         "tag": "opt_female"
       }
@@ -367,73 +421,73 @@
   },
   {
     "type": "checkbox",
-    "label": "13. आपको क्या लगता है, आपके इलाके की सबसे बड़ी 3 दिक़्क़तें कौन-सी हैं?",
+    "label": "১৩. আপনার মতে, আপনার বিধানসভা কেন্দ্রের তিনটে সবচেয়ে গুরুত্বপূর্ণ সমস্যা কোনগুলো?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
       {
-        "label": "Price rise / inflation",
+        "label": "দাম বেড়ে যাওয়া/ মুদ্রাস্ফীতি",
         "value": "2",
         "tag": "opt_price_rise"
       },
       {
-        "label": "Unemployment / lack of jobs",
+        "label": "বেকারত্ব/ কাজের অভাব",
         "value": "3",
         "tag": "opt_unemployment"
       },
       {
-        "label": "Electricity/power problems",
+        "label": "বিদ্যুৎ/ পাওয়ার সমস্যা",
         "value": "4",
         "tag": "opt_electricity"
       },
       {
-        "label": "Healthcare not good",
+        "label": "স্বাস্থ্য পরিসেবা ভাল নয়",
         "value": "5",
         "tag": "opt_healthcare"
       },
       {
-        "label": "Education system issues",
+        "label": "শিক্ষা ব্যবস্থার সমস্যা",
         "value": "6",
         "tag": "opt_education"
       },
       {
-        "label": "Voter list issues / fear of losing citizenship",
+        "label": "ভোটার লিস্টের সমস্যা/ নাগরিকত্ব হারানোর ভয়",
         "value": "7",
         "tag": "opt_voter_list"
       },
       {
-        "label": "Safety for migrant workers",
+        "label": "পরিযায়ী শ্রমিকদের জন্য সুরক্ষা",
         "value": "8",
         "tag": "opt_migrant_safety"
       },
       {
-        "label": "Teacher protests & job insecurity",
+        "label": "শিক্ষকদের প্রতিবাদ এবং চাকরির নিরাপত্তাহীনতা",
         "value": "9",
         "tag": "opt_teacher_protests"
       },
       {
-        "label": "Floods and natural disasters",
+        "label": "বন্যা এবং প্রাকৃতিক দুর্যোগ",
         "value": "10",
         "tag": "opt_floods"
       },
       {
-        "label": "Communal tensions / law-and-order concerns",
+        "label": "সাম্প্রদায়িক উত্তেজনা/ আইন-শৃংখলা নিয়ে উদ্বেগ",
         "value": "11",
         "tag": "opt_communal_tensions"
       },
       {
-        "label": "Safety of women (crime / security)",
+        "label": "মহিলাদের সুরক্ষা (অপরাধ/ নিরাপত্তা)",
         "value": "12",
         "tag": "opt_women_safety"
       },
       {
-        "label": "Infrastructure (roads, connectivity)",
+        "label": "পরিকাঠামো (রাস্তা, যোগাযোগ)",
         "value": "13",
         "tag": "opt_infrastructure"
       },
       {
-        "label": "Others(Specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       }
@@ -449,41 +503,41 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q13.includes('44')",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q13_oth"
   },
   {
     "type": "radio",
-    "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद {{mp_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Fully satisfied",
+        "label": "পুরোপুরি সন্তুষ্ট",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "Somewhat satisfied",
+        "label": "কিছুটা সন্তুষ্ট",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "Neutral/Don’t know/Can’t say ",
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "Somewhat dissatisfied",
+        "label": "কিছুটা অসন্তুষ্ট",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "Fully dissatisfied",
+        "label": "পুরোপুরি অসন্তুষ্ট",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -492,32 +546,32 @@
   },
   {
     "type": "radio",
-    "label": "16 B. आपके वर्तमान विधायक (MLA) {{mla_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Fully satisfied",
+        "label": "পুরোপুরি সন্তুষ্ট",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "Somewhat satisfied",
+        "label": "কিছুটা সন্তুষ্ট",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "Neutral/Don’t know/Can’t say ",
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "Somewhat dissatisfied",
+        "label": "কিছুটা অসন্তুষ্ট",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "Fully dissatisfied",
+        "label": "পুরোপুরি অসন্তুষ্ট",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -526,7 +580,7 @@
   },
   {
     "type": "radio",
-    "label": "5. पिछले विधानसभा चुनाव (2021) में आपने किस पार्टी को वोट दिया था?",
+    "label": "৫. আপনি 2021-এ শেষবার বিধানসভা নির্বাচনে (এম এল এ) কোন দলকে ভোট দিয়েছিলেন?",
     "conditional": "resp_age >= 22 && resp_registered_voter === '1'",
     "required": true,
     "options": "party_2021_q5.[ac_code]",
@@ -552,75 +606,75 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q5 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q5_oth"
   },
   {
     "type": "text",
-    "label": "Independent (specify)",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
     "conditional": "q5 === '12'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q5_ind"
   },
   {
     "type": "radio",
-    "label": "6. पिछले लोकसभा चुनाव (2024) में आपने किस पार्टी को वोट दिया था?",
+    "label": "৬. আপনি 2024-এ শেষবার লোক সভা নির্বাচনে (এম পি) কোন দলকে ভোট দিয়েছিলেন?",
     "conditional": "resp_age >= 19 && resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "AITC (Trinamool Congress)",
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
         "value": "1",
         "tag": "opt_aitc"
       },
       {
-        "label": "BJP",
+        "label": "বি জে পি",
         "value": "2",
         "tag": "opt_bjp"
       },
       {
-        "label": "INC (Congress)",
+        "label": "আই এন সি (কংগ্রেস)",
         "value": "3",
         "tag": "opt_inc"
       },
       {
-        "label": "Left Front",
+        "label": "বামফ্রন্ট",
         "value": "4",
         "tag": "opt_left"
       },
       {
-        "label": "Independent",
+        "label": "নির্দল",
         "value": "12",
         "tag": "opt_independent"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "NOTA",
+        "label": "নোটা",
         "value": "55",
         "tag": "opt_nota"
       },
       {
-        "label": "Did not vote",
+        "label": "ভোট দেননি",
         "value": "66",
         "tag": "opt_did_not_vote"
       },
       {
-        "label": "Not eligible for voting",
+        "label": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি",
         "value": "77",
         "tag": "opt_not_eligible"
       },
       {
-        "label": "Refused to answer",
+        "label": "উত্তর দিতে চাননি",
         "value": "88",
         "tag": "opt_refused"
       }
@@ -647,75 +701,75 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q6 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q6_oth"
   },
   {
     "type": "text",
-    "label": "Independent (specify)",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
     "conditional": "q6 === '12'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q6_ind"
   },
   {
     "type": "radio",
-    "label": "7. 2021 के बाद आपके विधानसभा क्षेत्र में हुए उपचुनाव में आपने किस पार्टी को वोट दिया?",
+    "label": "৭. 2021 সালের পরে আপনার বিধানসভা কেন্দ্রে হওয়া উপ-নির্বাচনে আপনি কোন দলকে ভোট দিয়েছিলেন?",
     "conditional": "resp_age >= 20 && resp_registered_voter === '1' && mla-mp-ac-data.[ac_code].bye_poll === true",
     "required": true,
     "options": [
       {
-        "label": "AITC (Trinamool Congress)",
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
         "value": "1",
         "tag": "opt_aitc"
       },
       {
-        "label": "BJP",
+        "label": "বি জে পি",
         "value": "2",
         "tag": "opt_bjp"
       },
       {
-        "label": "INC (Congress)",
+        "label": "আই এন সি (কংগ্রেস)",
         "value": "3",
         "tag": "opt_inc"
       },
       {
-        "label": "Left Front",
+        "label": "বামফ্রন্ট",
         "value": "4",
         "tag": "opt_left"
       },
       {
-        "label": "Independent",
+        "label": "নির্দল",
         "value": "12",
         "tag": "opt_independent"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "NOTA",
+        "label": "নোটা",
         "value": "55",
         "tag": "opt_nota"
       },
       {
-        "label": "Did not vote",
+        "label": "ভোট দেননি",
         "value": "66",
         "tag": "opt_did_not_vote"
       },
       {
-        "label": "Not eligible for voting",
+        "label": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি",
         "value": "77",
         "tag": "opt_not_eligible"
       },
       {
-        "label": "Refused to answer",
+        "label": "উত্তর দিতে চাননি",
         "value": "88",
         "tag": "opt_refused"
       }
@@ -742,75 +796,75 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q7 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q7_oth"
   },
   {
     "type": "text",
-    "label": "Independent (specify)",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
     "conditional": "q7 === '12'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q7_ind"
   },
   {
     "type": "radio",
-    "label": "8. अगर कल विधानसभा चुनाव (MLA) हों, तो आप किस पार्टी को वोट देंगे?",
+    "label": "৮. যদি বিধানসভা নির্বাচন (এম এল এ) আগামী কাল হয়, তাহলে আপনি কোন দলকে ভোট দেবেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "AITC (Trinamool Congress)",
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
         "value": "1",
         "tag": "opt_aitc"
       },
       {
-        "label": "BJP",
+        "label": "বি জে পি",
         "value": "2",
         "tag": "opt_bjp"
       },
       {
-        "label": "INC (Congress)",
+        "label": "আই এন সি (কংগ্রেস)",
         "value": "3",
         "tag": "opt_inc"
       },
       {
-        "label": "Left Front",
+        "label": "বামফ্রন্ট",
         "value": "4",
         "tag": "opt_left"
       },
       {
-        "label": "Independent",
+        "label": "নির্দল",
         "value": "12",
         "tag": "opt_independent"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "NOTA",
+        "label": "নোটা",
         "value": "55",
         "tag": "opt_nota"
       },
       {
-        "label": "Will not vote",
+        "label": "ভোট দেবেন না",
         "value": "66",
         "tag": "opt_will_not_vote"
       },
       {
-        "label": "Not yet decided",
+        "label": "এখনো সিদ্ধান্ত নেননি",
         "value": "77",
         "tag": "opt_not_decided"
       },
       {
-        "label": "Refused to answer",
+        "label": "উত্তর দিতে চাননি",
         "value": "88",
         "tag": "opt_refused"
       }
@@ -837,70 +891,70 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q8 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q8_oth"
   },
   {
     "type": "text",
-    "label": "Independent (specify)",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
     "conditional": "q8 === '12'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q8_ind"
   },
   {
     "type": "radio",
-    "label": "9. मान लीजिए कि आपकी पसंदीदा पार्टी आपके विधानसभा क्षेत्र से चुनाव नहीं लड़ती है, तो आप किस पार्टी को चुनेंगे?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
+    "label": "৯. মনে করুন যে, আপনার পছন্দের দলটা আপনার বিধানসভা কেন্দ্রের নির্বাচনে লড়ছে না, তাহলে আপনি কোন দলকে বেছে নেবেন?",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
-        "label": "AITC (Trinamool Congress)",
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
         "value": "1",
         "tag": "opt_aitc"
       },
       {
-        "label": "BJP",
+        "label": "বি জে পি",
         "value": "2",
         "tag": "opt_bjp"
       },
       {
-        "label": "INC (Congress)",
+        "label": "আই এন সি (কংগ্রেস)",
         "value": "3",
         "tag": "opt_inc"
       },
       {
-        "label": "Left Front",
+        "label": "বামফ্রন্ট",
         "value": "4",
         "tag": "opt_left"
       },
       {
-        "label": "Independent",
+        "label": "নির্দল",
         "value": "12",
         "tag": "opt_independent"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "NOTA",
+        "label": "নোটা",
         "value": "55",
         "tag": "opt_nota"
       },
       {
-        "label": "I will not vote for anyone else",
+        "label": "অন্য কারও জন্য ভোট দেবেন না",
         "value": "67",
         "tag": "opt_will_not_vote"
       },
       {
-        "label": "Refused to answer",
+        "label": "উত্তর দিতে অস্বীকার করেছেন",
         "value": "88",
         "tag": "opt_refused"
       }
@@ -928,61 +982,61 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q9 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q9_oth"
   },
   {
     "type": "text",
-    "label": "Independent (specify)",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
     "conditional": "q9 === '12'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q9_ind"
   },
   {
     "type": "checkbox",
-    "label": "10. आपने जिस पार्टी को अपनी दूसरी पसंद चुना है, उसके पीछे क्या कारण हैं?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
+    "label": "১০. আমাদের একটু বলুন, আপনার দ্বিতীয় পছন্দ হিসাবে ওপরের দলকে বেছে নেওয়ার কারনটা কি?",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "maxSelections": 6,
     "options": [
       {
-        "label": "The party works for my caste and community",
+        "label": "দলটা আমার জাতি এবং সম্প্রদায়ের জন্য কাজ করে",
         "value": "1",
         "tag": "opt_caste_community"
       },
       {
-        "label": "The party makes some good arguments in their speeches",
+        "label": "দলটা তাদের বক্তৃতায় ভাল কিছু যুক্তি দেয়",
         "value": "2",
         "tag": "opt_good_arguments"
       },
       {
-        "label": "The party supports my first choice party",
+        "label": "দলটা আমার প্রথম পছন্দের দলকে সমর্থন করে",
         "value": "3",
         "tag": "opt_supports_first_choice"
       },
       {
-        "label": "The leaders of the party work for Bengal",
+        "label": "দলের নেতৃত্বরা বাংলার জন্য কাজ করে",
         "value": "4",
         "tag": "opt_leaders_work_bengal"
       },
       {
-        "label": "Do not wish to vote for any other party",
+        "label": "অন্য কোনো দলকে ভোট দিতে চাই না",
         "value": "5",
         "tag": "opt_do_not_wish"
       },
       {
-        "label": "Others(Specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "Don't know/can't say",
+        "label": "জানিনা/ বলতে পারছি না",
         "value": "99",
         "tag": "opt_dont_know"
       }
@@ -1002,56 +1056,56 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q10.includes('44')",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q10_oth"
   },
   {
     "type": "radio",
-    "label": "20. अगर आप चाहें तो हमें अपना धर्म बता सकते हैं?",
+    "label": "২০. আমাকে একটু বলুন, আপনি কোন ধর্ম মেনে চলেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Hindu",
+        "label": "হিন্দু",
         "value": "1",
         "tag": "opt_hindu"
       },
       {
-        "label": "Muslim",
+        "label": "মুসলিম",
         "value": "2",
         "tag": "opt_muslim"
       },
       {
-        "label": "Christian",
+        "label": "খ্রীষ্টান",
         "value": "3",
         "tag": "opt_christian"
       },
       {
-        "label": "Sikh",
+        "label": "শিখ",
         "value": "4",
         "tag": "opt_sikh"
       },
       {
-        "label": "Jain",
+        "label": "জৈন",
         "value": "5",
         "tag": "opt_jain"
       },
       {
-        "label": "Buddhist",
+        "label": "বৌদ্ধ",
         "value": "6",
         "tag": "opt_buddhist"
       },
       {
-        "label": "No response",
+        "label": "কোনো উত্তর নেই ",
         "value": "7",
         "tag": "opt_no_response"
       },
       {
-        "label": "Others (Specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       }
@@ -1067,41 +1121,41 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "resp_religion === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "resp_religion_oth"
   },
   {
     "type": "radio",
-    "label": "21. आप किस सामाजिक वर्ग से हैं?",
+    "label": "২১. আপনি কোন সামাজিক শ্রেণীতে পড়েন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "General/OC",
+        "label": "জেনারেল/ ও সি",
         "value": "1",
         "tag": "opt_general"
       },
       {
-        "label": "Schedule Castes",
+        "label": "তফশিলী জাতি",
         "value": "2",
         "tag": "opt_sc"
       },
       {
-        "label": "Schedule Tribes",
+        "label": "তফশিলী উপজাতি",
         "value": "3",
         "tag": "opt_st"
       },
       {
-        "label": "Other Backward Caste",
+        "label": "অন্যান্য অনগ্রসর শ্রেনী",
         "value": "4",
         "tag": "opt_obc"
       },
       {
-        "label": "No response",
+        "label": "কোনো উত্তর নেই",
         "value": "88",
         "tag": "opt_no_response"
       }
@@ -1110,7 +1164,7 @@
   },
   {
     "type": "radio",
-    "label": "22. আপনি কি দয়া করে আপনার জাত জানাতে পারেন?",
+    "label": "২২. আপনি কি দয়া করে আমাকে আপনার জাতি বলতে পারেন?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": "caste-options[resp_religion.value].castes",
@@ -1125,92 +1179,92 @@
   },
   {
     "type": "text",
-    "label": "अन्य (निर्दिष्ट करें)",
+    "label": "অন্যান্য (উল্লেখ করুন)",
     "conditional": "resp_caste_jati === '44'",
     "required": true,
-    "placeholder": "निर्दिष्ट करें",
+    "placeholder": "উল্লেখ করুন",
     "maxLength": 150,
     "tag": "resp_caste_jati_oth"
   },
   {
     "type": "checkbox",
-    "label": "11. आपकी राय में तृणमूल कांग्रेस (AITC) को वोट देने के शीर्ष 3 कारण क्या हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "label": "১১. আপনার মতে, সর্বভারতীয় তৃণমূল কংগ্রেস-কে ভোট দেওয়ার সর্বোচ্চ 3টে কারন কি?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
       {
-        "label": "The party has performed well in the state",
+        "label": "দলটা রাজ্যে ভালভাবে কাজ করেছে",
         "value": "1",
         "tag": "opt_performed_well"
       },
       {
-        "label": "For Good governance /delivering government services",
+        "label": "ভালভাবে সরকার চালানো/ সরকারি পরিসেবা ভালভাবে দেওয়ার জন্য",
         "value": "2",
         "tag": "opt_good_governance"
       },
       {
-        "label": "For the benefit of West Bengal",
+        "label": "পশ্চিমবঙ্গের সুযোগ-সুবিধার জন্য",
         "value": "3",
         "tag": "opt_benefit_wb"
       },
       {
-        "label": "For the development of WB",
+        "label": "পশ্চিমবঙ্গের বিকাশের জন্য",
         "value": "4",
         "tag": "opt_development_wb"
       },
       {
-        "label": "The party provides good services when it comes to healthcare/education/drinking water/electricity/housing",
+        "label": "স্বাস্থ্য / শিক্ষা/ পানীয় জল/ বিদ্যুৎ/ আবাস-এর ক্ষেত্রে দলটা ভাল পরিসেবা দেয়",
         "value": "5",
         "tag": "opt_good_services"
       },
       {
-        "label": "Works for farmers/agriculture/irrigation",
+        "label": "চাষী/ কৃষিকাজ/ সেচের জন্য কাজ করে",
         "value": "6",
         "tag": "opt_farmers"
       },
       {
-        "label": "Promotes small businesses",
+        "label": "ছোট-খাট ব্যবসাগুলোকে তুলে ধরে",
         "value": "7",
         "tag": "opt_small_business"
       },
       {
-        "label": "Works for the poor",
+        "label": "গরীবদের জন্য কাজ করে",
         "value": "8",
         "tag": "opt_works_poor"
       },
       {
-        "label": "To control price rise",
+        "label": "দাম বেড়ে যাওয়া নিয়ন্ত্রণ করে",
         "value": "9",
         "tag": "opt_control_price"
       },
       {
-        "label": "The party will generate more employment",
+        "label": "দলটা আরো বেশি কাজের ব্যবস্থা করবে",
         "value": "11",
         "tag": "opt_employment"
       },
       {
-        "label": "For greater communal harmony",
+        "label": "আরো বেশি সাম্প্রদায়িক সম্প্রীতির জন্য",
         "value": "13",
         "tag": "opt_communal_harmony"
       },
       {
-        "label": "Mamata B. is the best CM of Bengal so far",
+        "label": "এখনো পর্যন্ত মমতা ব্যানার্জী বাংলার সবচেয়ে ভাল মুখ্যমন্ত্রী",
         "value": "14",
         "tag": "opt_mamata_best_cm"
       },
       {
-        "label": "For minorities' welfare",
+        "label": "সংখ্যালঘুর কল্যাণের জন্য",
         "value": "15",
         "tag": "opt_minorities_welfare"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "Don't know/ Can't Say",
+        "label": "জানিনা/ বলতে পারছি না",
         "value": "99",
         "tag": "opt_dont_know"
       }
@@ -1229,82 +1283,82 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q11.includes('44')",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q11_oth"
   },
   {
     "type": "checkbox",
-    "label": "12. आपकी राय में भारतीय जनता पार्टी (भाजपा) को वोट देने के शीर्ष 3 कारण क्या हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "label": "১২. আপনার মতে, বি জে পি-কে ভোট দেওয়ার সর্বোচ্চ 3টে কারন কি?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
       {
-        "label": "BJP has proven to be a stable govt. at the centre",
+        "label": "বি জে পি কেন্দ্রে একটা স্থায়ী সরকার হিসাবে প্রমাণিত হয়েছে",
         "value": "1",
         "tag": "opt_stable_govt"
       },
       {
-        "label": "For Good governance /delivering government services",
+        "label": "ভালভাবে সরকার চালানো/ সরকারি পরিসেবা ভালভাবে দেওয়ার জন্য",
         "value": "2",
         "tag": "opt_good_governance"
       },
       {
-        "label": "Because of Narendra Modi: good/ strong/decisive leader",
+        "label": "নরেন্দ্র মোদির কারনে: ভাল/ শক্তিশালী/বিচার ক্ষমতা সম্পন্ন নেতা",
         "value": "3",
         "tag": "opt_narendra_modi"
       },
       {
-        "label": "For the better development of WB",
+        "label": "পশ্চিমবঙ্গের আরো ভাল বিকাশের জন্য",
         "value": "5",
         "tag": "opt_better_development"
       },
       {
-        "label": "Better for farmers/agriculture/irrigation",
+        "label": "চাষী/ কৃষিকাজ/ সেচের জন্য ভাল",
         "value": "6",
         "tag": "opt_better_farmers"
       },
       {
-        "label": "Better for small businesses",
+        "label": "ছোট-খাট ব্যবসার জন্য ভাল",
         "value": "7",
         "tag": "opt_better_small_business"
       },
       {
-        "label": "For better healthcare/education/drinking water/electricity/housing",
+        "label": "আরো ভাল স্বাস্থ্য পরিসেবা/ শিক্ষা/ পানীয় জল/ বিদ্যুৎ/ আবাসের জন্য",
         "value": "8",
         "tag": "opt_better_healthcare"
       },
       {
-        "label": "For good welfare schemes",
+        "label": "ভাল কল্যাণমূলক প্রকল্পের জন্য",
         "value": "9",
         "tag": "opt_welfare_schemes"
       },
       {
-        "label": "BJP is better for Hindus",
+        "label": "বিজেপি হিন্দুদের জন্য ভাল",
         "value": "11",
         "tag": "opt_better_hindus"
       },
       {
-        "label": "BJP cares for the poor",
+        "label": "বি জে পি গরীবদের কথা ভাবে",
         "value": "12",
         "tag": "opt_cares_poor"
       },
       {
-        "label": "TMC has not performed in West Bengal",
+        "label": "টি এম সি পশ্চিমবঙ্গে ভাল কাজ করেনি",
         "value": "14",
         "tag": "opt_tmc_not_performed"
       },
       {
-        "label": "Others (Specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "Don't Know/Can't say",
+        "label": "জানিনা/ বলতে পারছি না",
         "value": "99",
         "tag": "opt_dont_know"
       }
@@ -1323,41 +1377,41 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q12.includes('44')",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q12_oth"
   },
   {
     "type": "radio",
-    "label": "14. ममता बनर्जी की सरकार के काम से आप कितने खुश या नाखुश हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "label": "১৪. মমতা ব্যানার্জির নেতৃত্বাধীন রাজ্য সরকারের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Fully satisfied",
+        "label": "পুরোপুরি সন্তুষ্ট",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "Somewhat satisfied",
+        "label": "কিছুটা সন্তুষ্ট",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "Neutral/Don’t know/Can’t say ",
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "Somewhat dissatisfied",
+        "label": "কিছুটা অসন্তুষ্ট",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "Fully dissatisfied",
+        "label": "পুরোপুরি অসন্তুষ্ট",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -1366,32 +1420,32 @@
   },
   {
     "type": "radio",
-    "label": "15. भाजपा ने राज्य में विपक्ष का जो काम किया है, उससे आप कितने खुश या नाखुश हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "label": "১৫. রাজ্যে বিরোধী দল হিসাবে বিজেপি-র কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Fully satisfied",
+        "label": "পুরোপুরি সন্তুষ্ট",
         "value": "1",
         "tag": "opt_fully_satisfied"
       },
       {
-        "label": "Somewhat satisfied",
+        "label": "কিছুটা সন্তুষ্ট",
         "value": "2",
         "tag": "opt_somewhat_satisfied"
       },
       {
-        "label": "Neutral/Don’t know/Can’t say ",
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
         "value": "3",
         "tag": "opt_neutral"
       },
       {
-        "label": "Somewhat dissatisfied",
+        "label": "কিছুটা অসন্তুষ্ট",
         "value": "4",
         "tag": "opt_somewhat_dissatisfied"
       },
       {
-        "label": "Fully dissatisfied",
+        "label": "পুরোপুরি অসন্তুষ্ট",
         "value": "5",
         "tag": "opt_fully_dissatisfied"
       }
@@ -1400,72 +1454,72 @@
   },
   {
     "type": "radio",
-    "label": "17. आपके विचार में पश्चिम बंगाल का मुख्यमंत्री बनने के लिए सबसे अच्छा नेता कौन है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "label": "১৭. পশ্চিমবঙ্গের মুখ্যমন্ত্রী হওয়ার জন্য কাকে আপনি সবচেয়ে ভাল নেতা/নেত্রী হিসাবে মনে করেন?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Mamata Banerjee(TMC)",
+        "label": "মমতা ব্যানার্জী (টি এম সি)",
         "value": "1",
         "tag": "opt_mamata_banerjee"
       },
       {
-        "label": "Dilip Ghosh (BJP)",
+        "label": "দিলীপ ঘোষ (বি জে পি)",
         "value": "2",
         "tag": "opt_dilip_ghosh"
       },
       {
-        "label": "Suvendu Adhikari (BJP)",
+        "label": "শুভেন্দু অধিকারী (বি জে পি)",
         "value": "3",
         "tag": "opt_suvendu_adhikari"
       },
       {
-        "label": "Sukanta Majumudar (BJP)",
+        "label": "সুকান্ত মজুমদার (বি জে পি)",
         "value": "4",
         "tag": "opt_sukanta_majumudar"
       },
       {
-        "label": "Abhishek Banerjee (TMC)",
+        "label": "অভিষেক ব্যানার্জী (টি এম সি)",
         "value": "5",
         "tag": "opt_abhishek_banerjee"
       },
       {
-        "label": "Samik Bhattacharya (BJP)",
+        "label": "শমীক ভট্টাচার্য (বি জে পি)",
         "value": "6",
         "tag": "opt_samik_bhattacharya"
       },
       {
-        "label": "Subhankar Sarkar (INC)",
+        "label": "শুভঙ্কর সরকার (আই এন সি)",
         "value": "7",
         "tag": "opt_subhankar_sarkar"
       },
       {
-        "label": "Biman Bose( Left Front)",
+        "label": "বিমান বোস (বাম ফ্রন্ট)",
         "value": "8",
         "tag": "opt_biman_bose"
       },
       {
-        "label": "Srideep (Sridip) Bhattacharya (Left Front)",
+        "label": "শ্রীদীপ ভট্টাচার্য্য (বামফ্রন্ট)",
         "value": "9",
         "tag": "opt_srideep_bhattacharya"
       },
       {
-        "label": "Anyone from TMC",
+        "label": "টি এম সি থেকে যে কেউ",
         "value": "10",
         "tag": "opt_anyone_tmc"
       },
       {
-        "label": "Anyone from INC",
+        "label": "আই এন সি থেকে যে কেউ",
         "value": "11",
         "tag": "opt_anyone_inc"
       },
       {
-        "label": "Anyone from BJP",
+        "label": "বি জে পি থেকে যে কেউ",
         "value": "12",
         "tag": "opt_anyone_bjp"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       }
@@ -1481,46 +1535,46 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q17 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q17_oth"
   },
   {
     "type": "radio",
-    "label": "19. आपके अनुसार, जब अगला विधानसभा चुनाव होगा, तो आपके क्षेत्र से कौन-सी पार्टी जीत सकती है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "label": "১৯. আপনার মতে, আপনার বিধানসভা কেন্দ্রে পরবর্তী নির্বাচনে যখন আপনি আপনার বিধায়ক নির্বাচন করবেন, তখন কোন দল জিতবে?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "AITC (Trinamool Congress)",
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
         "value": "1",
         "tag": "opt_aitc"
       },
       {
-        "label": "BJP",
+        "label": "বি জে পি",
         "value": "2",
         "tag": "opt_bjp"
       },
       {
-        "label": "INC (Congress)",
+        "label": "আই এন সি (কংগ্রেস)",
         "value": "3",
         "tag": "opt_inc"
       },
       {
-        "label": "Left Front",
+        "label": "বামফ্রন্ট",
         "value": "4",
         "tag": "opt_left"
       },
       {
-        "label": "Others (specify)",
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
         "value": "44",
         "tag": "opt_others"
       },
       {
-        "label": "Don't know/Can't say",
+        "label": "জানিনা/ বলতে পারছি না",
         "value": "99",
         "tag": "opt_dont_know"
       }
@@ -1536,51 +1590,51 @@
   },
   {
     "type": "text",
-    "label": "Others (specify)",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
     "conditional": "q19 === '44'",
     "required": true,
-    "placeholder": "Please specify",
+    "placeholder": "দয়া করে উল্লেখ করুন",
     "maxLength": 150,
     "tag": "q19_oth"
   },
   {
     "type": "radio",
-    "label": "23. आपके घर की सबसे पढ़ी-लिखी महिला ने कितनी पढ़ाई की है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "label": "২৩. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত মহিলা কতদূর পর্যন্ত পড়াশুনো করেছেন?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "निरक्षर",
+        "label": "নিরক্ষর",
         "value": "1",
         "tag": "opt_no_female_adult"
       },
       {
-        "label": "प्राथमिक शिक्षा (कक्षा 1 से 5)",
+        "label": "প্রাথমিক শিক্ষা (শ্রেণী ১–৫)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "माध्यमिक शिक्षा (कक्षा 6 से 10)",
+        "label": "মাধ্যমিক শিক্ষা (শ্রেণী ৬–১০)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "उच्च माध्यमिक शिक्षा (कक्षा 11–12)",
+        "label": "উচ্চ মাধ্যমিক শিক্ষা (শ্রেণী ১১–১২)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "स्नातक",
+        "label": "স্নাতক",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "स्नातकोत्तर",
+        "label": "স্নাতকোত্তর",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "तकनीकी / व्यावसायिक शिक्षा",
+        "label": "কারিগরি / বৃত্তিমূলক শিক্ষা",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1589,42 +1643,42 @@
   },
   {
     "type": "radio",
-    "label": "24. आपके घर के सबसे पढ़े-लिखे पुरुष की पढ़ाई कितनी हुई है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "label": "২৪. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত পুরুষ কতদূর পর্যন্ত পড়াশুনো করেছেন?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "निरक्षर",
+        "label": "নিরক্ষর",
         "value": "1",
         "tag": "opt_no_male_adult"
       },
       {
-        "label": "प्राथमिक शिक्षा (कक्षा 1 से 5)",
+        "label": "প্রাথমিক শিক্ষা (শ্রেণী ১–৫)",
         "value": "2",
         "tag": "opt_no_formal_education"
       },
       {
-        "label": "माध्यमिक शिक्षा (कक्षा 6 से 10)",
+        "label": "মাধ্যমিক শিক্ষা (শ্রেণী ৬–১০)",
         "value": "3",
         "tag": "opt_upto_class_5"
       },
       {
-        "label": "उच्च माध्यमिक शिक्षा (कक्षा 11–12)",
+        "label": "উচ্চ মাধ্যমিক শিক্ষা (শ্রেণী ১১–১২)",
         "value": "4",
         "tag": "opt_class_6_9"
       },
       {
-        "label": "स्नातक",
+        "label": "স্নাতক",
         "value": "5",
         "tag": "opt_class_10_14"
       },
       {
-        "label": "स्नातकोत्तर",
+        "label": "স্নাতকোত্তর",
         "value": "6",
         "tag": "opt_degree_regular"
       },
       {
-        "label": "तकनीकी / व्यावसायिक शिक्षा",
+        "label": "কারিগরি / বৃত্তিমূলক শিক্ষা",
         "value": "7",
         "tag": "opt_professional_degree"
       }
@@ -1633,64 +1687,64 @@
   },
   {
     "type": "radio",
-    "label": "25. आपके घर में जो मुख्य कमाने वाले हैं, वे क्या काम करते हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "label": "২৫. আপনার পরিবারের প্রধান উপার্জনকারী কী কাজ করেন?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Labour",
+        "label": "শ্রমিক",
         "value": "2",
         "tag": "opt_labour"
       },
       {
-        "label": "Farmer",
+        "label": "চাষী",
         "value": "3",
         "tag": "opt_farmer"
       },
       {
-        "label": "Worker",
+        "label": "কর্মী",
         "value": "4",
         "tag": "opt_worker"
       },
       {
-        "label": "Trader",
+        "label": "ব্যবসায়ী",
         "value": "5",
         "tag": "opt_trader"
       },
       {
-        "label": "Clerical Sales/Supervisor",
+        "label": "ক্লারিকাল সেলস/ সুপারভাইজার",
         "value": "6",
         "tag": "opt_clerical"
       },
       {
-        "label": "Managerial/Professional",
+        "label": "ম্যানেজারিয়াল/ প্রফেশনাল",
         "value": "7",
         "tag": "opt_managerial"
       }
     ],
     "tag": "resp_occupation"
   },
-  {
+    {
     "type": "text",
-    "label": "27. क्या आप अपना नाम हमारे साथ साझा करना चाहेंगे? हम आपको आश्वस्त करते हैं कि हम इसे गोपनीय रखेंगे।",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "label": "২৭. আপনি কি আপনার নাম আমাদের সাথে শেয়ার করতে চান? আমরা আপনাকে আশ্বাস দিচ্ছি যে আমরা এটি গোপন রাখব।",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "placeholder": "Enter name",
     "tag": "resp_name"
   },
   {
     "type": "radio",
-    "label": "26. आपके अच्छे सुझावों के लिए धन्यवाद। क्या हम आगे भी आपसे ऐसे ही सर्वे के लिए राय ले सकते हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "label": "২৮. আপনার অত্যন্ত ভালভাবে উত্তরগুলো দেওয়ার জন্য আপনাকে ধন্যবাদ জানাই। আমরা কি ভবিষ্যতে এরকম সমীক্ষার জন্য আপনার মূল্যবান মতামত পেতে যোগাযোগ করতে পারি?",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
-        "label": "Yes",
+        "label": "হ্যাঁ, আপনি পারেন",
         "value": "1",
         "tag": "opt_yes"
       },
       {
-        "label": "No",
+        "label": "না",
         "value": "2",
         "tag": "opt_no"
       }

@@ -10,7 +10,7 @@
         "tag": "opt_call_not_received"
       },
       {
-        "label": "Ringing (Respondent Call))",
+        "label": "Ringing (Respondent Call)",
         "value": "1",
         "tag": "opt_ringing"
       },
@@ -241,16 +241,6 @@
     "tag": "consent"
   },
   {
-    "type": "number",
-    "label": "আমাকে একটু বলুন, সম্পূর্ণ বছরে আপনার বয়স কত?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "min": 10,
-    "max": 99,
-    "placeholder": "বয়স লিখুন",
-    "tag": "resp_age"
-  },
-  {
     "type": "radio",
     "label": "এই বিধানসভা কেন্দ্রে আপনার নাম কি ভোটার হিসাবে তোলা আছে?",
     "conditional": "consent === '1'",
@@ -303,6 +293,58 @@
       }
     },
     "tag": "resp_registered_voter"
+  },
+  {
+    "type": "number",
+    "label": "আমাকে একটু বলুন, সম্পূর্ণ বছরে আপনার বয়স কত?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "min": 10,
+    "max": 99,
+    "placeholder": "বয়স লিখুন",
+    "rules": {
+      "clearFields": {
+        "age_validation": {
+          "condition": "value < 18",
+          "fields": [
+            "resp_registered_voter",
+            "resp_gender",
+            "q13",
+            "q16_a",
+            "q16_b",
+            "q5",
+            "q6",
+            "q7",
+            "q8",
+            "q9",
+            "q10",
+            "resp_religion",
+            "resp_social_cat",
+            "resp_caste_jati",
+            "q11",
+            "q12",
+            "q14",
+            "q15",
+            "q17",
+            "q19",
+            "resp_female_edu",
+            "resp_male_edu",
+            "resp_occupation",
+            "resp_name",
+            "thanks_future"
+          ]
+        }
+      },
+      "showFields": {
+        "age_18_plus": {
+          "condition": "value >= 18",
+          "fields": [
+            "resp_registered_voter"
+          ]
+        }
+      }
+    },
+    "tag": "resp_age"
   },
   {
     "type": "radio",
@@ -471,7 +513,7 @@
   {
     "type": "radio",
     "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
     "required": true,
     "options": [
       {
@@ -505,7 +547,7 @@
   {
     "type": "radio",
     "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
     "required": true,
     "options": [
       {
@@ -868,7 +910,7 @@
   {
     "type": "radio",
     "label": "৯. মনে করুন যে, আপনার পছন্দের দলটা আপনার বিধানসভা কেন্দ্রের নির্বাচনে লড়ছে না, তাহলে আপনি কোন দলকে বেছে নেবেন?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
     "required": true,
     "options": [
       {
@@ -959,7 +1001,7 @@
   {
     "type": "checkbox",
     "label": "১০. আমাদের একটু বলুন, আপনার দ্বিতীয় পছন্দ হিসাবে ওপরের দলকে বেছে নেওয়ার কারনটা কি?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
     "required": true,
     "maxSelections": 6,
     "options": [
@@ -1147,7 +1189,7 @@
   {
     "type": "checkbox",
     "label": "১১. আপনার মতে, সর্বভারতীয় তৃণমূল কংগ্রেস-কে ভোট দেওয়ার সর্বোচ্চ 3টে কারন কি?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1251,7 +1293,7 @@
   {
     "type": "checkbox",
     "label": "১২. আপনার মতে, বি জে পি-কে ভোট দেওয়ার সর্বোচ্চ 3টে কারন কি?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1345,7 +1387,7 @@
   {
     "type": "radio",
     "label": "১৪. মমতা ব্যানার্জির নেতৃত্বাধীন রাজ্য সরকারের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
     "required": true,
     "options": [
       {
@@ -1379,7 +1421,7 @@
   {
     "type": "radio",
     "label": "১৫. রাজ্যে বিরোধী দল হিসাবে বিজেপি-র কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1413,7 +1455,7 @@
   {
     "type": "radio",
     "label": "১৭. পশ্চিমবঙ্গের মুখ্যমন্ত্রী হওয়ার জন্য কাকে আপনি সবচেয়ে ভাল নেতা/নেত্রী হিসাবে মনে করেন?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
     "required": true,
     "options": [
       {
@@ -1503,7 +1545,7 @@
   {
     "type": "radio",
     "label": "১৯. আপনার মতে, আপনার বিধানসভা কেন্দ্রে পরবর্তী নির্বাচনে যখন আপনি আপনার বিধায়ক নির্বাচন করবেন, তখন কোন দল জিতবে?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
     "required": true,
     "options": [
       {
@@ -1558,7 +1600,7 @@
   {
     "type": "radio",
     "label": "২৩. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত মহিলা কতদূর পর্যন্ত পড়াশুনো করেছেন?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
     "required": true,
     "options": [
       {
@@ -1602,7 +1644,7 @@
   {
     "type": "radio",
     "label": "২৪. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত পুরুষ কতদূর পর্যন্ত পড়াশুনো করেছেন?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
     "required": true,
     "options": [
       {
@@ -1646,7 +1688,7 @@
   {
     "type": "radio",
     "label": "২৫. আপনার পরিবারের প্রধান উপার্জনকারী কী কাজ করেন?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
     "required": true,
     "options": [
       {
@@ -1681,5 +1723,32 @@
       }
     ],
     "tag": "resp_occupation"
+  },
+    {
+    "type": "text",
+    "label": "২৭. আপনি কি আপনার নাম আমাদের সাথে শেয়ার করতে চান? আমরা আপনাকে আশ্বাস দিচ্ছি যে আমরা এটি গোপন রাখব।",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "required": true,
+    "placeholder": "Enter name",
+    "tag": "resp_name"
+  },
+  {
+    "type": "radio",
+    "label": "২৮. আপনার অত্যন্ত ভালভাবে উত্তরগুলো দেওয়ার জন্য আপনাকে ধন্যবাদ জানাই। আমরা কি ভবিষ্যতে এরকম সমীক্ষার জন্য আপনার মূল্যবান মতামত পেতে যোগাযোগ করতে পারি?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "required": true,
+    "options": [
+      {
+        "label": "হ্যাঁ, আপনি পারেন",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "না",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "tag": "thanks_future"
   }
 ]
