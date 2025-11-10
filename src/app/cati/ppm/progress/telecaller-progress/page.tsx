@@ -435,6 +435,11 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('status', filters.telecallerStatus);
       }
 
+      // Telecalling group filter
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
       // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -523,7 +528,11 @@ const TelecallerProgressPage: React.FC = () => {
       if (filters.telecallerStatus && filters.telecallerStatus !== '') {
         params.append('status', filters.telecallerStatus);
       }
-
+      
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+      
       // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -1537,6 +1546,7 @@ const TelecallerProgressPage: React.FC = () => {
                   customDateFrom: filters.customDateFrom,
                   customDateTo: filters.customDateTo,
                   telecallerStatus: filters.telecallerStatus,
+                  telecallingGroupId: filters.telecallingGroupId,
                 }}
                 trigger={metricsTrigger}
               />
