@@ -241,6 +241,58 @@
     "tag": "consent"
   },
   {
+    "type": "number",
+    "label": "Could you please tell me your age in complete years?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "min": 10,
+    "max": 99,
+    "placeholder": "Enter age",
+    "rules": {
+      "clearFields": {
+        "age_validation": {
+          "condition": "value < 18",
+          "fields": [
+            "resp_registered_voter",
+            "resp_gender",
+            "q13",
+            "q16_a",
+            "q16_b",
+            "q5",
+            "q6",
+            "q7",
+            "q8",
+            "q9",
+            "q10",
+            "resp_religion",
+            "resp_social_cat",
+            "resp_caste_jati",
+            "q11",
+            "q12",
+            "q14",
+            "q15",
+            "q17",
+            "q19",
+            "resp_female_edu",
+            "resp_male_edu",
+            "resp_occupation",
+            "resp_name",
+            "thanks_future"
+          ]
+        }
+      },
+      "showFields": {
+        "age_18_plus": {
+          "condition": "value >= 18",
+          "fields": [
+            "resp_registered_voter"
+          ]
+        }
+      }
+    },
+    "tag": "resp_age"
+  },
+  {
     "type": "radio",
     "label": "Are you a registered voter in this assembly Constituency?",
     "conditional": "consent === '1'",
@@ -293,58 +345,6 @@
       }
     },
     "tag": "resp_registered_voter"
-  },
-  {
-    "type": "number",
-    "label": "Could you please tell me your age in complete years?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "min": 10,
-    "max": 99,
-    "placeholder": "Enter age",
-    "rules": {
-      "clearFields": {
-        "age_validation": {
-          "condition": "value < 18",
-          "fields": [
-            "resp_registered_voter",
-            "resp_gender",
-            "q13",
-            "q16_a",
-            "q16_b",
-            "q5",
-            "q6",
-            "q7",
-            "q8",
-            "q9",
-            "q10",
-            "resp_religion",
-            "resp_social_cat",
-            "resp_caste_jati",
-            "q11",
-            "q12",
-            "q14",
-            "q15",
-            "q17",
-            "q19",
-            "resp_female_edu",
-            "resp_male_edu",
-            "resp_occupation",
-            "resp_name",
-            "thanks_future"
-          ]
-        }
-      },
-      "showFields": {
-        "age_18_plus": {
-          "condition": "value >= 18",
-          "fields": [
-            "resp_registered_voter"
-          ]
-        }
-      }
-    },
-    "tag": "resp_age"
   },
   {
     "type": "radio",
@@ -513,7 +513,7 @@
   {
     "type": "radio",
     "label": "16 A. How satisfied or dissatisfied are you with the work done by Lok Sabha MP {{mp_name}} from your parliament constituency?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -547,7 +547,7 @@
   {
     "type": "radio",
     "label": "16 B. How satisfied or dissatisfied are you with the work done by your current MLA {{mla_name}}?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -910,7 +910,7 @@
   {
     "type": "radio",
     "label": "9. Let us assume that the above party of your choice doesn't contest elections in your assembly constituency, which party would you choose?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -1001,7 +1001,7 @@
   {
     "type": "checkbox",
     "label": "10. Could you tell us the reason for choosing the above party as your second choice?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "maxSelections": 6,
     "options": [
@@ -1189,7 +1189,7 @@
   {
     "type": "checkbox",
     "label": "11. In your opinion what are the top 3 reasons for voting for AITC?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1293,7 +1293,7 @@
   {
     "type": "checkbox",
     "label": "12. In your opinion what are the top 3 reasons for voting for BJP?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1387,7 +1387,7 @@
   {
     "type": "radio",
     "label": "14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1421,7 +1421,7 @@
   {
     "type": "radio",
     "label": "15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1455,7 +1455,7 @@
   {
     "type": "radio",
     "label": "17. Who do you think is the best leader to be the Chief Minister of West Bengal?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1545,7 +1545,7 @@
   {
     "type": "radio",
     "label": "19. In your opinion, which party would win the next elections in your constituency, when you would elect your MLA?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1600,7 +1600,7 @@
   {
     "type": "radio",
     "label": "23. Could you please tell me the highest educational level of the most educated female of the household?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1644,7 +1644,7 @@
   {
     "type": "radio",
     "label": "24. Could you please tell me the highest educational level of the most educated male of the household?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1688,7 +1688,7 @@
   {
     "type": "radio",
     "label": "25. What work does the main earner in your household do?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '3'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1727,7 +1727,7 @@
   {
     "type": "text",
     "label": "27. Would You like to share your name with us? We assure you we shall keep it confidential",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "placeholder": "Enter name",
     "tag": "resp_name"
@@ -1735,7 +1735,7 @@
   {
     "type": "radio",
     "label": "26. Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
