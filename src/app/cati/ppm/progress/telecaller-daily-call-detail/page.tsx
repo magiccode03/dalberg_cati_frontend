@@ -93,6 +93,7 @@ interface DashboardFilters {
   fromDate: string;
   toDate: string;
   duration: string;
+  telecallingGroupId: string;
 }
 
 const TelecallerDailyCallDetailPage = () => {
@@ -143,6 +144,7 @@ const TelecallerDailyCallDetailPage = () => {
     fromDate: '',
     toDate: '',
     duration: '',
+    telecallingGroupId: '',
   });
 
   // Telecaller and AC list states
@@ -150,6 +152,14 @@ const TelecallerDailyCallDetailPage = () => {
   const [acList, setAcList] = useState<ACData[]>([]);
   const [loadingTelecallers, setLoadingTelecallers] = useState(false);
   const [loadingACs, setLoadingACs] = useState(false);
+
+  // Telecalling Group filter states
+  interface TelecallingGroup {
+    id: number;
+    name: string;
+  }
+  const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   // API state for call details
   const [callDetailData, setCallDetailData] = useState<CallDetailData[]>([]);
@@ -243,6 +253,16 @@ const TelecallerDailyCallDetailPage = () => {
       .map((ac) => ({
         value: ac.ac_code.toString(),
         label: `${ac.ac_name} - (${ac.ac_code})`,
+      })),
+  ];
+
+  const telecallingGroupOptions = [
+    { value: '', label: 'All Groups' },
+    ...telecallingGroups
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((group) => ({
+        value: group.id.toString(),
+        label: group.name,
       })),
   ];
 
@@ -460,6 +480,10 @@ const TelecallerDailyCallDetailPage = () => {
         params.append('duration', dashboardFilters.duration);
       }
       
+      if (dashboardFilters.telecallingGroupId && dashboardFilters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', dashboardFilters.telecallingGroupId);
+      }
+      
       // Apply additional filters from the search form (if uncommented later)
       if (filters.callReceived && filters.callReceived !== '') {
         params.append('call_received', filters.callReceived);
@@ -651,9 +675,44 @@ const TelecallerDailyCallDetailPage = () => {
     }
   };
 
+  // Fetch telecalling groups
+  const fetchTelecallingGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiUrl}/api/teleform-users/telecalling-groups`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success && Array.isArray(result.data)) {
+          const groups: TelecallingGroup[] = result.data.map((item: any) => ({
+            id: item.telecalling_group_id || item.id,
+            name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+          }));
+          setTelecallingGroups(groups);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching telecalling groups:', err);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
   useEffect(() => {
     fetchTelecallers();
     fetchACList();
+    fetchTelecallingGroups();
     fetchDashboardMetrics();
     fetchCallDetails(1);
     // Trigger initial metrics load for "today" on first mount
@@ -732,6 +791,22 @@ const TelecallerDailyCallDetailPage = () => {
               onChange={(value) => handleDashboardFilterChange('acCode', value)}
               options={acCodeOptions}
               placeholder="Select AC"
+              searchable={true}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
+          {/* Telecalling Group Filter */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Group
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.telecallingGroupId}
+              onChange={(value) => handleDashboardFilterChange('telecallingGroupId', value)}
+              options={telecallingGroupOptions}
+              placeholder="Select Group"
               searchable={true}
               clearable={true}
               maxHeight={300}
@@ -948,6 +1023,7 @@ const TelecallerDailyCallDetailPage = () => {
           callingDates: dashboardFilters.callingDates,
           customDateFrom: dashboardFilters.fromDate,
           customDateTo: dashboardFilters.toDate,
+          telecallingGroupId: dashboardFilters.telecallingGroupId,
         }}
         trigger={metricsTrigger}
       />
