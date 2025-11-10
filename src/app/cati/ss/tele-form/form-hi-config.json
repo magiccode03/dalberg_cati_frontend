@@ -240,6 +240,61 @@
     },
     "tag": "consent"
   },
+
+  {
+    "type": "radio",
+    "label": "क्या आप इस विधानसभा क्षेत्र के पंजीकृत (रजिस्टर्ड) मतदाता हैं?",
+    "conditional": "consent === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_gender",
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_gender"
+        ]
+      }
+    },
+    "tag": "resp_registered_voter"
+  },
   {
     "type": "number",
     "label": "आप कितने साल के हो अभी?",
