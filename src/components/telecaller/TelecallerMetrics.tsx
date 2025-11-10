@@ -60,6 +60,7 @@ export type TelecallerMetricsFilters = {
   callingDates?: string;
   customDateFrom?: string;
   customDateTo?: string;
+  telecallerStatus?: string;
 };
 
 const MetricCard: React.FC<{
@@ -161,12 +162,15 @@ export default function TelecallerMetrics({ filters, trigger }: { filters?: Tele
     const p = new URLSearchParams();
     if (filters?.telecaller) p.append('teleform_user_id', filters.telecaller);
     if (filters?.acCode) p.append('ac_code', filters.acCode);
+    if (filters?.telecallerStatus && filters.telecallerStatus !== '') {
+      p.append('status', filters.telecallerStatus);
+    }
     const dr = getDateRangeForAPI(filters?.callingDates, filters?.customDateFrom, filters?.customDateTo);
     Object.entries(dr).forEach(([k, v]) => {
       if (v) p.append(k, v);
     });
     return p.toString();
-  }, [filters?.telecaller, filters?.acCode, filters?.callingDates, filters?.customDateFrom, filters?.customDateTo]);
+  }, [filters?.telecaller, filters?.acCode, filters?.telecallerStatus, filters?.callingDates, filters?.customDateFrom, filters?.customDateTo]);
 
   // Track last requested query to avoid duplicate calls (e.g., StrictMode double effect)
   const lastQueryRef = useRef<string>('');
