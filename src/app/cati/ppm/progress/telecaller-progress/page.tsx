@@ -881,10 +881,10 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller Mobile No.',
           'Group',
           'Number of Dials',
+          'Completed',
           'Successful',
           'Under QC',
-          'QC Rejected',
-          'Short Interview',
+          'Rejected',
           'Number of Calls Connected',
           'Form Duration',
           'Call Not Received to Telecaller',
@@ -906,6 +906,7 @@ const TelecallerProgressPage: React.FC = () => {
           'Terminated',
           'Incompleted',
           'Ineligible',
+          'Short Interview',
         ];
 
         const csvRows = [
@@ -917,10 +918,10 @@ const TelecallerProgressPage: React.FC = () => {
             `"${item.caller_mobile_no || '-'}"`,
             `"${item.telecalling_group_name || '-'}"`,
             item.number_of_dials || 0,
+            item.successful || 0,
             item.pass || 0,
             item.under_qc || 0,
             item.qc_rejected || 0,
-            item.short_interview || 0,
             item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
             item.call_not_received_to_telecaller || 0,
@@ -941,7 +942,8 @@ const TelecallerProgressPage: React.FC = () => {
             item.successful || 0,
             item.terminated || 0,
             item.incompleted || 0,
-            item.ineligible || 0
+            item.ineligible || 0,
+            item.short_interview || 0
           ].join(','))
         ];
 
