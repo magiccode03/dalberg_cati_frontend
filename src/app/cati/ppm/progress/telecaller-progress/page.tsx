@@ -105,6 +105,10 @@ interface TelecallerWiseData {
   ineligible: number;
   less_than_180_sec: number;
   greater_than_180_sec: number;
+  pass?: number;
+  under_qc?: number;
+  qc_rejected?: number;
+  short_interview?: number;
 }
 
 // Pagination interface for telecaller data
@@ -762,6 +766,10 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller Mobile No.',
           'Group',
           'Number of Dials',
+          'Successful',
+          'Under QC',
+          'QC Rejected',
+          'Short Interview',
           'Number of Calls Connected',
           'Form Duration',
           'Call Not Received to Telecaller',
@@ -794,6 +802,10 @@ const TelecallerProgressPage: React.FC = () => {
             `"${item.caller_mobile_no || '-'}"`,
             `"${item.telecalling_group_name || '-'}"`,
             item.number_of_dials || 0,
+            item.pass || 0,
+            item.under_qc || 0,
+            item.qc_rejected || 0,
+            item.short_interview || 0,
             item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
             item.call_not_received_to_telecaller || 0,
@@ -1507,7 +1519,12 @@ const TelecallerProgressPage: React.FC = () => {
                       <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-blue-500 text-white">Number of Dials</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-cyan-500 text-white"> Completed</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-green-500 text-white">Successful</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-yellow-500 text-white">Under QC</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-red-500 text-white">Rejected</th>
+                      {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Short Interview</th> */}
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
@@ -1551,9 +1568,24 @@ const TelecallerProgressPage: React.FC = () => {
                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                             {item.telecalling_group_name || '-'}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400 ">
                             {item.number_of_dials?.toLocaleString() || 0}
                           </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-cyan-600 dark:text-cyan-400">
+                            {item.successful?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                            {item.pass?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-yellow-600 dark:text-yellow-400">
+                            {item.under_qc?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                            {item.qc_rejected?.toLocaleString() || 0}
+                          </td>
+                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
+                            {item.short_interview?.toLocaleString() || 0}
+                          </td> */}
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_calls_connected?.toLocaleString() || 0}
                           </td>
