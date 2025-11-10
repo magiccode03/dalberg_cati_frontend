@@ -79,6 +79,12 @@ interface ACData {
   district_name: string;
 }
 
+// Telecalling Group interface
+interface TelecallingGroup {
+  id: number;
+  name: string;
+}
+
 // Telecaller Summary Data interface
 interface TelecallerWiseData {
   caller_id: number;
@@ -105,6 +111,10 @@ interface TelecallerWiseData {
   ineligible: number;
   less_than_180_sec: number;
   greater_than_180_sec: number;
+  pass?: number;
+  under_qc?: number;
+  qc_rejected?: number;
+  short_interview?: number;
 }
 
 // Pagination interface for telecaller data
@@ -131,6 +141,14 @@ const TelecallerProgressPage: React.FC = () => {
   const [acList, setAcList] = useState<ACData[]>([]);
   const [loadingACs, setLoadingACs] = useState(false);
 
+  // Telecalling Group filter states
+  interface TelecallingGroup {
+    id: number;
+    name: string;
+  }
+  const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
+
   // Search filters state
   const [filters, setFilters] = useState({
     serverId: '',
@@ -143,6 +161,7 @@ const TelecallerProgressPage: React.FC = () => {
     callOutcome: '',
     talkDuration: '',
     telecallerStatus: '1',
+    telecallingGroupId: '',
   });
 
   // Telecaller-wise data states
@@ -183,6 +202,16 @@ const TelecallerProgressPage: React.FC = () => {
       value: tc.teleform_user_id.toString(),
       label: `${tc.name} (${tc.mobile_number})`,
     })),
+  ];
+
+  const telecallingGroupOptions = [
+    { value: '', label: 'All Groups' },
+    ...telecallingGroups
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((group) => ({
+        value: group.id.toString(),
+        label: group.name,
+      })),
   ];
 
   const callOutcomeOptions = [
@@ -406,6 +435,11 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('status', filters.telecallerStatus);
       }
 
+      // Telecalling group filter
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
       // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -494,7 +528,11 @@ const TelecallerProgressPage: React.FC = () => {
       if (filters.telecallerStatus && filters.telecallerStatus !== '') {
         params.append('status', filters.telecallerStatus);
       }
-
+      
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+      
       // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -614,6 +652,41 @@ const TelecallerProgressPage: React.FC = () => {
     }
   };
 
+  // Fetch telecalling groups
+  const fetchTelecallingGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiUrl}/api/teleform-users/telecalling-groups`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success && Array.isArray(result.data)) {
+          const groups: TelecallingGroup[] = result.data.map((item: any) => ({
+            id: item.telecalling_group_id || item.id,
+            name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+          }));
+          setTelecallingGroups(groups);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching telecalling groups:', err);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
   // Fetch telecaller-wise data - fetch all pages to get complete data
   const fetchTelecallerWiseData = async () => {
     setTelecallerDataLoading(true);
@@ -652,6 +725,10 @@ const TelecallerProgressPage: React.FC = () => {
       
       if (filters.telecallerStatus && filters.telecallerStatus !== '') {
         params.append('status', filters.telecallerStatus);
+      }
+
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
       }
 
         // Date filter - handle custom dates and predefined ranges
@@ -768,6 +845,10 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('status', filters.telecallerStatus);
       }
 
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
       // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -800,6 +881,10 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller Mobile No.',
           'Group',
           'Number of Dials',
+          'Completed',
+          'Successful',
+          'Under QC',
+          'Rejected',
           'Number of Calls Connected',
           'Form Duration',
           'Call Not Received to Telecaller',
@@ -821,6 +906,7 @@ const TelecallerProgressPage: React.FC = () => {
           'Terminated',
           'Incompleted',
           'Ineligible',
+          'Short Interview',
         ];
 
         const csvRows = [
@@ -832,6 +918,10 @@ const TelecallerProgressPage: React.FC = () => {
             `"${item.caller_mobile_no || '-'}"`,
             `"${item.telecalling_group_name || '-'}"`,
             item.number_of_dials || 0,
+            item.successful || 0,
+            item.pass || 0,
+            item.under_qc || 0,
+            item.qc_rejected || 0,
             item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
             item.call_not_received_to_telecaller || 0,
@@ -852,7 +942,8 @@ const TelecallerProgressPage: React.FC = () => {
             item.successful || 0,
             item.terminated || 0,
             item.incompleted || 0,
-            item.ineligible || 0
+            item.ineligible || 0,
+            item.short_interview || 0
           ].join(','))
         ];
 
@@ -894,6 +985,7 @@ const TelecallerProgressPage: React.FC = () => {
 
   useEffect(() => {
     fetchACList();
+    fetchTelecallingGroups();
   }, []);
 
   // Fetch initial data on mount
@@ -1309,6 +1401,22 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
+            {/* Telecalling Group */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Group
+              </label>
+              <SelectDropdown
+                value={filters.telecallingGroupId}
+                onChange={(value) => handleFilterChange('telecallingGroupId', value)}
+                options={telecallingGroupOptions}
+                placeholder="Select Group"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
+              />
+            </div>
+
             {/* Telecaller Status */}
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1440,6 +1548,7 @@ const TelecallerProgressPage: React.FC = () => {
                   customDateFrom: filters.customDateFrom,
                   customDateTo: filters.customDateTo,
                   telecallerStatus: filters.telecallerStatus,
+                  telecallingGroupId: filters.telecallingGroupId,
                 }}
                 trigger={metricsTrigger}
               />
@@ -1563,7 +1672,12 @@ const TelecallerProgressPage: React.FC = () => {
                       <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-blue-500 text-white">Number of Dials</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-cyan-500 text-white"> Completed</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-green-500 text-white">Successful</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-yellow-500 text-white">Under QC</th>
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-red-500 text-white">Rejected</th>
+                      {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Short Interview</th> */}
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
@@ -1607,9 +1721,24 @@ const TelecallerProgressPage: React.FC = () => {
                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                             {item.telecalling_group_name || '-'}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400 ">
                             {item.number_of_dials?.toLocaleString() || 0}
                           </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-cyan-600 dark:text-cyan-400">
+                            {item.successful?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                            {item.pass?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-yellow-600 dark:text-yellow-400">
+                            {item.under_qc?.toLocaleString() || 0}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                            {item.qc_rejected?.toLocaleString() || 0}
+                          </td>
+                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
+                            {item.short_interview?.toLocaleString() || 0}
+                          </td> */}
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_calls_connected?.toLocaleString() || 0}
                           </td>
