@@ -13,6 +13,29 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, ExternalLink, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
+// Parse ISO like "2025-11-11T16:17:00.000Z" WITHOUT timezone conversion
+// Output: "2025-11-11 04:17:00 PM"
+function formatIsoTo12h(value?: string | null) {
+  if (!value) return '-';
+  const m = value.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return '-';
+  const date = m[1];
+  let hour = parseInt(m[2], 10);
+  const minute = m[3];
+  const second = m[4];
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+  const hh = hour.toString().padStart(2, '0');
+  return `${date} ${hh}:${minute}:${second} ${ampm}`;
+}
+
+// CSV-safe (empty string for missing)
+function formatIsoTo12hCsv(value?: string | null) {
+  const r = formatIsoTo12h(value);
+  return r === '-' ? '' : r;
+}
+
 interface QCUserProgressData {
   user_id: number;
   user_name: string;
@@ -21,6 +44,8 @@ interface QCUserProgressData {
   agency_id: number;
   agency_name: string;
   status: number;
+  start_time?: string | null;
+  end_time?: string | null;
   total_qc_assigned: number;
   total_qc_pass: number;
   total_qc_fail: number;
@@ -461,6 +486,8 @@ export default function QCUserProgressPage() {
         'User ID', 
         'User Name',
         'Mobile Number',
+        'Start time',
+        'End time',
         'Total Assigned',
         'QC Pass',
         'QC Fail',
@@ -475,6 +502,8 @@ export default function QCUserProgressPage() {
           user.user_id,
           `"${user.user_name}"`,
           `"${user.mobile_number}"`,
+          `"${formatIsoTo12hCsv(user.start_time)}"`,
+          `"${formatIsoTo12hCsv(user.end_time)}"`,
           user.total_qc_assigned,
           user.total_qc_pass,
           user.total_qc_fail,
@@ -628,7 +657,7 @@ export default function QCUserProgressPage() {
                 onChange={(value) => handleFilterChange('qcUserStatus', value as string)}
                   options={[
                     { value: '1', label: 'Active' },
-                    { value: '0', label: 'Inactive' },
+                    { value: '2', label: 'Inactive' },
                   ]}
                 placeholder="Select Status"
                 />
@@ -724,6 +753,8 @@ export default function QCUserProgressPage() {
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">User ID</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">User Name</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Start time</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">End time</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     Total Assigned
                   </th>
@@ -747,6 +778,8 @@ export default function QCUserProgressPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.user_name || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobile_number || '-'}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{formatIsoTo12h(user.start_time)}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{formatIsoTo12h(user.end_time)}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_assigned.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pass.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_fail.toLocaleString()}</td>
