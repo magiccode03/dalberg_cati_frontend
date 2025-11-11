@@ -90,7 +90,7 @@ export default function InterviewListPage() {
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 50,
+    limit: 25,
     total: 0,
     totalPages: 0,
     hasNext: false,
@@ -259,7 +259,7 @@ export default function InterviewListPage() {
         setInterviewData(data.data.interviews);
         setPagination({
           page: data.data.pagination?.current_page || 1,
-          limit: data.data.pagination?.per_page || 50,
+          limit: data.data.pagination?.per_page || 25,
           total: data.data.pagination?.total_count || 0,
           totalPages: data.data.pagination?.total_pages || 0,
           hasNext: data.data.pagination?.has_next || false,

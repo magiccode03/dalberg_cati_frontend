@@ -105,10 +105,6 @@ interface TelecallerWiseData {
   ineligible: number;
   less_than_180_sec: number;
   greater_than_180_sec: number;
-  pass?: number;
-  under_qc?: number;
-  qc_rejected?: number;
-  short_interview?: number;
 }
 
 // Pagination interface for telecaller data
@@ -146,7 +142,6 @@ const TelecallerProgressPage: React.FC = () => {
     phone: '',
     callOutcome: '',
     talkDuration: '',
-    telecallerStatus: '1',
   });
 
   // Telecaller-wise data states
@@ -199,12 +194,6 @@ const TelecallerProgressPage: React.FC = () => {
     { value: '4', label: 'Number Exhausted' },
     { value: '3', label: 'Reject Interview' },
     { value: '1', label: 'Successful Interview' },
-  ];
-
-  const telecallerStatusOptions = [
-    { value: '', label: 'All' },
-    { value: '1', label: 'Active' },
-    { value: '0', label: 'Inactive' },
   ];
 
   const talkDurationOptions = [
@@ -354,14 +343,6 @@ const TelecallerProgressPage: React.FC = () => {
   // Filter change handler
   const handleFilterChange = (field: string, value: string | string[]) => {
     const newValue = Array.isArray(value) ? value[0] || '' : value;
-    if (field === 'telecallerStatus') {
-      setFilters((prev) => ({
-        ...prev,
-        telecallerStatus: newValue,
-        telecaller: '',
-      }));
-      return;
-    }
     setFilters((prev) => ({
       ...prev,
       [field]: newValue,
@@ -410,11 +391,6 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('ac_code', filters.acCode);
       }
       
-      // Telecaller status filter
-      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
-        params.append('status', filters.telecallerStatus);
-      }
-
       // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -500,10 +476,6 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('ac_code', filters.acCode);
       }
       
-      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
-        params.append('status', filters.telecallerStatus);
-      }
-
       // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -555,20 +527,14 @@ const TelecallerProgressPage: React.FC = () => {
   };
 
   // Fetch telecallers list
-  const fetchTelecallers = async (statusFilter?: string) => {
+  const fetchTelecallers = async () => {
     setLoadingTelecallers(true);
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const params = new URLSearchParams({ limit: '1000' });
-      const statusParam = typeof statusFilter === 'string' ? statusFilter : filters.telecallerStatus;
-      if (statusParam && statusParam !== '') {
-        params.append('status', statusParam);
-      }
-
-      const response = await fetch(`${apiUrl}/api/teleform-users?${params.toString()}`, {
+      const response = await fetch(`${apiUrl}/api/teleform-users?status=1&limit=1000`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -659,10 +625,6 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('teleform_user_id', filters.telecaller);
       }
       
-      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
-        params.append('status', filters.telecallerStatus);
-      }
-
         // Date filter - handle custom dates and predefined ranges
         const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
         Object.entries(dateRange).forEach(([key, value]) => {
@@ -781,10 +743,6 @@ const TelecallerProgressPage: React.FC = () => {
         params.append('teleform_user_id', filters.telecaller);
       }
       
-      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
-        params.append('status', filters.telecallerStatus);
-      }
-
       // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
@@ -817,10 +775,6 @@ const TelecallerProgressPage: React.FC = () => {
           'Caller Mobile No.',
           'Group',
           'Number of Dials',
-          'Successful',
-          'Under QC',
-          'QC Rejected',
-          'Short Interview',
           'Number of Calls Connected',
           'Form Duration',
           'Call Not Received to Telecaller',
@@ -853,10 +807,6 @@ const TelecallerProgressPage: React.FC = () => {
             `"${item.caller_mobile_no || '-'}"`,
             `"${item.telecalling_group_name || '-'}"`,
             item.number_of_dials || 0,
-            item.pass || 0,
-            item.under_qc || 0,
-            item.qc_rejected || 0,
-            item.short_interview || 0,
             item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
             item.call_not_received_to_telecaller || 0,
@@ -914,10 +864,7 @@ const TelecallerProgressPage: React.FC = () => {
 
   // Fetch telecallers and ACs on mount
   useEffect(() => {
-    fetchTelecallers(filters.telecallerStatus);
-  }, [filters.telecallerStatus]);
-
-  useEffect(() => {
+    fetchTelecallers();
     fetchACList();
   }, []);
 
@@ -1334,21 +1281,7 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            {/* Telecaller Status */}
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Telecaller Status
-              </label>
-              <SelectDropdown
-                value={filters.telecallerStatus}
-                onChange={(value) => handleFilterChange('telecallerStatus', value)}
-                options={telecallerStatusOptions}
-                placeholder="Select Status"
-                searchable={false}
-                clearable={true}
-                maxHeight={300}
-              />
-            </div>
+            
 
             {/* Call Outcome */}
             <div className="flex-1 min-w-[200px]">
@@ -1464,7 +1397,6 @@ const TelecallerProgressPage: React.FC = () => {
                   callingDates: filters.callingDates,
                   customDateFrom: filters.customDateFrom,
                   customDateTo: filters.customDateTo,
-                  telecallerStatus: filters.telecallerStatus,
                 }}
                 trigger={metricsTrigger}
               />
@@ -1587,12 +1519,7 @@ const TelecallerProgressPage: React.FC = () => {
                       <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-blue-500 text-white">Number of Dials</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-cyan-500 text-white"> Completed</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-green-500 text-white">Successful</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-yellow-500 text-white">Under QC</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-red-500 text-white">Rejected</th>
-                      {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Short Interview</th> */}
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
@@ -1636,24 +1563,9 @@ const TelecallerProgressPage: React.FC = () => {
                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                             {item.telecalling_group_name || '-'}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400 ">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_dials?.toLocaleString() || 0}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-cyan-600 dark:text-cyan-400">
-                            {item.successful?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
-                            {item.pass?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-yellow-600 dark:text-yellow-400">
-                            {item.under_qc?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
-                            {item.qc_rejected?.toLocaleString() || 0}
-                          </td>
-                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
-                            {item.short_interview?.toLocaleString() || 0}
-                          </td> */}
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_calls_connected?.toLocaleString() || 0}
                           </td>
@@ -1744,8 +1656,6 @@ const TelecallerProgressPage: React.FC = () => {
           </div>
         )}
 
-      </div>
-      
       </Card>
     </Container>
   );

@@ -441,8 +441,8 @@ const InterviewLogPage = () => {
           setTotalPages(data.data.pagination.total_pages || Math.ceil(transformedData.length / pageSize));
         } else {
           // Fallback if pagination info is not available
-          setTotalCount(transformedData.length);
-          setTotalPages(Math.ceil(transformedData.length / pageSize));
+        setTotalCount(transformedData.length);
+        setTotalPages(Math.ceil(transformedData.length / pageSize));
         }
         
         setError(null);
@@ -717,14 +717,14 @@ const InterviewLogPage = () => {
                       Start Date
                       <span className="text-red-500 ml-1">*</span>
                     </Text>
-                    <Input
-                      type="date"
+                <Input
+                  type="date"
                       value={filters.custom_date}
                       onChange={(e) => handleFilterChange('custom_date', e.target.value)}
                       className="w-full"
                       required
-                    />
-                  </div>
+                />
+              </div>
                   <div>
                     <Text className="text-sm font-medium mb-2">
                       End Date
@@ -1100,32 +1100,32 @@ const InterviewLogPage = () => {
                             </span>
                           </td>
                           <td className="text-center">
-                            <button 
-                              className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                interview.audio_playback_available 
-                                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              }`}
-                              title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
-                              disabled={!interview.audio_playback_available}
+                              <button 
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.audio_playback_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                                disabled={!interview.audio_playback_available}
                               onClick={() => handlePlayAudio(interview)}
-                            >
-                              <Volume2 className="w-4 h-4" />
-                            </button>
+                              >
+                                <Volume2 className="w-4 h-4" />
+                              </button>
                           </td>
                           <td className="text-center">
-                            <button 
-                              className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
-                                interview.gps_available 
-                                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              }`}
-                              title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
-                              disabled={!interview.gps_available}
-                              onClick={() => handleGpsMap(interview)}
-                            >
-                              <MapPin className="w-4 h-4" />
-                            </button>
+                              <button 
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.gps_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                                disabled={!interview.gps_available}
+                                onClick={() => handleGpsMap(interview)}
+                              >
+                                <MapPin className="w-4 h-4" />
+                              </button>
                           </td>
                         </tr>
                       ))}
@@ -1144,13 +1144,13 @@ const InterviewLogPage = () => {
 
                 {/* Pagination */}
                 <div className="mt-6">
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                  />
+                    <PaginationStandard
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalItems={totalCount}
+                      itemsPerPage={pageSize}
+                      onPageChange={handlePageChange}
+                    />
                 </div>
               </div>
             </div>
