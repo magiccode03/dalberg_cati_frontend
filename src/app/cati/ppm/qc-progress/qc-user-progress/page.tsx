@@ -624,7 +624,7 @@ export default function QCUserProgressPage() {
                 onChange={(value) => handleFilterChange('qcUserStatus', value as string)}
                   options={[
                     { value: '1', label: 'Active' },
-                    { value: '2', label: 'Inactive' },
+                    { value: '0', label: 'Inactive' },
                   ]}
                 placeholder="Select Status"
                 />
