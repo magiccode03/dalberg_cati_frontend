@@ -73,6 +73,7 @@ export default function QCFormPage() {
   const audioPlayerRef = useRef<HTMLDivElement>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Use the imported formConfig directly
   const currentFormConfig = formConfig as FormField[];
@@ -571,6 +572,9 @@ export default function QCFormPage() {
         qc_status: qcOutcome, // 1 = Pass, 2 = Fail
         qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
         qc_complete_date: currentDate, // Date of submission
+        // Include to trigger backend QC comprehensive log
+        qc_teleform_user_id: qcTeleformUserId ? Number(qcTeleformUserId) : undefined,
+        save_type: 2, // Submit
       };
       
       // Add form field values if they exist
@@ -618,6 +622,61 @@ export default function QCFormPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Auto-save handler (save_type = 1)
+  const autoSaveQCData = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token || !interviewId) return;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const requestBody: Record<string, any> = {
+        qc_teleform_user_id: qcTeleformUserId ? Number(qcTeleformUserId) : undefined,
+        save_type: 1,
+      };
+      const formFields = ['qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8', 'qc_q9'];
+      formFields.forEach(fieldTag => {
+        const fieldValue = formData[fieldTag];
+        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+          if (fieldTag === 'qc_q9') {
+            requestBody[fieldTag] = fieldValue;
+          } else {
+            const numValue = parseInt(fieldValue);
+            requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
+          }
+        }
+      });
+    // Ensure qc_q9 clears in DB when user deletes it (send empty string explicitly)
+    if (formData.qc_q9 === '' || formData.qc_q9 === null) {
+      requestBody.qc_q9 = '';
+    }
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+    } catch (err) {
+      console.error('Auto-save QC error:', err);
+    }
+  };
+
+  // Debounce auto-save on form changes
+  useEffect(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    if (!formData) return;
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      void autoSaveQCData();
+    }, 800);
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, qcTeleformUserId, interviewId]);
 
   // Validate all required fields
   const validateForm = (): { isValid: boolean; errors: string[] } => {
