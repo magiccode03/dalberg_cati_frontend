@@ -1463,9 +1463,17 @@ export const menuData: MenuItem[] = [
       {
         id: 'cati-ppm-qc-user-progress',
         label: 'QC User Progress',
-        href: '/cati/ppm/qc-progress/qc-user-progress',
+        href: '/cati/ppm/qc-progress/qc-user-progress', 
         icon: 'Users',
         roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-user-progress-daily',
+        label: 'QC User Progress Daily',
+        href: '/cati/ppm/qc-progress/qc-user-progress-daily',
+        icon: 'Users',
+        roles: ['ppm'], 
         system: 'cati',
       },
       {
