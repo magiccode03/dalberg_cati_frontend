@@ -41,6 +41,9 @@ export default function NewCallPage() {
   const [hasMore, setHasMore] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const scrollTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [isCallInitiating, setIsCallInitiating] = useState(false);
+  const [callStatusMessage, setCallStatusMessage] = useState<string>("Calling in progress, please wait...");
+  const callRedirectTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Load teleform user data from localStorage on component mount
   useEffect(() => {
@@ -155,7 +158,13 @@ export default function NewCallPage() {
 
   const handleConnectToCall = async (interviewId: number, phoneNumber: string, acCode: number) => {
     try {
-      console.log('Initiating call:', { interviewId, phoneNumber });
+      console.log("Initiating call:", { interviewId, phoneNumber });
+      setCallStatusMessage("Connecting the call, please wait...");
+      setIsCallInitiating(true);
+
+      if (callRedirectTimeoutRef.current) {
+        clearTimeout(callRedirectTimeoutRef.current);
+      }
       
       if (!teleformUserData?.mobile_number) {
         alert('User phone number not found');
@@ -187,7 +196,18 @@ export default function NewCallPage() {
       const callData = await callResponse.json();
       
       if (callData.success) {
-        console.log('Call initiated successfully:', callData);
+        console.log("Call initiated successfully:", callData);
+        setCallStatusMessage("Call initiated successfully. Please wait for 30 seconds...");
+
+        if (callRedirectTimeoutRef.current) {
+          clearTimeout(callRedirectTimeoutRef.current);
+        }
+
+        callRedirectTimeoutRef.current = setTimeout(() => {
+          callRedirectTimeoutRef.current = null;
+          setIsCallInitiating(false);
+          router.push(`/cati/ss/tele-form/${interviewId}/${acCode}`);
+        }, 30000);
         
         // Update interview status to 1 and include callId from click-to-call response
         const updateResponse = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
@@ -213,15 +233,25 @@ export default function NewCallPage() {
           console.error('Failed to update interview status:', updateData);
         }
         
-        // Navigate to tele-form page with interview ID and AC code after successful call initiation
-        router.push(`/cati/ss/tele-form/${interviewId}/${acCode}`);
       } else {
-        console.error('Call initiation failed:', callData);
+        console.error("Call initiation failed:", callData);
+        if (callRedirectTimeoutRef.current) {
+          clearTimeout(callRedirectTimeoutRef.current);
+        }
+        callRedirectTimeoutRef.current = null;
+        setIsCallInitiating(false);
+        setCallStatusMessage("Calling in progress, please wait...");
         alert(`Call initiation failed: ${callData.message || 'Unknown error'}`);
       }
       
     } catch (error) {
-      console.error('Error initiating call:', error);
+      console.error("Error initiating call:", error);
+      if (callRedirectTimeoutRef.current) {
+        clearTimeout(callRedirectTimeoutRef.current);
+      }
+      callRedirectTimeoutRef.current = null;
+      setIsCallInitiating(false);
+      setCallStatusMessage("Calling in progress, please wait...");
       alert('Failed to initiate call. Please try again.');
     }
   };
@@ -260,6 +290,14 @@ export default function NewCallPage() {
     localStorage.removeItem('teleform_user_data');
     router.push('/cati/ss/start-form-filling');
   };
+
+  React.useEffect(() => {
+    return () => {
+      if (callRedirectTimeoutRef.current) {
+        clearTimeout(callRedirectTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <Container maxWidth="full">
@@ -482,6 +520,19 @@ export default function NewCallPage() {
           </Card>
         )*/}
       </div>
+      {isCallInitiating && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 text-center">
+              {callStatusMessage}
+            </p>
+            {/* <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+              If the call does not connect within 15 seconds, please try again.
+            </p> */}
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
