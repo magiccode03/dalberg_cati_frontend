@@ -12,6 +12,8 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, ExternalLink, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import Link from "next/link";
+import { MouseEvent } from 'react';
 
 // Parse ISO like "2025-11-11T16:17:00.000Z" WITHOUT timezone conversion
 // Output: "2025-11-11 04:17:00 PM"
@@ -98,7 +100,7 @@ interface QCUserOption {
 
 export default function QCUserProgressPage() {
   const router = useRouter();
-  
+
   const [filters, setFilters] = useState({
     reportDays: '',
     customDateFrom: '',
@@ -113,7 +115,7 @@ export default function QCUserProgressPage() {
   const [error, setError] = useState<string | null>(null);
   const [qcUserOptions, setQcUserOptions] = useState<QCUserOption[]>([]);
   const [qcUserOptionsLoading, setQcUserOptionsLoading] = useState(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
@@ -126,19 +128,19 @@ export default function QCUserProgressPage() {
   const fetchQCUserOptions = async (status: string) => {
     try {
       setQcUserOptionsLoading(true);
-      
+
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Request timeout')), 5000);
       });
-      
+
       const response = await Promise.race([
         apiClient.get(`/teleform-users?qc=1&status=${status}&limit=500`),
         timeoutPromise
       ]) as any;
-      
+
       const data = response.data;
-      
+
       if (data.success && data.data) {
         const options: QCUserOption[] = data.data.map((user: any) => ({
           id: user.id,
@@ -182,26 +184,26 @@ export default function QCUserProgressPage() {
 
   // Fetch data from API
   const fetchData = async (page: number = currentPage) => {
-      try {
-        setLoading(true);
-        setError(null);
-        
+    try {
+      setLoading(true);
+      setError(null);
+
       console.log('=== Starting API Call ===');
       console.log('Current filters:', filters);
       console.log('Current page:', page);
-        
-        // Build query parameters from filters
-        const queryParams = new URLSearchParams();
-      
+
+      // Build query parameters from filters
+      const queryParams = new URLSearchParams();
+
       // Add pagination parameters
       queryParams.append('page', page.toString());
       queryParams.append('pageSize', pageSize.toString());
-      
+
       // Add filter parameters
       if (filters.acCode) queryParams.append('ac_code', filters.acCode);
       if (filters.teleformUserId) queryParams.append('teleform_user_id', filters.teleformUserId);
       if (filters.qcUserStatus) queryParams.append('status', filters.qcUserStatus);
-      
+
       // Handle date filters - use qc_complete_start_date and qc_complete_end_date
       if (filters.reportDays === 'custom' && filters.customDateFrom && filters.customDateTo) {
         queryParams.append('qc_complete_start_date', filters.customDateFrom);
@@ -211,7 +213,7 @@ export default function QCUserProgressPage() {
         const today = new Date();
         let fromDate: string;
         let toDate: string = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-        
+
         switch (filters.reportDays) {
           case 'today':
             fromDate = toDate;
@@ -250,38 +252,38 @@ export default function QCUserProgressPage() {
           default:
             fromDate = toDate;
         }
-        
+
         queryParams.append('qc_complete_start_date', fromDate);
         queryParams.append('qc_complete_end_date', toDate);
-        
+
         console.log(`Date range for ${filters.reportDays}: ${fromDate} to ${toDate}`);
       }
-      
+
       const queryString = queryParams.toString();
       const endpoint = `/cati/qc/unified-user-statistics?${queryString}`;
-      
+
       console.log('Query params:', queryString);
       console.log('Full endpoint:', endpoint);
-        console.log('Making API request to:', endpoint);
-        
+      console.log('Making API request to:', endpoint);
+
       // Add timeout to prevent hanging
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
-        });
-        
-        const response = await Promise.race([
-          apiClient.get(endpoint),
-          timeoutPromise
-        ]) as any;
-        
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+      });
+
+      const response = await Promise.race([
+        apiClient.get(endpoint),
+        timeoutPromise
+      ]) as any;
+
       console.log('Raw response:', response);
-        const data: APIResponse = response.data;
+      const data: APIResponse = response.data;
       console.log('Parsed API Response:', data);
-      
+
       if (data.success && data.data && Array.isArray(data.data)) {
         console.log('Success! Data received:', data.data.length, 'items');
         setQcUserProgressData(data.data);
-        
+
         // Handle pagination info
         if (data.pagination) {
           setTotalPages(data.pagination.totalPages);
@@ -297,7 +299,7 @@ export default function QCUserProgressPage() {
           setHasPrevious(false);
           setCurrentPage(1);
         }
-          } else {
+      } else {
         console.log('No data or unsuccessful response');
         setQcUserProgressData([]);
         setTotalPages(0);
@@ -307,37 +309,37 @@ export default function QCUserProgressPage() {
         if (data.error) {
           setError(data.error);
         }
-        }
-      } catch (err: any) {
+      }
+    } catch (err: any) {
       console.error('=== API Error ===');
       console.error('Error details:', err);
       console.error('Error message:', err.message);
       console.error('Error response:', err.response);
-        
-        if (err.message === 'Request timeout after 10 seconds') {
+
+      if (err.message === 'Request timeout after 10 seconds') {
         setError('Request timed out. Please try again.');
-        } else if (err.response?.status === 401) {
-          setError('Authentication required. Please log in again.');
-        } else if (err.response?.status === 403) {
-          setError('Access forbidden. You do not have permission to view this data.');
-        } else if (err.response?.data?.error) {
-          setError(err.response.data.error);
-        } else if (err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          setError(err.message || 'An error occurred while fetching data');
-        }
-        
+      } else if (err.response?.status === 401) {
+        setError('Authentication required. Please log in again.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. You do not have permission to view this data.');
+      } else if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError(err.message || 'An error occurred while fetching data');
+      }
+
       setQcUserProgressData([]);
       setTotalPages(0);
       setTotalCount(0);
       setHasNext(false);
       setHasPrevious(false);
-      } finally {
+    } finally {
       console.log('=== API Call Finished ===');
-        setLoading(false);
-      }
-    };
+      setLoading(false);
+    }
+  };
 
   // Generate QC User options for dropdown
   const generateQCUserDropdownOptions = () => {
@@ -351,13 +353,20 @@ export default function QCUserProgressPage() {
     return options;
   };
 
+  const handleRowLinkClick = (event: MouseEvent<HTMLAnchorElement>, user: QCUserProgressData) => {
+    try {
+      sessionStorage.setItem(`qc-user-progress-detail-${user.user_id}`, JSON.stringify(user));
+    } catch (err) {
+      console.warn('Unable to cache QC user detail', err);
+    }
+  };
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
       ...prev,
       [field]: value
     }));
-    
+
     // Reset QC User ID when status changes
     if (field === 'qcUserStatus') {
       setFilters(prev => ({
@@ -402,15 +411,15 @@ export default function QCUserProgressPage() {
     try {
       // Build query parameters from current filters
       const queryParams = new URLSearchParams();
-      
+
       // Add limit for download
       queryParams.append('limit', '1000');
-      
+
       // Add filter parameters
       if (filters.acCode) queryParams.append('ac_code', filters.acCode);
       if (filters.teleformUserId) queryParams.append('teleform_user_id', filters.teleformUserId);
       if (filters.qcUserStatus) queryParams.append('status', filters.qcUserStatus);
-      
+
       // Handle date filters
       if (filters.reportDays === 'custom' && filters.customDateFrom && filters.customDateTo) {
         queryParams.append('qc_complete_start_date', filters.customDateFrom);
@@ -420,7 +429,7 @@ export default function QCUserProgressPage() {
         const today = new Date();
         let fromDate: string;
         let toDate: string = today.toISOString().split('T')[0];
-        
+
         switch (filters.reportDays) {
           case 'today':
             fromDate = toDate;
@@ -459,20 +468,20 @@ export default function QCUserProgressPage() {
           default:
             fromDate = toDate;
         }
-        
+
         queryParams.append('qc_complete_start_date', fromDate);
         queryParams.append('qc_complete_end_date', toDate);
       }
-      
+
       const queryString = queryParams.toString();
       const endpoint = `/cati/qc/unified-user-statistics?${queryString}`;
-      
+
       console.log('Downloading data from:', endpoint);
-      
+
       // Fetch all data for download
       const response = await apiClient.get(endpoint) as any;
       const data: APIResponse = response.data;
-      
+
       if (!data.success || !data.data || !Array.isArray(data.data)) {
         alert('No data available for download.');
         return;
@@ -483,7 +492,7 @@ export default function QCUserProgressPage() {
       // Create CSV headers
       const headers = [
         'Sr.No.',
-        'User ID', 
+        'User ID',
         'User Name',
         'Mobile Number',
         'Start time',
@@ -518,15 +527,15 @@ export default function QCUserProgressPage() {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-      
+
       link.setAttribute('href', url);
       link.setAttribute('download', `qc_user_progress_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       console.log('Download completed successfully');
     } catch (error) {
       console.error('Error downloading data:', error);
@@ -567,8 +576,8 @@ export default function QCUserProgressPage() {
               </div>
               <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
               <Text className="text-gray-600 mb-4">{error}</Text>
-              <button 
-                onClick={() => window.location.reload()} 
+              <button
+                onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
               >
                 Retry
@@ -585,10 +594,10 @@ export default function QCUserProgressPage() {
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
         {/* Page Header */}
         <div className="mb-6">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              QC User Progress
-            </Heading>
-          </div>
+          <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            QC User Progress
+          </Heading>
+        </div>
 
         {/* Search Filters */}
         <Card className="p-4 mb-5">
@@ -598,7 +607,7 @@ export default function QCUserProgressPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Report Days
               </label>
-                <SelectDropdown
+              <SelectDropdown
                 value={filters.reportDays}
                 onChange={(value) => handleFilterChange('reportDays', value as string)}
                 options={[
@@ -615,8 +624,8 @@ export default function QCUserProgressPage() {
                 placeholder="Select Report Days"
                 searchable={false}
                 clearable={true}
-                />
-              </div>
+              />
+            </div>
 
             {/* Custom Date Range Inputs - Only show when "Custom Date" is selected */}
             {filters.reportDays === 'custom' && (
@@ -630,8 +639,8 @@ export default function QCUserProgressPage() {
                     value={filters.customDateFrom}
                     onChange={(e) => handleFilterChange('customDateFrom', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                />
-              </div>
+                  />
+                </div>
 
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -642,8 +651,8 @@ export default function QCUserProgressPage() {
                     value={filters.customDateTo}
                     onChange={(e) => handleFilterChange('customDateTo', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                />
-              </div>
+                  />
+                </div>
               </>
             )}
 
@@ -652,23 +661,23 @@ export default function QCUserProgressPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 QC User Status
               </label>
-                <SelectDropdown
+              <SelectDropdown
                 value={filters.qcUserStatus}
                 onChange={(value) => handleFilterChange('qcUserStatus', value as string)}
-                  options={[
-                    { value: '1', label: 'Active' },
-                    { value: '2', label: 'Inactive' },
-                  ]}
+                options={[
+                  { value: '1', label: 'Active' },
+                  { value: '2', label: 'Inactive' },
+                ]}
                 placeholder="Select Status"
-                />
-              </div>
+              />
+            </div>
 
             {/* QC User Filter */}
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 QC User
               </label>
-                <SelectDropdown
+              <SelectDropdown
                 value={filters.teleformUserId}
                 onChange={(value) => handleFilterChange('teleformUserId', value as string)}
                 options={generateQCUserDropdownOptions()}
@@ -696,14 +705,14 @@ export default function QCUserProgressPage() {
 
             {/* Action Buttons */}
             <div className="flex gap-3">
-                <Button
-                  variant="primary"
-                  onClick={handleSearch}
+              <Button
+                variant="primary"
+                onClick={handleSearch}
                 className="flex items-center"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
+              >
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
               <Button
                 onClick={handleClear}
                 className="bg-gray-500 text-white hover:bg-gray-600 flex items-center"
@@ -712,41 +721,41 @@ export default function QCUserProgressPage() {
                 Clear
               </Button>
             </div>
-            </div>
-          </Card>
+          </div>
+        </Card>
 
         {/* QC User Progress Table */}
         <Card className="">
           <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center">
+            <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
               <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 QC User Progress Summary
-                  </Heading>
-                </div>
-                <div className="flex items-center">
-                  <Button
-                    variant="primary"
-                    onClick={handleDownload}
+              </Heading>
+            </div>
+            <div className="flex items-center">
+              <Button
+                variant="primary"
+                onClick={handleDownload}
                 className="flex items-center"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </div>
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
             Total <strong>{totalCount}</strong> QC users.
-            </div>
+          </div>
 
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
+          <div className="overflow-x-auto">
+            <Table
+              striped
+              bordered
+              hover
+              className="w-full border-collapse"
+            >
               <thead className="sticky-header bg-gray-50">
                 <tr>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
@@ -759,7 +768,7 @@ export default function QCUserProgressPage() {
                     Total Assigned
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                   QC Pass
+                    QC Pass
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     QC Fail
@@ -769,12 +778,18 @@ export default function QCUserProgressPage() {
                   </th>
                 </tr>
               </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200">
                 {qcUserProgressData.map((user, index) => (
                   <tr key={`${user.user_id}-${index}`} className="hover:bg-gray-50">
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{index + 1}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
-                      {user.user_id}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-center">
+                      <Link
+                        href={`/cati/ppm/qc-progress/qc-user-progress-daily/user/${user.user_id}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        onClick={(event) => handleRowLinkClick(event, user)}
+                      >
+                        {user.user_id}
+                      </Link>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.user_name || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobile_number || '-'}</td>
@@ -787,27 +802,27 @@ export default function QCUserProgressPage() {
                   </tr>
                 ))}
               </tbody>
-                </Table>
-              </div>
+            </Table>
+          </div>
 
           {/* Table Footer with Pagination */}
           <div className="flex justify-between items-center mt-4 px-4 pb-4">
-                <div className="text-sm text-gray-700">
+            <div className="text-sm text-gray-700">
               Showing <span className="font-semibold">{((currentPage - 1) * pageSize) + 1}</span> - <span className="font-semibold">{Math.min(currentPage * pageSize, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-                </div>
+            </div>
             {totalPages > 1 && (
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                  />
+              <div>
+                <PaginationStandard
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalCount}
+                  itemsPerPage={pageSize}
+                  onPageChange={handlePageChange}
+                />
               </div>
             )}
-            </div>
-          </Card>
+          </div>
+        </Card>
       </Container>
     </div>
   );
