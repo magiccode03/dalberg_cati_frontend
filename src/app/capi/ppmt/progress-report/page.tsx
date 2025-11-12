@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
@@ -33,6 +34,8 @@ export default function ProgressReportPage() {
   const [acListLoading, setAcListLoading] = useState(false);
   const [psModalOpen, setPsModalOpen] = useState(false);
   const [selectedAcCode, setSelectedAcCode] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
 
   // Load AC list and fetch progress report data on component mount
   useEffect(() => {
@@ -110,6 +113,7 @@ export default function ProgressReportPage() {
       return;
     }
     
+    setCurrentPage(1); // Reset to first page when searching
     fetchProgressReport(false);
   };
 
@@ -203,7 +207,7 @@ export default function ProgressReportPage() {
       switch (level) {
         case 'ac':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'ac_code', label: 'AC Code', width: 'w-20', align: 'center' },
             { key: 'ac_name', label: 'AC Name', width: 'w-32', align: 'left' },
             { key: 'pc_name', label: 'Pc Name', width: 'w-32', align: 'left' },
@@ -230,7 +234,7 @@ export default function ProgressReportPage() {
           ];
         case 'pc':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'pc_code', label: 'PC Code', width: 'w-20', align: 'center' },
             { key: 'pc_name', label: 'PC Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -252,7 +256,7 @@ export default function ProgressReportPage() {
           ];
         case 'interviewer':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'interviewer_id', label: 'Interviewer ID', width: 'w-32', align: 'center' },
             { key: 'no_of_ac', label: 'No of AC covered', width: 'w-40', align: 'center' },
             { key: 'pscovered', label: 'PS Covered', width: 'w-24', align: 'center' },
@@ -278,7 +282,7 @@ export default function ProgressReportPage() {
           ];
         case 'polingstation':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'polling_station_name', label: 'Polling Station Name', width: 'w-48', align: 'left' },
             { key: 'ac_name', label: 'AC Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -304,7 +308,7 @@ export default function ProgressReportPage() {
       switch (level) {
         case 'ac':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'ac_code', label: 'Ac Code', width: 'w-20', align: 'center' },
             { key: 'ac_name', label: 'Ac Name', width: 'w-32', align: 'left' },
             { key: 'pc_name', label: 'Pc Name', width: 'w-32', align: 'left' },
@@ -330,7 +334,7 @@ export default function ProgressReportPage() {
           ];
         case 'pc':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'pc_code', label: 'PC Code', width: 'w-20', align: 'center' },
             { key: 'pc_name', label: 'PC Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -349,7 +353,7 @@ export default function ProgressReportPage() {
           ];
         case 'interviewer':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'interviewer_id', label: 'Interviewer ID', width: 'w-32', align: 'center' },
             { key: 'total_interview', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'valid', label: 'Pass interviews', width: 'w-32', align: 'center' },
@@ -372,7 +376,7 @@ export default function ProgressReportPage() {
           ];
         case 'polingstation':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No.', width: 'w-16', align: 'center' },
             { key: 'polling_station_name', label: 'Polling Station Name', width: 'w-48', align: 'left' },
             { key: 'ac_name', label: 'Ac Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -725,6 +729,13 @@ export default function ProgressReportPage() {
     return summaryRowData;
   };
 
+  // Helper function to get paginated data
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return progressData.slice(startIndex, endIndex);
+  };
+
   // Helper function to determine if a value should be highlighted in red
   const shouldHighlightRed = (value: number, column: string) => {
     if (column === 'female_per') {
@@ -909,6 +920,12 @@ export default function ProgressReportPage() {
           </Button>
         </div>
 
+        <div className="summary mb-4">
+          <Text className="text-sm text-gray-600">
+            Total <b>{progressData.length}</b> items.
+          </Text>
+        </div>
+
         <div className="table-responsive">
           <Table 
             key={`${searchForm.typeOfReport}-${searchForm.level}-${searchForm.acCode}`}
@@ -919,7 +936,7 @@ export default function ProgressReportPage() {
                 {getTableHeaders().map((header) => (
                   <th 
                     key={header.key}
-                    className={`border border-gray-300 ${header.width} ${header.className || ''} text-${header.align || 'left'}`}
+                    className={`border border-gray-300 ${header.width} ${header.className || ''} text-center`}
                   >
                     {header.label}
                   </th>
@@ -980,10 +997,10 @@ export default function ProgressReportPage() {
                       </td>
                     </tr>
                   ) : (
-                    progressData.map((item, index) => (
+                    getPaginatedData().map((item, index) => (
                     <tr key={`${item.ac_code || item.pc_code || item.interviewer_id || item.polling_station_no || item.polling_station_name || index}-${index}`}>
                       {getTableHeaders().map((header) => {
-                        const value = getDataValue(item, header.key, index + 1); // +1 because summary row is at index 0
+                        const value = getDataValue(item, header.key, (currentPage - 1) * pageSize + index + 1); // +1 because summary row is at index 0
                         const isHighlighted = typeof value === 'number' && shouldHighlightRed(value, header.key);
                         const isPS = header.key === 'ps_covered' && value !== '-';
                         const isClickablePS = isPS && searchForm.typeOfReport === 'performance' && ['ac', 'pc'].includes(searchForm.level);
@@ -1014,6 +1031,18 @@ export default function ProgressReportPage() {
               )}
             </tbody>
           </Table>
+        </div>
+
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={Math.ceil(progressData.length / pageSize)}
+            totalItems={progressData.length}
+            itemsPerPage={pageSize}
+            onPageChange={setCurrentPage}
+          />
         </div>
 
       </Card>

@@ -80,7 +80,7 @@ export default function EnumeratorWisePage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [enumeratorWiseData, setEnumeratorWiseData] = useState<EnumeratorWiseData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -233,18 +233,14 @@ export default function EnumeratorWisePage() {
   const currentData = enumeratorWiseData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
               Field Enumerator Wise Report
             </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
           </div>
         </div>
 
@@ -337,7 +333,7 @@ export default function EnumeratorWisePage() {
                 <Button
                   variant="primary"
                   onClick={handleSearch}
-                  className="w-full"
+                  className="w-full bg-blue-500 hover:bg-blue-600"
                 >
                   <Search className="w-4 h-4 mr-2" />
                   Search
@@ -348,89 +344,82 @@ export default function EnumeratorWisePage() {
         </div>
 
         {/* Enumerator Wise Report Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>   
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Field Enumerator Wise Report
-                </Heading>
-                <span className="text-end"></span>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Field Enumerator Wise Report
+              </Heading>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Enumerator ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interview Date</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Device Id</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer IDs</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interview Without Phone</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Invalid Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Reject Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Reject Interview System</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Tele QC</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio QC</th>
+          </div>
+          
+          <div className="bg-white">
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{totalCount.toLocaleString()}</strong> items.
+              </Text>
+            </div>
+            
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">Enumerator ID</th>
+                    <th className="text-center">Interview Date</th>
+                    <th className="text-center">Device Id</th>
+                    <th className="text-center">Interviewer IDs</th>
+                    <th className="text-center">Total Interview</th>
+                    <th className="text-center">Total Interview Without Phone</th>
+                    <th className="text-center">Valid Interview</th>
+                    <th className="text-center">Invalid Interview</th>
+                    <th className="text-center">Reject Interview</th>
+                    <th className="text-center">Reject Interview System</th>
+                    <th className="text-center">Under QC Interview</th>
+                    <th className="text-center">QC User</th>
+                    <th className="text-center">Status</th>
+                    <th className="text-center">Tele QC</th>
+                    <th className="text-center">Audio QC</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((data, index) => (
+                    <tr key={data.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center font-mono font-semibold">{data.enumeratorId}</td>
+                      <td className="text-center">{data.interviewDate}</td>
+                      <td className="text-center font-mono">{data.deviceId}</td>
+                      <td className={data.interviewerIds ? "text-left" : "text-center"}>{data.interviewerIds || '-'}</td>
+                      <td className="text-center font-mono font-semibold">{data.totalInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.totalInterviewWithoutPhone.toLocaleString()}</td>
+                      <td className="text-center">{data.validInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.invalidInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.rejectInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.rejectInterviewSystem.toLocaleString()}</td>
+                      <td className="text-center">{data.underQcInterview.toLocaleString()}</td>
+                      <td className={data.qcUser ? "text-left" : "text-center"}>{data.qcUser || '-'}</td>
+                      <td className={data.status ? "text-left" : "text-center"}>{getStatusBadge(data.status)}</td>
+                      <td className={data.teleQc ? "text-left" : "text-center"}>{data.teleQc || '-'}</td>
+                      <td className={data.audioQc ? "text-left" : "text-center"}>{data.audioQc || '-'}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data, index) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.enumeratorId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.interviewDate}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.deviceId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.interviewerIds}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterviewWithoutPhone.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.validInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.invalidInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.rejectInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.rejectInterviewSystem.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.underQcInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.qcUser || '-'}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{getStatusBadge(data.status)}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.teleQc}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.audioQc}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+
+            {/* Pagination */}
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        </Card>
+    </Container>
   );
 }

@@ -12,8 +12,10 @@ import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
-import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
+import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';                                                                 
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
+import formConfig from '@/app/capi/capi-qc/qc-form/form-config.json';
+import apiClient from '@/lib/api-client';
 import { apiService } from '@/lib/api';
 
 interface RejectionData {
@@ -70,6 +72,10 @@ export default function RejectionReportPage() {
   const [appliedFilters, setAppliedFilters] = useState<any>(null); // Track applied filters separately - start with null to prevent initial API call
 
   // Audio modal state
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<any>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
@@ -367,16 +373,60 @@ export default function RejectionReportPage() {
     setCurrentPage(1);
   };
 
+  const fetchAudioData = async (serverId: string, audioFileName: string) => {
+    try {
+      setAudioLoading(true);
+      setAudioError(null);
+      
+      console.log('🔍 Fetching audio data for server_id:', serverId, 'audioFileName:', audioFileName);
+      
+      // Use the actual audio file name from the interview data, or fallback to 'audio1'
+      const imageParam = audioFileName && audioFileName.trim() !== '' ? audioFileName : 'audio1';
+      
+      const response = await apiClient.get(`/overview/interview-log/audio-data?server_id=${serverId}&image=${imageParam}`);
+      console.log('📊 Audio Data API Response:', response);
+      
+      if (response.data.success && response.data.data) {
+        const audioData = response.data.data;
+        const processedAudioData = {
+          ...audioData,
+          audio: audioData.audio1 && audioData.audio1.trim() !== '' 
+            ? `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`
+            : `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=audio1`
+        };
+        
+        setCurrentAudio(processedAudioData);
+        setShowAudioModal(true);
+      } else {
+        setAudioError('Failed to load audio data');
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching audio data:', err);
+      setAudioError(`Failed to load audio data: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
   const handlePlayAudio = (serverId: string, audioFile: string) => {
     setSelectedServerId(serverId);
     setSelectedAudioFile(audioFile);
     setAudioModalOpen(true);
+    setAudioError(null);
+    fetchAudioData(serverId, audioFile);
   };
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
     setSelectedServerId('');
     setSelectedAudioFile('');
+    setAudioError(null);
+  };
+
+  const handleCloseModal = () => {
+    setShowAudioModal(false);
+    setCurrentAudio(null);
+    setAudioError(null);
   };
 
   const handleDownloadReport = async () => {
@@ -1061,23 +1111,29 @@ export default function RejectionReportPage() {
             </div>
           </div>
           
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{totalCount}</b> items.
+            </Text>
+          </div>
+          
 
           <div className="table-responsive">
             <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="text-center">Sr. No</th>
+                  <th className="text-center">S.No</th>
                   <th className="text-center">Server ID</th>
-                  <th className="text-left">AC Name</th>
+                  <th className="text-center">AC Name</th>
                   <th className="text-center">PS Code</th>
                   <th className="text-center">Interview Date</th>
                   <th className="text-center">Interviewer ID</th>
                   <th className="text-center">Interview Duration</th>
-                  <th className="text-left">Respondent Name</th>
-                  {/* <th className="text-center">Respondent Mobile</th> */}
-                  <th className="text-left">Fail Reason</th>
+                  <th className="text-center">Respondent Name</th>
+                  <th className="text-center">Respondent Mobile</th>
+                  <th className="text-center">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
-                  <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-center">Audio Fail Reason</th>
                   <th className="text-left">QC Remark</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>

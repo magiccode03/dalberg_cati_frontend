@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
@@ -540,7 +540,7 @@ const TelecallerProgressPage: React.FC = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4">
@@ -548,7 +548,7 @@ const TelecallerProgressPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             {/* Title Section */}
             <div className="flex-1">
-              <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+              <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
                 Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
@@ -718,7 +718,7 @@ const TelecallerProgressPage: React.FC = () => {
           </>
         )}
       </div>
-    </FluidContainer>
+    </Container>
   );
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -53,7 +53,7 @@ const CompletedNumbersPage = () => {
 
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(30);
+  const [pageSize] = useState(25);
 
   // Sample data for completed numbers
   const [completedNumbersData] = useState<CompletedNumberData[]>([
@@ -501,16 +501,16 @@ const CompletedNumbersPage = () => {
 
   // Pagination calculations
   const totalItems = completedNumbersData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const indexOfFirstItem = (currentPage - 1) * itemsPerPage;
-  const indexOfLastItem = indexOfFirstItem + itemsPerPage;
-  const currentItems = completedNumbersData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = completedNumbersData.slice(startIndex, endIndex);
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Completed Numbers
         </Heading>
         <div className="text-sm text-gray-500">
@@ -541,7 +541,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.acCode}
-              onChange={(value) => handleFilterChange('acCode', value)}
+              onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
               options={acCodeOptions}
               placeholder="Select AC"
             />
@@ -567,7 +567,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.telecaller}
-              onChange={(value) => handleFilterChange('telecaller', value)}
+              onChange={(value) => handleFilterChange('telecaller', Array.isArray(value) ? value[0] : value)}
               options={telecallerOptions}
               placeholder="Select Telecaller"
             />
@@ -593,7 +593,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.callOutcome}
-              onChange={(value) => handleFilterChange('callOutcome', value)}
+              onChange={(value) => handleFilterChange('callOutcome', Array.isArray(value) ? value[0] : value)}
               options={callOutcomeOptions}
               placeholder="Select Call Outcome"
             />
@@ -606,7 +606,7 @@ const CompletedNumbersPage = () => {
             </label>
             <SelectDropdown
               value={filters.talkDuration}
-              onChange={(value) => handleFilterChange('talkDuration', value)}
+              onChange={(value) => handleFilterChange('talkDuration', Array.isArray(value) ? value[0] : value)}
               options={talkDurationOptions}
               placeholder="Select Talk Duration Range"
             />
@@ -628,154 +628,106 @@ const CompletedNumbersPage = () => {
 
       {/* Data Table */}
       <Card className="">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Completed Numbers
             </Heading>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Server ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  AC Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  AC Code
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Telecaller
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Telecaller ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Call Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Call Outcome
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Respondent Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Respondent Gender
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  API Response
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Talk Duration
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Audio file
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wider whitespace-nowrap">
-                  Reject
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {currentItems.length === 0 ? (
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <td colSpan={14} className="px-6 py-4 text-center text-gray-500">
-                    No results found.
-                  </td>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Server ID</th>
+                  <th className="text-center">AC Name</th>
+                  <th className="text-center">AC Code</th>
+                  <th className="text-center">Telecaller</th>
+                  <th className="text-center">Telecaller ID</th>
+                  <th className="text-center">Call Date</th>
+                  <th className="text-center">Call Outcome</th>
+                  <th className="text-center">Respondent Name</th>
+                  <th className="text-center">Respondent Gender</th>
+                  <th className="text-center">API Response</th>
+                  <th className="text-center">Talk Duration</th>
+                  <th className="text-center">Audio file</th>
+                  <th className="text-center">Reject</th>
                 </tr>
-              ) : (
-                currentItems.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {indexOfFirstItem + index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.serverId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.acName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.acCode}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.telecaller}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.telecallerId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callDate}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.callOutcome}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.respondentName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.respondentGender}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.apiResponse}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.talkDuration}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 flex justify-center">
-                      <button
-                        onClick={() => handlePlayAudio(item.audioFile)}
-                        className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
-                        title="Play Audio"
-                      >
-                        <Volume2 className="w-4 h-4 text-white" />
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => handleRejectInterview(item.serverId)}
-                        className="flex items-center"
-                        title="Reject Interview"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+              </thead>
+              <tbody>
+                {currentData.length === 0 ? (
+                  <tr>
+                    <td colSpan={14} className="text-center py-8 text-gray-500">
+                      No results found.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </div>
-
-        {/* Pagination */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
-            <span className="font-medium">{Math.min(indexOfLastItem, totalItems)}</span> of{' '}
-            <span className="font-medium">{totalItems}</span> results
+                ) : (
+                  currentData.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center">{item.serverId}</td>
+                      <td className="text-left">{item.acName}</td>
+                      <td className="text-center">{item.acCode}</td>
+                      <td className="text-left">{item.telecaller}</td>
+                      <td className="text-center">{item.telecallerId}</td>
+                      <td className="text-center">{item.callDate}</td>
+                      <td className="text-center">{item.callOutcome}</td>
+                      <td className="text-left">{item.respondentName}</td>
+                      <td className="text-center">{item.respondentGender}</td>
+                      <td className="text-center">{item.apiResponse}</td>
+                      <td className="text-center">{item.talkDuration}</td>
+                      <td className="text-center">
+                        <button
+                          onClick={() => handlePlayAudio(item.audioFile)}
+                          className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center"
+                          title="Play Audio"
+                        >
+                          <Volume2 className="w-4 h-4 text-white" />
+                        </button>
+                      </td>
+                      <td className="text-center">
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleRejectInterview(item.serverId)}
+                          className="flex items-center"
+                          title="Reject Interview"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
           </div>
-          
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-          />
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

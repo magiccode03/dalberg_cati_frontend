@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import React, { useState } from 'react';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Edit, Plus } from 'lucide-react';
 
 interface TelecallingGroupData {
@@ -18,6 +19,9 @@ interface TelecallingGroupData {
 }
 
 const TelecallingGroupPage: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+  
   // Sample data
   const telecallingGroupData: TelecallingGroupData[] = [
     {
@@ -36,15 +40,20 @@ const TelecallingGroupPage: React.FC = () => {
     },
   ];
 
+  // Pagination calculations
   const totalItems = telecallingGroupData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = telecallingGroupData.slice(startIndex, endIndex);
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <div className="space-y-6">
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center">
           <div>
-            <Heading level={1} className="text-2xl font-bold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               Calling Group
             </Heading>
           </div>
@@ -55,10 +64,10 @@ const TelecallingGroupPage: React.FC = () => {
 
         {/* Data Table */}
         <Card className="">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-4">
             <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-xl font-semibold text-gray-900">
+              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                 Calling Group
               </Heading>
             </div>
@@ -70,59 +79,68 @@ const TelecallingGroupPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="table-responsive">
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Group Name</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Sarv Account Type</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Assigned Callers</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    Actions <Edit className="inline w-4 h-4 ml-1" />
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {telecallingGroupData.map((group, index) => (
-                  <tr key={group.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{group.groupName}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{group.sarvAccountType}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{group.assignedCallers}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                        group.status === 'Active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {group.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
-                      <Button variant="primary" size="sm" title="Edit Group">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+          <div className="bg-white">
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{totalItems.toLocaleString()}</strong> items.
+              </Text>
+            </div>
 
-          {/* Table Footer */}
-          <div className="flex justify-between items-center mt-6">
-            <div className="text-sm text-gray-700">
-              Total <span className="font-semibold">{totalItems}</span> items.
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">Group Name</th>
+                    <th className="text-center">Sarv Account Type</th>
+                    <th className="text-center">Assigned Callers</th>
+                    <th className="text-center">Status</th>
+                    <th className="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((group, index) => (
+                    <tr key={group.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-left">{group.groupName}</td>
+                      <td className="text-left">{group.sarvAccountType}</td>
+                      <td className="text-center">{group.assignedCallers}</td>
+                      <td className="text-center">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                          group.status === 'Active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {group.status}
+                        </span>
+                      </td>
+                      <td className="text-center">
+                        <Button variant="primary" size="sm" title="Edit Group" className="text-white bg-blue-500 hover:bg-blue-600 border-0">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-            <div>
-              {/* Pagination can be added here if needed */}
-            </div>
+
+            {/* Pagination */}
+            {totalItems > 0 && (
+              <div className="mt-6">
+                <PaginationStandard
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={totalItems}
+                  itemsPerPage={pageSize}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
           </div>
         </Card>
       </div>
-    </FluidContainer>
+    </Container>
   );
 };
 

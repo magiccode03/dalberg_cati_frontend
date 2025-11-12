@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
@@ -183,6 +183,10 @@ const TelecallerProgressPage: React.FC = () => {
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // Dropdown options
   const acCodeOptions = [
     { value: '', label: 'All ACs' },
@@ -222,18 +226,18 @@ const TelecallerProgressPage: React.FC = () => {
     { value: '1', label: 'Successful Interview' },
   ];
 
-  const telecallerStatusOptions = [
-    { value: '', label: 'All' },
-    { value: '1', label: 'Active' },
-    { value: '0', label: 'Inactive' },
-  ];
-
   const talkDurationOptions = [
     { value: '', label: 'All Durations' },
     { value: '0-60', label: '0-1 minute' },
     { value: '60-120', label: '1-2 minutes' },
     { value: '120-180', label: '2-3 minutes' },
     { value: '180+', label: '3+ minutes' },
+  ];
+
+  const telecallerStatusOptions = [
+    { value: '', label: 'All Status' },
+    { value: '1', label: 'Active' },
+    { value: '0', label: 'Inactive' },
   ];
 
   const callingDatesOptions = [
@@ -375,14 +379,6 @@ const TelecallerProgressPage: React.FC = () => {
   // Filter change handler
   const handleFilterChange = (field: string, value: string | string[]) => {
     const newValue = Array.isArray(value) ? value[0] || '' : value;
-    if (field === 'telecallerStatus') {
-      setFilters((prev) => ({
-        ...prev,
-        telecallerStatus: newValue,
-        telecaller: '',
-      }));
-      return;
-    }
     setFilters((prev) => ({
       ...prev,
       [field]: newValue,
@@ -392,6 +388,7 @@ const TelecallerProgressPage: React.FC = () => {
   // Search handler
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
     // Trigger API calls with current filters
     if (viewMode === 'overall') {
       // For overall view, trigger the TelecallerMetrics component to fetch
@@ -584,20 +581,14 @@ const TelecallerProgressPage: React.FC = () => {
   };
 
   // Fetch telecallers list
-  const fetchTelecallers = async (statusFilter?: string) => {
+  const fetchTelecallers = async () => {
     setLoadingTelecallers(true);
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) return;
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const params = new URLSearchParams({ limit: '1000' });
-      const statusParam = typeof statusFilter === 'string' ? statusFilter : filters.telecallerStatus;
-      if (statusParam && statusParam !== '') {
-        params.append('status', statusParam);
-      }
-
-      const response = await fetch(`${apiUrl}/api/teleform-users?${params.toString()}`, {
+      const response = await fetch(`${apiUrl}/api/teleform-users?status=1&limit=1000`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -813,6 +804,14 @@ const TelecallerProgressPage: React.FC = () => {
     });
   };
 
+  // Get paginated data
+  const getPaginatedData = () => {
+    const sortedData = getSortedData();
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return sortedData.slice(startIndex, endIndex);
+  };
+
   // Download telecaller data as CSV (limit 200 records with current filters)
   const handleDownloadTelecallerCSV = async () => {
     setDownloadingCSV(true);
@@ -980,10 +979,7 @@ const TelecallerProgressPage: React.FC = () => {
 
   // Fetch telecallers and ACs on mount
   useEffect(() => {
-    fetchTelecallers(filters.telecallerStatus);
-  }, [filters.telecallerStatus]);
-
-  useEffect(() => {
+    fetchTelecallers();
     fetchACList();
     fetchTelecallingGroups();
   }, []);
@@ -1253,7 +1249,7 @@ const TelecallerProgressPage: React.FC = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4">
@@ -1612,7 +1608,6 @@ const TelecallerProgressPage: React.FC = () => {
           {/* Download Button */}
           <Button
             variant="primary"
-            size="sm"
             onClick={handleDownloadTelecallerCSV}
             disabled={downloadingCSV || telecallerDataLoading}
             loading={downloadingCSV}
@@ -1650,7 +1645,7 @@ const TelecallerProgressPage: React.FC = () => {
           </div>
         )}
 
-        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+        <div className="overflow-x-auto">
           {telecallerDataLoading ? (
             <div className="text-center py-12">
               <LoadingSpinner size="lg" />
@@ -1665,19 +1660,14 @@ const TelecallerProgressPage: React.FC = () => {
           ) : (
                 <div className="table-responsive">
                   <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
+                    <thead className="bg-gray-50">
                       <tr>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-blue-500 text-white">Number of Dials</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-cyan-500 text-white"> Completed</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-green-500 text-white">Successful</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-yellow-500 text-white">Under QC</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-red-500 text-white">Rejected</th>
-                      {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Short Interview</th> */}
+                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
                       <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
@@ -1704,10 +1694,10 @@ const TelecallerProgressPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {getSortedData().map((item, index) => (
+                      {getPaginatedData().map((item, index) => (
                         <tr key={item.caller_id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {index + 1}
+                            {(currentPage - 1) * pageSize + index + 1}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.caller_id || '-'}
@@ -1721,24 +1711,9 @@ const TelecallerProgressPage: React.FC = () => {
                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                             {item.telecalling_group_name || '-'}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400 ">
+                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_dials?.toLocaleString() || 0}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-cyan-600 dark:text-cyan-400">
-                            {item.successful?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
-                            {item.pass?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-yellow-600 dark:text-yellow-400">
-                            {item.under_qc?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
-                            {item.qc_rejected?.toLocaleString() || 0}
-                          </td>
-                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
-                            {item.short_interview?.toLocaleString() || 0}
-                          </td> */}
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.number_of_calls_connected?.toLocaleString() || 0}
                           </td>
@@ -1813,11 +1788,24 @@ const TelecallerProgressPage: React.FC = () => {
                     </tbody>
                   </Table>
                 </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {telecallerWiseData.length > 0 && (
+          <div className="mt-4">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalItems={telecallerWiseData.length}
+              totalPages={Math.ceil(telecallerWiseData.length / pageSize)}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         )}
-      </div>
-      
+
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

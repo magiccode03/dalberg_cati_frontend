@@ -30,7 +30,7 @@ const AssignedInterviewerContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -77,7 +77,7 @@ const AssignedInterviewerContent = () => {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Title */}
-      <Heading level={3} className="mb-6 text-gray-800">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Assigned Interviewers
       </Heading>
 
@@ -101,57 +101,43 @@ const AssignedInterviewerContent = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4}>Assigned Interviewers List</Heading>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Assigned Interviewers List
+            </Heading>
           </div>
         </div>
 
         {/* Data Summary */}
-        <div className="mb-4">
+        <div className="summary mb-4">
           <Text className="text-sm text-gray-600">
-            Showing{' '}
-            <strong>
-              {(currentPage-1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)}
-            </strong>{' '}
-            of <strong>{totalCount}</strong> assigned interviewers.
+            Total <b>{totalCount}</b> items.
           </Text>
         </div>
 
         {/* Table */}
         <div className="table-responsive">
-          <Table className="table table-bordered table-striped table-hover">
-            <thead className="sticky-header bg-gray-50">
+          <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+            <thead className="table-light bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700">Sr No</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">ID</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">Full Name</th>
-                <th className="px-4 py-3 font-semibold text-gray-700">AC Codes</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
+                <th className="text-center">S.No</th>
+                <th className="text-center">ID</th>
+                <th className="text-center">Full Name</th>
+                <th className="text-center">AC Codes</th>
+                <th className="text-center">Action</th>
               </tr>
             </thead>
             <tbody>
               {interviewerData.map((item, index) => (
-                <tr key={item.user_id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200 font-medium">
-                    {(currentPage - 1) * pageSize + index + 1}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 font-mono">
-                    {item.login_id}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className="text-gray-800">
-                      {item.fullname}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className="text-gray-700">
-                      {item.assigned_ac.join(', ')}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 text-center">
+                <tr key={item.user_id}>
+                  <td className="text-center">{(currentPage - 1) * pageSize + index + 1}</td>
+                  <td className="text-center font-mono">{item.login_id}</td>
+                  <td className="text-left">{item.fullname}</td>
+                  <td className="text-center">{item.assigned_ac.join(', ')}</td>
+                  <td className="text-center">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
+                      className="bg-blue-500 hover:bg-blue-600 text-white border-0"
                       onClick={() => router.push(`/capi/ppmt/interviewer/assigned/update?user_id=${item.user_id}`)}
                       title="Update Assigned ACs"
                     >
@@ -173,14 +159,14 @@ const AssignedInterviewerContent = () => {
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        {/* Pagination */}
+        <div className="mt-6">
           <PaginationStandard
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalCount}
             itemsPerPage={pageSize}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="justify-center"
+            onPageChange={setCurrentPage}
           />
         </div>
       </Card>

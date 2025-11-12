@@ -71,6 +71,8 @@ export default function RejectionReportPage() {
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
+  const [selectedRejection, setSelectedRejection] = useState<RejectionData | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
   
@@ -367,16 +369,20 @@ export default function RejectionReportPage() {
     setCurrentPage(1);
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
+  const handlePlayAudio = (rejection: RejectionData) => {
+    setSelectedRejection(rejection);
+    setSelectedServerId(rejection.serverId);
+    setSelectedAudioFile(rejection.audio1);
     setAudioModalOpen(true);
+    setAudioError(null);
   };
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
+    setSelectedRejection(null);
     setSelectedServerId('');
     setSelectedAudioFile('');
+    setAudioError(null);
   };
 
   const handleDownloadReport = async () => {
@@ -1061,23 +1067,29 @@ export default function RejectionReportPage() {
             </div>
           </div>
           
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{totalCount}</b> items.
+            </Text>
+          </div>
+          
 
           <div className="table-responsive">
             <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="text-center">Sr. No</th>
+                  <th className="text-center">S.No</th>
                   <th className="text-center">Server ID</th>
-                  <th className="text-left">AC Name</th>
+                  <th className="text-center">AC Name</th>
                   <th className="text-center">PS Code</th>
                   <th className="text-center">Interview Date</th>
                   <th className="text-center">Interviewer ID</th>
                   <th className="text-center">Interview Duration</th>
-                  <th className="text-left">Respondent Name</th>
-                  {/* <th className="text-center">Respondent Mobile</th> */}
-                  <th className="text-left">Fail Reason</th>
+                  <th className="text-center">Respondent Name</th>
+                  <th className="text-center">Respondent Mobile</th>
+                  <th className="text-center">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
-                  <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-center">Audio Fail Reason</th>
                   <th className="text-left">QC Remark</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>
@@ -1119,7 +1131,7 @@ export default function RejectionReportPage() {
                       <button 
                         className="w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 bg-blue-600 hover:bg-blue-700 text-white"
                         title="Play Audio"
-                        onClick={() => handlePlayAudio(row.serverId, row.audio1)}
+                        onClick={() => handlePlayAudio(row)}
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>

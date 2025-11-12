@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -12,6 +12,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle } from 'lucide-react';
+import Audio from '@/components/ui/Audio';
 
 // Interfaces
 interface SearchFilters {
@@ -111,8 +112,6 @@ const TelecallerDailyCallDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<string | null>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [useIframe, setUseIframe] = useState(false);
 
   // Options for dropdowns
   const reportDaysOptions = [
@@ -238,21 +237,11 @@ const TelecallerDailyCallDetailPage = () => {
   const handlePlayAudio = (audioUrl: string) => {
     setCurrentAudio(audioUrl);
     setShowAudioModal(true);
-    setAudioError(false);
-    setUseIframe(false);
   };
 
   const handleCloseAudioModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
-    setAudioError(false);
-    setUseIframe(false);
-  };
-
-  const handleAudioError = () => {
-    console.error('Audio playback error, switching to iframe');
-    setAudioError(true);
-    setUseIframe(true);
   };
 
   const formatDuration = (seconds: number | null) => {
@@ -312,7 +301,7 @@ const TelecallerDailyCallDetailPage = () => {
   );
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
         <Heading level={2} className="text-2xl font-bold text-gray-900">
@@ -454,7 +443,7 @@ const TelecallerDailyCallDetailPage = () => {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Caller Performance (coming soon)
             </Heading>
           </div>
@@ -502,7 +491,7 @@ const TelecallerDailyCallDetailPage = () => {
         <Card>
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Outcome (coming soon)
             </Heading>
           </div>
@@ -570,16 +559,22 @@ const TelecallerDailyCallDetailPage = () => {
 
       {/* Data Table */}
       <Card className="">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={2} className="text-xl font-semibold text-gray-900 dark:text-white">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Call Detail
             </Heading>
           </div>
         </div>
-
-        <div className="overflow-x-auto">
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{pagination.total.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+          
           {loading ? (
             <div className="text-center py-12">
               <i className="fa fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
@@ -591,66 +586,59 @@ const TelecallerDailyCallDetailPage = () => {
               <p className="text-gray-600 dark:text-gray-400">No call details found</p>
             </div>
           ) : (
-            <Table striped bordered hover>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>Caller Name</TableHead>
-                  <TableHead>Caller ID</TableHead>
-                  <TableHead>Call Time</TableHead>
-                  <TableHead>Call Received</TableHead>
-                  <TableHead>Caller Response</TableHead>
-                  <TableHead>API Response</TableHead>
-                  <TableHead>IVR Duration</TableHead>
-                  <TableHead>Talk Duration</TableHead>
-                  <TableHead>Audio file</TableHead>
-                  {/* <TableHead>Update</TableHead> */}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {callDetailData.map((item, index) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{(pagination.page - 1) * pagination.limit + index + 1}</TableCell>
-                    <TableCell>{item.caller_name || '-'}</TableCell>
-                    <TableCell>{item.caller_id || '-'}</TableCell>
-                    <TableCell>{formatDateTime(item.call_time)}</TableCell>
-                    <TableCell>
-                      {item.call_received === 1 ? 'Yes' : item.call_received === 0 ? 'No' : '-'}
-                    </TableCell>
-                    <TableCell>-</TableCell>
-                    <TableCell>-</TableCell>
-                    <TableCell>{formatDuration(item.ivr_duration)}</TableCell>
-                    <TableCell>{formatDuration(item.talk_duration)}</TableCell>
-                    <TableCell>
-                      {item.audio ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handlePlayAudio(item.audio!)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <i className="fa fa-play mr-1"></i>
-                          Play
-                        </Button>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-                    {/* <TableCell>
-                      <Button variant="outline" size="sm">
-                        <i className="fa fa-edit mr-1"></i>
-                        Update
-                      </Button>
-                    </TableCell> */}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-left">Caller Name</th>
+                    <th className="text-center">Caller ID</th>
+                    <th className="text-left">Call Time</th>
+                    <th className="text-center">Call Received</th>
+                    <th className="text-center">Caller Response</th>
+                    <th className="text-center">API Response</th>
+                    <th className="text-center">IVR Duration</th>
+                    <th className="text-center">Talk Duration</th>
+                    <th className="text-center">Audio file</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {callDetailData.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="text-center">{(pagination.page - 1) * pagination.limit + index + 1}</td>
+                      <td className="text-left">{item.caller_name || '-'}</td>
+                      <td className="text-center">{item.caller_id || '-'}</td>
+                      <td className="text-left">{formatDateTime(item.call_time)}</td>
+                      <td className="text-center">
+                        {item.call_received === 1 ? 'Yes' : item.call_received === 0 ? 'No' : '-'}
+                      </td>
+                      <td className="text-center">-</td>
+                      <td className="text-center">-</td>
+                      <td className="text-center">{formatDuration(item.ivr_duration)}</td>
+                      <td className="text-center">{formatDuration(item.talk_duration)}</td>
+                      <td className="text-center">
+                        {item.audio ? (
+                          <Button
+                            size="sm"
+                            onClick={() => handlePlayAudio(item.audio!)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                          >
+                            <i className="fa fa-play mr-1"></i>
+                            Play
+                          </Button>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
           )}
-        </div>
 
-        {/* Pagination */}
-        {!loading && !error && pagination.total > 0 && (
-          <div className="mt-4 px-4 pb-4">
+          {/* Pagination */}
+          <div className="mt-6">
             <PaginationStandard
               currentPage={pagination.page}
               totalPages={pagination.totalPages}
@@ -659,7 +647,7 @@ const TelecallerDailyCallDetailPage = () => {
               onPageChange={handlePageChange}
             />
           </div>
-        )}
+        </div>
       </Card>
 
       {/* Audio Modal */}
@@ -681,78 +669,51 @@ const TelecallerDailyCallDetailPage = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6">
-              {!audioError && !useIframe ? (
-                <div className="space-y-4">
-                  <audio
-                    controls
-                    className="w-full"
-                    autoPlay
-                    preload="metadata"
-                    controlsList="nodownload"
-                    crossOrigin="anonymous"
-                    onError={handleAudioError}
-                  >
-                    <source src={currentAudio} type="audio/mpeg" />
-                    <source src={currentAudio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
+            <div className="p-6 space-y-4">
+              {/* Audio Player */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                <Audio
+                  src={currentAudio}
+                  autoPlay={true}
+                  onPlay={() => console.log('Audio started playing')}
+                  onPause={() => console.log('Audio paused')}
+                  onTimeUpdate={(currentTime, duration) => {
+                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                  }}
+                  onEnded={() => {
+                    console.log('Audio playback ended');
+                    // Optionally auto-close modal after a delay
+                    setTimeout(() => {
+                      handleCloseAudioModal();
+                    }, 2000);
+                  }}
+                  onError={(error) => {
+                    console.error('Audio error:', error);
+                  }}
+                  className="border border-gray-200 dark:border-gray-600"
+                />
+              </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-external-link mr-2"></i>
-                      Open in New Tab
-                    </a>
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {audioError && (
-                    <Alert type="warning">
-                      <strong>Playback Issue:</strong> The audio couldn't play directly. Trying alternative method...
-                    </Alert>
-                  )}
-
-                  <iframe
-                    src={currentAudio}
-                    className="w-full h-64 border-2 border-gray-300 dark:border-gray-600 rounded"
-                    title="Audio Player"
-                  />
-
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-external-link mr-2"></i>
-                      Open in New Tab
-                    </a>
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
-                  </div>
-                </div>
-              )}
+              {/* Download and External Links */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <a
+                  href={currentAudio}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <i className="fa fa-external-link mr-2"></i>
+                  Open in New Tab
+                </a>
+                <a
+                  href={currentAudio}
+                  download
+                  className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <i className="fa fa-download mr-2"></i>
+                  Download Audio
+                </a>
+              </div>
 
               {/* Audio URL Info */}
               <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-xs break-all">
@@ -762,7 +723,7 @@ const TelecallerDailyCallDetailPage = () => {
           </div>
         </div>
       )}
-    </FluidContainer>
+    </Container>
   );
 };
 

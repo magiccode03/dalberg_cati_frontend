@@ -8,9 +8,10 @@ import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Play, X, Volume2 } from 'lucide-react';
+import { Search, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import DateFormatter from '@/components/ui/DateFormatter';
+import Audio from '@/components/ui/Audio';
 
 interface InterviewAudioData {
   id: number;
@@ -83,7 +84,7 @@ export default function CATIInterviewAudioPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20);
+  const [itemsPerPage] = useState(25);
   const [interviewData, setInterviewData] = useState<InterviewAudioData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -91,8 +92,6 @@ export default function CATIInterviewAudioPage() {
   const [interviewDateOptions, setInterviewDateOptions] = useState<Array<{ value: string; label: string }>>([]);
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null);
-  const [audioError, setAudioError] = useState(false);
-  const [useIframe, setUseIframe] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -210,26 +209,11 @@ export default function CATIInterviewAudioPage() {
     
     setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
-    setAudioError(false);
-    setUseIframe(false);
   };
 
   const handleCloseModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
-    setAudioError(false);
-    setUseIframe(false);
-  };
-
-  const handleAudioError = () => {
-    console.error('Audio playback failed, switching to iframe mode');
-    setAudioError(true);
-    setUseIframe(true);
-  };
-
-  const handleIframeError = () => {
-    console.error('Iframe audio playback also failed');
-    setAudioError(true);
   };
 
   const handlePageChange = (page: number) => {
@@ -246,15 +230,12 @@ export default function CATIInterviewAudioPage() {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Breadcrumb Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1">
-          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
             Interview Audio (CATI)
           </Heading>
-        </div>
-        <div className="flex-1"></div>
-        <div className="flex-1">
-          <span></span>
         </div>
       </div>
 
@@ -414,15 +395,15 @@ export default function CATIInterviewAudioPage() {
             </div>
           ) : (
           <div className="table-responsive">
-            <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead className="bg-gray-50">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="text-center" style={{ width: '2%' }}>S.No</th>
-                  <th className="text-center" style={{ width: '10%' }}>Server Id</th>
-                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th className="text-left" style={{ width: '10%' }}>AC Name</th>
-                  <th className="text-center" style={{ width: '10%' }}>Interview Date</th>
-                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Server Id</th>
+                  <th className="text-center">AC Code</th>
+                  <th className="text-center">AC Name</th>
+                  <th className="text-center">Interview Date</th>
+                  <th className="text-center">Interview Audio</th>
                 </tr>
               </thead>
               <tbody>
@@ -436,10 +417,10 @@ export default function CATIInterviewAudioPage() {
                     <td className="text-center">
                       <Button
                         onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center justify-center mx-auto"
+                        className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 flex items-center justify-center mx-auto"
                         title="Play Audio"
                       >
-                        <Play className="h-4 w-4" />
+                        <Volume2 className="h-4 w-4" />
                       </Button>
                     </td>
                   </tr>
@@ -449,25 +430,16 @@ export default function CATIInterviewAudioPage() {
           </div>
           )}
 
-          {/* Pagination Info and Controls */}
-          {!loading && !error && interviewData.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
-                </div>
-                {totalPages > 1 && (
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </div>
-            </div>
-          )}
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
         </div>
       </Card>
 
@@ -519,141 +491,38 @@ export default function CATIInterviewAudioPage() {
 
               {/* Audio Player */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <div className="mb-3 text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
-                  </p>
-                  {audioError && !useIframe && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      Audio player had an issue. Try the alternative options below.
-                    </p>
-                  )}
-                </div>
-
-                {!useIframe ? (
-                  <audio
-                    controls
-                    className="w-full"
-                    controlsList="nodownload"
-                    preload="metadata"
-                    onError={handleAudioError}
-                    onLoadStart={() => console.log('Audio loading started')}
-                    onCanPlay={() => console.log('Audio can play')}
-                  >
-                    <source src={currentAudio.audio} type="audio/mpeg" />
-                    <source src={currentAudio.audio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
-        ) : (
-          <div className="w-full">
-            <iframe
-              src={currentAudio.audio}
-              className="w-full h-16 border-0 rounded"
-              title="Audio Player"
-              allow="autoplay"
-              onError={handleIframeError}
-              onLoad={() => {
-                // Check if iframe content is just text (not audio player)
-                setTimeout(() => {
-                  try {
-                    const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
-                    if (iframe && iframe.contentDocument) {
-                      const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                      if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                        console.warn('Iframe returned text instead of audio player');
-                        setAudioError(true);
-                      }
-                    }
-                  } catch (e) {
-                    // Cross-origin restrictions, can't access iframe content
-                    console.log('Cannot access iframe content due to CORS');
-                  }
-                }, 1000);
-              }}
-            />
-          </div>
-        )}
-
-                {/* Error Message for Failed Audio */}
-                {audioError && (
-                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
-                    <div className="text-center">
-                      <div className="text-red-600 dark:text-red-400 mb-2">
-                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p className="font-semibold">Audio Playback Failed</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Alternative Options */}
-                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
-                  {!useIframe && audioError && (
-                    <button
-                      onClick={() => setUseIframe(true)}
-                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Try Alternative Player
-                    </button>
-                  )}
-                  {/* <a
-                    href={currentAudio.audio}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
-                  >
-                    Open in new tab
-                  </a> */}
-                  <a
-                    href={currentAudio.audio}
-                    download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
-                  >
-                    Download audio
-                  </a>
-                  {/* <button
-                    onClick={() => {
-                      // Test direct audio URL
-                      const testAudio = new Audio();
-                      testAudio.src = currentAudio.audio;
-                      testAudio.onloadstart = () => console.log('Direct audio test: loading started');
-                      testAudio.oncanplay = () => console.log('Direct audio test: can play');
-                      testAudio.onerror = (e) => console.error('Direct audio test failed:', e);
-                      testAudio.load();
-                    }}
-                    className="text-sm bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
-                  >
-                    Test Direct URL
-                  </button> */}
-                </div>
+                <Audio
+                  src={currentAudio.audio}
+                  onPlay={() => console.log('Audio started playing')}
+                  onPause={() => console.log('Audio paused')}
+                  onTimeUpdate={(currentTime, duration) => {
+                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                  }}
+                  onEnded={() => {
+                    console.log('Audio playback ended');
+                    // Optionally auto-close modal after a delay
+                    setTimeout(() => {
+                      handleCloseModal();
+                    }, 2000);
+                  }}
+                  onError={(error) => {
+                    console.error('Audio error:', error);
+                  }}
+                  className="border border-gray-200 dark:border-gray-600"
+                />
               </div>
 
-              {/* Audio URL (for debugging/reference) */}
-              {/* <div className="text-xs text-gray-500 dark:text-gray-400 break-all">
-                <details className="cursor-pointer">
-                  <summary className="font-semibold mb-1 hover:text-gray-700 dark:hover:text-gray-300">
-                    🔍 Debug Info (Click to expand)
-                  </summary>
-                  <div className="mt-2 space-y-2">
-                    <div>
-                      <p className="font-semibold mb-1">Processed Audio URL:</p>
-                      <p className="bg-gray-100 dark:bg-gray-900 p-2 rounded font-mono text-[10px]">
-                        {currentAudio.audio}
-                      </p>
-                    </div>
-                    <div className="pt-2 border-t border-gray-300 dark:border-gray-600">
-                      <p className="text-[10px] text-gray-400">
-                        The URL has been automatically encoded for proper playback.
-                      </p>
-                    </div>
-                  </div>
-                </details>
-              </div> */}
+              {/* Download Link */}
+              <div className="text-center">
+                <a
+                  href={currentAudio.audio}
+                  download
+                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <Volume2 className="w-4 h-4 mr-2" />
+                  Download Audio
+                </a>
+              </div>
             </div>
 
             {/* Modal Footer */}

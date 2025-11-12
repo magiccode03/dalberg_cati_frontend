@@ -80,7 +80,7 @@ export default function EnumeratorWisePage() {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [enumeratorWiseData, setEnumeratorWiseData] = useState<EnumeratorWiseData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -298,204 +298,189 @@ export default function EnumeratorWisePage() {
   const currentData = enumeratorWiseData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Field Enumerator Wise Report
+          </Heading>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <Text className="text-gray-600">Loading enumerator wise report...</Text>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Card className="mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Button 
+              onClick={fetchEnumeratorWiseData} 
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Search Form */}
+      <Card className="mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="space-y-2">
+            <Input
+              type="text"
+              placeholder="Search By Enumerator ID"
+              value={filters.userId}
+              onChange={(e) => handleFilterChange('userId', e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <SelectDropdown
+              value={filters.interviewDate}
+              onChange={(value) => handleFilterChange('interviewDate', value as string)}
+              options={generateDateOptions()}
+              placeholder="Select Interview Date"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Input
+              type="text"
+              placeholder="Search By Device ID"
+              value={filters.deviceId}
+              onChange={(e) => handleFilterChange('deviceId', e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <SelectDropdown
+              value={filters.progressPhase}
+              onChange={(value) => handleFilterChange('progressPhase', value as string)}
+              options={[
+                { value: '', label: 'Select Status' },
+                { value: '0', label: 'GPS Check Pending' },
+                { value: '1', label: 'Audio/Tele QC Pending' },
+                { value: '2', label: 'QC Completed' },
+              ]}
+              placeholder="Select Status"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Input
+              type="text"
+              placeholder="Search By QC ID"
+              value={filters.teleQcId}
+              onChange={(e) => handleFilterChange('teleQcId', e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Button
+              variant="primary"
+              onClick={handleSearch}
+              className="w-full"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              Search
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Enumerator Wise Report Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Field Enumerator Wise Report
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
+        </div>
+
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalCount.toLocaleString()}</strong> enumerator records.
+            </Text>
+          </div>
+          
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Enumerator ID</th>
+                  <th className="text-center">Interview Date</th>
+                  <th className="text-center">Device Id</th>
+                  <th className="text-center">Interviewer IDs</th>
+                  <th className="text-center">Total Interview</th>
+                  <th className="text-center">Total Interview Without Phone</th>
+                  <th className="text-center">Valid Interview</th>
+                  <th className="text-center">Invalid Interview</th>
+                  <th className="text-center">Reject Interview</th>
+                  <th className="text-center">Reject Interview System</th>
+                  <th className="text-center">Under QC Interview</th>
+                  <th className="text-center">QC User</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Tele QC</th>
+                  <th className="text-center">Audio QC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((data, index) => (
+                  <tr key={data.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{data.enumeratorId}</td>
+                    <td className="text-center">{data.interviewDate}</td>
+                    <td className="text-center">{data.deviceId}</td>
+                    <td className="text-center">{data.interviewerIds}</td>
+                    <td className="text-center">{data.totalInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.totalInterviewWithoutPhone.toLocaleString()}</td>
+                    <td className="text-center">{data.validInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.invalidInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.rejectInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.rejectInterviewSystem.toLocaleString()}</td>
+                    <td className="text-center">{data.underQcInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.qcUser || '-'}</td>
+                    <td className="text-center">{getStatusBadge(data.status)}</td>
+                    <td className="text-center">{data.teleQc}</td>
+                    <td className="text-center">{data.audioQc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <Text className="ml-2 text-gray-600">Loading enumerator wise report...</Text>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
-                    Error Loading Data
-                  </Heading>
-                  <Text className="text-gray-600">{error}</Text>
-                </div>
-                <Button
-                  onClick={fetchEnumeratorWiseData}
-                  variant="outline"
-                  size="sm"
-                >
-                  Retry
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Search Form */}
-        <div className="mb-6">
-          <Card className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="Search By Enumerator ID"
-                  value={filters.userId}
-                  onChange={(e) => handleFilterChange('userId', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <SelectDropdown
-                  value={filters.interviewDate}
-                  onChange={(value) => handleFilterChange('interviewDate', value as string)}
-                  options={generateDateOptions()}
-                  placeholder="Select Interview Date"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="Search By Device ID"
-                  value={filters.deviceId}
-                  onChange={(e) => handleFilterChange('deviceId', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <SelectDropdown
-                  value={filters.progressPhase}
-                  onChange={(value) => handleFilterChange('progressPhase', value as string)}
-                  options={[
-                    { value: '', label: 'Select Status' },
-                    { value: '0', label: 'GPS Check Pending' },
-                    { value: '1', label: 'Audio/Tele QC Pending' },
-                    { value: '2', label: 'QC Completed' },
-                  ]}
-                  placeholder="Select Status"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Input
-                  type="text"
-                  placeholder="Search By QC ID"
-                  value={filters.teleQcId}
-                  onChange={(e) => handleFilterChange('teleQcId', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  variant="primary"
-                  onClick={handleSearch}
-                  className="w-full"
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Enumerator Wise Report Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>   
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Field Enumerator Wise Report
-                </Heading>
-                <span className="text-end"></span>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Enumerator ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interview Date</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Device Id</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interviewer IDs</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interview Without Phone</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Invalid Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Reject Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Reject Interview System</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Tele QC</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio QC</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data, index) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{startIndex + index + 1}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.enumeratorId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.interviewDate}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.deviceId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.interviewerIds}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterviewWithoutPhone.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.validInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.invalidInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.rejectInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.rejectInterviewSystem.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.underQcInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.qcUser || '-'}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{getStatusBadge(data.status)}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.teleQc}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.audioQc}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+      </Card>
+    </Container>
   );
 }
