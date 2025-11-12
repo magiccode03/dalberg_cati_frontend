@@ -11,7 +11,7 @@ import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
-import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock, X } from 'lucide-react';
+import { Search, Eye, Edit, Volume2, CheckCircle, XCircle, Clock, X, Download } from 'lucide-react';
 
 // Interfaces
 interface SearchFilters {
@@ -140,6 +140,7 @@ const InterviewListPage = () => {
   const [selectedInterview, setSelectedInterview] = useState<InterviewData | null>(null);
   const [audioError, setAudioError] = useState(false);
   const [useIframe, setUseIframe] = useState(false);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   // Options for dropdowns
   const audioQcStatusOptions = [
@@ -415,6 +416,56 @@ const InterviewListPage = () => {
   };
 
   // Fetch interview data from API
+  const buildQueryParams = (
+    overrides: Record<string, string> = {},
+    filtersToUse?: SearchFilters
+  ) => {
+    const activeFilters = filtersToUse || filters;
+    const params = new URLSearchParams();
+
+    params.set('sortBy', 'server_id');
+    params.set('sortOrder', 'DESC');
+    params.set('interview_date', activeFilters.interview_date || 'all');
+
+    Object.entries(overrides).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.set(key, value);
+      }
+    });
+
+    if (activeFilters.server_id) {
+      params.set('server_id', activeFilters.server_id);
+    }
+    if (activeFilters.interview_date === 'custom') {
+      if (activeFilters.custom_date) {
+        params.set('custom_date', activeFilters.custom_date);
+      }
+      if (activeFilters.custom_date_end) {
+        params.set('custom_date_end', activeFilters.custom_date_end);
+      }
+    }
+    if (activeFilters.ac_code) {
+      params.set('ac_code', activeFilters.ac_code);
+    }
+    if (activeFilters.interviewer_id) {
+      params.set('interviewer_id', activeFilters.interviewer_id);
+    }
+    if (activeFilters.qc_date.length > 0) {
+      activeFilters.qc_date.forEach(date => params.append('qc_date', date));
+    }
+    if (activeFilters.qc_id) {
+      params.set('qc_id', activeFilters.qc_id);
+    }
+    if (activeFilters.qc_status.length > 0) {
+      activeFilters.qc_status.forEach(status => params.append('qc_status', status));
+    }
+    if (activeFilters.audio_fail_reason) {
+      params.set('audio_fail_reason', activeFilters.audio_fail_reason);
+    }
+
+    return params;
+  };
+
   const fetchInterviewData = async (page: number = 1, filtersToUse?: SearchFilters) => {
     try {
       setLoading(true);
@@ -433,50 +484,13 @@ const InterviewListPage = () => {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
       // Build URL with filters
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: pagination.limit.toString(),
-        sortBy: 'server_id',
-        sortOrder: 'DESC',
-        interview_date: activeFilters.interview_date || 'all', // Always include interview_date parameter
-      });
-      
-      // Apply filters
-      if (activeFilters.server_id) {
-        params.append('server_id', activeFilters.server_id);
-      }
-      if (activeFilters.interview_date === 'custom') {
-        if (activeFilters.custom_date) {
-          params.append('custom_date', activeFilters.custom_date);
-        }
-        if (activeFilters.custom_date_end) {
-          params.append('custom_date_end', activeFilters.custom_date_end);
-        }
-      }
-      if (activeFilters.ac_code) {
-        params.append('ac_code', activeFilters.ac_code);
-      }
-      if (activeFilters.interviewer_id) {
-        params.append('interviewer_id', activeFilters.interviewer_id);
-      }
-      // Send qc_date as repeated parameters (qc_date=2025-10-31&qc_date=2025-10-30)
-      if (activeFilters.qc_date.length > 0) {
-        activeFilters.qc_date.forEach(date => {
-          params.append('qc_date', date);
-        });
-      }
-      if (activeFilters.qc_id) {
-        params.append('qc_id', activeFilters.qc_id);
-      }
-      // Send qc_status as repeated parameters (qc_status=1&qc_status=2)
-      if (activeFilters.qc_status.length > 0) {
-        activeFilters.qc_status.forEach(status => {
-          params.append('qc_status', status);
-        });
-      }
-      if (activeFilters.audio_fail_reason) {
-        params.append('audio_fail_reason', activeFilters.audio_fail_reason);
-      }
+      const params = buildQueryParams(
+        {
+          page: page.toString(),
+          pageSize: pagination.limit.toString(),
+        },
+        activeFilters
+      );
       
       const url = `${apiBaseUrl}/api/cati/ppm/qc/agency/progress/detail?${params.toString()}`;
       
@@ -511,6 +525,53 @@ const InterviewListPage = () => {
       setError(err instanceof Error ? err.message : 'Failed to fetch interview data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    try {
+      setDownloadLoading(true);
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        alert('Authentication token not found');
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const params = buildQueryParams(
+        {
+          page: pagination.page.toString(),
+          pageSize: pagination.limit.toString(),
+        }
+      );
+
+      const downloadUrl = `${apiBaseUrl}/api/cati/ppm/qc/agency/progress/detail/download?${params.toString()}`;
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'text/csv',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const href = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = href;
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.download = `qc-interview-list-${timestamp}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(href);
+    } catch (err) {
+      console.error('Error downloading CSV:', err);
+      alert('Failed to download CSV. Please try again.');
+    } finally {
+      setDownloadLoading(false);
     }
   };
 
@@ -834,6 +895,16 @@ const InterviewListPage = () => {
                   </Text>
                 )}
               </div>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleDownload}
+                disabled={downloadLoading}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
+              >
+                <Download className="w-4 h-4" />
+                {downloadLoading ? 'Downloading...' : 'Download'}
+              </Button>
             </div>
           </div>
 
