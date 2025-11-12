@@ -13,22 +13,16 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Upload, Edit, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
-interface MasterACCaste {
-  id: number;
-  ac_code: number;
-  caste_name: string;
-  absoulte_caste: number;
-  caste: string;
-  rank: number;
-  caste_code: string;
-  castecode: string;
-  minsample: number;
+interface MasterDistrict {
+  district_code: number;
+  district_name: string;
+  agency_name: string | null;
 }
 
 interface APIResponse {
   success: boolean;
   data: {
-    castes: MasterACCaste[];
+    districts: MasterDistrict[];
     total_count: number;
     current_page: number;
     total_pages: number;
@@ -37,13 +31,13 @@ interface APIResponse {
   };
   message: string;
   timestamp: string;
+  requestId: string;
 }
 
-export default function MasterACCastePage() {
+export default function MasterDistrictPage() {
   const router = useRouter();
-  const [acCode, setAcCode] = useState('');
-  const [casteName, setCasteName] = useState('');
-  const [casteCode, setCasteCode] = useState('');
+  const [districtName, setDistrictName] = useState('');
+  const [districtCode, setDistrictCode] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(25);
   const [data, setData] = useState<APIResponse['data'] | null>(null);
@@ -54,41 +48,36 @@ export default function MasterACCastePage() {
     fetchData();
   }, [currentPage]);
 
-  const fetchData = async (customAcCode?: string, customCasteName?: string, customCasteCode?: string, customPage?: number) => {
+  const fetchData = async (customDistrictName?: string, customDistrictCode?: string, customPage?: number) => {
     try {
       setLoading(true);
-      
+
       // Use custom values if provided, otherwise use state values
-      const acCodeToUse = customAcCode !== undefined ? customAcCode : acCode;
-      const casteNameToUse = customCasteName !== undefined ? customCasteName : casteName;
-      const casteCodeToUse = customCasteCode !== undefined ? customCasteCode : casteCode;
+      const nameToUse = customDistrictName !== undefined ? customDistrictName : districtName;
+      const codeToUse = customDistrictCode !== undefined ? customDistrictCode : districtCode;
       const pageToUse = customPage !== undefined ? customPage : currentPage;
-      
+
       // Build parameters object, only including non-empty values
       const params: any = {
         page: pageToUse,
         limit: pageSize
       };
-      
-      // Only add ac_code if it's not empty
-      if (acCodeToUse.trim()) {
-        params.ac_code = acCodeToUse.trim();
+
+      // Only add pc_name if it's not empty
+      if (nameToUse.trim()) {
+        params.pc_name = nameToUse.trim();
       }
-      
-      // Only add caste_name if it's not empty
-      if (casteNameToUse.trim()) {
-        params.caste_name = casteNameToUse.trim();
+
+      // Only add pc_code if it's not empty
+      if (codeToUse.trim()) {
+        params.pc_code = codeToUse.trim();
       }
-      
-      // Only add caste_code if it's not empty
-      if (casteCodeToUse.trim()) {
-        params.caste_code = casteCodeToUse.trim();
-      }
-      
+
       console.log('API Parameters:', params);
-      
-      const response = await apiService.getMasterACCasteList(params);
-      
+
+      const response = await apiService.getMasterACList(params);
+      // const response = await apiService.getMasterPCList(params);
+
       if (response.success) {
         setData(response.data);
         setError(null);
@@ -112,33 +101,33 @@ export default function MasterACCastePage() {
 
   const handleClearFilters = () => {
     // Reset filters to empty values
-    setAcCode('');
-    setCasteName('');
-    setCasteCode('');
+    setDistrictName('');
+    setDistrictCode('');
     setCurrentPage(1);
-    
+
     // Fetch data with cleared filters immediately
-    fetchData('', '', '', 1);
+    fetchData('', '', 1);
   };
 
-  const handleDownloadCaste = () => {
-    // Handle download caste list logic here
-    console.log('Download Caste List');
+
+  const handleDownloadDistrict = () => {
+    // Handle download PC list logic here
+    console.log('Download District List');
   };
 
-  const handleUploadCaste = () => {
-    router.push('/capi/ppm/master-data/master-ac-caste/uploadcaste');
+  const handleUploadDistrict = () => {
+    router.push('/capi/ppm/master-data/master-district/uploaddistrict');
   };
 
-  const handleEditCaste = (id: number) => {
-    router.push(`/capi/ppm/master-data/master-ac-caste/update?id=${id}`);
+  const handleEditDistrict = (districtCode: number) => {
+    router.push(`/capi/ppm/master-data/master-district/update?district_code=${districtCode}`);
   };
 
   if (loading) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-        <div className="flex justify-center items-center h-64">
-          <Text className="text-lg">Loading...</Text>
+        <div className="text-center">
+          <div className="text-lg">Loading...</div>
         </div>
       </Container>
     );
@@ -147,8 +136,8 @@ export default function MasterACCastePage() {
   if (error) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-        <div className="flex justify-center items-center h-64">
-          <Text className="text-lg text-red-600">Error: {error}</Text>
+        <div className="text-center">
+          <div className="text-lg text-red-600">{error}</div>
         </div>
       </Container>
     );
@@ -157,17 +146,15 @@ export default function MasterACCastePage() {
   if (!data) {
     return (
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-        <div className="flex justify-center items-center h-64">
-          <Text className="text-lg">No data available</Text>
+        <div className="text-center">
+          <div className="text-lg text-red-600">No data available</div>
         </div>
       </Container>
     );
   }
 
-  const totalItems = data.total_count;
-  const totalPages = data.total_pages;
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const endIndex = Math.min(startIndex + pageSize, data.total_count);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -175,7 +162,7 @@ export default function MasterACCastePage() {
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
           <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
-            List of AC Wise Caste
+            List of District
           </Heading>
         </div>
         <div className="right-content">
@@ -186,45 +173,35 @@ export default function MasterACCastePage() {
       {/* Search Form */}
       <Card className="mb-6">
         <form onSubmit={handleSearch}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Input
                 type="text"
-                value={acCode}
-                onChange={(e) => setAcCode(e.target.value)}
-                placeholder="Search By AC Code"
+                value={districtName}
+                onChange={(e) => setDistrictName(e.target.value)}
+                placeholder="Search By District Name"
                 className="w-full"
               />
             </div>
-            
+
             <div>
               <Input
                 type="text"
-                value={casteName}
-                onChange={(e) => setCasteName(e.target.value)}
-                placeholder="Search By Caste Name"
+                value={districtCode}
+                onChange={(e) => setDistrictCode(e.target.value)}
+                placeholder="Search By District Code"
                 className="w-full"
               />
             </div>
-            
-            <div>
-              <Input
-                type="text"
-                value={casteCode}
-                onChange={(e) => setCasteCode(e.target.value)}
-                placeholder="Search By Caste Code"
-                className="w-full"
-              />
-            </div>
-            
+
             <div className="flex items-end gap-2">
               <Button type="submit" variant="primary" className="flex-1">
                 <Search className="w-4 h-4 mr-2" />
                 Search
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={handleClearFilters}
                 className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
               >
@@ -236,96 +213,116 @@ export default function MasterACCastePage() {
         </form>
       </Card>
 
-      {/* Master AC Caste Table Card */}
+      {/* Master PC Table Card */}
       <Card className="">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
             <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              List of AC Wise Caste
+              List of District
             </Heading>
           </div>
           <div className="flex gap-2">
             <Button
               variant="primary"
               size="sm"
-              onClick={handleDownloadCaste}
+              onClick={handleDownloadDistrict}
             >
               <Download className="w-4 h-4 mr-2" />
-              Download Caste List
+              Download District List
             </Button>
             <Button
               variant="primary"
               size="sm"
-              onClick={handleUploadCaste}
+              onClick={handleUploadDistrict}
             >
               <Upload className="w-4 h-4 mr-2" />
-              Upload Caste List
+              Upload District List
             </Button>
           </div>
         </div>
-        
+
         <div className="bg-white">
           <div className="mb-4">
             <Text className="text-sm text-gray-600">
-              Total <strong>{totalItems.toLocaleString()}</strong> items.
+              {/* Total <strong>{data.total_count.toLocaleString()}</strong> items. */}
+              Total <strong>0</strong> items.
             </Text>
           </div>
-          
+
           <div className="table-responsive">
             <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="table-light bg-gray-50">
                 <tr>
                   <th className="text-center">S.No</th>
-                  <th className="text-center">Ac Code</th>
-                  <th className="text-center">Caste Name</th>
-                  <th className="text-center">Absoulte Caste</th>
-                  <th className="text-center">Caste</th>
-                  <th className="text-center">Rank</th>
-                  <th className="text-center">Caste Code</th>
-                  <th className="text-center">Castecode</th>
-                  <th className="text-center">Minsample</th>
+                  <th className="text-center">District Code</th>
+                  <th className="text-center">District Name</th>
                   <th className="text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {data.castes.map((caste, index) => (
-                  <tr key={caste.id}>
+              {/* <tbody>
+                {data.pcs.map((pc, index) => (
+                  <tr key={pc.pc_code}>
                     <td className="text-center">{startIndex + index + 1}</td>
-                    <td className="text-center">{caste.ac_code}</td>
-                    <td className="text-left">{caste.caste_name}</td>
-                    <td className="text-center">{caste.absoulte_caste}</td>
-                    <td className="text-left">{caste.caste}</td>
-                    <td className="text-center">{caste.rank}</td>
-                    <td className="text-center">{caste.caste_code}</td>
-                    <td className="text-center">{caste.castecode}</td>
-                    <td className="text-center">{caste.minsample}</td>
+                    <td className="text-center">{pc.pc_code}</td>
+                    <td className="text-left">{pc.pc_name}</td>
+                    <td className="text-left">{pc.district_name}</td>
+                    <td className="text-left">{pc.current_mp}</td>
                     <td className="text-center">
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => handleEditCaste(caste.id)}
+                        onClick={() => handleEditPC(pc.pc_code)}
                         className="text-white"
-                        title="Edit Caste"
+                        title="Edit PC"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
                     </td>
                   </tr>
                 ))}
+              </tbody> */}
+
+              <tbody>
+                {data?.districts?.length ? (
+                  data.districts.map((district, index) => (
+                    <tr key={district.district_code}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center">{district.district_code}</td>
+                      <td className="text-left">{district.district_name}</td>
+                      <td className="text-center">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleEditDistrict(district.district_code)}
+                          className="text-white"
+                          title="Edit District"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center">No data available</td>
+                  </tr>
+                )}
               </tbody>
+
+
             </Table>
           </div>
 
           {/* Pagination */}
           <div className="mt-6">
-            <PaginationStandard
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
+            {/* <PaginationStandard
+              currentPage={data.current_page}
+              totalPages={data.total_pages}
+              totalItems={data.total_count}
               itemsPerPage={pageSize}
               onPageChange={setCurrentPage}
-            />
+            /> */}
           </div>
         </div>
       </Card>

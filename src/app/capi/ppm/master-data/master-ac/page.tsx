@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download, Upload, Edit } from 'lucide-react';
+import { Search, Download, Upload, Edit, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface MasterAC {
@@ -55,24 +55,29 @@ export default function MasterACPage() {
     fetchData();
   }, [currentPage]);
 
-  const fetchData = async () => {
+  const fetchData = async (customAcName?: string, customAcCode?: string, customPage?: number) => {
     try {
       setLoading(true);
       
+      // Use custom values if provided, otherwise use state values
+      const nameToUse = customAcName !== undefined ? customAcName : acName;
+      const codeToUse = customAcCode !== undefined ? customAcCode : acCode;
+      const pageToUse = customPage !== undefined ? customPage : currentPage;
+      
       // Build parameters object, only including non-empty values
       const params: any = {
-        page: currentPage,
+        page: pageToUse,
         limit: pageSize
       };
       
       // Only add ac_name if it's not empty
-      if (acName.trim()) {
-        params.ac_name = acName.trim();
+      if (nameToUse.trim()) {
+        params.ac_name = nameToUse.trim();
       }
       
       // Only add ac_code if it's not empty
-      if (acCode.trim()) {
-        params.ac_code = acCode.trim();
+      if (codeToUse.trim()) {
+        params.ac_code = codeToUse.trim();
       }
       
       console.log('API Parameters:', params);
@@ -100,6 +105,16 @@ export default function MasterACPage() {
     fetchData();
   };
 
+  const handleClearFilters = () => {
+    // Reset filters to empty values
+    setAcName('');
+    setAcCode('');
+    setCurrentPage(1);
+    
+    // Fetch data with cleared filters immediately
+    fetchData('', '', 1);
+  };
+
 
   const handleDownloadAC = () => {
     // Handle download AC list logic here
@@ -107,8 +122,7 @@ export default function MasterACPage() {
   };
 
   const handleUploadAC = () => {
-    // Handle upload AC list logic here
-    console.log('Upload AC List');
+    router.push('/capi/ppm/master-data/master-ac/uploadac');
   };
 
   const handleEditAC = (acCode: number) => {
@@ -186,10 +200,19 @@ export default function MasterACPage() {
               />
             </div>
             
-            <div>
-              <Button type="submit" variant="primary" className="w-full">
+            <div className="flex items-end gap-2">
+              <Button type="submit" variant="primary" className="flex-1">
                 <Search className="w-4 h-4 mr-2" />
                 Search
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClearFilters}
+                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Clear
               </Button>
             </div>
           </div>
