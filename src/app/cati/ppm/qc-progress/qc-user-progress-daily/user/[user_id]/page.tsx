@@ -81,10 +81,16 @@ export default function QCUserAssignmentPage() {
   }, [userId]);
 
   const deriveStatus = useCallback((raw: Record<string, any>) => {
-    if (raw?.qc_pass) return 'Pass';
-    if (raw?.qc_fail) return 'Fail';
-    if (raw?.qc_pending) return 'Pending';
-    return raw?.qc_status ?? raw?.status ?? '-';
+    // Prioritize qc_pass and qc_fail flags
+    if (raw?.qc_pass === 1 || raw?.qc_pass === true) return 'Pass';
+    if (raw?.qc_fail === 0 || raw?.qc_fail === true) return 'Fail';
+    
+    // Normalize fallback status values
+    const status = (raw?.qc_status ?? raw?.status ?? '').toString().toLowerCase();
+    if (status === 'completed' || status === 'pass') return 'Pass';
+    if (status === 'failed' || status === 'fail') return 'Fail';
+    
+    return '-';
   }, []);
 
   useEffect(() => {
@@ -125,7 +131,6 @@ export default function QCUserAssignmentPage() {
               qc_status: deriveStatus(raw),
               qc_pass: raw.qc_pass,
               qc_fail: raw.qc_fail,
-              qc_pending: raw.qc_pending,
               recordings: Array.isArray(raw.recordings) ? raw.recordings : [],
             };
           });
@@ -179,10 +184,7 @@ export default function QCUserAssignmentPage() {
       end_time: null,
       talk_duration: stat.qc_completed ?? null,
       audio_duration: null,
-      qc_status: stat.qc_completed > 0 ? 'Completed' : stat.qc_pending > 0 ? 'Pending' : '-',
-      qc_pass: stat.qc_pass,
-      qc_fail: stat.qc_fail,
-      qc_pending: stat.qc_pending,
+      qc_status: stat.qc_pass > 0 ? 'Pass' : stat.qc_fail > 0 ? 'Fail' : '-',
       recordings: [],
     }));
 
@@ -212,6 +214,14 @@ export default function QCUserAssignmentPage() {
     setSelectedAssignment(null);
   };
 
+  const formatStatusDisplay = (status?: string | null) => {
+    if (!status) return '-';
+    const normalized = status.toString().toLowerCase();
+    if (normalized === 'pass' || normalized === 'completed') return 'Pass';
+    if (normalized === 'fail' || normalized === 'failed') return 'Fail';
+    return status; // Return as-is if not recognized
+  };
+
   const statusBadge = (status?: string | null) => {
     switch ((status || '').toLowerCase()) {
       case 'pass':
@@ -220,8 +230,6 @@ export default function QCUserAssignmentPage() {
       case 'fail':
       case 'failed':
         return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200';
       default:
         return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200';
     }
@@ -370,7 +378,7 @@ export default function QCUserAssignmentPage() {
                       <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-center">{formatDuration(row.audio_duration ?? row.talk_duration)}</td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusBadge(row.qc_status)}`}>
-                          {formatCell(row.qc_status)}
+                          {formatStatusDisplay(row.qc_status)}
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
