@@ -997,19 +997,19 @@ export default function QCFormPage() {
 
                 {!useIframe ? (
                   audioUrl ? (
-                    <audio
-                      controls
-                      className="w-full"
-                      controlsList="nodownload"
-                      preload="metadata"
-                      onError={handleAudioError}
-                      onLoadStart={() => console.log('Audio loading started')}
-                      onCanPlay={() => console.log('Audio can play')}
-                    >
-                      <source src={audioUrl} type="audio/mpeg" />
-                      <source src={audioUrl} type="audio/mp3" />
-                      Your browser does not support the audio element.
-                    </audio>
+                      <audio
+                        controls
+                        className="w-full"
+                        controlsList="nodownload noplaybackrate"
+                        preload="metadata"
+                        onError={handleAudioError}
+                        onLoadStart={() => console.log('Audio loading started')}
+                        onCanPlay={() => console.log('Audio can play')}
+                      >
+                        <source src={audioUrl} type="audio/mpeg" />
+                        <source src={audioUrl} type="audio/mp3" />
+                        Your browser does not support the audio element.
+                      </audio>
                   ) : (
                     <div className="text-center py-4 text-gray-500">
                       No audio file available for this interview.
