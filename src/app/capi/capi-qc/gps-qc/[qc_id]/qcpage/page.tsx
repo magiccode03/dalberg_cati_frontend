@@ -309,8 +309,7 @@ export default function GPSQCQCPage() {
       } else if (rejectReason === 24) {
         extra = ' (No Audio)';
       } else if (rejectReason === 25 || rejectReason === 36) {
-        // Special handling for /kl/poll202501 (but we don't have access to userAccessUrl in frontend)
-        // So we'll use the general logic
+        
         if (details.qc_recheck_audio_value) {
           extra = ' (Audio Re-QC Reject)';
         } else {
@@ -369,10 +368,16 @@ export default function GPSQCQCPage() {
     `;
   };
 
-  // Add GPS markers to map
+  // Add GPS markers to map (only one InfoWindow open at a time)
   const addGPSMarkers = useCallback((mapInstance: any, gpsData: GPSData[]) => {
     const bounds = new window.google.maps.LatLngBounds();
     const newMarkers: any[] = [];
+    // Keep a single InfoWindow instance
+    let singleInfoWindow: any = (window as any)._singleInfoWindow;
+    if (!singleInfoWindow) {
+      singleInfoWindow = new window.google.maps.InfoWindow();
+      (window as any)._singleInfoWindow = singleInfoWindow;
+    }
 
     gpsData.forEach((item, index) => {
       if (!item.gps || !item.gps.trim()) return;
@@ -409,18 +414,18 @@ export default function GPSQCQCPage() {
 
       // Add click event - fetch detailed data and show InfoWindow
       marker.addListener('click', async () => {
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: '<div style="padding: 20px; text-align: center; color: black;">Loading...</div>',
-          position: position
-        });
-        infoWindow.open(mapInstance, marker);
+        // Close any open InfoWindow
+        singleInfoWindow.close();
+        singleInfoWindow.setContent('<div style="padding: 20px; text-align: center; color: black;">Loading...</div>');
+        singleInfoWindow.setPosition(position);
+        singleInfoWindow.open(mapInstance, marker);
 
         // Fetch detailed interview data
         try {
           const interviewDetails = await fetchInterviewDetails(item.server_id);
           
           if (!interviewDetails) {
-            infoWindow.setContent('<div style="padding: 20px; color: red;">Error loading interview details</div>');
+            singleInfoWindow.setContent('<div style="padding: 20px; color: red;">Error loading interview details</div>');
             return;
           }
           
@@ -455,7 +460,7 @@ export default function GPSQCQCPage() {
             </div>
           `;
           
-          infoWindow.setContent(styledContent);
+          singleInfoWindow.setContent(styledContent);
           
           // After setting content, attach event listeners for reject button if status is 30
           if (interviewDetails.status === 30) {
@@ -502,7 +507,7 @@ export default function GPSQCQCPage() {
             }, 100);
           }
         } catch (err) {
-          infoWindow.setContent('<div style="padding: 20px; color: red;">Error loading interview details</div>');
+          singleInfoWindow.setContent('<div style="padding: 20px; color: red;">Error loading interview details</div>');
         }
       });
 
