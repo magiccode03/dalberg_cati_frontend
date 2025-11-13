@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download,  X } from 'lucide-react';
+import { Search, Download, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import Link from 'next/link';
 import { MouseEvent } from 'react';
@@ -183,7 +183,7 @@ export default function QCUserProgressPage() {
 
 
   // Fetch data from API
-  const fetchData = async (page: number = 1, filtersToUse?: typeof filters) => {  
+  const fetchData = async (page: number = 1, filtersToUse?: typeof filters) => {
     try {
       setLoading(true);
       setError(null);
@@ -362,7 +362,7 @@ export default function QCUserProgressPage() {
   // ) => {
   //   if (typeof window === "undefined") return; // Skip if SSR
   //   if (!user || !user.user_id) return;
-  
+
   //   try {
   //     window.sessionStorage.setItem(
   //       `qc-user-progress-detail-${user.user_id}`,
@@ -372,7 +372,7 @@ export default function QCUserProgressPage() {
   //     console.warn("Unable to cache QC user detail", err);
   //   }
   // };
-  
+
 
   const handleRowLinkClick = (event: MouseEvent<HTMLAnchorElement>, user: QCUserProgressData) => {
     try {
@@ -802,7 +802,7 @@ export default function QCUserProgressPage() {
                   <tr key={`${user.user_id}-${index}`} className="hover:bg-gray-50">
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{index + 1}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
-                    <Link
+                      <Link
                         href={`/cati/ppm/qc-progress/qc-user-progress-daily/user/${user.user_id}`}
                         className="text-blue-600 hover:text-blue-800 hover:underline"
                         onClick={(event) => handleRowLinkClick(event, user)}

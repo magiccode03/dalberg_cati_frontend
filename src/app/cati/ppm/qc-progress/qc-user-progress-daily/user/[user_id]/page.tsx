@@ -84,12 +84,12 @@ export default function QCUserAssignmentPage() {
     // Prioritize qc_pass and qc_fail flags
     if (raw?.qc_pass === 1 || raw?.qc_pass === true) return 'Pass';
     if (raw?.qc_fail === 0 || raw?.qc_fail === true) return 'Fail';
-    
+
     // Normalize fallback status values
     const status = (raw?.qc_status ?? raw?.status ?? '').toString().toLowerCase();
     if (status === 'completed' || status === 'pass') return 'Pass';
     if (status === 'failed' || status === 'fail') return 'Fail';
-    
+
     return '-';
   }, []);
 
@@ -292,7 +292,7 @@ export default function QCUserAssignmentPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
 
-          <Button
+            <Button
               variant="outline"
               onClick={handleBack}
               className="flex items-center gap-2"
