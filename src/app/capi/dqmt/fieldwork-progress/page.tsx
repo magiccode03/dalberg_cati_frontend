@@ -147,7 +147,7 @@ export default function FieldworkProgressPage() {
       {/* Breadcrumb Header */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex-1">
-          <Heading level={4} className="text-2xl font-semibold text-gray-900">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900">
             Fieldwork Progress
           </Heading>
         </div>
@@ -163,7 +163,7 @@ export default function FieldworkProgressPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               Progress <i>Summary</i>
             </Heading>
             </div>
@@ -200,7 +200,7 @@ export default function FieldworkProgressPage() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title mg-b-0">
+            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise Progress
             </Heading>
             </div>
@@ -222,8 +222,8 @@ export default function FieldworkProgressPage() {
               <thead>
                 <tr>
                   <th className="text-center">AC Code</th>
-                  <th>AC Name</th>
-                  <th>District Name</th>
+                  <th className="text-center">AC Name</th>
+                  <th className="text-center">District Name</th>
                   <th className="text-center">Valid+Under QC</th>
                   <th className="text-center">Reject</th>
                   <th className="text-center">% of Completion</th>
@@ -233,8 +233,8 @@ export default function FieldworkProgressPage() {
                 {acProgressData.map((ac, index) => (
                   <tr key={ac.ac_code} className={getRowStyle(ac.status)}>
                     <td className="text-center">{ac.ac_code}</td>
-                    <td>{ac.ac_name}</td>
-                    <td>{ac.district_name}</td>
+                    <td className="text-left">{ac.ac_name}</td>
+                    <td className="text-left">{ac.district_name}</td>
                     <td className="text-center">{ac.total_achieved}</td>
                     <td className="text-center">{ac.rejected_interviews}</td>
                     <td className="text-center">{ac.completion_percentage}</td>

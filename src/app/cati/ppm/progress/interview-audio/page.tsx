@@ -8,8 +8,9 @@ import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Play, X, Volume2 } from 'lucide-react';
+import { Search, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
+import Audio from '@/components/ui/Audio';
 
 interface InterviewAudioData {
   id: number;
@@ -73,7 +74,7 @@ export default function CATIInterviewAudioPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
+  const [itemsPerPage] = useState(25);
   const [interviewData, setInterviewData] = useState<InterviewAudioData[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -82,7 +83,6 @@ export default function CATIInterviewAudioPage() {
   const [showAudioModal, setShowAudioModal] = useState(false);
   const [currentAudio, setCurrentAudio] = useState<InterviewAudioData | null>(null);
   const [audioError, setAudioError] = useState(false);
-  const [useIframe, setUseIframe] = useState(false);
   const [loadingAC, setLoadingAC] = useState(false);
 
   // Fetch AC list on mount
@@ -214,25 +214,12 @@ export default function CATIInterviewAudioPage() {
     setCurrentAudio(processedAudioData);
     setShowAudioModal(true);
     setAudioError(false);
-    setUseIframe(false);
   };
 
   const handleCloseModal = () => {
     setShowAudioModal(false);
     setCurrentAudio(null);
     setAudioError(false);
-    setUseIframe(false);
-  };
-
-  const handleAudioError = () => {
-    console.error('Audio playback failed, switching to iframe mode');
-    setAudioError(true);
-    setUseIframe(true);
-  };
-
-  const handleIframeError = () => {
-    console.error('Iframe audio playback also failed');
-    setAudioError(true);
   };
 
   const handlePageChange = (page: number) => {
@@ -315,42 +302,29 @@ export default function CATIInterviewAudioPage() {
 
       {/* Interview List */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                Interview List (CATI)
-              </Heading>
-            </div>
-            <span className="text-end">
-              {/* Empty for now */}
-            </span>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Interview List (CATI)
+            </Heading>
           </div>
         </div>
-        
-        <div className="card-body">
+
+        <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+          Total <strong>{totalItems}</strong> items.
+        </div>
+
+        <div className="overflow-x-auto">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-gray-600">Loading interview data...</div>
+            <div className="text-center py-12">
+              <i className="fa fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">Loading interview data...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-red-600">Error: {error}</div>
-              <div className="mt-4 text-sm text-gray-600">
-                <details className="cursor-pointer">
-                  <summary className="font-semibold">Debug Info (Click to expand)</summary>
-                  <div className="mt-2 p-4 bg-gray-100 rounded text-left">
-                    <p><strong>Current Page:</strong> {currentPage}</p>
-                    <p><strong>Items Per Page:</strong> {itemsPerPage}</p>
-                    <p><strong>Total Items:</strong> {totalItems}</p>
-                    <p><strong>Total Pages:</strong> {totalPages}</p>
-                    <p><strong>Interview Data Length:</strong> {interviewData.length}</p>
-                    <p><strong>AC Code Filter:</strong> {acCode || 'None'}</p>
-                    <p><strong>Date Filter:</strong> {interviewDate || 'None'}</p>
-                  </div>
-                </details>
-              </div>
+            <div className="text-center py-12">
+              <i className="fa fa-exclamation-triangle text-6xl text-red-300 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">Error: {error}</p>
               <button 
                 onClick={fetchData}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -359,73 +333,77 @@ export default function CATIInterviewAudioPage() {
               </button>
             </div>
           ) : interviewData.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="text-lg text-gray-600">No interview data found</div>
-              <div className="text-sm text-gray-500 mt-2">Try adjusting your search filters</div>
-              <button 
-                onClick={fetchData}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Refresh
-              </button>
+            <div className="text-center py-12">
+              <i className="fa fa-inbox text-6xl text-gray-300 mb-4"></i>
+              <p className="text-gray-600 dark:text-gray-400">No interview data found</p>
             </div>
           ) : (
-          <div className="table-responsive">
-            <Table className="table table-striped table-bordered table-hover" id="export_table">
-              <thead>
-                <tr>
-                  <th className="text-center" style={{ width: '2%' }}>#</th>
-                  <th style={{ width: '10%' }}>Server Token</th>
-                  <th className="text-center" style={{ width: '10%' }}>AC Code</th>
-                  <th style={{ width: '10%' }}>AC Name</th>
-                  <th style={{ width: '10%' }}>Interview Date</th>
-                  <th className="text-center" style={{ width: '8%' }}>Interview Audio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedData.map((row, index) => (
-                  <tr key={row.id}>
-                    <td className="text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td>{row.id}</td>
-                    <td className="text-center">{row.ac_code}</td>
-                    <td>{row.ac_name}</td>
-                    <td>{formatInterviewDate(row.interview_date)}</td>
-                    <td className="text-center">
-                      <Button
-                        onClick={() => handlePlayAudio(row)}
-                        className="bg-blue-600 text-white hover:bg-blue-700 text-sm px-3 py-1 flex items-center gap-2 mx-auto"
-                      >
-                        <Play className="h-4 w-4" />
-                        Play
-                      </Button>
-                    </td>
+            <div className="table-responsive">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="sticky-header bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server Token</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Code</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Name</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interview Date</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interview Audio</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-          )}
-
-          {/* Pagination Info and Controls */}
-          {!loading && !error && interviewData.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
-                </div>
-                {totalPages > 1 && (
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </div>
+                </thead>
+                <tbody>
+                  {paginatedData.map((row, index) => (
+                    <tr key={row.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {row.id}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {row.ac_code}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-left">
+                        {row.ac_name}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {formatInterviewDate(row.interview_date)}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        <div className="relative group">
+                          <Button
+                            size="sm"
+                            onClick={() => handlePlayAudio(row)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </Button>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                            Play Audio
+                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        {!loading && !error && totalItems > 0 && (
+          <div className="mt-4 px-4 pb-4">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </Card>
 
       {/* Audio Modal */}
@@ -476,60 +454,28 @@ export default function CATIInterviewAudioPage() {
 
               {/* Audio Player */}
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <div className="mb-3 text-center">
+                <div className="mb-4 text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                    Click play to start the audio
                   </p>
-                  {audioError && !useIframe && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      Audio player had an issue. Try the alternative options below.
-                    </p>
-                  )}
                 </div>
 
-                {!useIframe ? (
-                  <audio
-                    controls
-                    className="w-full"
-                    controlsList="nodownload"
-                    preload="metadata"
-                    onError={handleAudioError}
-                    onLoadStart={() => console.log('Audio loading started')}
-                    onCanPlay={() => console.log('Audio can play')}
-                  >
-                    <source src={currentAudio.audio} type="audio/mpeg" />
-                    <source src={currentAudio.audio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
-        ) : (
-          <div className="w-full">
-            <iframe
-              src={currentAudio.audio}
-              className="w-full h-16 border-0 rounded"
-              title="Audio Player"
-              allow="autoplay"
-              onError={handleIframeError}
-              onLoad={() => {
-                // Check if iframe content is just text (not audio player)
-                setTimeout(() => {
-                  try {
-                    const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
-                    if (iframe && iframe.contentDocument) {
-                      const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                      if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                        console.warn('Iframe returned text instead of audio player');
-                        setAudioError(true);
-                      }
-                    }
-                  } catch (e) {
-                    // Cross-origin restrictions, can't access iframe content
-                    console.log('Cannot access iframe content due to CORS');
-                  }
-                }, 1000);
-              }}
-            />
-          </div>
-        )}
+                <Audio
+                  src={currentAudio.audio}
+                  onPlay={() => console.log('Audio started playing')}
+                  onPause={() => console.log('Audio paused')}
+                  onTimeUpdate={(currentTime, duration) => {
+                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
+                  }}
+                  onEnded={() => {
+                    console.log('Audio playback ended');
+                  }}
+                  onError={(error) => {
+                    console.error('Audio error:', error);
+                    setAudioError(true);
+                  }}
+                  className="border border-gray-200 dark:border-gray-600"
+                />
 
                 {/* Error Message for Failed Audio */}
                 {audioError && (
@@ -541,52 +487,23 @@ export default function CATIInterviewAudioPage() {
                         </svg>
                         <p className="font-semibold">Audio Playback Failed</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                          The audio URL is not serving playable content.
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
                 
-                {/* Alternative Options */}
-                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
-                  {!useIframe && audioError && (
-                    <button
-                      onClick={() => setUseIframe(true)}
-                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Try Alternative Player
-                    </button>
-                  )}
-                  {/* <a
-                    href={currentAudio.audio}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
-                  >
-                    Open in new tab
-                  </a> */}
+                {/* Download Link */}
+                <div className="mt-4 text-center">
                   <a
                     href={currentAudio.audio}
                     download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
                   >
-                    Download audio
+                    <Volume2 className="w-4 h-4 mr-2" />
+                    Download Audio
                   </a>
-                  {/* <button
-                    onClick={() => {
-                      // Test direct audio URL
-                      const testAudio = new Audio();
-                      testAudio.src = currentAudio.audio;
-                      testAudio.onloadstart = () => console.log('Direct audio test: loading started');
-                      testAudio.oncanplay = () => console.log('Direct audio test: can play');
-                      testAudio.onerror = (e) => console.error('Direct audio test failed:', e);
-                      testAudio.load();
-                    }}
-                    className="text-sm bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
-                  >
-                    Test Direct URL
-                  </button> */}
                 </div>
               </div>
 

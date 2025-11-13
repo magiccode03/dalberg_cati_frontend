@@ -23,7 +23,7 @@ interface InterviewDateWiseData {
 
 export default function InterviewDateWisePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
 
   // Sample data based on the provided HTML
   const interviewDateWiseData: InterviewDateWiseData[] = [
@@ -63,103 +63,96 @@ export default function InterviewDateWisePage() {
   const currentData = interviewDateWiseData.slice(startIndex, endIndex);
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
               Interview Date Wise
             </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Interview Date Wise Report
-                </Heading>
-                <div className="text-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Interview Date Wise Report
+              </Heading>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interview Date</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Reject Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Assigned</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownload}
+                className="bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </div>
+          
+          <div className="bg-white">
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{interviewDateWiseData.length.toLocaleString()}</strong> items.
+              </Text>
+            </div>
+            
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">Interview Date</th>
+                    <th className="text-center">Total Interview</th>
+                    <th className="text-center">Valid Interview</th>
+                    <th className="text-center">Reject Interview</th>
+                    <th className="text-center">QC Assigned</th>
+                    <th className="text-center">QC Pending</th>
+                    <th className="text-center">QC Completed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((data, index) => (
+                    <tr key={data.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-left">
+                        <button
+                          onClick={() => handleDateClick(data.interviewDate)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                        >
+                          {data.interviewDate}
+                        </button>
+                      </td>
+                      <td className="text-center font-mono font-semibold">{data.totalInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.validInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.rejectInterview.toLocaleString()}</td>
+                      <td className="text-center">{data.qcAssigned.toLocaleString()}</td>
+                      <td className="text-center">{data.qcPending.toLocaleString()}</td>
+                      <td className="text-center">{data.qcCompleted.toLocaleString()}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          <button
-                            onClick={() => handleDateClick(data.interviewDate)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                          >
-                            {data.interviewDate}
-                          </button>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.validInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.rejectInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcAssigned.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcPending.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcCompleted.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, interviewDateWiseData.length)}</span> of <span className="font-semibold">{interviewDateWiseData.length}</span> results
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={interviewDateWiseData.length}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+
+            {/* Pagination */}
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={interviewDateWiseData.length}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        </Card>
+    </Container>
   );
 }

@@ -1006,7 +1006,7 @@ export default function DataAnalysisPage() {
             <div className="card-header pb-0">
               <div className="flex justify-between items-center">
                 <div className="w-1 h-6 bg-green-500 mr-3"></div>
-                <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   4. RESPONDENT'S RESIDENTIAL LOCALITY
                 </Heading>
                 <div className="text-end ms-auto">
@@ -1090,7 +1090,7 @@ export default function DataAnalysisPage() {
             <div className="card-header pb-0">
               <div className="flex justify-between items-center">
                 <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   5. RESPONDENT'S GENDER
                 </Heading>
                 <div className="text-end ms-auto">
@@ -1172,7 +1172,7 @@ export default function DataAnalysisPage() {
             <div className="card-header pb-0">
               <div className="flex justify-between items-center">
                 <div className="w-1 h-6 bg-green-500 mr-3"></div>
-                <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   6. RESPONDENT'S RELIGION
                 </Heading>
                 <div className="text-end ms-auto">
@@ -1260,7 +1260,7 @@ export default function DataAnalysisPage() {
             <div className="card-header pb-0">
               <div className="flex justify-between items-center">
                 <div className="w-1 h-6 bg-green-500 mr-3"></div>
-                <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   7. RESPONDENT'S SOCIAL CATEGORY
                 </Heading>
                 <div className="text-end ms-auto">
@@ -1345,7 +1345,7 @@ export default function DataAnalysisPage() {
             <div className="card-header pb-0">
               <div className="flex justify-between items-center">
                 <div className="w-1 h-6 bg-green-500 mr-3"></div>
-                <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
                   8. RESPONDENT'S AGE
                 </Heading>
                 <div className="text-end ms-auto">

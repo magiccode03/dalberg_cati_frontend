@@ -31,7 +31,7 @@ export default function CronRequestPage() {
   const [plannedDate, setPlannedDate] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
 
   // Action/Route options
   const actionOptions = [
@@ -94,10 +94,12 @@ export default function CronRequestPage() {
     return <span className="badge bg-secondary text-white">{status}</span>;
   };
 
+  // Pagination calculations
   const totalItems = 95; // Total items as shown in HTML (1-20 of 95)
   const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = cronRequests.slice(0, Math.min(pageSize, cronRequests.length));
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -115,17 +117,12 @@ export default function CronRequestPage() {
 
       {/* Cron Request Form Card */}
       <Card className="mb-6">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white card-title mg-b-0">
-                Cron Requests
-              </Heading>
-            </div>
-            <span className="text-end">
-              {/* Sample file download buttons can be added here */}
-            </span>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Cron Requests
+            </Heading>
           </div>
         </div>
         
@@ -189,7 +186,7 @@ export default function CronRequestPage() {
                 </div>
 
                 <div className="flex items-end">
-                  <Button type="submit" variant="primary" className="w-full">
+                  <Button type="submit" variant="primary" className="w-full bg-blue-500 hover:bg-blue-600">
                     Save
                   </Button>
                 </div>
@@ -200,51 +197,51 @@ export default function CronRequestPage() {
       </Card>
 
       {/* Dynamic Recoding Requests Card */}
-      <Card className="">
-        <div className="card-header mb-6">
+      <Card>
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               List of Dynamic Recoding Requests
             </Heading>
           </div>
         </div>
-        
-        <div className="card-body">
+
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
           <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <strong>{totalItems}</strong> items.
-              </Text>
-            </div>
-            
-            <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-              <thead>
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
                   <th className="text-center">S.No</th>
                   <th className="text-center">Cron ID</th>
-                  <th className="text-left">Action/Route</th>
+                  <th className="text-center">Action/Route</th>
                   <th className="text-center">Planned At</th>
                   <th className="text-center">Executed At</th>
                   <th className="text-center">Execution</th>
-                  <th className="text-left">Errors</th>
+                  <th className="text-center">Errors</th>
                   <th className="text-center">Status</th>
-                  <th className="text-center action-column">Actions</th>
-                  <th className="text-center action-column">UploadedFile</th>
-                  <th className="text-left">Params</th>
-                  <th className="text-left">CRON Info</th>
+                  <th className="text-center">Actions</th>
+                  <th className="text-center">UploadedFile</th>
+                  <th className="text-center">Params</th>
+                  <th className="text-center">CRON Info</th>
                 </tr>
               </thead>
               <tbody>
-                {cronRequests.map((request, index) => (
+                {currentData.map((request, index) => (
                   <tr key={request.id}>
-                    <td className="text-center">{index + 1}</td>
+                    <td className="text-center">{startIndex + index + 1}</td>
                     <td className="text-center">{request.cronId}</td>
                     <td className="text-left">{request.actionRoute}</td>
                     <td className="text-center">{request.plannedAt}</td>
                     <td className="text-center">{request.executedAt}</td>
                     <td className="text-center">{request.execution}</td>
-                    <td className="text-left">{request.errors}</td>
+                    <td className="text-center">{request.errors}</td>
                     <td className="text-center">
                       {getStatusBadge(request.status)}
                     </td>
@@ -253,7 +250,7 @@ export default function CronRequestPage() {
                         variant="primary"
                         size="sm"
                         onClick={() => handleViewRequest(request.cronId)}
-                        className="mr-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
+                        className="bg-blue-500 hover:bg-blue-600"
                         title="View Request"
                       >
                         <Eye className="w-4 h-4" />
@@ -262,13 +259,16 @@ export default function CronRequestPage() {
                     <td className="text-center">
                       {/* Empty cell as shown in HTML */}
                     </td>
-                    <td className="text-left">{request.params}</td>
-                    <td className="text-left">{request.cronInfo}</td>
+                    <td className="text-center">{request.params}</td>
+                    <td className="text-center">{request.cronInfo}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-            
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
             <div className="mt-6">
               <PaginationStandard
                 currentPage={currentPage}
@@ -278,7 +278,7 @@ export default function CronRequestPage() {
                 onPageChange={setCurrentPage}
               />
             </div>
-          </div>
+          )}
         </div>
       </Card>
     </Container>

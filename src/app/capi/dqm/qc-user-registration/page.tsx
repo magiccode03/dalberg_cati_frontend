@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Checkbox from '@/components/ui/Checkbox';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Plus, Edit, Check, Eye, X, MapPin, Speaker } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import QCUserViewModal from '@/components/modals/QCUserViewModal';
@@ -117,6 +118,10 @@ export default function QCUserRegistrationPage() {
   const [qcUserData, setQcUserData] = useState<QCUserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
   const [statistics, setStatistics] = useState({
     total_users: 0,
     active_users: '0',
@@ -221,6 +226,7 @@ export default function QCUserRegistrationPage() {
   const handleSearch = () => {
     // Apply the current filter values to trigger the search
     setAppliedFilters(filters);
+    setCurrentPage(1); // Reset to first page when searching
     console.log('Searching with filters:', filters);
   };
 
@@ -237,6 +243,7 @@ export default function QCUserRegistrationPage() {
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters);
+    setCurrentPage(1); // Reset to first page when clearing
   };
 
   const handleAddNewUser = () => {
@@ -375,56 +382,58 @@ export default function QCUserRegistrationPage() {
     );
   };
 
+  // Pagination calculations
+  const totalPages = Math.ceil(qcUserData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const currentData = qcUserData.slice(startIndex, endIndex);
+
   if (loading) {
     return (
-      <div className="main-content horizontal-content">
-        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <Text className="text-gray-600">Loading QC user data...</Text>
-            </div>
-          </div>
-        </Container>
-      </div>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <Text className="text-gray-600">Loading QC user data...</Text>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="main-content horizontal-content">
-        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-          <Card className="mb-6">
-            <div className="card-body text-center">
-              <div className="text-red-500 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
-              <Text className="text-gray-600 mb-4">{error}</Text>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                Retry
-              </button>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <Card className="mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
             </div>
-          </Card>
-        </Container>
-      </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      </Container>
     );
   }
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-        {/* Page Header */}
-        <div className="mb-6">
-            <Heading level={2} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
             QC User Registration
-            </Heading>
+          </Heading>
         </div>
+      </div>
 
         {/* Search Filters */}
         <Card className="p-4 mb-5">
@@ -537,62 +546,59 @@ export default function QCUserRegistrationPage() {
           </div>
         </Card>
 
-        {/* QC User Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                QC User Registration
-                  </Heading>
-                </div>
-            <div className="flex items-center">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={handleAddNewUser}
-                className="flex items-center"
-                >
-                <Plus className="w-4 h-4 mr-2" />
-                  Add New User
-                </Button>
-              </div>
-            </div>
-
-          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-            Total <strong>{qcUserData.length}</strong> QC users.
+      {/* QC User Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              QC User Registration
+            </Heading>
           </div>
-
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-              <thead className="sticky-header bg-gray-50">
+          <div className="flex items-center">
+            <Button
+              variant="primary"
+              onClick={handleAddNewUser}
+              className="flex items-center"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add New User
+            </Button>
+          </div>
+        </div>
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{qcUserData.length.toLocaleString()}</strong> QC users.
+            </Text>
+          </div>
+          
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">#</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">GPS</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Audio</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Status</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Actions</th>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Assign AC</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {qcUserData.map((user, index) => (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{index + 1}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.qcId}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobileNumber}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{renderIcon(user.gps)}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{renderIcon(user.audio)}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">QC ID</th>
+                  <th className="text-center">Name</th>
+                  <th className="text-center">Mobile Number</th>
+                  <th className="text-center">GPS</th>
+                  <th className="text-center">Audio</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Actions</th>
+                  <th className="text-center">Assign AC</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((user, index) => (
+                  <tr key={user.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{user.qcId}</td>
+                    <td className="text-left">{user.name}</td>
+                    <td className="text-center">{user.mobileNumber}</td>
+                    <td className="text-center">{renderIcon(user.gps)}</td>
+                    <td className="text-center">{renderIcon(user.audio)}</td>
+                    <td className="text-center">
                       <span className={`px-2 py-1 text-xs rounded-full ${
                         user.status === 'Active' 
                           ? 'bg-green-100 text-green-800' 
@@ -601,51 +607,59 @@ export default function QCUserRegistrationPage() {
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => handleEditUser(user.id)}
-                        // className="flex items-center justify-center"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                              {/* <div className="flex flex-row gap-2 items-center"> */}
-                                
-                                {/* GPS Assign AC Button */}
-                                {/* <Button
-                                  variant="primary"
-                                  size="sm"
-                                  onClick={() => handleAssignGPSAC(user.id)}
-                                  title={user.gps ? "Assign GPS AC" : "GPS not enabled"}
-                                  disabled={!user.gps}
-                                  className={`w-full ${!user.gps ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                  <MapPin className="w-4 h-4 mr-1" />
-                                </Button> */}
+                    <td className="text-center">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleEditUser(user.id)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </td>
+                    <td className="text-center">
+                      <div className="flex flex-row gap-2 items-center justify-center">
+                        {/* GPS Assign AC Button */}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleAssignGPSAC(user.id)}
+                          title={user.gps ? "Assign GPS AC" : "GPS not enabled"}
+                          disabled={!user.gps}
+                          className={`${!user.gps ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <MapPin className="w-4 h-4" />
+                        </Button>
+                        
+                        {/* Regular Assign AC Button */}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleAssignAC(user.id)}
+                          title="Assign AC"
+                        >
+                          <Speaker className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
 
-                                {/* Regular Assign AC Button */}
-                                <Button
-                                  variant="primary"
-                                  size="sm"
-                                  onClick={() => handleAssignAC(user.id)}
-                                  title="Assign AC"
-                                  // className="w-full"
-                                >
-                                  <Speaker className="w-4 h-4" />
-                                </Button>
-                              {/* </div> */}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
-
-          </Card>
-      </Container>
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={qcUserData.length}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </div>
+      </Card>
 
       {/* QC User View Modal */}
       <QCUserViewModal
@@ -669,7 +683,6 @@ export default function QCUserRegistrationPage() {
           onSuccess={handleACAssignSuccess}
         />
       )}
-
       {/* GPS AC Assignment Modal */}
       {selectedGPSQCId && (
         <CapiGPSQCACAssignModal
@@ -684,6 +697,6 @@ export default function QCUserRegistrationPage() {
           onSuccess={handleGPSACAssignSuccess}
         />
       )}
-    </div>
+    </Container>
   );
 }

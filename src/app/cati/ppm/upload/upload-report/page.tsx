@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Calendar, FileText, Edit, Eye } from 'lucide-react';
 
 // Interfaces
@@ -21,6 +22,10 @@ interface UploadedReportData {
 }
 
 const UploadReportPage = () => {
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // State for upload form
   const [uploadForm, setUploadForm] = useState({
     reportDate: '',
@@ -73,11 +78,18 @@ const UploadReportPage = () => {
     console.log('Update report file for ID:', reportId);
   };
 
+  // Pagination calculations
+  const totalItems = uploadedReportsData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = uploadedReportsData.slice(startIndex, endIndex);
+
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Upload Report
         </Heading>
       </div>
@@ -86,8 +98,8 @@ const UploadReportPage = () => {
       <Card className="mb-6">
         <div className="mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Upload Report File
             </Heading>
           </div>
@@ -156,69 +168,90 @@ const UploadReportPage = () => {
 
       {/* Uploaded Report Files History */}
       <Card>
-        <div className="mb-4">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Uploaded Report Files
             </Heading>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Title</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Report Date</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Upload Date & Time</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">File</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Update</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {uploadedReportsData.length === 0 ? (
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                    No results found.
-                  </td>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Title</th>
+                  <th className="text-center">Report Date</th>
+                  <th className="text-center">Upload Date & Time</th>
+                  <th className="text-center">File</th>
+                  <th className="text-center">Update</th>
+                  <th className="text-center">Status</th>
                 </tr>
-              ) : (
-                uploadedReportsData.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.title}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.reportDate}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.uploadDateTime}</td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <button
-                        onClick={() => handleViewFile(item.id)}
-                        className="text-blue-600 hover:text-blue-800 flex items-center"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        View File
-                      </button>
+              </thead>
+              <tbody>
+                {currentData.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-gray-500">
+                      No results found.
                     </td>
-                    <td className="px-4 py-3 border-b border-gray-200">
-                      <button
-                        onClick={() => handleUpdateFile(item.id)}
-                        className="text-green-600 hover:text-green-800 flex items-center"
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Update
-                      </button>
-                    </td>
-                    <td className="px-4 py-3 border-b border-gray-200">{item.status}</td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ) : (
+                  currentData.map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-left">{item.title}</td>
+                      <td className="text-center">{item.reportDate}</td>
+                      <td className="text-center">{item.uploadDateTime}</td>
+                      <td className="text-center">
+                        <button
+                          onClick={() => handleViewFile(item.id)}
+                          className="text-blue-600 hover:text-blue-800 flex items-center"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View File
+                        </button>
+                      </td>
+                      <td className="text-center">
+                        <button
+                          onClick={() => handleUpdateFile(item.id)}
+                          className="text-green-600 hover:text-green-800 flex items-center"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Update
+                        </button>
+                      </td>
+                      <td className="text-center">{item.status}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

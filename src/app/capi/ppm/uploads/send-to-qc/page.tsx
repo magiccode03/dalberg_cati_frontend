@@ -29,7 +29,7 @@ export default function SendToQcPage() {
   const [actionType, setActionType] = useState('');
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(16);
+  const [pageSize] = useState(25);
 
   // Sample data for previous requests
   const sendToQcRequests: SendToQcRequest[] = [
@@ -264,10 +264,12 @@ export default function SendToQcPage() {
     return <span className="badge bg-secondary text-white">{status}</span>;
   };
 
-  const totalPages = Math.ceil(sendToQcRequests.length / pageSize);
+  // Pagination calculations
+  const totalItems = sendToQcRequests.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const endIndex = startIndex + pageSize;
-  const currentRequests = sendToQcRequests.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = sendToQcRequests.slice(startIndex, endIndex);
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -285,17 +287,12 @@ export default function SendToQcPage() {
 
       {/* Upload Form Card */}
       <Card className="mb-6">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
-                Send to QC
-              </Heading>
-            </div>
-            <span className="text-end">
-              {/* Sample file download button can be added here */}
-            </span>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Send to QC
+            </Heading>
           </div>
         </div>
         
@@ -328,7 +325,7 @@ export default function SendToQcPage() {
               </div>
               
               <div className="form-group flex items-end">
-                <Button type="submit" variant="primary" className="w-full">
+                <Button type="submit" variant="primary" className="w-full bg-blue-500 hover:bg-blue-600">
                   Submit
                 </Button>
               </div>
@@ -338,43 +335,43 @@ export default function SendToQcPage() {
       </Card>
 
       {/* Previous Requests Card */}
-      <Card className="">
-        <div className="card-header mb-6">
+      <Card>
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="card-title text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               List of Previous Requests
             </Heading>
           </div>
         </div>
-        
-        <div className="card-body">
+
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
           <div className="table-responsive">
-            <div className="summary mb-4">
-              <Text className="text-sm text-gray-600">
-                Total <strong>{sendToQcRequests.length}</strong> items.
-              </Text>
-            </div>
-            
-            <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-              <thead>
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
                 <tr>
                   <th className="text-center">S.No</th>
                   <th className="text-center">Cron ID</th>
-                  <th className="text-left">Action/Route</th>
+                  <th className="text-center">Action/Route</th>
                   <th className="text-center">Planned At</th>
                   <th className="text-center">Executed At</th>
                   <th className="text-center">Execution</th>
-                  <th className="text-left">Errors</th>
+                  <th className="text-center">Errors</th>
                   <th className="text-center">Status</th>
-                  <th className="text-center action-column">Actions</th>
-                  <th className="text-center action-column">UploadedFile</th>
-                  <th className="text-left">Params</th>
-                  <th className="text-left">CRON Info</th>
+                  <th className="text-center">Actions</th>
+                  <th className="text-center">UploadedFile</th>
+                  <th className="text-center">Params</th>
+                  <th className="text-center">CRON Info</th>
                 </tr>
               </thead>
               <tbody>
-                {currentRequests.map((request, index) => (
+                {currentData.map((request, index) => (
                   <tr key={request.id}>
                     <td className="text-center">{startIndex + index + 1}</td>
                     <td className="text-center">{request.cronId}</td>
@@ -382,7 +379,7 @@ export default function SendToQcPage() {
                     <td className="text-center">{request.plannedAt}</td>
                     <td className="text-center">{request.executedAt}</td>
                     <td className="text-center">{request.execution}</td>
-                    <td className="text-left">{request.errors}</td>
+                    <td className="text-center">{request.errors}</td>
                     <td className="text-center">
                       {getStatusBadge(request.status)}
                     </td>
@@ -391,7 +388,7 @@ export default function SendToQcPage() {
                         variant="primary"
                         size="sm"
                         onClick={() => handleViewRequest(request.cronId)}
-                        className="mr-2"
+                        className="bg-blue-500 hover:bg-blue-600"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -402,27 +399,31 @@ export default function SendToQcPage() {
                         size="sm"
                         onClick={() => handleDownloadFile(request.cronId)}
                         title="Download Uploaded File"
+                        className="bg-blue-500 hover:bg-blue-600"
                       >
                         <Download className="w-4 h-4" />
                       </Button>
                     </td>
-                    <td className="text-left">{request.params}</td>
-                    <td className="text-left">{request.cronInfo}</td>
+                    <td className="text-center">{request.params}</td>
+                    <td className="text-center">{request.cronInfo}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
-            
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
             <div className="mt-6">
               <PaginationStandard
                 currentPage={currentPage}
                 totalPages={totalPages}
-                totalItems={sendToQcRequests.length}
+                totalItems={totalItems}
                 itemsPerPage={pageSize}
                 onPageChange={setCurrentPage}
               />
             </div>
-          </div>
+          )}
         </div>
       </Card>
     </Container>

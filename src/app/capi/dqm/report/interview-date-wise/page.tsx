@@ -48,7 +48,7 @@ interface APIResponse {
 
 export default function InterviewDateWisePage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [interviewDateWiseData, setInterviewDateWiseData] = useState<InterviewDateWiseData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -209,137 +209,124 @@ export default function InterviewDateWisePage() {
   const currentData = interviewDateWiseData.slice(startIndex, endIndex);
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Interview Date Wise Report
+          </Heading>
+        </div>
+        <div className="flex items-center">
+          <Button
+            variant="primary"
+            onClick={handleDownload}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <Text className="text-gray-600">Loading interview date wise report...</Text>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Card className="mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Button 
+              onClick={fetchInterviewDateWiseData} 
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Interview Date Wise Report Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Interview Date Wise Report
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <Text className="ml-2 text-gray-600">Loading interview date wise report...</Text>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalCount.toLocaleString()}</strong> interview dates.
+            </Text>
           </div>
-        )}
+          
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Interview Date</th>
+                  <th className="text-center">Total Interview</th>
+                  <th className="text-center">Valid Interview</th>
+                  <th className="text-center">Reject Interview</th>
+                  <th className="text-center">QC Assigned</th>
+                  <th className="text-center">QC Pending</th>
+                  <th className="text-center">QC Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((data, index) => (
+                  <tr key={data.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleDateClick(data.interviewDate)}
+                        className="text-blue-600 hover:text-blue-800 hover:underline font-medium font-mono"
+                      >
+                        {data.interviewDate}
+                      </button>
+                    </td>
+                    <td className="text-center">{data.totalInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.validInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.rejectInterview.toLocaleString()}</td>
+                    <td className="text-center">{data.qcAssigned.toLocaleString()}</td>
+                    <td className="text-center">{data.qcPending.toLocaleString()}</td>
+                    <td className="text-center">{data.qcCompleted.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Error State */}
-        {error && (
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
-                    Error Loading Data
-                  </Heading>
-                  <Text className="text-gray-600">{error}</Text>
-                </div>
-                <Button
-                  onClick={fetchInterviewDateWiseData}
-                  variant="outline"
-                  size="sm"
-                >
-                  Retry
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Main Content */}
-        <div className="w-full">
-          <Card>
-            <div className="py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Interview Date Wise Report
-                  </Heading>
-                </div>
-                <div className="text-end">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="bg-blue-500 text-white border-blue-500 hover:bg-blue-600 hover:border-blue-600"
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Interview Date</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Reject Interview</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Assigned</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          <button
-                            onClick={() => handleDateClick(data.interviewDate)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline font-medium font-mono"
-                          >
-                            {data.interviewDate}
-                          </button>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.totalInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.validInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.rejectInterview.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcAssigned.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcPending.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.qcCompleted.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
-      </Container>
-    </div>
+      </Card>
+    </Container>
   );
 }

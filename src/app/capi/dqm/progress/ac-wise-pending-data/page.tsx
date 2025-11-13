@@ -42,7 +42,7 @@ interface APIResponse {
 
 export default function ACWisePendingDataPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [acWisePendingData, setAcWisePendingData] = useState<ACWisePendingData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,114 +179,88 @@ export default function ACWisePendingDataPage() {
   const currentData = acWisePendingData.slice(startIndex, endIndex);
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Pending QC Data AC Wise
+          </Heading>
+        </div>
+      </div>
+
+
+      {/* AC Wise Pending Data Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Pending QC Data AC Wise
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
         </div>
-
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <Text className="ml-2 text-gray-600">Loading AC wise pending data...</Text>
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalCount.toLocaleString()}</strong> items.
+            </Text>
           </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
-                    Error Loading Data
-                  </Heading>
-                  <Text className="text-gray-600">{error}</Text>
-                </div>
-                <Button
-                  onClick={fetchACWisePendingData}
-                  variant="outline"
-                  size="sm"
-                >
-                  Retry
-                </Button>
-              </div>
+          
+          {loading ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500 mx-auto mb-4" />
+              <Text className="text-gray-600">Loading AC wise pending data...</Text>
             </div>
-          </Card>
-        )}
-
-        {/* Main Content */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Pending QC Data AC Wise
-                </Heading>
-                <div className="text-end">
-                  <span></span>
-                </div>
-              </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <Text className="text-lg text-red-600">Error: {error}</Text>
+              <Button 
+                onClick={fetchACWisePendingData}
+                className="mt-4 bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Retry
+              </Button>
             </div>
-            <div>
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr. No</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
+          ) : (
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">AC Code</th>
+                    <th className="text-center">AC Name</th>
+                    <th className="text-center">Pending Interview</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((acData, index) => (
+                    <tr key={acData.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center">{acData.acCode}</td>
+                      <td className="text-left">{acData.acName}</td>
+                      <td className="text-center">{acData.pendingInterview}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((acData) => (
-                      <tr key={acData.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.srNo}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{acData.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.pendingInterview}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{totalCount}</span> items.
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-          </Card>
+          )}
+
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
-      </Container>
-    </div>
+      </Card>
+    </Container>
   );
 }

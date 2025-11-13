@@ -12,9 +12,10 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown } from 'lucide-react';
+import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
-import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
+import Audio from '@/components/ui/Audio';
+import DateFormatter from '@/components/ui/DateFormatter';
 
 // TypeScript interfaces for API response
 interface InterviewData {
@@ -152,7 +153,7 @@ const InterviewLogPage = () => {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize] = useState(25);
 
   // API state management
   const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
@@ -186,8 +187,8 @@ const InterviewLogPage = () => {
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
-  const [selectedServerId, setSelectedServerId] = useState<string>('');
-  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
+  const [selectedInterview, setSelectedInterview] = useState<DisplayInterviewData | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   // Sorting state
   const [sortConfig, setSortConfig] = useState<{ key: 'interview_date'; direction: 'asc' | 'desc' } | null>(null);
@@ -440,8 +441,8 @@ const InterviewLogPage = () => {
           setTotalPages(data.data.pagination.total_pages || Math.ceil(transformedData.length / pageSize));
         } else {
           // Fallback if pagination info is not available
-          setTotalCount(transformedData.length);
-          setTotalPages(Math.ceil(transformedData.length / pageSize));
+        setTotalCount(transformedData.length);
+        setTotalPages(Math.ceil(transformedData.length / pageSize));
         }
         
         setError(null);
@@ -588,10 +589,10 @@ const InterviewLogPage = () => {
     // Add GPS map logic here
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
+  const handlePlayAudio = (interview: DisplayInterviewData) => {
+    setSelectedInterview(interview);
     setAudioModalOpen(true);
+    setAudioError(null);
   };
 
   const handleFilterChange = (field: string, value: any) => {
@@ -621,8 +622,8 @@ const InterviewLogPage = () => {
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
-    setSelectedServerId('');
-    setSelectedAudioFile('');
+    setSelectedInterview(null);
+    setAudioError(null);
   };
 
   const handleSort = (key: 'interview_date') => {
@@ -648,7 +649,7 @@ const InterviewLogPage = () => {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      <Heading level={2} className=" text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
         Interview Log
       </Heading>
 
@@ -716,14 +717,14 @@ const InterviewLogPage = () => {
                       Start Date
                       <span className="text-red-500 ml-1">*</span>
                     </Text>
-                    <Input
-                      type="date"
+                <Input
+                  type="date"
                       value={filters.custom_date}
                       onChange={(e) => handleFilterChange('custom_date', e.target.value)}
                       className="w-full"
                       required
-                    />
-                  </div>
+                />
+              </div>
                   <div>
                     <Text className="text-sm font-medium mb-2">
                       End Date
@@ -1000,8 +1001,8 @@ const InterviewLogPage = () => {
             )} */}
             
             {!loading && (
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <div className="p-6">
+            <div className="bg-white ">
+              <div className="">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
                       Total <strong>{totalCount.toLocaleString()}</strong> items.
@@ -1009,13 +1010,13 @@ const InterviewLogPage = () => {
                 </div>
                 
                 <div className="table-responsive">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
+                  <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                    <thead className="table-light bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server ID</th>
+                        <th className="text-center">S.No</th>
+                        <th className="text-center">Server ID</th>
                         <th 
-                          className="px-4 py-3 font-semibold text-gray-700 text-center cursor-pointer hover:bg-gray-100"
+                          className="text-center cursor-pointer hover:bg-gray-100"
                           onClick={() => handleSort('interview_date')}
                         >
                           <div className="flex items-center justify-center">
@@ -1030,19 +1031,21 @@ const InterviewLogPage = () => {
                             </div>
                           </div>
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Sample Type</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">PS Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Device ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interviewer ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio QC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio QC ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio Fail Reason</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Outcome</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Status</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Gender</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Play Audio</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">GPS Map</th>
+                        <th className="text-center">Sample Type</th>
+                        <th className="text-center">AC Name</th>
+                        <th className="text-center">PS Name</th>
+                        <th className="text-center">Device ID</th>
+                        <th className="text-center">Interviewer ID</th>
+                        <th className="text-center">Audio QC</th>
+                        <th className="text-center">Audio QC ID</th>
+                        <th className="text-center">Audio Fail Reason</th>
+                        <th className="text-center">QC Outcome</th>
+                        <th className="text-center">Status</th>
+                        <th className="text-center">PS Image</th>
+                        <th className="text-center">Selfie Image</th>
+                        <th className="text-center">Gender</th>
+                        <th className="text-center">Play Audio</th>
+                        <th className="text-center">GPS Map</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1052,50 +1055,77 @@ const InterviewLogPage = () => {
                             {((currentPage - 1) * pageSize) + index + 1}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {/* <span className="font-mono text-sm font-medium text-blue-600"> */}
                             <span className="font-mono text-sm font-medium text-gray-900">
                               {interview.server_id}
                             </span>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm text-center">{interview.interview_date}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.sample_type}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ac_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ps_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.device_id}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.interviewer_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio_qc_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.audio_qc_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio1_status_label || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-center"><DateFormatter date={interview.interview_date} format="dd/mm/yyyy" /></td>
+                          <td className="text-left">{interview.sample_type}</td>
+                          <td className="text-left">{interview.ac_name}</td>
+                          <td className="text-left">{interview.ps_name}</td>
+                          <td className="text-center font-mono">{interview.device_id}</td>
+                          <td className="text-center">{interview.interviewer_id || '-'}</td>
+                          <td className="text-left">{interview.audio_qc_label}</td>
+                          <td className="text-center">{interview.audio_qc_id || '-'}</td>
+                          <td className={interview.audio1_status_label ? "text-left" : "text-center"}>{interview.audio1_status_label || '-'}</td>
+                          <td className="text-center">
                             {getQcOutcomeBadge(interview.qc_outcome)}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.status_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-left">{interview.status_label}</td>
+                          <td className="text-center">
+                            <div className="flex justify-center items-center">
+                              {interview.ps_image_available ? (
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <Image className="w-4 h-4 text-green-600" />
+                                </div>
+                              ) : (
+                                <Image className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            <div className="flex justify-center items-center">
+                              {interview.selfie_image_available ? (
+                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                  <User className="w-4 h-4 text-green-600" />
+                                </div>
+                              ) : (
+                                <User className="w-5 h-5 text-gray-400" />
+                              )}
+                            </div>
+                          </td>
+                          <td className="text-center">
                             <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
                               {interview.gender_label || '-'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                              onClick={() => handlePlayAudio(interview.server_id, interview.audio1)}
-                              title="Play Audio"
-                            >
-                              <Volume2 className="h-4 w-4" />
-                            </Button>
+                          <td className="text-center">
+                              <button 
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.audio_playback_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                                disabled={!interview.audio_playback_available}
+                              onClick={() => handlePlayAudio(interview)}
+                              >
+                                <Volume2 className="w-4 h-4" />
+                              </button>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="p-2 bg-green-600 hover:bg-green-700 text-white border-green-600"
-                              onClick={() => handleGpsMap(interview)}
-                              title="View GPS Map"
-                            >
-                              <MapPin className="h-4 w-4" />
-                            </Button>
+                          <td className="text-center">
+                              <button 
+                                className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                  interview.gps_available 
+                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                }`}
+                                title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                                disabled={!interview.gps_available}
+                                onClick={() => handleGpsMap(interview)}
+                              >
+                                <MapPin className="w-4 h-4" />
+                              </button>
                           </td>
                         </tr>
                       ))}
@@ -1112,24 +1142,15 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
-                {/* Pagination Controls */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    {/* Pagination Info */}
-                    <div className="text-sm text-gray-600">
-                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()} entries
-                    </div>
-
-                    {/* Pagination Component */}
+                {/* Pagination */}
+                <div className="mt-6">
                     <PaginationStandard
                       currentPage={currentPage}
                       totalPages={totalPages}
                       totalItems={totalCount}
                       itemsPerPage={pageSize}
                       onPageChange={handlePageChange}
-                      className="justify-center"
                     />
-                  </div>
                 </div>
               </div>
             </div>
@@ -1140,12 +1161,120 @@ const InterviewLogPage = () => {
       </div>
 
       {/* Audio Player Modal */}
-      <AudioPlayerModal
-        isOpen={audioModalOpen}
-        onClose={handleCloseAudioModal}
-        serverId={selectedServerId}
-        audioFileName={selectedAudioFile}
-      />
+      {audioModalOpen && selectedInterview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-6 w-6 text-blue-600" />
+                <Heading level={3} className="text-lg font-semibold">
+                  Interview Details
+                </Heading>
+              </div>
+              <button
+                onClick={handleCloseAudioModal}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Interview Details */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.ac_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">PS Code</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.ps_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.server_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.interview_date}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Device Id</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.device_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer Id</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.interviewer_id || '-'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterview.status_label}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audio Player */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                <Heading level={4} size="lg" weight="medium" className="mb-4">Listen Audio:</Heading>
+                
+                {audioError && (
+                  <div className="flex flex-col items-center py-8 bg-red-50 dark:bg-red-900/20 rounded-lg mb-4">
+                    <div className="text-red-500 mb-2">⚠️</div>
+                    <Text color="error" weight="medium" className="mb-2">Error Loading Audio</Text>
+                    <Text color="error" size="sm" align="center" className="mb-4">{audioError}</Text>
+                    <button
+                      onClick={() => setAudioError(null)}
+                      className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
+
+                {!audioError && (
+                  <div>
+                    <Audio
+                      src={selectedInterview.audio1}
+                      onError={(error) => {
+                        console.error('Audio error:', error);
+                        console.error('Failed URL:', selectedInterview.audio1);
+                        setAudioError(`Audio failed to load: ${error}`);
+                      }}
+                      className="border border-gray-200 dark:border-gray-600"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Download Link */}
+              <div className="text-center">
+                <a
+                  href={selectedInterview.audio1}
+                  download
+                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                >
+                  <Volume2 className="w-4 h-4 mr-2" />
+                  Download Audio
+                </a>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={handleCloseAudioModal}
+                variant="outline"
+                className="px-4 py-2"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 };

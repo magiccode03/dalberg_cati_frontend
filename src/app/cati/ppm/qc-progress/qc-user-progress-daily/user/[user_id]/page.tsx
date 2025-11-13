@@ -291,7 +291,6 @@ export default function QCUserAssignmentPage() {
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-
             <Button
               variant="outline"
               onClick={handleBack}

@@ -18,7 +18,7 @@ interface ACWisePendingData {
 
 export default function ACWisePendingDataPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
 
   // Sample data for AC Wise Pending Data
   const acWisePendingData: ACWisePendingData[] = [
@@ -70,85 +70,70 @@ export default function ACWisePendingDataPage() {
   const currentData = acWisePendingData.slice(startIndex, endIndex);
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise - Pending Data
             </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    Pending QC Data AC Wise
-                  </Heading>
-                </div>
-                <div className="text-end">
-                  <span></span>
-                </div>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Pending QC Data AC Wise
+              </Heading>
             </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr. No</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
+          </div>
+          
+          <div className="bg-white">
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{acWisePendingData.length.toLocaleString()}</strong> items.
+              </Text>
+            </div>
+            
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">AC Code</th>
+                    <th className="text-center">AC Name</th>
+                    <th className="text-center">Pending Interview</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((acData, index) => (
+                    <tr key={acData.id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center font-mono font-semibold">{acData.acCode}</td>
+                      <td className="text-left">{acData.acName}</td>
+                      <td className="text-center">{acData.pendingInterview.toLocaleString()}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((acData) => (
-                      <tr key={acData.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.srNo}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{acData.acName}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{acData.pendingInterview}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{acWisePendingData.length}</span> items.
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={acWisePendingData.length}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+
+            {/* Pagination */}
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={acWisePendingData.length}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        </Card>
+    </Container>
   );
 }

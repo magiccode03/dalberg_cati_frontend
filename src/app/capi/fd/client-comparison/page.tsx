@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Container from '@/components/ui/Container';
 import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Card from '@/components/ui/Card';
+import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { apiService } from '@/lib/api';
 
@@ -56,6 +59,7 @@ export default function ClientComparisonPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -69,7 +73,7 @@ export default function ClientComparisonPage() {
       setError(null);
       
       const response = await apiService.getFDInternalDashboard({
-        limit: 50,
+        limit: pageSize,
         page: currentPage
       }) as APIResponse;
 
@@ -105,16 +109,13 @@ export default function ClientComparisonPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      {/* Breadcrumb Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1">
-          <Heading level={2} className="text-2xl font-semibold text-gray-900">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
             Client Comparison
           </Heading>
-        </div>
-        <div className="flex-1"></div>
-        <div className="flex-1">
-          <span></span>
         </div>
       </div>
 
@@ -138,8 +139,14 @@ export default function ClientComparisonPage() {
       </div>
 
       {/* Comparison Table */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex justify-end mb-4">
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Client Comparison Data
+            </Heading>
+          </div>
           <div className="flex items-center space-x-4 text-sm">
             <span className="flex items-center">
               <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
@@ -155,90 +162,86 @@ export default function ClientComparisonPage() {
             </span>
           </div>
         </div>
-
-        {loading ? (
-          <div className="text-center py-8">
-            <div className="text-lg text-gray-600">Loading data...</div>
-          </div>
-        ) : error ? (
-          <div className="text-center py-8">
-            <div className="text-lg text-red-600">Error: {error}</div>
-            <button 
-              onClick={fetchData}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              Retry
-            </button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse border border-gray-300">
-              <thead>
-                <tr>
-                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                    AC Code
-                  </th>
-                  <th className="bg-blue-100 border border-gray-300 font-semibold text-left py-3" style={{ width: '10%' }}>
-                    AC Name
-                  </th>
-                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                    Target Sample
-                  </th>
-                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                    Valid (Client)
-                  </th>
-                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                    Valid (PMT)
-                  </th>
-                  <th className="bg-blue-100 border border-gray-300 font-semibold text-center py-3" style={{ width: '10%' }}>
-                    Difference
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {constituencyData.map((item, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="text-center font-medium border border-gray-300 py-2">{item.ac_code}</td>
-                    <td className="text-left font-medium border border-gray-300 py-2">{item.ac_name}</td>
-                    <td className="text-center font-medium border border-gray-300 py-2">{item.target_sample}</td>
-                    <td className="text-center font-medium border border-gray-300 py-2">{item.valid_client}</td>
-                    <td className="text-center font-medium border border-gray-300 py-2">{item.valid_pmt}</td>
-                    <td 
-                      className="text-center font-medium border border-gray-300 py-2"
-                      style={{ backgroundColor: item.color_code || getDifferenceColor(item.difference) }}
-                    >
-                      {item.difference}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-gray-100 font-semibold">
-                  <td className="text-center border border-gray-300 py-2"></td>
-                  <td className="text-left border border-gray-300 py-2">Total</td>
-                  <td className="text-center border border-gray-300 py-2">{totals.target_sample}</td>
-                  <td className="text-center border border-gray-300 py-2">{totals.valid_client.toLocaleString()}</td>
-                  <td className="text-center border border-gray-300 py-2">{totals.valid_pmt.toLocaleString()}</td>
-                  <td className="text-center border border-gray-300 py-2">{totals.difference.toLocaleString()}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        )}
         
-        {/* Pagination */}
-        {!loading && !error && constituencyData.length > 0 && (
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="text-lg text-gray-600">Loading data...</div>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <div className="text-lg text-red-600">Error: {error}</div>
+              <button 
+                onClick={fetchData}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">AC Code</th>
+                    <th className="text-center">AC Name</th>
+                    <th className="text-center">Target Sample</th>
+                    <th className="text-center">Valid (Client)</th>
+                    <th className="text-center">Valid (PMT)</th>
+                    <th className="text-center">Difference</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {constituencyData.map((item, index) => (
+                    <tr key={index}>
+                      <td className="text-center">{(currentPage - 1) * pageSize + index + 1}</td>
+                      <td className="text-center">{item.ac_code}</td>
+                      <td className="text-left">{item.ac_name}</td>
+                      <td className="text-center">{item.target_sample}</td>
+                      <td className="text-center">{item.valid_client}</td>
+                      <td className="text-center">{item.valid_pmt}</td>
+                      <td 
+                        className="text-center"
+                        style={{ backgroundColor: item.color_code || getDifferenceColor(item.difference) }}
+                      >
+                        {item.difference}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="bg-gray-100">
+                  <tr>
+                    <td className="text-center"></td>
+                    <td className="text-center"></td>
+                    <td className="text-left font-semibold">Total</td>
+                    <td className="text-center font-semibold">{totals.target_sample}</td>
+                    <td className="text-center font-semibold">{totals.valid_client.toLocaleString()}</td>
+                    <td className="text-center font-semibold">{totals.valid_pmt.toLocaleString()}</td>
+                    <td className="text-center font-semibold">{totals.difference.toLocaleString()}</td>
+                  </tr>
+                </tfoot>
+              </Table>
+            </div>
+          )}
+
+          {/* Pagination */}
           <div className="mt-6">
             <PaginationStandard
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
               totalItems={totalItems}
-              itemsPerPage={50}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
             />
           </div>
-        )}
-      </div>
+        </div>
+      </Card>
 
       <style jsx>{`
         .main-container {

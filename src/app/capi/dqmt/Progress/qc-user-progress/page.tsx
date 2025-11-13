@@ -9,7 +9,7 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download, ExternalLink, Loader2 } from 'lucide-react';
+import { Search, Download, ExternalLink } from 'lucide-react';
 import { apiService } from '@/lib/api';
 
 interface QCUserProgressData {
@@ -46,7 +46,7 @@ export default function QCUserProgressPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [summary, setSummary] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
 
   // Generate date options for the last 6 months
   const generateDateOptions = () => {
@@ -175,54 +175,35 @@ export default function QCUserProgressPage() {
 
   if (loading) {
     return (
-      <div className="main-content horizontal-content">
-        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="flex items-center space-x-2">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <Text>Loading QC user progress data...</Text>
-            </div>
-          </div>
-        </Container>
-      </div>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="text-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="main-content horizontal-content">
-        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Card className="p-6 text-center">
-              <Text className="text-red-600 mb-4">{error}</Text>
-              <Button onClick={handleRefresh} variant="primary">
-                Try Again
-              </Button>
-            </Card>
-          </div>
-        </Container>
-      </div>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="text-center">
+          <div className="text-lg text-red-600">{error}</div>
+        </div>
+      </Container>
     );
   }
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* breadcrumb */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
               QC User Progress
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <Button onClick={handleRefresh} variant="outline" size="sm">
-              Refresh
-            </Button>
-          </div>
         </div>
-        {/* /breadcrumb */}
 
         {/* Search Form */}
         <div className="mb-6">
@@ -296,90 +277,80 @@ export default function QCUserProgressPage() {
         </div>
 
         {/* QC User Progress Table */}
-        <div className="w-full">
-          <Card className="p-0">
-            <div className="px-0 py-4 border-b border-gray-200">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-                  <Heading level={2} className="text-xl font-semibold text-gray-900">
-                    Telecaller Progress Summary
-                  </Heading>
-                </div>
-                <Button
-                  variant="primary"
-                  onClick={handleDownload}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
-              </div>
+        <Card className="">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Telecaller Progress Summary
+              </Heading>
             </div>
-            <div className="py-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Caller Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : <br />Completed
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : <br />Pass
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                        Audio QC : <br />Fail
-                      </th>
+            <div className="flex gap-2">
+              <Button
+                variant="primary"
+                onClick={handleDownload}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+            </div>
+          </div>
+          
+          <div className="bg-white">
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{totalCount.toLocaleString()}</strong> items.
+              </Text>
+            </div>
+            
+            <div className="table-responsive">
+              <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                <thead className="table-light bg-gray-50">
+                  <tr>
+                    <th className="text-center">S.No</th>
+                    <th className="text-center">Caller Name</th>
+                    <th className="text-center">QC ID</th>
+                    <th className="text-center">Audio QC Completed</th>
+                    <th className="text-center">Audio QC Pass</th>
+                    <th className="text-center">Audio QC Fail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.map((user, index) => (
+                    <tr key={user.qc_id}>
+                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-left">{user.name}</td>
+                      <td className="text-center">
+                        <button
+                          onClick={() => handleViewDetail(user.qc_id)}
+                          className="text-blue-600 hover:text-blue-800 hover:underline font-mono font-semibold"
+                        >
+                          {user.qc_id}
+                          <ExternalLink className="w-3 h-3 ml-1 inline" />
+                        </button>
+                      </td>
+                      <td className="text-center">{user.statistics.audio_qc_completed.toLocaleString()}</td>
+                      <td className="text-center">{user.statistics.audio_qc_pass.toLocaleString()}</td>
+                      <td className="text-center">{user.statistics.audio_qc_fail.toLocaleString()}</td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((user, index) => (
-                      <tr key={user.qc_id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                          <button
-                            onClick={() => handleViewDetail(user.qc_id)}
-                            className="text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            {user.qc_id}
-                            <ExternalLink className="w-3 h-3 ml-1 inline" />
-                          </button>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_completed.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_pass.toLocaleString()}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{user.statistics.audio_qc_fail.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}-{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items.
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
+                  ))}
+                </tbody>
+              </Table>
             </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+
+            {/* Pagination */}
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalCount}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        </Card>
+    </Container>
   );
 }

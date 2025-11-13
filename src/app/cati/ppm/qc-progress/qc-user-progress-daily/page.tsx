@@ -356,24 +356,6 @@ export default function QCUserProgressPage() {
     return options;
   };
 
-  // const handleRowLinkClick = (
-  //   event: React.MouseEvent<HTMLAnchorElement>,
-  //   user: QCUserProgressData
-  // ) => {
-  //   if (typeof window === "undefined") return; // Skip if SSR
-  //   if (!user || !user.user_id) return;
-
-  //   try {
-  //     window.sessionStorage.setItem(
-  //       `qc-user-progress-detail-${user.user_id}`,
-  //       JSON.stringify(user)
-  //     );
-  //   } catch (err) {
-  //     console.warn("Unable to cache QC user detail", err);
-  //   }
-  // };
-
-
   const handleRowLinkClick = (event: MouseEvent<HTMLAnchorElement>, user: QCUserProgressData) => {
     try {
       sessionStorage.setItem(`qc-user-progress-detail-${user.user_id}`, JSON.stringify(user));
@@ -381,7 +363,6 @@ export default function QCUserProgressPage() {
       console.warn('Unable to cache QC user detail', err);
     }
   };
-
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({
@@ -619,7 +600,7 @@ export default function QCUserProgressPage() {
         </div>
 
         {/* Search Filters */}
-        <Card className="p-4 mb-5">
+        <Card className=" mb-5">
           <div className="flex flex-wrap items-end gap-4">
             {/* Report Days Filter */}
             <div className="flex-1 min-w-[200px]">
