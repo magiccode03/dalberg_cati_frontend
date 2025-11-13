@@ -875,7 +875,7 @@ const TelecallerProgressPage: React.FC = () => {
         
         // Convert to CSV
         const headers = [
-          'Sr. No.',
+          'S.No',
           'Caller ID',
           'Caller Name',
           'Caller Mobile No.',

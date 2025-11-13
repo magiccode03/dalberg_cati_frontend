@@ -181,13 +181,16 @@ export default function QCUserProgressPage() {
 
 
   // Fetch data from API
-  const fetchData = async (page: number = currentPage) => {
+  const fetchData = async (page: number = 1, filtersToUse?: typeof filters) => {
       try {
         setLoading(true);
         setError(null);
         
+        // Use provided filters or current filters
+        const activeFilters = filtersToUse || filters;
+        
       console.log('=== Starting API Call ===');
-      console.log('Current filters:', filters);
+      console.log('Current filters:', activeFilters);
       console.log('Current page:', page);
         
         // Build query parameters from filters
@@ -198,21 +201,21 @@ export default function QCUserProgressPage() {
       queryParams.append('pageSize', pageSize.toString());
       
       // Add filter parameters
-      if (filters.acCode) queryParams.append('ac_code', filters.acCode);
-      if (filters.teleformUserId) queryParams.append('teleform_user_id', filters.teleformUserId);
-      if (filters.qcUserStatus) queryParams.append('status', filters.qcUserStatus);
+      if (activeFilters.acCode) queryParams.append('ac_code', activeFilters.acCode);
+      if (activeFilters.teleformUserId) queryParams.append('teleform_user_id', activeFilters.teleformUserId);
+      if (activeFilters.qcUserStatus) queryParams.append('status', activeFilters.qcUserStatus);
       
       // Handle date filters - use qc_complete_start_date and qc_complete_end_date
-      if (filters.reportDays === 'custom' && filters.customDateFrom && filters.customDateTo) {
-        queryParams.append('qc_complete_start_date', filters.customDateFrom);
-        queryParams.append('qc_complete_end_date', filters.customDateTo);
-      } else if (filters.reportDays && filters.reportDays !== 'custom') {
+      if (activeFilters.reportDays === 'custom' && activeFilters.customDateFrom && activeFilters.customDateTo) {
+        queryParams.append('qc_complete_start_date', activeFilters.customDateFrom);
+        queryParams.append('qc_complete_end_date', activeFilters.customDateTo);
+      } else if (activeFilters.reportDays && activeFilters.reportDays !== 'custom') {
         // Calculate date range based on reportDays selection
         const today = new Date();
         let fromDate: string;
         let toDate: string = today.toISOString().split('T')[0]; // YYYY-MM-DD format
         
-        switch (filters.reportDays) {
+        switch (activeFilters.reportDays) {
           case 'today':
             fromDate = toDate;
             break;
@@ -254,7 +257,7 @@ export default function QCUserProgressPage() {
         queryParams.append('qc_complete_start_date', fromDate);
         queryParams.append('qc_complete_end_date', toDate);
         
-        console.log(`Date range for ${filters.reportDays}: ${fromDate} to ${toDate}`);
+        console.log(`Date range for ${activeFilters.reportDays}: ${fromDate} to ${toDate}`);
       }
       
       const queryString = queryParams.toString();
@@ -384,12 +387,9 @@ export default function QCUserProgressPage() {
       acCode: '',
     };
     setFilters(defaultFilters);
-    setQcUserProgressData([]);
     setCurrentPage(1);
-    setTotalPages(0);
-    setTotalCount(0);
-    setHasNext(false);
-    setHasPrevious(false);
+    // Fetch data with default filters (only status=1 and pagination)
+    fetchData(1, defaultFilters);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -482,7 +482,7 @@ export default function QCUserProgressPage() {
 
       // Create CSV headers
       const headers = [
-        'Sr.No.',
+        'S.No',
         'User ID', 
         'User Name',
         'Mobile Number',
@@ -749,7 +749,7 @@ export default function QCUserProgressPage() {
                 >
               <thead className="sticky-header bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">User ID</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">User Name</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>
