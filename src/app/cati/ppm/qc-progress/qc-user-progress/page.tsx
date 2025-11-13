@@ -457,7 +457,7 @@ export default function QCUserProgressPage() {
 
       // Create CSV headers
       const headers = [
-        'Sr.No.',
+        'S.No',
         'User ID', 
         'User Name',
         'Mobile Number',
@@ -720,7 +720,7 @@ export default function QCUserProgressPage() {
                 >
               <thead className="sticky-header bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">User ID</th>
                   <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">User Name</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>

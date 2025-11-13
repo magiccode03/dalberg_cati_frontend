@@ -278,7 +278,7 @@ export default function CATIACWiseDataPage() {
     if (filteredData.length === 0) return;
 
     // Create CSV content
-    const headers = ['Sr.No.', 'AC Name', 'Call Attempted', 'Call Connected', 'Completed'];
+    const headers = ['S.No', 'AC Name', 'Call Attempted', 'Call Connected', 'Completed'];
     const csvContent = [
       headers.join(','),
       ...filteredData.map((item, index) => [
@@ -510,7 +510,7 @@ export default function CATIACWiseDataPage() {
             <Table className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="bg-gray-50 sticky top-0 z-20 dark:bg-gray-800 shadow-sm">
                 <tr>
-                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800 text-center">Sr.No.</th>
+                  <th className="border border-gray-300 w-16 bg-white dark:bg-gray-800 text-center">S.No</th>
                   <th className="border border-gray-300 w-32 bg-white dark:bg-gray-800 text-left">AC Name</th>
                   <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Attempted</th>
                   <th className="border border-gray-300 w-24 bg-white dark:bg-gray-800 text-center">Call Connected</th>

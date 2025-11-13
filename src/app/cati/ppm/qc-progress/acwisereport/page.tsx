@@ -67,7 +67,7 @@ export default function ACWiseReportPage() {
   const transformAPIData = (apiData: any[], currentPage: number, pageSize: number): ACWiseReportData[] => {
     return apiData.map((item, index) => ({
       id: index + 1,
-      sNo: (currentPage - 1) * pageSize + index + 1, // Calculate Sr.No. based on pagination
+      sNo: (currentPage - 1) * pageSize + index + 1, // Calculate S.No. based on pagination
       acCode: item.ac_code,
       name: item.ac_name,
       agencyName: item.agency_name || '',
@@ -235,7 +235,7 @@ export default function ACWiseReportPage() {
         ];
         
         const csvRows = transformedData.map((item) => [
-          item.sNo, // Use the calculated Sr.No.
+          item.sNo, // Use the calculated S.No.
           item.acCode,
           `"${item.name}"`,
           new Intl.NumberFormat('en-IN').format(item.alloted),
@@ -385,7 +385,7 @@ export default function ACWiseReportPage() {
                 >
                   <thead className="sticky-header bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>

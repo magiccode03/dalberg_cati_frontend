@@ -361,7 +361,7 @@ export default function ACWiseReportPage() {
                 >
                   <thead className="sticky-header bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Sr.No.</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
                       <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Total Interviews</th>
