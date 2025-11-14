@@ -1,0 +1,997 @@
+[
+  {
+    "type": "radio",
+    "label": "Number Status",
+    "required": true,
+    "options": [
+      {
+        "label": "Call Not Received to Telecaller",
+        "value": "3",
+        "tag": "opt_call_not_received"
+      },
+      {
+        "label": "Ringing (Respondent Call))",
+        "value": "1",
+        "tag": "opt_ringing"
+      },
+      {
+        "label": "Not Ringing (Respondent Call)",
+        "value": "2",
+        "tag": "opt_not_ringing"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_ringing": [
+          "call_not_ring",
+          "call_ring_status",
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_not_ringing": [
+          "call_ring_status",
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_call_not_received": [
+          "call_not_ring",
+          "call_ring_status",
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ]
+      },
+      "showFields": {
+        "opt_ringing": [
+          "call_ring_status"
+        ],
+        "opt_not_ringing": [
+          "call_not_ring"
+        ]
+      }
+    },
+    "tag": "number_status"
+  },
+  {
+    "type": "radio",
+    "label": "Call Not Ring Status",
+    "conditional": "number_status === '2'",
+    "options": [
+      {
+        "label": "Switched Off",
+        "value": "1",
+        "tag": "opt_switched_off"
+      },
+      {
+        "label": "Number Not Reachable",
+        "value": "2",
+        "tag": "opt_number_not_reachable"
+      },
+      {
+        "label": "Number Does not exist",
+        "value": "3",
+        "tag": "opt_number_does_not_exist"
+      }
+    ],
+    "tag": "call_not_ring"
+  },
+  {
+    "type": "radio",
+    "label": "Call Ring Status",
+    "conditional": "number_status === '1'",
+    "options": [
+      {
+        "label": "Picked Up",
+        "value": "1",
+        "tag": "opt_picked_up"
+      },
+      {
+        "label": "Did not picked",
+        "value": "2",
+        "tag": "opt_not_picked_up"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_picked_up": [
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_did_not_picked": [
+          "q_call_status",
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ]
+      },
+      "showFields": {
+        "opt_picked_up": [
+          "q_call_status"
+        ]
+      }
+    },
+    "tag": "call_ring_status"
+  },
+  {
+    "type": "radio",
+    "label": "Call Status",
+    "conditional": "call_ring_status === '1'",
+    "options": [
+      {
+        "label": "Continue",
+        "value": "1",
+        "tag": "opt_continue"
+      },
+      {
+        "label": "Refuse to Respond",
+        "value": "3",
+        "tag": "opt_refuse_to_respond"
+      },
+      {
+        "label": "Call Back Later",
+        "value": "4",
+        "tag": "opt_call_back_later"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_continue": [
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_wrong_number": [
+          "call_reschedule",
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ],
+        "opt_respondent_not_available": [
+          "consent",
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender"
+        ]
+      },
+      "showFields": {
+        "opt_continue": [
+          "consent"
+        ],
+        "opt_respondent_not_available": [
+          "call_reschedule"
+        ]
+      }
+    },
+    "tag": "q_call_status"
+  },
+  {
+    "type": "radio",
+    "label": "আমি কি চালিয়ে যাব?",
+    "conditional": "q_call_status === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "হ্যাঁ",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "না",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_age",
+          "resp_registered_voter",
+          "resp_gender",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_name",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_age"
+        ]
+      }
+    },
+    "tag": "consent"
+  },
+  {
+    "type": "number",
+    "label": "আমাকে একটু বলুন, সম্পূর্ণ বছরে আপনার বয়স কত?",
+    "conditional": "consent === '1'",
+    "required": true,
+    "min": 10,
+    "max": 99,
+    "placeholder": "বয়স লিখুন",
+    "rules": {
+      "clearFields": {
+        "age_validation": {
+          "condition": "value < 18",
+          "fields": [
+            "resp_registered_voter",
+            "resp_gender",
+            "q5",
+            "q6",
+            "q7",
+            "q8",
+            "q9",
+            "q10",
+            "resp_religion",
+            "resp_social_cat",
+            "resp_caste_jati",
+            "resp_name",
+            "thanks_future"
+          ]
+        }
+      },
+      "showFields": {
+        "age_18_plus": {
+          "condition": "value >= 18",
+          "fields": [
+            "resp_registered_voter"
+          ]
+        }
+      }
+    },
+    "tag": "resp_age"
+  },
+  {
+    "type": "radio",
+    "label": "এই বিধানসভা কেন্দ্রে আপনার নাম কি ভোটার হিসাবে তোলা আছে?",
+    "conditional": "resp_age >= 18",
+    "required": true,
+    "options": [
+      {
+        "label": "হ্যাঁ",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "না",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "resp_gender",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_name",
+          "thanks_future"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "resp_gender"
+        ]
+      }
+    },
+    "tag": "resp_registered_voter"
+  },
+  {
+    "type": "radio",
+    "label": "উত্তরদাতা পুরুষ/ মহিলা সেটা লিখুন",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরুষ",
+        "value": "1",
+        "tag": "opt_male"
+      },
+      {
+        "label": "মহিলা",
+        "value": "2",
+        "tag": "opt_female"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_male": [
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_name",
+          "thanks_future"
+        ],
+        "opt_female": [
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "resp_name",
+          "thanks_future"
+        ]
+      }
+    },
+    "tag": "resp_gender"
+  },
+  {
+    "type": "radio",
+    "label": "৫. আপনি 2021-এ শেষবার বিধানসভা নির্বাচনে (এম এল এ) কোন দলকে ভোট দিয়েছিলেন?",
+    "conditional": "resp_age >= 22 && resp_registered_voter === '1'",
+    "required": true,
+    "options": "party_2021_q5.[ac_code]",
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q5_oth"
+        ],
+        "opt_independent": [
+          "q5_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q5_ind"
+        ],
+        "opt_independent": [
+          "q5_oth"
+        ]
+      }
+    },
+    "tag": "q5"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q5 === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q5_oth"
+  },
+  {
+    "type": "text",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
+    "conditional": "q5 === '12'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q5_ind"
+  },
+  {
+    "type": "radio",
+    "label": "৬. আপনি 2024-এ শেষবার লোক সভা নির্বাচনে (এম পি) কোন দলকে ভোট দিয়েছিলেন?",
+    "conditional": "resp_age >= 19 && resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "বি জে পি",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "আই এন সি (কংগ্রেস)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "বামফ্রন্ট",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "নির্দল",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "নোটা",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "ভোট দেননি",
+        "value": "66",
+        "tag": "opt_did_not_vote"
+      },
+      {
+        "label": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি",
+        "value": "77",
+        "tag": "opt_not_eligible"
+      },
+      {
+        "label": "উত্তর দিতে চাননি",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q6_oth"
+        ],
+        "opt_independent": [
+          "q6_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q6_ind"
+        ],
+        "opt_independent": [
+          "q6_oth"
+        ]
+      }
+    },
+    "tag": "q6"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q6 === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q6_oth"
+  },
+  {
+    "type": "text",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
+    "conditional": "q6 === '12'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q6_ind"
+  },
+  {
+    "type": "radio",
+    "label": "৭. 2021 সালের পরে আপনার বিধানসভা কেন্দ্রে হওয়া উপ-নির্বাচনে আপনি কোন দলকে ভোট দিয়েছিলেন?",
+    "conditional": "resp_age >= 20 && resp_registered_voter === '1' && mla-mp-ac-data.[ac_code].bye_poll === true",
+    "required": true,
+    "options": [
+      {
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "বি জে পি",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "আই এন সি (কংগ্রেস)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "বামফ্রন্ট",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "নির্দল",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "নোটা",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "ভোট দেননি",
+        "value": "66",
+        "tag": "opt_did_not_vote"
+      },
+      {
+        "label": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি",
+        "value": "77",
+        "tag": "opt_not_eligible"
+      },
+      {
+        "label": "উত্তর দিতে চাননি",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q7_oth"
+        ],
+        "opt_independent": [
+          "q7_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q7_ind"
+        ],
+        "opt_independent": [
+          "q7_oth"
+        ]
+      }
+    },
+    "tag": "q7"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q7 === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q7_oth"
+  },
+  {
+    "type": "text",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
+    "conditional": "q7 === '12'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q7_ind"
+  },
+  {
+    "type": "radio",
+    "label": "৮. যদি বিধানসভা নির্বাচন (এম এল এ) আগামী কাল হয়, তাহলে আপনি কোন দলকে ভোট দেবেন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "বি জে পি",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "আই এন সি (কংগ্রেস)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "বামফ্রন্ট",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "নির্দল",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "নোটা",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "ভোট দেবেন না",
+        "value": "66",
+        "tag": "opt_will_not_vote"
+      },
+      {
+        "label": "এখনো সিদ্ধান্ত নেননি",
+        "value": "77",
+        "tag": "opt_not_decided"
+      },
+      {
+        "label": "উত্তর দিতে চাননি",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q8_oth"
+        ],
+        "opt_independent": [
+          "q8_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q8_ind"
+        ],
+        "opt_independent": [
+          "q8_oth"
+        ]
+      }
+    },
+    "tag": "q8"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q8 === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q8_oth"
+  },
+  {
+    "type": "text",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
+    "conditional": "q8 === '12'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q8_ind"
+  },
+  {
+    "type": "radio",
+    "label": "৯. মনে করুন যে, আপনার পছন্দের দলটা আপনার বিধানসভা কেন্দ্রের নির্বাচনে লড়ছে না, তাহলে আপনি কোন দলকে বেছে নেবেন?",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
+    "required": true,
+    "options": [
+      {
+        "label": "এ আই টি সি (তৃণমূল কংগ্রেস)",
+        "value": "1",
+        "tag": "opt_aitc"
+      },
+      {
+        "label": "বি জে পি",
+        "value": "2",
+        "tag": "opt_bjp"
+      },
+      {
+        "label": "আই এন সি (কংগ্রেস)",
+        "value": "3",
+        "tag": "opt_inc"
+      },
+      {
+        "label": "বামফ্রন্ট",
+        "value": "4",
+        "tag": "opt_left"
+      },
+      {
+        "label": "নির্দল",
+        "value": "12",
+        "tag": "opt_independent"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "নোটা",
+        "value": "55",
+        "tag": "opt_nota"
+      },
+      {
+        "label": "অন্য কারও জন্য ভোট দেবেন না",
+        "value": "67",
+        "tag": "opt_will_not_vote"
+      },
+      {
+        "label": "উত্তর দিতে অস্বীকার করেছেন",
+        "value": "88",
+        "tag": "opt_refused"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "q9_oth"
+        ],
+        "opt_independent": [
+          "q9_ind"
+        ]
+      },
+      "clearFields": {
+        "opt_others": [
+          "q9_ind"
+        ],
+        "opt_independent": [
+          "q9_oth"
+        ]
+      },
+      "excludeOptions": "q8"
+    },
+    "tag": "q9"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q9 === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q9_oth"
+  },
+  {
+    "type": "text",
+    "label": "নির্দল (নির্দিষ্ট করে বলুন)",
+    "conditional": "q9 === '12'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q9_ind"
+  },
+  {
+    "type": "checkbox",
+    "label": "১০. আমাদের একটু বলুন, আপনার দ্বিতীয় পছন্দ হিসাবে ওপরের দলকে বেছে নেওয়ার কারনটা কি?",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
+    "required": true,
+    "maxSelections": 6,
+    "options": [
+      {
+        "label": "দলটা আমার জাতি এবং সম্প্রদায়ের জন্য কাজ করে",
+        "value": "1",
+        "tag": "opt_caste_community"
+      },
+      {
+        "label": "দলটা তাদের বক্তৃতায় ভাল কিছু যুক্তি দেয়",
+        "value": "2",
+        "tag": "opt_good_arguments"
+      },
+      {
+        "label": "দলটা আমার প্রথম পছন্দের দলকে সমর্থন করে",
+        "value": "3",
+        "tag": "opt_supports_first_choice"
+      },
+      {
+        "label": "দলের নেতৃত্বরা বাংলার জন্য কাজ করে",
+        "value": "4",
+        "tag": "opt_leaders_work_bengal"
+      },
+      {
+        "label": "অন্য কোনো দলকে ভোট দিতে চাই না",
+        "value": "5",
+        "tag": "opt_do_not_wish"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      },
+      {
+        "label": "জানিনা/ বলতে পারছি না",
+        "value": "99",
+        "tag": "opt_dont_know"
+      }
+    ],
+    "rules": {
+      "exclusiveOptions": [
+        "5",
+        "99"
+      ],
+      "showFields": {
+        "opt_others": [
+          "q10_oth"
+        ]
+      }
+    },
+    "tag": "q10"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q10.includes('44')",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q10_oth"
+  },
+  {
+    "type": "radio",
+    "label": "২০. আমাকে একটু বলুন, আপনি কোন ধর্ম মেনে চলেন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "হিন্দু",
+        "value": "1",
+        "tag": "opt_hindu"
+      },
+      {
+        "label": "মুসলিম",
+        "value": "2",
+        "tag": "opt_muslim"
+      },
+      {
+        "label": "খ্রীষ্টান",
+        "value": "3",
+        "tag": "opt_christian"
+      },
+      {
+        "label": "শিখ",
+        "value": "4",
+        "tag": "opt_sikh"
+      },
+      {
+        "label": "জৈন",
+        "value": "5",
+        "tag": "opt_jain"
+      },
+      {
+        "label": "বৌদ্ধ",
+        "value": "6",
+        "tag": "opt_buddhist"
+      },
+      {
+        "label": "কোনো উত্তর নেই ",
+        "value": "7",
+        "tag": "opt_no_response"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": [
+          "resp_religion_oth"
+        ]
+      }
+    },
+    "tag": "resp_religion"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "resp_religion === '44'",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "resp_religion_oth"
+  },
+  {
+    "type": "radio",
+    "label": "২১. আপনি কোন সামাজিক শ্রেণীতে পড়েন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "জেনারেল/ ও সি",
+        "value": "1",
+        "tag": "opt_general"
+      },
+      {
+        "label": "তফশিলী জাতি",
+        "value": "2",
+        "tag": "opt_sc"
+      },
+      {
+        "label": "তফশিলী উপজাতি",
+        "value": "3",
+        "tag": "opt_st"
+      },
+      {
+        "label": "অন্যান্য অনগ্রসর শ্রেনী",
+        "value": "4",
+        "tag": "opt_obc"
+      },
+      {
+        "label": "কোনো উত্তর নেই",
+        "value": "88",
+        "tag": "opt_no_response"
+      }
+    ],
+    "tag": "resp_social_cat"
+  },
+  {
+    "type": "radio",
+    "label": "২২. আপনি কি দয়া করে আমাকে আপনার জাতি বলতে পারেন?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": "caste-options[resp_religion.value].castes",
+    "rules": {
+      "showFields": {
+        "44": [
+          "resp_caste_jati_oth"
+        ]
+      }
+    },
+    "tag": "resp_caste_jati"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (উল্লেখ করুন)",
+    "conditional": "resp_caste_jati === '44'",
+    "required": true,
+    "placeholder": "উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "resp_caste_jati_oth"
+  },
+  {
+    "type": "text",
+    "label": "২৭. আপনি কি আপনার নাম আমাদের সাথে শেয়ার করতে চান? আমরা আপনাকে আশ্বাস দিচ্ছি যে আমরা এটি গোপন রাখব।",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "placeholder": "Enter name",
+    "tag": "resp_name"
+  },
+  {
+    "type": "radio",
+    "label": "২৮. আপনার অত্যন্ত ভালভাবে উত্তরগুলো দেওয়ার জন্য আপনাকে ধন্যবাদ জানাই। আমরা কি ভবিষ্যতে এরকম সমীক্ষার জন্য আপনার মূল্যবান মতামত পেতে যোগাযোগ করতে পারি?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "হ্যাঁ, আপনি পারেন",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "না",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "tag": "thanks_future"
+  }
+]

@@ -14,9 +14,9 @@ import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 // Import form configurations
-import formEnConfig from '../../../tele-form/form-en-config.json';
-import formBnConfig from '../../../tele-form/form-bn-config.json';
-import formHiConfig from '../../../tele-form/form-hi-config.json';
+import formEnConfig from '../../../tele-form-data-entry/form-en-config.json';
+import formBnConfig from '../../../tele-form-data-entry/form-bn-config.json';
+import formHiConfig from '../../../tele-form-data-entry/form-hi-config.json';
 
 // Import JSON data files
 // @ts-ignore
@@ -904,52 +904,53 @@ export default function TeleFormV2Page() {
   };
 
   // Auto-save function
-  const autoSaveForm = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token || !interviewId) return;
+  // const autoSaveForm = async () => {
+  //   try {
+  //     const token = localStorage.getItem('accessToken');
+  //     if (!token || !interviewId) return;
 
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+  //     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       
-      // Transform form data to match backend expectations
-      const transformedData = transformFormDataForSubmission(formData);
+  //     // Transform form data to match backend expectations
+  //     const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...transformedData,
-          status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 2 : 4, // Draft status
-          form_duration_seconds: timer,
-          language_used: language
-        })
-      });
+  //     await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
+  //       method: 'PUT',
+  //       headers: {
+  //         'Authorization': `Bearer ${token}`,
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({
+  //         ...transformedData,
+  //         status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 2 : 4, // Draft status
+  //         form_duration_seconds: timer,
+  //         language_used: language,
+  //         data_entry_status: 1
+  //       })
+  //     });
       
-      console.log('Auto-saved draft');
-    } catch (error) {
-      console.error('Auto-save error:', error);
-    }
-  };
+  //     console.log('Auto-saved draft');
+  //   } catch (error) {
+  //     console.error('Auto-save error:', error);
+  //   }
+  // };
 
-  // Trigger auto-save on form data change (debounced)
-  useEffect(() => {
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
-    }
+  // // Trigger auto-save on form data change (debounced)
+  // useEffect(() => {
+  //   if (autoSaveTimeoutRef.current) {
+  //     clearTimeout(autoSaveTimeoutRef.current);
+  //   }
     
-    autoSaveTimeoutRef.current = setTimeout(() => {
-      autoSaveForm();
-    }, 1000);
+  //   autoSaveTimeoutRef.current = setTimeout(() => {
+  //     autoSaveForm();
+  //   }, 1000);
     
-    return () => {
-      if (autoSaveTimeoutRef.current) {
-        clearTimeout(autoSaveTimeoutRef.current);
-      }
-    };
-  }, [formData]);
+  //   return () => {
+  //     if (autoSaveTimeoutRef.current) {
+  //       clearTimeout(autoSaveTimeoutRef.current);
+  //     }
+  //   };
+  // }, [formData]);
 
   // Save form data
   const saveFormData = async (finalSubmit: number) => {
@@ -986,6 +987,7 @@ export default function TeleFormV2Page() {
         language_used: language,
         user_timezone: timezone,
         user_localdatetime: currentTime,
+        data_entry_status: 1,
       };
       
       const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
