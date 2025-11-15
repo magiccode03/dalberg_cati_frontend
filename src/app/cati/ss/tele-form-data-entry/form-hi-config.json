@@ -746,7 +746,7 @@
   {
     "type": "radio",
     "label": "9. मान लीजिए कि आपकी पसंदीदा पार्टी आपके विधानसभा क्षेत्र से चुनाव नहीं लड़ती है, तो आप किस पार्टी को चुनेंगे?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44",
+    "conditional": "resp_age >= 20 && resp_registered_voter === '1' && mla-mp-ac-data.[ac_code].bye_poll === true",
     "required": true,
     "options": [
       {

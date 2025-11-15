@@ -556,7 +556,7 @@
   {
     "type": "radio",
     "label": "7. Which party did you vote for in the by-elections held in your assembly constituency (MLA) after 2021?",
-    "conditional": "resp_age >= 20 && resp_registered_voter === '1'",
+    "conditional": "resp_age >= 20 && resp_registered_voter === '1' && mla-mp-ac-data.[ac_code].bye_poll === true",
     "required": true,
     "options": [
       {
