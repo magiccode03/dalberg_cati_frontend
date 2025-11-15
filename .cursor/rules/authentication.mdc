@@ -9,6 +9,8 @@ description: Authentication system guidelines and patterns
 - **SUPER ADMIN**: Role with full system access and user management capabilities
 - **Protected Routes**: Use ProtectedRoute component for authentication checks
 - **Context**: Authentication state managed in [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx)
+- **API Integration**: Uses [src/lib/api.ts](mdc:src/lib/api.ts) for authentication API calls
+- **Token Management**: Tokens stored in localStorage, managed by token-manager
 
 ## User Management (SUPER ADMIN only)
 - **Create Users**: SUPER ADMIN can create new users with auto-generated unique IDs
@@ -46,7 +48,24 @@ description: Authentication system guidelines and patterns
 - QA001 / analyst123 (Quality Analyst)
 
 ## Security Considerations
-- Passwords stored in localStorage (demo only - use proper backend in production)
-- Session persistence with remember me option
-- Automatic logout on token expiration
-- Role-based menu filtering in [src/lib/menu-data.ts](mdc:src/lib/menu-data.ts)
+- **Token Storage**: Access and refresh tokens stored in localStorage
+- **Token Refresh**: Automatic token refresh on 401 responses
+- **Session Persistence**: Remember me option for extended sessions
+- **Automatic Logout**: Logout on token expiration or refresh failure
+- **Role-Based Access**: Menu filtering based on user roles in [src/lib/menu-data.ts](mdc:src/lib/menu-data.ts)
+- **Protected Routes**: Automatic redirect to `/login` for unauthenticated users
+- **Permission Checks**: Use `hasPermission()` and `hasRole()` for fine-grained access control
+
+## Authentication Flow
+1. User enters uniqueId and password
+2. `apiService.login()` called with credentials
+3. Backend validates and returns tokens + user data
+4. Tokens stored in localStorage
+5. User data stored in AuthContext
+6. Redirect to role-specific dashboard
+
+## Token Management
+- Access tokens included automatically in API requests
+- Refresh tokens used for token renewal
+- Token expiration handled automatically
+- Logout clears all tokens and user data

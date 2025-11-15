@@ -1,0 +1,79 @@
+---
+globs: src/components/charts/**/*.tsx
+description: Chart and data visualization patterns
+---
+
+# Chart and Data Visualization Patterns
+
+## Chart Library
+- **ECharts**: Primary charting library (NOT Recharts)
+- **echarts-for-react**: React wrapper for ECharts
+- **Chart Config**: [src/lib/chart-config.ts](mdc:src/lib/chart-config.ts) - Shared chart configurations
+
+## Chart Components
+- [src/components/charts/BarChart.tsx](mdc:src/components/charts/BarChart.tsx) - Bar charts
+- [src/components/charts/LineChart.tsx](mdc:src/components/charts/LineChart.tsx) - Line charts
+- [src/components/charts/VoteShareChart.tsx](mdc:src/components/charts/VoteShareChart.tsx) - Vote share visualization
+- [src/components/charts/ProgressChart.tsx](mdc:src/components/charts/ProgressChart.tsx) - Progress indicators
+- [src/components/charts/HorizontalBarChart.tsx](mdc:src/components/charts/HorizontalBarChart.tsx) - Horizontal bars
+- [src/components/charts/EChartsLineChart.tsx](mdc:src/components/charts/EChartsLineChart.tsx) - ECharts line chart
+- [src/components/charts/DemographicsChart.tsx](mdc:src/components/charts/DemographicsChart.tsx) - Demographic data
+
+## Chart Usage Pattern
+```typescript
+import ReactECharts from 'echarts-for-react';
+
+const MyChart = ({ data }) => {
+  const option = {
+    // ECharts configuration
+    xAxis: { type: 'category', data: data.categories },
+    yAxis: { type: 'value' },
+    series: [{ data: data.values, type: 'bar' }],
+  };
+
+  return <ReactECharts option={option} style={{ height: '400px' }} />;
+};
+```
+
+## Chart Configuration
+- Use shared configurations from chart-config.ts
+- Support dark mode with theme-aware colors
+- Make charts responsive
+- Include proper tooltips and legends
+
+## Data Format
+- Transform API data to chart format
+- Handle empty data gracefully
+- Support real-time data updates
+- Cache chart data when appropriate
+
+## Chart Styling
+- Use consistent color schemes
+- Support dark mode
+- Make charts responsive
+- Include proper spacing and padding
+
+## Performance
+- Memoize chart options
+- Use React.memo for chart components
+- Lazy load charts when possible
+- Optimize large datasets
+
+## Accessibility
+- Include descriptive titles
+- Provide data tables for screen readers
+- Use proper color contrast
+- Support keyboard navigation
+
+## Common Chart Types
+- Bar charts for comparisons
+- Line charts for trends
+- Pie charts for distributions
+- Area charts for cumulative data
+- Scatter plots for correlations
+
+## Error Handling
+- Handle missing data
+- Display loading states
+- Show error messages
+- Provide fallback UI

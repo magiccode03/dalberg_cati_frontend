@@ -128,19 +128,12 @@ export default function DataEntryLandingPage() {
         const userData = data.data;
         const fillForm = userData.fill_form === 1;
         const qc = userData.qc === 1;
+        const dataEntry = userData.data_entry === 1;
         
-        if (fillForm && !qc) {
-          // Only Fill Form permission - redirect to data-entry-list
-          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
-        } else if (!fillForm && qc) {
-          // Only QC permission - redirect to data-entry-list
-          router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
-        } else if (fillForm && qc) {
-          // Both permissions - default to data-entry-list (Fill Form)
+        if (dataEntry) {
           router.push(`/cati/ss/data-entry-list/${formData.data_entry_id}`);
         } else {
-          // No permissions - show error
-          setError('User does not have required permissions');
+          setError(data.message || 'Verification failed');
           return false;
         }
         

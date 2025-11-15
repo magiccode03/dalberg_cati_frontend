@@ -160,7 +160,20 @@ export default function NewCallPage() {
     try {
       console.log("Initiating call:", { interviewId, phoneNumber });
       setCallStatusMessage("Connecting the call, please wait...");
-      setIsCallInitiating(true);
+      if (localStorage.getItem('last_call_time')) {
+        const lastCallTime = new Date(localStorage.getItem('last_call_time') || '');
+        const currentTime = new Date();
+        const timeDiff = currentTime.getTime() - lastCallTime.getTime();
+        if (timeDiff < 15000) {
+          // alert('Please wait 10 seconds before making another call');
+          // return;
+          setIsCallInitiating(true);
+        }else{
+          localStorage.setItem('last_call_time', new Date().toISOString());
+        }
+      }else{
+        localStorage.setItem('last_call_time', new Date().toISOString());
+      }
 
       if (callRedirectTimeoutRef.current) {
         clearTimeout(callRedirectTimeoutRef.current);
@@ -202,12 +215,6 @@ export default function NewCallPage() {
         if (callRedirectTimeoutRef.current) {
           clearTimeout(callRedirectTimeoutRef.current);
         }
-
-        callRedirectTimeoutRef.current = setTimeout(() => {
-          callRedirectTimeoutRef.current = null;
-          setIsCallInitiating(false);
-          router.push(`/cati/ss/tele-form/${interviewId}/${acCode}`);
-        }, 30000);
         
         // Update interview status to 1 and include callId from click-to-call response
         const updateResponse = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
@@ -224,6 +231,7 @@ export default function NewCallPage() {
             call_date_time: new Date().toISOString()
           })
         });
+
         
         const updateData = await updateResponse.json();
         
@@ -231,6 +239,21 @@ export default function NewCallPage() {
           console.log('Interview status updated successfully');
         } else {
           console.error('Failed to update interview status:', updateData);
+        }
+
+
+        if (isCallInitiating) {
+          callRedirectTimeoutRef.current = setTimeout(() => {
+            callRedirectTimeoutRef.current = null;
+            setIsCallInitiating(false);
+            router.push(`/cati/ss/tele-form/${interviewId}/${acCode}`);
+          }, 30000);
+        } else {
+          // callRedirectTimeoutRef.current = setTimeout(() => {
+          //   callRedirectTimeoutRef.current = null;
+          //   setIsCallInitiating(false);
+            router.push(`/cati/ss/tele-form/${interviewId}/${acCode}`);
+          // }, 30000);
         }
         
       } else {
