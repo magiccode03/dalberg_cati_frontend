@@ -1039,63 +1039,51 @@ export default function DemographicPage() {
     }
 
     return (
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-        <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
-          <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
+      <thead className="sticky-header">
+        <tr>
+          <th className="text-center">AC Name</th>
+          <th className="text-center">AC Code</th>
+          <th className="text-center">Sample Achieved</th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
             Male
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
             Female
           </th>
         </tr>
         <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold"></th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Male Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Male covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Female Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Female covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+          <th></th>
+          <th className="text-center"></th>
+          <th className="text-center"></th>
+          <th className="text-center border-r-2">Male Quota</th>
+          <th className="text-center border-r-2">Male Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Female Quota</th>
+          <th className="text-center border-r-2">Female Covered</th>
+          <th className="text-center border-r-2">Balance</th>
         </tr>
       </thead>
       <tbody>
-          {genderWiseData.map((row, index) => (
-            <tr key={row.ac_code}>
-              <td>{row.ac_name}</td>
-              <td className="text-center">{row.ac_code}</td>
-              <td className="text-center">
-                <FormattedNumber value={row.sample_achieved} locale="en-IN" />
-              </td>
-              <td className="text-center">
-                <FormattedNumber value={row.male_min_sample} locale="en-IN" />
-              </td>
-              <td className={`text-center ${getCellStyle(row.male_covered)}`}>
-                <FormattedNumber value={row.male_covered} locale="en-IN" />
+        {genderWiseData.map((row) => (
+          <tr key={row.ac_code}>
+            <td>{row.ac_name}</td>
+            <td className="text-center">{row.ac_code}</td>
+            <td className="text-center">{row.sample_achieved.toLocaleString()}</td>
+            <td className="text-center">{row.male_min_sample}</td>
+            <td className={`text-center ${getCellStyle(row.male_covered)}`}>
+              {row.male_covered.toLocaleString()}
             </td>
-              <td className="text-center">
-                <FormattedNumber value={row.male_balance} locale="en-IN" />
-              </td>
-              <td className="text-center">
-                <FormattedNumber value={row.female_min_sample} locale="en-IN" />
-              </td>
-              <td className={`text-center ${getCellStyle(row.female_covered, true)}`}>
-                <FormattedNumber value={row.female_covered} locale="en-IN" />
+            <td className="text-center">{row.male_balance.toLocaleString()}</td>
+            <td className="text-center">{row.female_min_sample}</td>
+            <td className={`text-center ${getCellStyle(row.female_covered, true)}`}>
+              {row.female_covered.toLocaleString()}
             </td>
-              <td className="text-center">
-                <FormattedNumber value={row.female_balance} locale="en-IN" />
-              </td>
+            <td className="text-center">{row.female_balance.toLocaleString()}</td>
           </tr>
         ))}
       </tbody>
     </Table>
-    </div>
   );
   };
 
@@ -1117,42 +1105,41 @@ export default function DemographicPage() {
     }
 
     return (
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-        <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
-          <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
+      <thead className="sticky-header">
+        <tr>
+          <th className="text-center">AC Name</th>
+          <th className="text-center">AC Code</th>
+          <th className="text-center">Sample Achieved</th>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
             18-24 Years
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
             25-34 Years
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
-              35-50 Years
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
+            35-50 Years
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={3}>
+          <th className="text-center border-l-2 border-r-2" colSpan={3}>
             50+ Years
           </th>
         </tr>
         <tr>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold"></th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center"></th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Quota</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Covered</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-r-2">Balance</th>
+          <th></th>
+          <th className="text-center"></th>
+          <th className="text-center"></th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
+          <th className="text-center border-r-2">Quota</th>
+          <th className="text-center border-r-2">Covered</th>
+          <th className="text-center border-r-2">Balance</th>
         </tr>
       </thead>
       <tbody>
@@ -1203,7 +1190,6 @@ export default function DemographicPage() {
         ))}
       </tbody>
     </Table>
-    </div>
   );
   };
 
@@ -1235,41 +1221,40 @@ export default function DemographicPage() {
     const maxCastes = Math.max(...casteWiseData.map(row => row.castes.length));
     
     return (
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
-        <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
+      <thead className="sticky-header">
           <tr>
-            <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
-            <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">AC Code</th>
-            <th rowSpan={2} className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center">Sample Achieved</th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th rowSpan={2} className="text-center">AC Name</th>
+            <th rowSpan={2} className="text-center">AC Code</th>
+            <th rowSpan={2} className="text-center">Sample Achieved</th>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 1
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 2
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 3
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 4
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 5
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 6
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 7
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 8
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 9
           </th>
-            <th className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center border-l-2 border-r-2" colSpan={4}>
+            <th className="text-center border-l-2 border-r-2" colSpan={4}>
             Caste 10
           </th>
         </tr>
@@ -1357,7 +1342,6 @@ export default function DemographicPage() {
         ))}
       </tbody>
     </Table>
-    </div>
   );
   };
 

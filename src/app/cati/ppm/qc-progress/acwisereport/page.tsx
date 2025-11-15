@@ -54,7 +54,7 @@ interface APIResponse {
 
 export default function ACWiseReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [acWiseReportData, setAcWiseReportData] = useState<ACWiseReportData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,17 +92,20 @@ export default function ACWiseReportPage() {
       console.log('Access token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      console.log('Making API request to: /cati/ac-qc-statistics');
+      console.log('Making API request to: /teleform-users?qc=1');
       
       // Build query parameters
       const queryParams = new URLSearchParams();
       
       // Add pagination
       queryParams.append('page', currentPage.toString());
-      queryParams.append('pageSize', pageSize.toString());
+      queryParams.append('limit', pageSize.toString());
+      
+      // Add QC filter
+      queryParams.append('qc', '1');
       
       const queryString = queryParams.toString();
-      const endpoint = `/cati/ac-qc-statistics${queryString ? `?${queryString}` : ''}`;
+      const endpoint = `/teleform-users${queryString ? `?${queryString}` : ''}`;
       
       console.log('API endpoint:', endpoint);
       
@@ -121,19 +124,26 @@ export default function ACWiseReportPage() {
       
       console.log('API Response:', data);
       console.log('Response success:', data.success);
+      console.log('Raw data:', data.data);
       
       if (data.success && data.data && Array.isArray(data.data)) {
+        console.log('Data length:', data.data.length);
+        console.log('First AC data:', data.data[0]);
+        
         const transformedData = transformAPIData(data.data, currentPage, pageSize);
+        console.log('Transformed data:', transformedData);
         setAcWiseReportData(transformedData);
         
         // Handle pagination info
         if (data.pagination) {
+          console.log('Setting pagination from API:', data.pagination);
           setTotalCount(data.pagination.total);
           setTotalPages(data.pagination.totalPages);
           setHasNext(data.pagination.page < data.pagination.totalPages);
           setHasPrevious(data.pagination.page > 1);
         } else {
           // Fallback if no pagination info
+          console.log('No pagination info, using fallback');
           setTotalCount(transformedData.length);
           setTotalPages(1);
           setHasNext(false);
@@ -215,7 +225,7 @@ export default function ACWiseReportPage() {
       console.log('Downloading all AC wise report data...');
       
       // Call API with limit=300 to get all data
-      const response = await apiClient.get('/capi/ac-qc-statistics?limit=300');
+      const response = await apiClient.get('/teleform-users?qc=1&limit=300');
       const data: APIResponse = response.data;
       
       if (data.success && data.data && Array.isArray(data.data)) {
@@ -279,7 +289,7 @@ export default function ACWiseReportPage() {
   // Fetch data on component mount and when page changes
   useEffect(() => {
     fetchACWiseReportData();
-  }, [currentPage]);
+  }, [currentPage, pageSize]);
 
   const getAgencyBadge = (agencyName: string) => {
     if (!agencyName) return <span className="text-gray-400">-</span>;
@@ -305,20 +315,10 @@ export default function ACWiseReportPage() {
   const currentData = acWiseReportData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              AC Wise Report
-            </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
-        </div>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        AC Wise Report
+      </Heading>
 
         {/* Loading State */}
         {loading && (
@@ -351,27 +351,23 @@ export default function ACWiseReportPage() {
           </Card>
         )}
 
-        {/* AC Wise Report Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                AC Wise Report
-              </Heading>
-            </div>
-            <div className="flex items-center">
-              <Button
-                variant="primary"
-                onClick={downloadAllData}
-                className="flex items-center"
-                disabled={loading}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
-            </div>
+      {/* AC Wise Report Table */}
+      <Card>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC Wise Report</Heading>
           </div>
+          <Button
+            variant="primary"
+            onClick={downloadAllData}
+            className="flex items-center bg-blue-600 text-white hover:bg-blue-500"
+            disabled={loading}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
             Total <strong>{totalCount}</strong> ACs.
@@ -424,25 +420,18 @@ export default function ACWiseReportPage() {
                 </Table>
               </div>
 
-          {/* Table Footer with Pagination */}
-          <div className="flex justify-between items-center mt-4 px-4 pb-4">
-            <div className="text-sm text-gray-700">
-              Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-            </div>
-            {totalPages > 1 && (
-              <div>
-                <PaginationStandard
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalCount}
-                  itemsPerPage={pageSize}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
-          </div>
-        </Card>
-      </Container>
-    </div>
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={pageSize}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+
+      </Card>
+    </Container>
   );
 }

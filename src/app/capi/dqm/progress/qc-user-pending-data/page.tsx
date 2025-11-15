@@ -39,7 +39,7 @@ interface APIResponse {
 
 export default function QCUserPendingDataPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [qcPendingData, setQcPendingData] = useState<QCPendingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -203,138 +203,104 @@ export default function QCUserPendingDataPage() {
 
   if (loading) {
     return (
-      <div className="main-content horizontal-content">
-        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-              <Text className="text-gray-600">Loading QC pending data...</Text>
-            </div>
-          </div>
-        </Container>
-      </div>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <Text className="text-gray-600">Loading QC pending data...</Text>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="main-content horizontal-content">
-        <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-          <Card className="mb-6">
-            <div className="card-body text-center">
-              <div className="text-red-500 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
-              <Text className="text-gray-600 mb-4">{error}</Text>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                Retry
-              </button>
+      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+        <Card className="mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
             </div>
-          </Card>
-        </Container>
-      </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      </Container>
     );
   }
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={2} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            Pending QC Data
+          </Heading>
+        </div>
+      </div>
+
+      {/* QC User Pending Data Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Pending QC Data
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
+        </div>
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{qcPendingData.length.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+          
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">QC ID</th>
+                  <th className="text-center">Name</th>
+                  <th className="text-center">Pending Interview</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((qcUser, index) => (
+                  <tr key={qcUser.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{qcUser.qcId}</td>
+                    <td className="text-left">{qcUser.name}</td>
+                    <td className="text-center">{qcUser.pendingInterview}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={qcPendingData.length}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
-
-        {/* Main Content */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>
-                <Heading level={4} className="text-lg font-semibold text-gray-900">
-                  Pending QC Data
-                </Heading>
-                <div className="flex !hidden gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDistributeQC}
-                    className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-1" />
-                    Distribute QC
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDistributeReCheckingQC}
-                    className="text-yellow-600 border-yellow-600 hover:bg-yellow-50"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-1" />
-                    Distribute Re-Checking QC
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Pending Interview</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((qcUser) => (
-                      <tr key={qcUser.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-900">{qcUser.qcId}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-left text-sm text-gray-900">{qcUser.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-center text-sm font-mono text-gray-900">{qcUser.pendingInterview}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Total <span className="font-semibold">{qcPendingData.length}</span> items.
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={qcPendingData.length}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </Container>
-    </div>
+      </Card>
+    </Container>
   );
 }

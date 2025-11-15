@@ -52,7 +52,7 @@ export default function CAPIFDProgressReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const itemsPerPage = 10;
+  const itemsPerPage = 25;
 
   // Mock data for demonstration
   const progressData: ProgressReportData[] = [
@@ -212,20 +212,12 @@ export default function CAPIFDProgressReportPage() {
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex-1">
-          <Heading level={1} className="text-2xl font-semibold text-gray-900 dark:text-white">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
             Progress Report
           </Heading>
-        </div>
-        <div className="flex-1"></div>
-        <div className="flex-1 text-right hidden">
-          <Button
-            className="bg-blue-600 text-white hover:bg-blue-700 flex items-center space-x-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>Export Data</span>
-          </Button>
         </div>
       </div>
 
@@ -290,20 +282,32 @@ export default function CAPIFDProgressReportPage() {
 
       {/* Progress Report Table */}
       <Card className="">
-        <div className="card-header pb-0 mb-6">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-1 h-6 bg-green-500 mr-3"></div>
-              <Heading level={4} className="card-title mg-b-0">
-                PROGRESS REPORT - AC LEVEL
-              </Heading>
-            </div>
-            <Button variant="outline" className="bg-blue-600 hover:bg-blue-700 text-white border-0">
-              <Download className="w-4 h-4 mr-2" />
-              Download
-            </Button>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              PROGRESS REPORT - AC LEVEL
+            </Heading>
           </div>
+          <Button 
+            variant="primary" 
+            className="bg-blue-500 hover:bg-blue-600 text-white border-0"
+            onClick={() => {
+              // Handle download logic here
+              console.log('Download Progress Report');
+            }}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
         </div>
+        
+        <div className="bg-white">
+          <div className="mb-4">
+            <span className="text-sm text-gray-600">
+              Total <strong>{progressData.length}</strong> items.
+            </span>
+          </div>
 
         <div className="card-body">
           {loading ? (
@@ -322,78 +326,78 @@ export default function CAPIFDProgressReportPage() {
               </Button>
             </div>
           ) : (
-            <div className="table-responsive">
-              <Table className="table table-centered table-striped dt-responsive nowrap w-100">
-                <thead className="table-light">
-                  <tr>
-                    <th>Sr.No.</th>
-                    <th>AC Code</th>
-                    <th>AC Name</th>
-                    <th>PC Name</th>
-                    <th>Target Sample</th>
-                    <th>No Of Interviewers Worked</th>
-                    <th>PS Covered</th>
-                    <th>Completed Interviews</th>
-                    <th>Terminated Interviews</th>
-                    <th>System Rejections</th>
-                    <th>Counts After Terminated And System Rejection</th>
-                    <th>GPS Pending</th>
-                    <th>GPS Fail</th>
-                    <th className="bg-green-500 text-white">Passed</th>
-                    <th className="bg-red-500 text-white">Failed</th>
-                    <th className="bg-blue-500 text-white">Under QC</th>
-                    <th>% Of Female Interviews</th>
-                    <th>% Of Interviews Without Phone Number</th>
-                    <th>Actual % Of SC</th>
-                    <th>% Of Interviews Mentioned As SC</th>
-                    <th>Actual % Of Muslims</th>
-                    <th>% Of Interviews Mentioned As Muslims</th>
-                    <th>% Of Interviews Under The Age Of (18-24)</th>
-                    <th>% Of Interviews Under The Age Of (50+)</th>
-                  </tr>
-                </thead>
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">AC Code</th>
+                  <th className="text-left">AC Name</th>
+                  <th className="text-left">PC Name</th>
+                  <th className="text-center">Target Sample</th>
+                  <th className="text-center">No Of Interviewers Worked</th>
+                  <th className="text-center">PS Covered</th>
+                  <th className="text-center">Completed Interviews</th>
+                  <th className="text-center">Terminated Interviews</th>
+                  <th className="text-center">System Rejections</th>
+                  <th className="text-center">Counts After Terminated And System Rejection</th>
+                  <th className="text-center">GPS Pending</th>
+                  <th className="text-center">GPS Fail</th>
+                  <th className="bg-green-500 text-white text-center">Passed</th>
+                  <th className="bg-red-500 text-white text-center">Failed</th>
+                  <th className="bg-blue-500 text-white text-center">Under QC</th>
+                  <th className="text-center">% Of Female Interviews</th>
+                  <th className="text-center">% Of Interviews Without Phone Number</th>
+                  <th className="text-center">Actual % Of SC</th>
+                  <th className="text-center">% Of Interviews Mentioned As SC</th>
+                  <th className="text-center">Actual % Of Muslims</th>
+                  <th className="text-center">% Of Interviews Mentioned As Muslims</th>
+                  <th className="text-center">% Of Interviews Under The Age Of (18-24)</th>
+                  <th className="text-center">% Of Interviews Under The Age Of (50+)</th>
+                </tr>
+              </thead>
                 {/* <tbody>
                   {currentData.map((item) => (
                     <tr 
                       key={item.id} 
                       className={item.isSummary ? 'bg-gray-100 font-bold' : ''}
                     >
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.srNo || 'TOTAL'}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.acCode}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.acName}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.pcName}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.targetSample}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.interviewersWorked}</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} text-blue-600`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.srNo || 'TOTAL'}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.acCode}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-left`}>{item.acName}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-left`}>{item.pcName}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.targetSample}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.interviewersWorked}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-blue-600 text-center`}>
                         {item.psCovered}
                       </td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.completedInterviews}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.terminatedInterviews}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.systemRejections}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.countsAfterTerminated}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.gpsPending}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.gpsFail}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.passed}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.failed}</td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.underQc}</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.femaleInterviewsPercent, 'femaleInterviewsPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.completedInterviews}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.terminatedInterviews}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.systemRejections}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.countsAfterTerminated}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.gpsPending}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.gpsFail}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.passed}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.failed}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.underQc}</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.femaleInterviewsPercent, 'femaleInterviewsPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.femaleInterviewsPercent}%
                       </td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.withoutPhonePercent, 'withoutPhonePercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.withoutPhonePercent, 'withoutPhonePercent') ? 'text-red-600' : ''} text-center`}>
                         {item.withoutPhonePercent}%
                       </td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.actualScPercent}%</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedScPercent, 'mentionedScPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.actualScPercent}%</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedScPercent, 'mentionedScPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.mentionedScPercent}%
                       </td>
-                      <td className={item.isSummary ? 'font-bold' : ''}>{item.actualMuslimPercent}%</td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedMuslimPercent, 'mentionedMuslimPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} text-center`}>{item.actualMuslimPercent}%</td>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.mentionedMuslimPercent, 'mentionedMuslimPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.mentionedMuslimPercent}%
                       </td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age18to24Percent, 'age18to24Percent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age18to24Percent, 'age18to24Percent') ? 'text-red-600' : ''} text-center`}>
                         {item.age18to24Percent}%
                       </td>
-                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age50PlusPercent, 'age50PlusPercent') ? 'text-red-600' : ''}`}>
+                      <td className={`${item.isSummary ? 'font-bold' : ''} ${shouldHighlightRed(item.age50PlusPercent, 'age50PlusPercent') ? 'text-red-600' : ''} text-center`}>
                         {item.age50PlusPercent}%
                       </td>
                     </tr>
@@ -404,18 +408,16 @@ export default function CAPIFDProgressReportPage() {
           )}
 
           {/* Pagination */}
-          {!loading && !error && progressData.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <PaginationStandard
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={progressData.length}
-                itemsPerPage={itemsPerPage}
-                onPageChange={(page) => setCurrentPage(page)}
-                className="justify-center"
-              />
-            </div>
-          )}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={progressData.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          </div>
+        </div>
         </div>
       </Card>
 

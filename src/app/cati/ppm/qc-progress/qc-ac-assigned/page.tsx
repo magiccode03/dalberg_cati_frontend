@@ -73,7 +73,7 @@ interface FilterOptions {
 
 export default function AssignedACPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [assignedACData, setAssignedACData] = useState<AssignedACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -441,20 +441,10 @@ export default function AssignedACPage() {
   const currentData = assignedACData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              Assigned AC - QC User
-            </Heading>
-          </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
-        </div>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        Assigned AC - QC User
+      </Heading>
 
 
         {/* Error State */}
@@ -536,154 +526,128 @@ export default function AssignedACPage() {
           </div>
         </Card>
 
-        {/* Assigned AC Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
-              <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                Assigned AC - QC User
-                </Heading>
-              </div>
-            <div className="flex items-center">
-              <Button
-                variant="primary"
-                onClick={downloadAllData}
-                className="flex items-center"
-                disabled={loading}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
-            </div>
+      {/* Assigned AC Table */}
+      <Card>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Assigned AC - QC User</Heading>
           </div>
+          <Button
+            variant="primary"
+            onClick={downloadAllData}
+            className="flex items-center bg-blue-600 text-white hover:bg-blue-500"
+            disabled={loading}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
 
-          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-            Total <strong>{totalCount}</strong> QC Users.
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Total <strong>{totalCount}</strong> items.
+          </Text>
+        </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <Text className="ml-2 text-gray-600">Loading assigned AC data...</Text>
           </div>
-              {loading ? (
-                <div className="flex justify-center items-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-                  <Text className="ml-2 text-gray-600">Loading assigned AC data...</Text>
-                </div>
-              ) : (
-                <React.Fragment>
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead className="sticky-header bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">QC User Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Name</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Total</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Completed</th>
-                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">QC Pending</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
-                      <tr 
-                        key={data.id} 
-                        className={`${
-                          data.isSummaryRow 
-                            ? 'bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-700' 
-                            : 'hover:bg-gray-50'
-                        }`}
+        ) : (
+          <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+            <Table className="table table-bordered table-striped table-hover">
+              <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC ID</th>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC User Name</th>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Code</th>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">AC Name</th>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC Total</th>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC Completed</th>
+                  <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">QC Pending</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((data) => (
+                  <tr 
+                    key={data.id} 
+                    className={`${
+                      data.isSummaryRow 
+                        ? 'bg-blue-50 dark:bg-blue-900/20 border-t-2 border-blue-200 dark:border-blue-700' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {data.isFirstRow && !data.isSummaryRow && (
+                      <td 
+                        rowSpan={data.rowspan || 1} 
+                        className="text-center"
                       >
-                        {data.isFirstRow && !data.isSummaryRow && (
-                          <td 
-                            rowSpan={data.rowspan || 1} 
-                            className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center"
-                          >
-                            {data.qcId}
-                          </td>
-                        )}
-                        {data.isFirstRow && !data.isSummaryRow && (
-                          <td 
-                            rowSpan={data.rowspan || 1} 
-                            className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium"
-                          >
-                            {data.qcUserName}
-                          </td>
-                        )}
-                        {/* {data.isSummaryRow && (
-                          <>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-800 dark:text-blue-200 text-center font-bold">
-                              {data.qcId}
-                            </td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-blue-800 dark:text-blue-200 font-bold">
-                              {data.qcUserName}
-                            </td>
-                          </>
-                        )} */}
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          {data.isSummaryRow ? '-' : data.acCode}
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          {data.acName}
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          <FormattedNumber value={data.qcTotal} locale="en-IN" />
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          <FormattedNumber value={data.qcCompleted} locale="en-IN" />
-                        </td>
-                        <td className={`px-4 py-4 whitespace-nowrap text-sm font-mono text-center ${
-                          data.isSummaryRow 
-                            ? 'text-blue-800 dark:text-blue-200 font-bold' 
-                            : 'text-gray-900'
-                        }`}>
-                          <FormattedNumber value={data.qcPending} locale="en-IN" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
+                        {data.qcId}
+                      </td>
+                    )}
+                    {data.isFirstRow && !data.isSummaryRow && (
+                      <td 
+                        rowSpan={data.rowspan || 1} 
+                        className="text-left"
+                      >
+                        {data.qcUserName}
+                      </td>
+                    )}
+                    <td className={`text-center ${
+                      data.isSummaryRow 
+                        ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                        : 'text-gray-900'
+                    }`}>
+                      {data.isSummaryRow ? '-' : data.acCode}
+                    </td>
+                    <td className={`text-left ${
+                      data.isSummaryRow 
+                        ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                        : 'text-gray-900'
+                    }`}>
+                      {data.acName}
+                    </td>
+                    <td className={`text-center ${
+                      data.isSummaryRow 
+                        ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                        : 'text-gray-900'
+                    }`}>
+                      <FormattedNumber value={data.qcTotal} locale="en-IN" />
+                    </td>
+                    <td className={`text-center ${
+                      data.isSummaryRow 
+                        ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                        : 'text-gray-900'
+                    }`}>
+                      <FormattedNumber value={data.qcCompleted} locale="en-IN" />
+                    </td>
+                    <td className={`text-center ${
+                      data.isSummaryRow 
+                        ? 'text-blue-800 dark:text-blue-200 font-bold' 
+                        : 'text-gray-900'
+                    }`}>
+                      <FormattedNumber value={data.qcPending} locale="en-IN" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
 
-              {/* Table Footer with Pagination */}
-              <div className="flex justify-between items-center mt-4 px-4 pb-4">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-                </div>
-                {totalPages > 1 && (
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-                )}
-              </div>
-              </React.Fragment>
-              )}
-          </Card>
-      </Container>
-    </div>
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={pageSize}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+
+      </Card>
+    </Container>
   );
 }

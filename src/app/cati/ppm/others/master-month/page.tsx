@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Plus, Edit, RefreshCw, Check, X } from 'lucide-react';
 
 // Interfaces
@@ -21,6 +22,10 @@ interface MonthData {
 }
 
 const MasterMonthPage = () => {
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // Sample data for months
   const [monthData] = useState<MonthData[]>([
     {
@@ -113,11 +118,18 @@ const MasterMonthPage = () => {
     return status === 'Active' ? 'text-green-600' : 'text-red-600';
   };
 
+  // Pagination calculations
+  const totalItems = monthData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = monthData.slice(startIndex, endIndex);
+
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Master Month
         </Heading>
       </div>
@@ -126,8 +138,8 @@ const MasterMonthPage = () => {
       <Card>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               WB CATI | PMT | Months | West Bengal Telephonic Survey 2024
             </Heading>
           </div>
@@ -135,84 +147,95 @@ const MasterMonthPage = () => {
             variant="primary" 
             size="sm"
             onClick={handleAddNewMonth}
-            className="flex items-center"
+            className="flex items-center bg-blue-500 hover:bg-blue-600"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add New Month
           </Button>
         </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Month ID</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Month Name</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Start Date</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">End Date</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Current Month</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Update</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              {monthData.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.monthId}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.monthName}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.startDate}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.endDate}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    {item.isCurrentMonth ? (
-                      <Check className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <X className="w-4 h-4 text-gray-400" />
-                    )}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className={getStatusColor(item.status)}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <button
-                      onClick={() => handleUpdateMonth(item.monthId)}
-                      className="bg-blue-600 hover:bg-blue-700 rounded px-3 py-2 flex items-center text-white"
-                      title="Update Month"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
-                    <button
-                      onClick={() => handleRefreshProgress(item.monthId)}
-                      className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
-                      title="Refresh Progress"
-                    >
-                      <RefreshCw className="w-4 h-4 text-white" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
 
-        {/* Table Footer */}
-        <div className="flex justify-between items-center mt-4">
-          <div className="text-sm text-gray-600">
-            Total <span className="font-semibold">{monthData.length}</span> items.
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Month ID</th>
+                  <th className="text-center">Month Name</th>
+                  <th className="text-center">Start Date</th>
+                  <th className="text-center">End Date</th>
+                  <th className="text-center">Current Month</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Update</th>
+                  <th className="text-center">Progress</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{item.monthId}</td>
+                    <td className="text-left">{item.monthName}</td>
+                    <td className="text-center">{item.startDate}</td>
+                    <td className="text-center">{item.endDate}</td>
+                    <td className="text-center">
+                      {item.isCurrentMonth ? (
+                        <Check className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <X className="w-4 h-4 text-gray-400" />
+                      )}
+                    </td>
+                    <td className="text-center">
+                      <span className={getStatusColor(item.status)}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleUpdateMonth(item.monthId)}
+                        className="bg-blue-500 hover:bg-blue-600 rounded px-3 py-2 flex items-center text-white"
+                        title="Update Month"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Update
+                      </button>
+                    </td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleRefreshProgress(item.monthId)}
+                        className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center"
+                        title="Refresh Progress"
+                      >
+                        <RefreshCw className="w-4 h-4 text-white" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
           </div>
-          <div className="text-sm text-gray-500">
-            {/* Pagination would go here if needed */}
-          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

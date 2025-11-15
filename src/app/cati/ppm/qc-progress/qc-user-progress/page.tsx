@@ -91,7 +91,7 @@ export default function QCUserProgressPage() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [hasNext, setHasNext] = useState(false);
@@ -552,14 +552,10 @@ export default function QCUserProgressPage() {
   }
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
-        {/* Page Header */}
-        <div className="mb-6">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
-              QC User Progress
-            </Heading>
-          </div>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        QC User Progress
+      </Heading>
 
         {/* Search Filters */}
         <Card className="p-4 mb-5">
@@ -686,30 +682,28 @@ export default function QCUserProgressPage() {
             </div>
           </Card>
 
-        {/* QC User Progress Table */}
-        <Card className="">
-          <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center">
-              <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                QC User Progress Summary
-                  </Heading>
-                </div>
-                <div className="flex items-center">
-                  <Button
-                    variant="primary"
-                    onClick={handleDownload}
-                className="flex items-center"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </div>
+      {/* QC User Progress Table */}
+      <Card>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">QC User Progress Summary</Heading>
+          </div>
+          <Button
+            variant="primary"
+            onClick={handleDownload}
+            className="flex items-center bg-blue-600 text-white hover:bg-blue-500"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
 
-          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-            Total <strong>{totalCount}</strong> QC users.
-            </div>
+        <div className="mb-4">
+          <Text className="text-sm text-gray-600">
+            Total <strong>{totalCount}</strong> items.
+          </Text>
+        </div>
 
               <div className="overflow-x-auto">
                 <Table
@@ -757,25 +751,18 @@ export default function QCUserProgressPage() {
                 </Table>
               </div>
 
-          {/* Table Footer with Pagination */}
-          <div className="flex justify-between items-center mt-4 px-4 pb-4">
-                <div className="text-sm text-gray-700">
-              Showing <span className="font-semibold">{((currentPage - 1) * pageSize) + 1}</span> - <span className="font-semibold">{Math.min(currentPage * pageSize, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-                </div>
-            {totalPages > 1 && (
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={handlePageChange}
-                  />
-              </div>
-            )}
-            </div>
-          </Card>
-      </Container>
-    </div>
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={pageSize}
+            onPageChange={handlePageChange}
+          />
+        </div>
+
+      </Card>
+    </Container>
   );
 }

@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, Download, ExternalLink, X } from 'lucide-react';
+import { Search, Download, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import Link from 'next/link';
 import { MouseEvent } from 'react';
@@ -184,13 +184,13 @@ export default function QCUserProgressPage() {
 
   // Fetch data from API
   const fetchData = async (page: number = 1, filtersToUse?: typeof filters) => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Use provided filters or current filters
-        const activeFilters = filtersToUse || filters;
-        
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Use provided filters or current filters
+      const activeFilters = filtersToUse || filters;
+
       console.log('=== Starting API Call ===');
       console.log('Current filters:', activeFilters);
       console.log('Current page:', page);
@@ -206,7 +206,7 @@ export default function QCUserProgressPage() {
       if (activeFilters.acCode) queryParams.append('ac_code', activeFilters.acCode);
       if (activeFilters.teleformUserId) queryParams.append('teleform_user_id', activeFilters.teleformUserId);
       if (activeFilters.qcUserStatus) queryParams.append('status', activeFilters.qcUserStatus);
-      
+
       // Handle date filters - use qc_complete_start_date and qc_complete_end_date
       if (activeFilters.reportDays === 'custom' && activeFilters.customDateFrom && activeFilters.customDateTo) {
         queryParams.append('qc_complete_start_date', activeFilters.customDateFrom);
@@ -216,7 +216,7 @@ export default function QCUserProgressPage() {
         const today = new Date();
         let fromDate: string;
         let toDate: string = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-        
+
         switch (activeFilters.reportDays) {
           case 'today':
             fromDate = toDate;
@@ -258,7 +258,7 @@ export default function QCUserProgressPage() {
 
         queryParams.append('qc_complete_start_date', fromDate);
         queryParams.append('qc_complete_end_date', toDate);
-        
+
         console.log(`Date range for ${activeFilters.reportDays}: ${fromDate} to ${toDate}`);
       }
 
@@ -492,7 +492,7 @@ export default function QCUserProgressPage() {
       // Create CSV headers
       const headers = [
         'S.No',
-        'User ID', 
+        'User ID',
         'User Name',
         'Mobile Number',
         'Start time',
@@ -600,7 +600,7 @@ export default function QCUserProgressPage() {
         </div>
 
         {/* Search Filters */}
-        <Card className="p-4 mb-5">
+        <Card className=" mb-5">
           <div className="flex flex-wrap items-end gap-4">
             {/* Report Days Filter */}
             <div className="flex-1 min-w-[200px]">

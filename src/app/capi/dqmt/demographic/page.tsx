@@ -203,7 +203,7 @@ export default function DemographicPage() {
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
       <thead className="sticky-header">
         <tr>
-          <th>PC Name</th>
+          <th className="text-center">PC Name</th>
           <th className="text-center">PC Code</th>
           <th className="text-center">Sample Achieved</th>
           <th className="text-center border-l-2 border-r-2" colSpan={3}>
@@ -247,7 +247,7 @@ export default function DemographicPage() {
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
       <thead className="sticky-header">
         <tr>
-          <th>PC Name</th>
+          <th className="text-center">PC Name</th>
           <th className="text-center">PC Code</th>
           <th className="text-center">Sample Achieved</th>
           <th className="text-center border-l-2 border-r-2" colSpan={3}>
@@ -295,7 +295,7 @@ export default function DemographicPage() {
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
       <thead className="sticky-header">
         <tr>
-          <th>PC Name</th>
+          <th className="text-center">PC Name</th>
           <th className="text-center">PC Code</th>
           <th className="text-center">Sample Achieved</th>
           <th className="text-center border-l-2 border-r-2" colSpan={3}>
@@ -357,7 +357,7 @@ export default function DemographicPage() {
     <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top table-condensed">
       <thead className="sticky-header">
         <tr>
-          <th>PC Name</th>
+          <th className="text-center">PC Name</th>
           <th className="text-center">PC Code</th>
           <th className="text-center">Sample Achieved</th>
           <th className="text-center border-l-2 border-r-2" colSpan={4}>

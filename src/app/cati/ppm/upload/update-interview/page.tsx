@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Radio from '@/components/ui/Radio';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Eye } from 'lucide-react';
 
 // Interfaces
@@ -25,6 +26,10 @@ interface UpdateRequestData {
 }
 
 const UpdateInterviewPage = () => {
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // State for upload form
   const [uploadForm, setUploadForm] = useState({
     actionType: '',
@@ -197,11 +202,18 @@ const UpdateInterviewPage = () => {
     }
   };
 
+  // Pagination calculations
+  const totalItems = updateRequestsData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = updateRequestsData.slice(startIndex, endIndex);
+
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Update Interview
         </Heading>
       </div>
@@ -210,8 +222,8 @@ const UpdateInterviewPage = () => {
       <Card className="mb-6">
         <div className="mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Upload File for Reject/Valid
             </Heading>
           </div>
@@ -280,7 +292,7 @@ const UpdateInterviewPage = () => {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <Button type="submit" variant="primary" className="bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" variant="primary" className="bg-blue-500 hover:bg-blue-600">
               Submit
             </Button>
           </div>
@@ -289,68 +301,84 @@ const UpdateInterviewPage = () => {
 
       {/* List of Updating Requests */}
       <Card>
-        <div className="mb-4">
+        <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               List of Updating Requests
             </Heading>
           </div>
         </div>
 
-        {/* Summary */}
-        <div className="mb-4 text-sm text-gray-600">
-          Showing <span className="font-semibold">1-{updateRequestsData.length}</span> of <span className="font-semibold">{updateRequestsData.length}</span> items.
-        </div>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">#</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Cron ID</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Action/Route</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Additional Info</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Planned At</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Executed At</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Execution</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Errors</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {updateRequestsData.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200">{index + 1}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.cronId}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.actionRoute}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.additionalInfo}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.plannedAt}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.executedAt}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.execution}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.errors}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className={getStatusColor(item.status)}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
-                    <button
-                      onClick={() => handleViewRequest(item.cronId)}
-                      className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
-                      title="View Request"
-                    >
-                      <Eye className="w-4 h-4 text-white" />
-                    </button>
-                  </td>
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Cron ID</th>
+                  <th className="text-center">Action/Route</th>
+                  <th className="text-center">Additional Info</th>
+                  <th className="text-center">Planned At</th>
+                  <th className="text-center">Executed At</th>
+                  <th className="text-center">Execution</th>
+                  <th className="text-center">Errors</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {currentData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{item.cronId}</td>
+                    <td className="text-left">{item.actionRoute}</td>
+                    <td className="text-left">{item.additionalInfo}</td>
+                    <td className="text-center">{item.plannedAt}</td>
+                    <td className="text-center">{item.executedAt}</td>
+                    <td className="text-center">{item.execution}</td>
+                    <td className="text-center">{item.errors}</td>
+                    <td className="text-center">
+                      <span className={getStatusColor(item.status)}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleViewRequest(item.cronId)}
+                        className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center"
+                        title="View Request"
+                      >
+                        <Eye className="w-4 h-4 text-white" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 
