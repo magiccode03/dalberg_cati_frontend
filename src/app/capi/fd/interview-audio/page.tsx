@@ -8,9 +8,9 @@ import { Table } from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Search, X, Volume2 } from 'lucide-react';
+import { Search, Volume2, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
-import Audio from '@/components/ui/Audio';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
 interface InterviewData {
   server_id: number;
@@ -171,16 +171,7 @@ export default function CAPIInterviewAudioPage() {
 
 
   const handlePlayAudio = (audioData: InterviewData) => {
-    // Use the audio_url directly from the API response
-    const processedAudioData = {
-      ...audioData,
-      audio: audioData.audio_url
-    };
-    
-    console.log('Playing audio:', processedAudioData);
-    console.log('Audio URL:', audioData.audio_url);
-    
-    setCurrentAudio(processedAudioData);
+    setCurrentAudio(audioData);
     setShowAudioModal(true);
   };
 
@@ -416,100 +407,12 @@ export default function CAPIInterviewAudioPage() {
       </Card>
 
       {/* Audio Modal */}
-      {showAudioModal && currentAudio && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <Volume2 className="h-6 w-6 text-blue-600" />
-                <Heading level={3} className="text-lg font-semibold">
-                  Interview Audio Player
-                </Heading>
-              </div>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Interview Details */}
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.server_id}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">
-                      {new Date(currentAudio.interview_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Code</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.ac_code}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.ac_name}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Audio Player */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <Audio
-                  src={(currentAudio as any).audio}
-                  onPlay={() => console.log('Audio started playing')}
-                  onPause={() => console.log('Audio paused')}
-                  onTimeUpdate={(currentTime, duration) => {
-                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
-                  }}
-                  onEnded={() => {
-                    console.log('Audio playback ended');
-                    // Optionally auto-close modal after a delay
-                    setTimeout(() => {
-                      handleCloseModal();
-                    }, 2000);
-                  }}
-                  onError={(error) => {
-                    console.error('Audio error:', error);
-                  }}
-                  className="border border-gray-200 dark:border-gray-600"
-                />
-              </div>
-
-              {/* Download Link */}
-              <div className="text-center">
-                <a
-                  href={(currentAudio as any).audio}
-                  download
-                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                >
-                  <Volume2 className="w-4 h-4 mr-2" />
-                  Download Audio
-                </a>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                onClick={handleCloseModal}
-                variant="outline"
-                className="px-4 py-2"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AudioPlayerModal
+        isOpen={showAudioModal}
+        onClose={handleCloseModal}
+        serverId={currentAudio?.server_id?.toString() || ''}
+        audioFileName={currentAudio?.interview_audio}
+      />
 
       <style jsx>{`
         .main-container {

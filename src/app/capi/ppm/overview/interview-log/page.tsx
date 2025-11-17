@@ -12,10 +12,10 @@ import Checkbox from '@/components/ui/Checkbox';
 import Badge from '@/components/ui/Badge';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown, X } from 'lucide-react';
+import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown } from 'lucide-react';
 import apiClient from '@/lib/api-client';
-import Audio from '@/components/ui/Audio';
 import DateFormatter from '@/components/ui/DateFormatter';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
 // TypeScript interfaces for API response
 interface InterviewData {
@@ -187,8 +187,6 @@ const InterviewLogPage = () => {
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
-  const [selectedServerId, setSelectedServerId] = useState<string>('');
-  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
   const [selectedInterviewData, setSelectedInterviewData] = useState<DisplayInterviewData | null>(null);
 
   // Sorting state
@@ -591,8 +589,6 @@ const InterviewLogPage = () => {
   };
 
   const handlePlayAudio = (interview: DisplayInterviewData) => {
-    setSelectedServerId(interview.server_id);
-    setSelectedAudioFile(interview.audio1);
     setSelectedInterviewData(interview);
     setAudioModalOpen(true);
   };
@@ -624,8 +620,6 @@ const InterviewLogPage = () => {
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
-    setSelectedServerId('');
-    setSelectedAudioFile('');
     setSelectedInterviewData(null);
   };
 
@@ -1140,106 +1134,12 @@ const InterviewLogPage = () => {
       </div>
 
       {/* Audio Player Modal */}
-      {audioModalOpen && selectedInterviewData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <Volume2 className="h-6 w-6 text-blue-600" />
-                <Heading level={3} className="text-lg font-semibold">
-                  Interview Audio Player
-                </Heading>
-              </div>
-              <button
-                onClick={handleCloseAudioModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Interview Details */}
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterviewData.server_id}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterviewData.interview_date}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterviewData.ac_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">PS Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterviewData.ps_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Interviewer ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterviewData.interviewer_id || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Device ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedInterviewData.device_id}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Audio Player */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <Audio
-                  src={selectedAudioFile}
-                  onPlay={() => console.log('Audio started playing')}
-                  onPause={() => console.log('Audio paused')}
-                  onTimeUpdate={(currentTime, duration) => {
-                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
-                  }}
-                  onEnded={() => {
-                    console.log('Audio playback ended');
-                    // Optionally auto-close modal after a delay
-                    setTimeout(() => {
-                      handleCloseAudioModal();
-                    }, 2000);
-                  }}
-                  onError={(error) => {
-                    console.error('Audio error:', error);
-                  }}
-                  className="border border-gray-200 dark:border-gray-600"
-                />
-              </div>
-
-              {/* Download Link */}
-              <div className="text-center">
-                <a
-                  href={selectedAudioFile}
-                  download
-                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                >
-                  <Volume2 className="w-4 h-4 mr-2" />
-                  Download Audio
-                </a>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                onClick={handleCloseAudioModal}
-                variant="outline"
-                className="px-4 py-2"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AudioPlayerModal
+        isOpen={audioModalOpen}
+        onClose={handleCloseAudioModal}
+        serverId={selectedInterviewData?.server_id || ''}
+        audioFileName={selectedInterviewData?.audio1}
+      />
     </Container>
   );
 };

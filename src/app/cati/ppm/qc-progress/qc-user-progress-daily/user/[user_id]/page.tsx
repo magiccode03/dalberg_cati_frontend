@@ -11,6 +11,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { ArrowLeft, Loader2, Phone, Volume2, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
 interface RecordingInfo {
   file?: string;
@@ -286,6 +287,30 @@ export default function QCUserAssignmentPage() {
     return `${apiBaseUrl}${file.startsWith('/') ? '' : '/'}${file}`;
   };
 
+  const extractAudioFileName = (recordings?: RecordingInfo[]): string | undefined => {
+    if (!recordings || recordings.length === 0) return undefined;
+    const file = recordings[0]?.file;
+    if (!file) return undefined;
+    
+    // If it's a full URL, extract the filename from the path
+    if (file.startsWith('http://') || file.startsWith('https://')) {
+      try {
+        const url = new URL(file);
+        const pathParts = url.pathname.split('/');
+        const filename = pathParts[pathParts.length - 1];
+        return filename || undefined;
+      } catch (e) {
+        // If URL parsing fails, try to extract from the string
+        const parts = file.split('/');
+        return parts[parts.length - 1] || undefined;
+      }
+    }
+    
+    // If it's a relative path, extract just the filename
+    const parts = file.split('/');
+    return parts[parts.length - 1] || undefined;
+  };
+
   return (
     <div className="main-content horizontal-content">
       <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto p-6 main-container">
@@ -422,62 +447,12 @@ export default function QCUserAssignmentPage() {
         </Card>
       </Container>
 
-      {showAudioModal && selectedAssignment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <Heading level={3} className="text-lg font-semibold">
-                Assignment Audio
-              </Heading>
-              <button
-                onClick={closeAudioModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-                <div>
-                  <Text className="text-sm text-gray-600 dark:text-gray-400">Server ID</Text>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedAssignment.server_id}</p>
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 dark:text-gray-400">AC Name</Text>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCell(selectedAssignment.ac_name)}</p>
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 dark:text-gray-400">Completed Date</Text>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDateOnly(selectedAssignment.qc_complete_date ?? selectedAssignment.completed_date ?? selectedAssignment.call_date)}</p>
-                </div>
-                <div>
-                  <Text className="text-sm text-gray-600 dark:text-gray-400">Duration</Text>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDuration(selectedAssignment.audio_duration ?? selectedAssignment.talk_duration)}</p>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                {resolveAudioUrl(selectedAssignment.recordings) ? (
-                  <audio controls className="w-full" controlsList="nodownload" preload="metadata">
-                    <source src={resolveAudioUrl(selectedAssignment.recordings)} type="audio/mpeg" />
-                    <source src={resolveAudioUrl(selectedAssignment.recordings)} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
-                ) : (
-                  <div className="text-center py-4 text-gray-500">No audio file available.</div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-              <Button onClick={closeAudioModal} variant="outline" className="px-4 py-2">
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AudioPlayerModal
+        isOpen={showAudioModal}
+        onClose={closeAudioModal}
+        serverId={selectedAssignment?.server_id?.toString() || ''}
+        audioFileName={selectedAssignment?.recordings ? extractAudioFileName(selectedAssignment.recordings) : undefined}
+      />
     </div>
   );
 }
