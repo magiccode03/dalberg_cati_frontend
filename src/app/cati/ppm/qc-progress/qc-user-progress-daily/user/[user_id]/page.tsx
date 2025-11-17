@@ -6,10 +6,9 @@ import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
-import Text from '@/components/ui/Text';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
-import { ArrowLeft, Loader2, Phone, Volume2, X } from 'lucide-react';
+import { ArrowLeft, Loader2, Volume2, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
@@ -37,6 +36,7 @@ interface AssignmentRow {
   qc_fail?: number;
   qc_pending?: number;
   recordings?: RecordingInfo[];
+  audio_file?: string;
 }
 
 interface APIResponse {
@@ -118,6 +118,18 @@ export default function QCUserAssignmentPage() {
         if (data.success && Array.isArray(data.data)) {
           const mappedRows: AssignmentRow[] = data.data.map((item) => {
             const raw = item as Record<string, any>;
+
+            // Prefer explicit audio_file from API; otherwise fallback to first recording.file
+            const rawAudioPath: string | undefined = raw.audio_file ?? (Array.isArray(raw.recordings) && raw.recordings[0]?.file) ?? undefined;
+            let resolvedAudioFile: string | undefined = undefined;
+            if (rawAudioPath) {
+              if (rawAudioPath.startsWith('http://') || rawAudioPath.startsWith('https://')) {
+                resolvedAudioFile = rawAudioPath;
+              } else {
+                resolvedAudioFile = `${apiBaseUrl}${rawAudioPath.startsWith('/') ? '' : '/'}${rawAudioPath}`;
+              }
+            }
+
             return {
               server_id: raw.server_id ?? raw.teleform_server_id ?? raw.serverId ?? '-',
               ac_name: raw.ac_name ?? raw.acName ?? '-',
@@ -133,6 +145,7 @@ export default function QCUserAssignmentPage() {
               qc_pass: raw.qc_pass,
               qc_fail: raw.qc_fail,
               recordings: Array.isArray(raw.recordings) ? raw.recordings : [],
+              audio_file: resolvedAudioFile,
             };
           });
 
@@ -205,7 +218,9 @@ export default function QCUserAssignmentPage() {
   };
 
   const openAudioModal = (assignment: AssignmentRow) => {
-    if (!assignment.recordings || assignment.recordings.length === 0) return;
+    const resolved = resolveAudioUrl(assignment.recordings, assignment.audio_file);
+    if (!resolved) return;
+    console.debug('Opening audio modal with URL:', resolved);
     setSelectedAssignment(assignment);
     setShowAudioModal(true);
   };
@@ -214,6 +229,66 @@ export default function QCUserAssignmentPage() {
     setShowAudioModal(false);
     setSelectedAssignment(null);
   };
+
+  // Mirror interview-list modal audio behavior
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
+  const [fetchedAudioUrl, setFetchedAudioUrl] = useState<string | null>(null);
+  const [fetchingAudio, setFetchingAudio] = useState(false);
+  const handleAudioError = () => {
+    console.error('Audio playback error (assignment modal)');
+    setAudioError(true);
+  };
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error (assignment modal)');
+    setAudioError(true);
+  };
+  const openAudioInNewTab = (url: string) => {
+    if (!url) return;
+    window.open(url, '_blank');
+  };
+
+  // Try fetching audio via XHR/fetch with Authorization header and createObjectURL
+  const fetchAudioWithAuth = async (url: string) => {
+    if (!url) return;
+    try {
+      setFetchingAudio(true);
+      setAudioError(false);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const resp = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        method: 'GET',
+        mode: 'cors',
+      });
+
+      if (!resp.ok) throw new Error(`Fetch failed: ${resp.status}`);
+
+      const blob = await resp.blob();
+      const objUrl = window.URL.createObjectURL(blob);
+      // Clean up any previous fetched URL
+      if (fetchedAudioUrl) {
+        window.URL.revokeObjectURL(fetchedAudioUrl);
+      }
+      setFetchedAudioUrl(objUrl);
+      setUseIframe(false);
+      setAudioError(false);
+    } catch (err) {
+      console.error('Authenticated audio fetch failed', err);
+      setAudioError(true);
+    } finally {
+      setFetchingAudio(false);
+    }
+  };
+
+  // Revoke object URL when modal closes or assignment changes
+  useEffect(() => {
+    if (!showAudioModal) {
+      if (fetchedAudioUrl) {
+        window.URL.revokeObjectURL(fetchedAudioUrl);
+        setFetchedAudioUrl(null);
+      }
+    }
+  }, [showAudioModal, fetchedAudioUrl]);
 
   const formatStatusDisplay = (status?: string | null) => {
     if (!status) return '-';
@@ -279,7 +354,9 @@ export default function QCUserAssignmentPage() {
     return first.file ? `${first.file} (${durationLabel})` : `Audio (${durationLabel})`;
   };
 
-  const resolveAudioUrl = (recordings?: RecordingInfo[]) => {
+  // Resolve an audio URL. Prefer an explicit audio_file (absolute), then recordings[].file
+  const resolveAudioUrl = (recordings?: RecordingInfo[], audioFile?: string) => {
+    if (audioFile) return audioFile;
     if (!recordings || recordings.length === 0) return '';
     const file = recordings[0]?.file;
     if (!file) return '';
@@ -412,7 +489,7 @@ export default function QCUserAssignmentPage() {
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
-                        {row.recordings && row.recordings.length > 0 ? (
+                        {resolveAudioUrl(row.recordings, row.audio_file) ? (
                           <Button
                             size="sm"
                             title={getAudioTooltip(row.recordings)}
@@ -447,12 +524,174 @@ export default function QCUserAssignmentPage() {
         </Card>
       </Container>
 
-      <AudioPlayerModal
-        isOpen={showAudioModal}
-        onClose={closeAudioModal}
-        serverId={selectedAssignment?.server_id?.toString() || ''}
-        audioFileName={selectedAssignment?.recordings ? extractAudioFileName(selectedAssignment.recordings) : undefined}
-      />
+      {showAudioModal && selectedAssignment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <Volume2 className="h-6 w-6 text-blue-600" />
+                <Heading level={3} className="text-lg font-semibold">
+                  Assignment Audio Player
+                </Heading>
+              </div>
+              <button
+                onClick={closeAudioModal}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Assignment Details */}
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedAssignment.server_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCell(selectedAssignment.ac_name)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Completed Date</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDateOnly(selectedAssignment.qc_complete_date ?? selectedAssignment.completed_date ?? selectedAssignment.call_date)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Duration</p>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDuration(selectedAssignment.audio_duration ?? selectedAssignment.talk_duration)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Audio Player */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                <div className="mb-3 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                  </p>
+                  {audioError && !useIframe && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      Audio player had an issue. Try the alternative options below.
+                    </p>
+                  )}
+                </div>
+
+                {(() => {
+                  const audioUrl = fetchedAudioUrl ?? resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file);
+                  return !useIframe ? (
+                    audioUrl ? (
+                      <audio
+                        controls
+                        className="w-full"
+                        controlsList="nodownload"
+                        preload="metadata"
+                        onError={handleAudioError}
+                        onLoadStart={() => console.log('Audio loading started')}
+                        onCanPlay={() => console.log('Audio can play')}
+                      >
+                        <source src={audioUrl} type="audio/mpeg" />
+                        <source src={audioUrl} type="audio/mp3" />
+                        Your browser does not support the audio element.
+                      </audio>
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        No audio file available for this assignment.
+                      </div>
+                    )
+                  ) : (
+                    audioUrl ? (
+                      <div className="w-full">
+                        <iframe
+                          src={audioUrl}
+                          className="w-full h-16 border-0 rounded"
+                          title="Audio Player"
+                          allow="autoplay"
+                          onError={handleIframeError}
+                          onLoad={() => {
+                            // Check if iframe content is just text (not audio player)
+                            setTimeout(() => {
+                              try {
+                                const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                                if (iframe && iframe.contentDocument) {
+                                  const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                  if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                    console.warn('Iframe returned text instead of audio player');
+                                    setAudioError(true);
+                                  }
+                                }
+                              } catch (e) {
+                                // Cross-origin restrictions, can't access iframe content
+                                console.log('Cannot access iframe content due to CORS');
+                              }
+                            }, 1000);
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-gray-500">
+                        No audio file available for this assignment.
+                      </div>
+                    )
+                  );
+                })()}
+
+                {/* Error Message for Failed Audio */}
+                {audioError && (
+                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                    <div className="text-center">
+                      <div className="text-red-600 dark:text-red-400 mb-2">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold">Audio Playback Failed</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Alternative Options */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
+                  {!useIframe && audioError && (
+                    <Button
+                      onClick={() => setUseIframe(true)}
+                      variant="outline"
+                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      Try Alternative Player
+                    </Button>
+                  )}
+                  <a
+                    href={resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file) || ''}
+                    download
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    style={{ display: resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file) ? 'inline' : 'none' }}
+                  >
+                    Download audio
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <Button
+                onClick={closeAudioModal}
+                variant="outline"
+                className="px-4 py-2"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
