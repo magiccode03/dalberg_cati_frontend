@@ -10,7 +10,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { ArrowLeft, Loader2, Volume2, X } from 'lucide-react';
 import apiClient from '@/lib/api-client';
-import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
+import CATIAudioPlayerModal from '@/components/modals/CATIAudioPlayerModal';
 
 interface RecordingInfo {
   file?: string;
@@ -524,174 +524,18 @@ export default function QCUserAssignmentPage() {
         </Card>
       </Container>
 
-      {showAudioModal && selectedAssignment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <Volume2 className="h-6 w-6 text-blue-600" />
-                <Heading level={3} className="text-lg font-semibold">
-                  Assignment Audio Player
-                </Heading>
-              </div>
-              <button
-                onClick={closeAudioModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Assignment Details */}
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server ID</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{selectedAssignment.server_id}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatCell(selectedAssignment.ac_name)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Completed Date</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDateOnly(selectedAssignment.qc_complete_date ?? selectedAssignment.completed_date ?? selectedAssignment.call_date)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Duration</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{formatDuration(selectedAssignment.audio_duration ?? selectedAssignment.talk_duration)}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Audio Player */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <div className="mb-3 text-center">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
-                  </p>
-                  {audioError && !useIframe && (
-                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      Audio player had an issue. Try the alternative options below.
-                    </p>
-                  )}
-                </div>
-
-                {(() => {
-                  const audioUrl = fetchedAudioUrl ?? resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file);
-                  return !useIframe ? (
-                    audioUrl ? (
-                      <audio
-                        controls
-                        className="w-full"
-                        controlsList="nodownload"
-                        preload="metadata"
-                        onError={handleAudioError}
-                        onLoadStart={() => console.log('Audio loading started')}
-                        onCanPlay={() => console.log('Audio can play')}
-                      >
-                        <source src={audioUrl} type="audio/mpeg" />
-                        <source src={audioUrl} type="audio/mp3" />
-                        Your browser does not support the audio element.
-                      </audio>
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        No audio file available for this assignment.
-                      </div>
-                    )
-                  ) : (
-                    audioUrl ? (
-                      <div className="w-full">
-                        <iframe
-                          src={audioUrl}
-                          className="w-full h-16 border-0 rounded"
-                          title="Audio Player"
-                          allow="autoplay"
-                          onError={handleIframeError}
-                          onLoad={() => {
-                            // Check if iframe content is just text (not audio player)
-                            setTimeout(() => {
-                              try {
-                                const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
-                                if (iframe && iframe.contentDocument) {
-                                  const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                                  if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                                    console.warn('Iframe returned text instead of audio player');
-                                    setAudioError(true);
-                                  }
-                                }
-                              } catch (e) {
-                                // Cross-origin restrictions, can't access iframe content
-                                console.log('Cannot access iframe content due to CORS');
-                              }
-                            }, 1000);
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-center py-4 text-gray-500">
-                        No audio file available for this assignment.
-                      </div>
-                    )
-                  );
-                })()}
-
-                {/* Error Message for Failed Audio */}
-                {audioError && (
-                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
-                    <div className="text-center">
-                      <div className="text-red-600 dark:text-red-400 mb-2">
-                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p className="font-semibold">Audio Playback Failed</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Alternative Options */}
-                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
-                  {!useIframe && audioError && (
-                    <Button
-                      onClick={() => setUseIframe(true)}
-                      variant="outline"
-                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                      Try Alternative Player
-                    </Button>
-                  )}
-                  <a
-                    href={resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file) || ''}
-                    download
-                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
-                    style={{ display: resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file) ? 'inline' : 'none' }}
-                  >
-                    Download audio
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                onClick={closeAudioModal}
-                variant="outline"
-                className="px-4 py-2"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CATIAudioPlayerModal
+        isOpen={showAudioModal}
+        onClose={closeAudioModal}
+        audioUrl={selectedAssignment ? (fetchedAudioUrl ?? resolveAudioUrl(selectedAssignment.recordings, selectedAssignment.audio_file) ?? '') : ''}
+        customFields={selectedAssignment ? [
+          { label: 'Server ID', value: selectedAssignment.server_id },
+          { label: 'AC Name', value: formatCell(selectedAssignment.ac_name) },
+          { label: 'Completed Date', value: formatDateOnly(selectedAssignment.qc_complete_date ?? selectedAssignment.completed_date ?? selectedAssignment.call_date) },
+          { label: 'Duration', value: formatDuration(selectedAssignment.audio_duration ?? selectedAssignment.talk_duration) }
+        ] : []}
+        title="Assignment Audio Player"
+      />
     </div>
   );
 }

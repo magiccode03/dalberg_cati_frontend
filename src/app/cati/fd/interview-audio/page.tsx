@@ -11,7 +11,7 @@ import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, X, Volume2 } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import DateFormatter from '@/components/ui/DateFormatter';
-import Audio from '@/components/ui/Audio';
+import CATIAudioPlayerModal from '@/components/modals/CATIAudioPlayerModal';
 
 interface InterviewAudioData {
   id: number;
@@ -199,15 +199,7 @@ export default function CATIInterviewAudioPage() {
   };
 
   const handlePlayAudio = (audioData: InterviewAudioData) => {
-    // Fix the audio URL encoding
-    const processedAudioData = {
-      ...audioData,
-      audio: fixAudioUrl(audioData.audio)
-    };
-    
-    console.log('Playing audio:', processedAudioData);
-    
-    setCurrentAudio(processedAudioData);
+    setCurrentAudio(audioData);
     setShowAudioModal(true);
   };
 
@@ -444,100 +436,18 @@ export default function CATIInterviewAudioPage() {
       </Card>
 
       {/* Audio Modal */}
-      {showAudioModal && currentAudio && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <Volume2 className="h-6 w-6 text-blue-600" />
-                <Heading level={3} className="text-lg font-semibold">
-                  Interview Audio Player
-                </Heading>
-              </div>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Interview Details */}
-              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 space-y-2">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Server Id</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.id}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Interview Date</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">
-                      <DateFormatter date={currentAudio.interview_date} format="dd/mm/yyyy" />
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Code</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.ac_code}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">AC Name</p>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">{currentAudio.ac_name}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Audio Player */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
-                <Audio
-                  src={currentAudio.audio}
-                  onPlay={() => console.log('Audio started playing')}
-                  onPause={() => console.log('Audio paused')}
-                  onTimeUpdate={(currentTime, duration) => {
-                    console.log(`Progress: ${((currentTime / duration) * 100).toFixed(1)}%`);
-                  }}
-                  onEnded={() => {
-                    console.log('Audio playback ended');
-                    // Optionally auto-close modal after a delay
-                    setTimeout(() => {
-                      handleCloseModal();
-                    }, 2000);
-                  }}
-                  onError={(error) => {
-                    console.error('Audio error:', error);
-                  }}
-                  className="border border-gray-200 dark:border-gray-600"
-                />
-              </div>
-
-              {/* Download Link */}
-              <div className="text-center">
-                <a
-                  href={currentAudio.audio}
-                  download
-                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                >
-                  <Volume2 className="w-4 h-4 mr-2" />
-                  Download Audio
-                </a>
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                onClick={handleCloseModal}
-                variant="outline"
-                className="px-4 py-2"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CATIAudioPlayerModal
+        isOpen={showAudioModal}
+        onClose={handleCloseModal}
+        audioUrl={currentAudio ? fixAudioUrl(currentAudio.audio) : ''}
+        customFields={currentAudio ? [
+          { label: 'Server Id', value: currentAudio.id },
+          { label: 'Interview Date', value: currentAudio.interview_date },
+          { label: 'AC Code', value: currentAudio.ac_code },
+          { label: 'AC Name', value: currentAudio.ac_name }
+        ] : []}
+        title="Interview Audio Player"
+      />
 
       <style jsx>{`
         .main-container {
