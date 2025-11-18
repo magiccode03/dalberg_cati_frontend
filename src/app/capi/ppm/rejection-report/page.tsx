@@ -1130,7 +1130,6 @@ export default function RejectionReportPage() {
                   <th className="text-center">Interviewer ID</th>
                   <th className="text-center">Interview Duration</th>
                   <th className="text-center">Respondent Name</th>
-                  <th className="text-center">Respondent Mobile</th>
                   <th className="text-center">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
                   <th className="text-center">Audio Fail Reason</th>
