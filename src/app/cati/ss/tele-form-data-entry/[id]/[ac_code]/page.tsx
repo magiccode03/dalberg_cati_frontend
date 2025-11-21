@@ -64,7 +64,7 @@ export default function TeleFormV2Page() {
   const params = useParams();
   const interviewId = params.id as string;
   const acCode = params.ac_code as string;
-  
+
   const [language, setLanguage] = useState<string>('english');
   const [timer, setTimer] = useState<number>(0);
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -82,7 +82,7 @@ export default function TeleFormV2Page() {
   const [useIframe, setUseIframe] = useState(false);
   const [instanceData, setInstanceData] = useState<any>({});
   const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false);
-  
+
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newToast = {
@@ -94,7 +94,7 @@ export default function TeleFormV2Page() {
     };
     setToasts(prev => [...prev, newToast]);
   };
-  
+
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
@@ -115,20 +115,20 @@ export default function TeleFormV2Page() {
     console.log('Instance data for audio:', instanceData);
     console.log('Audio URL field:', instanceData.audio_url);
     console.log('Audio file field:', instanceData.audio_file);
-    
+
     // For CATI, use the audio_url field directly
     if (instanceData.audio_url) {
       console.log('Using audio_url:', instanceData.audio_url);
       return instanceData.audio_url;
     }
-    
+
     // Fallback to audio_file if audio_url is not available
     if (instanceData.audio_file) {
       const constructedUrl = `https://s-ct3.sarv.com/Audio/v1/recording?data={"userId":"50345024","token":"6JExgLsg6Vlsp5424S9U","file":"${instanceData.audio_file}"}`;
       console.log('Using constructed audio URL:', constructedUrl);
       return constructedUrl;
     }
-    
+
     console.log('No audio URL available');
     return null;
   };
@@ -147,7 +147,7 @@ export default function TeleFormV2Page() {
         console.error('Error loading teleform user data:', err);
       }
     }
-    
+
     // Load data entry user data
     const dataEntryData = localStorage.getItem('data_entry_user_data');
     if (dataEntryData) {
@@ -174,7 +174,7 @@ export default function TeleFormV2Page() {
     let ticking = false;
     let originalTop = 0;
     let isInitialized = false;
-    
+
     const handleScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
@@ -185,10 +185,10 @@ export default function TeleFormV2Page() {
               originalTop = rect.top + window.scrollY;
               isInitialized = true;
             }
-            
+
             const currentScrollY = window.scrollY;
             const rect = audioPlayerRef.current.getBoundingClientRect();
-            
+
             // Only become sticky if we've scrolled past the original position
             // and the element is not in its original position
             const shouldBeSticky = currentScrollY > (originalTop - 64) && rect.top <= 64;
@@ -227,11 +227,11 @@ export default function TeleFormV2Page() {
       }
 
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         setInstanceData(data.data);
         console.log('Instance data loaded:', data.data);
-        
+
         // Load existing form data if available
         loadExistingFormData(data.data);
       } else {
@@ -255,13 +255,13 @@ export default function TeleFormV2Page() {
   const transformApiDataToFormData = (apiData: Record<string, any>): Record<string, any> => {
     const formData: Record<string, any> = {};
     const checkboxFields: Record<string, string[]> = {};
-    
+
     // Get all field tags from form config to know which fields to load
     const formFieldTags = new Set<string>();
     currentFormConfig.forEach(field => {
       formFieldTags.add(field.tag);
     });
-    
+
     // First pass: identify checkbox fields and collect their values
     Object.keys(apiData).forEach(key => {
       // Check if this is a checkbox option field (pattern: fieldName_optionValue, e.g., q10_99, q8_2)
@@ -270,12 +270,12 @@ export default function TeleFormV2Page() {
         const baseFieldName = checkboxMatch[1];
         const optionValue = checkboxMatch[2];
         const fieldValue = apiData[key];
-        
+
         // Only process if this base field is a checkbox in the form config
-        const checkboxField = currentFormConfig.find(field => 
+        const checkboxField = currentFormConfig.find(field =>
           field.tag === baseFieldName && field.type === 'checkbox'
         );
-        
+
         if (checkboxField && fieldValue === 1) {
           // This is a checked checkbox option
           if (!checkboxFields[baseFieldName]) {
@@ -285,14 +285,14 @@ export default function TeleFormV2Page() {
         }
       }
     });
-    
+
     // Second pass: build form data - only load fields that are in the form config
     Object.keys(apiData).forEach(key => {
       // Skip checkbox option fields (they'll be handled by checkboxFields)
       const checkboxMatch = key.match(/^(.+)_(\d+)$/);
       if (checkboxMatch) {
         const baseFieldName = checkboxMatch[1];
-        const isCheckboxField = currentFormConfig.some(field => 
+        const isCheckboxField = currentFormConfig.some(field =>
           field.tag === baseFieldName && field.type === 'checkbox'
         );
         if (isCheckboxField) {
@@ -300,7 +300,7 @@ export default function TeleFormV2Page() {
           return;
         }
       }
-      
+
       // Only load fields that are in the form configuration
       if (formFieldTags.has(key) && apiData[key] !== undefined) {
         if (apiData[key] === null) {
@@ -310,14 +310,14 @@ export default function TeleFormV2Page() {
         }
       }
     });
-    
+
     // Add checkbox fields as arrays (only if they're in form config)
     Object.keys(checkboxFields).forEach(baseFieldName => {
       if (formFieldTags.has(baseFieldName)) {
         formData[baseFieldName] = checkboxFields[baseFieldName];
       }
     });
-    
+
     return formData;
   };
 
@@ -329,20 +329,20 @@ export default function TeleFormV2Page() {
     // Transform API data format to form data format (especially checkbox fields)
     // This function only loads fields that are defined in the form configuration
     const transformedData = transformApiDataToFormData(data);
-    
+
     console.log('Loaded form fields from database (only fields used in form):', transformedData);
     console.log('Total form fields loaded:', Object.keys(transformedData).length);
-    
+
     // Set form data directly - this will trigger conditional field evaluation
     // Conditional fields will show/hide based on these existing values (edit form behavior)
     // DO NOT apply clearing rules here - let user see existing data first
     setFormData(transformedData);
-    
+
     // Mark initial load as complete after a short delay to allow form to render
     setTimeout(() => {
       setIsInitialLoadComplete(true);
     }, 100);
-    
+
     console.log('Form data loaded (only form config fields, no clearing rules applied on initial load)');
     console.log('Conditional fields will now evaluate based on existing values for edit mode');
   };
@@ -357,7 +357,7 @@ export default function TeleFormV2Page() {
   const replaceLabelPlaceholders = (label: string, acCode: string): string => {
     const mlaMpInfo = getMlaMpData(acCode);
     if (!mlaMpInfo) return label;
-    
+
     return label
       .replace(/\{\{mp_name\}\}/g, `"${mlaMpInfo.mp_name}"`)
       .replace(/\{\{mla_name\}\}/g, `"${mlaMpInfo.mla_name}"`);
@@ -367,7 +367,7 @@ export default function TeleFormV2Page() {
   const getPartyOptions = (acCode: string): FormOption[] => {
     const acCodeNum = parseInt(acCode);
     const acPartyData = partyData.ac_data[acCodeNum.toString() as keyof typeof partyData.ac_data];
-    
+
     if (!acPartyData) {
       // Return default party options when specific AC data is not available
       return [
@@ -423,7 +423,7 @@ export default function TeleFormV2Page() {
         }
       ];
     }
-    
+
     return acPartyData.parties.map((party: any) => ({
       label: language === 'bengali' ? party.party_name_bangla : party.party_name_english,
       value: party.party_code.toString(),
@@ -434,14 +434,14 @@ export default function TeleFormV2Page() {
   // Get caste options based on selected religion
   const getCasteOptions = (religionValue: string): FormOption[] => {
     if (!religionValue) return [];
-    
+
     const religionData = casteOptions[religionValue as keyof typeof casteOptions];
     if (!religionData || !religionData.castes) return [];
-    
+
     return religionData.castes.map((caste: any) => ({
-      label: language === 'bengali' ? caste.caste_name_bangla : 
-             language === 'hindi' ? caste.caste_name_hindi : 
-             caste.caste_name_english,
+      label: language === 'bengali' ? caste.caste_name_bangla :
+        language === 'hindi' ? caste.caste_name_hindi :
+          caste.caste_name_english,
       value: caste.caste_code.toString(),
       tag: `caste_${caste.caste_code}`
     })).sort((a: FormOption, b: FormOption) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }));
@@ -451,11 +451,11 @@ export default function TeleFormV2Page() {
   // This function applies clearing rules defined in form config (e.g., when number_status is 3, clear consent, resp_age, etc.)
   const applyClearingRulesToData = (data: Record<string, any>, formConfigToUse?: FormField[]): Record<string, any> => {
     const clearedData = { ...data };
-    
+
     // Use provided config or fall back to currentFormConfig
     // We can't use processedFormConfig here as it depends on formData
     const configToUse = formConfigToUse || currentFormConfig;
-    
+
     // Iterate through all fields in the form config
     configToUse.forEach((field) => {
       // Apply clearing rules for radio fields
@@ -464,7 +464,7 @@ export default function TeleFormV2Page() {
         if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
           // Find the option that matches the value
           let selectedOption = null;
-          
+
           // Handle both array and string options
           if (Array.isArray(field.options)) {
             selectedOption = field.options.find(opt => opt.value === String(fieldValue));
@@ -475,7 +475,7 @@ export default function TeleFormV2Page() {
               selectedOption = partyOptions.find(opt => opt.value === String(fieldValue));
             }
           }
-          
+
           if (selectedOption && field.rules.clearFields[selectedOption.tag]) {
             // Clear the fields specified in the rules
             field.rules.clearFields[selectedOption.tag].forEach((fieldToClear: string) => {
@@ -486,7 +486,7 @@ export default function TeleFormV2Page() {
         }
       }
     });
-    
+
     return clearedData;
   };
 
@@ -494,21 +494,21 @@ export default function TeleFormV2Page() {
   const processFormConfig = (config: FormField[]): FormField[] => {
     return config.map(field => {
       const processedField = { ...field };
-      
+
       // Replace placeholders in label
       processedField.label = replaceLabelPlaceholders(field.label, acCode);
-      
+
       // Handle dynamic options for party data
       if (typeof field.options === 'string' && field.options === `party_2021_q5.[ac_code]`) {
         processedField.options = getPartyOptions(acCode);
       }
-      
+
       // Handle dynamic options for caste data
       if (typeof field.options === 'string' && field.options === `caste-options[resp_religion.value].castes`) {
         const religionValue = formData.resp_religion;
         processedField.options = getCasteOptions(religionValue);
       }
-      
+
       return processedField;
     });
   };
@@ -521,14 +521,14 @@ export default function TeleFormV2Page() {
   // Evaluate conditional expressions with optional data parameter
   const evaluateCondition = (condition: string, data?: Record<string, any>): boolean => {
     if (!condition) return true;
-    
+
     // Use provided data or fall back to current formData
     const dataToUse = data || formData;
-    
+
     try {
       // Replace field names with their values
       let expr = condition;
-      
+
       // Handle MLA/MP data access pattern: mla-mp-ac-data.[ac_code].bye_poll === true
       const mlaMpDataPattern = /mla-mp-ac-data\.\[ac_code\]\.(\w+)\s*(===|!==)\s*(true|false)/g;
       expr = expr.replace(mlaMpDataPattern, (match, fieldName, operator, expectedValue) => {
@@ -542,14 +542,14 @@ export default function TeleFormV2Page() {
           return 'false';
         }
         const expectedBool = expectedValue === 'true';
-        
+
         if (operator === '===') {
           return (fieldValue === expectedBool).toString();
         } else {
           return (fieldValue !== expectedBool).toString();
         }
       });
-      
+
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
@@ -560,7 +560,7 @@ export default function TeleFormV2Page() {
         const numValue = parseInt(fieldValue);
         const compareValue = parseInt(value);
         if (isNaN(numValue)) return 'false';
-        
+
         switch (operator) {
           case '>=': return (numValue >= compareValue).toString();
           case '<=': return (numValue <= compareValue).toString();
@@ -569,7 +569,7 @@ export default function TeleFormV2Page() {
           default: return 'false';
         }
       });
-      
+
       // Handle string comparisons (===, !==)
       const stringPattern = /(\w+)\s*(===|!==)\s*'(\d+)'/g;
       expr = expr.replace(stringPattern, (match, field, operator, value) => {
@@ -581,14 +581,14 @@ export default function TeleFormV2Page() {
           return operator === '!==' ? 'true' : 'false';
         }
         const stringValue = String(fieldValue);
-        
+
         if (operator === '===') {
           return (stringValue === value).toString();
         } else {
           return (stringValue !== value).toString();
         }
       });
-      
+
       // Handle array includes
       const includesPattern = /(\w+)\.includes\('(\d+)'\)/g;
       expr = expr.replace(includesPattern, (match, field, value) => {
@@ -596,10 +596,10 @@ export default function TeleFormV2Page() {
         if (!Array.isArray(fieldValue)) return 'false';
         return fieldValue.includes(value).toString();
       });
-      
+
       // Handle && and || operators
       expr = expr.replace(/&&/g, ' && ').replace(/\|\|/g, ' || ');
-      
+
       // Safely evaluate
       return eval(expr);
     } catch (err) {
@@ -630,7 +630,7 @@ export default function TeleFormV2Page() {
       });
       return;
     }
-    
+
     // Evaluate current visibility for all conditional fields using current formData
     const currentVisibility: Record<string, boolean> = {};
     processedFormConfig.forEach(field => {
@@ -638,35 +638,35 @@ export default function TeleFormV2Page() {
         currentVisibility[field.tag] = isFieldVisible(field, formData);
       }
     });
-    
+
     // Check if any fields transitioned from visible to hidden
     let hasFieldsToClear = false;
     const fieldsToClear: string[] = [];
-    
+
     processedFormConfig.forEach(field => {
       if (field.conditional) {
         const wasVisible = previousVisibilityRef.current[field.tag] ?? true;
         const shouldBeVisible = currentVisibility[field.tag];
-        
+
         // If field transitioned from visible to hidden and has a value, mark for clearing
         if (wasVisible && !shouldBeVisible) {
           const fieldValue = formData[field.tag];
-          const hasValue = fieldValue !== undefined && 
-                          fieldValue !== null && 
-                          fieldValue !== '' && 
-                          !(Array.isArray(fieldValue) && fieldValue.length === 0);
-          
+          const hasValue = fieldValue !== undefined &&
+            fieldValue !== null &&
+            fieldValue !== '' &&
+            !(Array.isArray(fieldValue) && fieldValue.length === 0);
+
           if (hasValue) {
             hasFieldsToClear = true;
             fieldsToClear.push(field.tag);
           }
         }
-        
+
         // Update visibility tracking with current visibility
         previousVisibilityRef.current[field.tag] = shouldBeVisible;
       }
     });
-    
+
     // Clear fields that became hidden
     if (hasFieldsToClear) {
       setFormData(prev => {
@@ -693,7 +693,7 @@ export default function TeleFormV2Page() {
   const handleInputChange = (fieldTag: string, value: any, field: FormField) => {
     setFormData(prev => {
       const newData = { ...prev, [fieldTag]: value };
-      
+
       // Clear validation error for this field when user starts typing
       if (value && value !== '') {
         setValidationErrors(prev => {
@@ -702,19 +702,19 @@ export default function TeleFormV2Page() {
           return newErrors;
         });
       }
-      
+
       // Clear caste field when religion changes
       if (fieldTag === 'resp_religion') {
         newData.resp_caste_jati = '';
         newData.resp_caste_jati_oth = '';
       }
-      
+
       // Apply clearing rules ONLY when user explicitly changes this field
       // This ensures clearing happens in real-time when user makes changes
       if (field.rules?.clearFields && field.type === 'radio') {
         const clearRules = field.rules.clearFields;
         const selectedOption = field.options?.find(opt => opt.value === value);
-        
+
         if (selectedOption && clearRules[selectedOption.tag]) {
           console.log(`User changed ${fieldTag} to ${value}, applying clearing rules for ${selectedOption.tag}`);
           clearRules[selectedOption.tag].forEach(fieldToClear => {
@@ -724,12 +724,12 @@ export default function TeleFormV2Page() {
           });
         }
       }
-      
+
       // Handle excludeOptions logic - clear dependent field if same value is selected
       if (field.rules?.excludeOptions && field.type === 'radio') {
         const excludeField = field.rules.excludeOptions;
         const currentExcludeValue = newData[excludeField];
-        
+
         console.log('ExcludeOptions Debug:', {
           fieldTag,
           value,
@@ -737,14 +737,14 @@ export default function TeleFormV2Page() {
           currentExcludeValue,
           shouldClear: currentExcludeValue && ['1', '2', '3', '4'].includes(value) && value === currentExcludeValue
         });
-        
+
         // If the selected value in current field matches the value in exclude field, clear the exclude field
         if (currentExcludeValue && ['1', '2', '3', '4'].includes(value) && value === currentExcludeValue) {
           console.log('Clearing field:', excludeField);
           newData[excludeField] = '';
         }
       }
-      
+
       return newData;
     });
   };
@@ -756,30 +756,30 @@ export default function TeleFormV2Page() {
       const exclusiveOptions = field.rules?.exclusiveOptions || [];
       const isExclusive = exclusiveOptions.includes(optionValue);
       const maxSelections = field.maxSelections || 999;
-      
+
       let newValues: string[];
-      
+
       if (isExclusive && checked) {
         // Selecting exclusive option - clear all others
         newValues = [optionValue];
       } else if (checked) {
         // Selecting regular option - remove exclusive options
         const filteredValues = currentValues.filter(v => !exclusiveOptions.includes(v));
-        
+
         // Check max selection limit
         if (filteredValues.length >= maxSelections) {
           showToast(`You can select a maximum of ${maxSelections} options.`, 'warning');
           return prev;
         }
-        
+
         newValues = [...filteredValues, optionValue];
       } else {
         // Unchecking
         newValues = currentValues.filter(v => v !== optionValue);
       }
-      
+
       const newData = { ...prev, [fieldTag]: newValues };
-      
+
       // Clear validation error for this field when user selects an option
       if (newValues.length > 0) {
         setValidationErrors(prev => {
@@ -788,7 +788,7 @@ export default function TeleFormV2Page() {
           return newErrors;
         });
       }
-      
+
       // Handle clearing of "Others" text fields
       if (field.rules?.showFields) {
         Object.entries(field.rules.showFields).forEach(([optTag, fieldsToShow]) => {
@@ -800,7 +800,7 @@ export default function TeleFormV2Page() {
           }
         });
       }
-      
+
       return newData;
     });
   };
@@ -810,14 +810,14 @@ export default function TeleFormV2Page() {
   // The user already applied clearing rules when they changed the field, so data is already correct
   const transformFormDataForSubmission = (data: Record<string, any>) => {
     const transformed: Record<string, any> = {};
-    
+
     // Get all fields from formData to include ALL fields, not just form config fields
     const allFields = new Set<string>();
-    
+
     // Collect all fields from form config
     processedFormConfig.forEach((field) => {
       allFields.add(field.tag);
-      
+
       if (field.type === 'checkbox' && field.options) {
         // For checkbox fields, also include all checkbox option fields
         field.options.forEach((option) => {
@@ -825,13 +825,13 @@ export default function TeleFormV2Page() {
         });
       }
     });
-    
+
     // Also collect all fields from the data itself (includes fields from API response)
     // This ensures fields like resp_age, resp_gender, etc. are included even if not in form config
     Object.keys(data).forEach(key => {
       allFields.add(key);
     });
-    
+
     // Now transform all fields
     allFields.forEach((fieldTag) => {
       // Check if this is a checkbox option field (e.g., q7_1, q8_2, q10_99)
@@ -840,7 +840,7 @@ export default function TeleFormV2Page() {
         const baseFieldTag = checkboxMatch[1];
         const optionValue = checkboxMatch[2];
         const field = processedFormConfig.find(f => f.tag === baseFieldTag);
-        
+
         if (field && field.type === 'checkbox') {
           const fieldValue = data[baseFieldTag];
           if (Array.isArray(fieldValue)) {
@@ -868,7 +868,7 @@ export default function TeleFormV2Page() {
         // Regular field (not a checkbox option)
         const field = processedFormConfig.find(f => f.tag === fieldTag);
         const fieldValue = data[fieldTag];
-        
+
         if (field && field.type === 'checkbox') {
           // Checkbox base field - handled above via option fields
           return;
@@ -898,7 +898,7 @@ export default function TeleFormV2Page() {
         }
       }
     });
-    
+
     console.log('Transformed data for submission (all fields included):', transformed);
     return transformed;
   };
@@ -910,10 +910,10 @@ export default function TeleFormV2Page() {
   //     if (!token || !interviewId) return;
 
   //     const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
   //     // Transform form data to match backend expectations
   //     const transformedData = transformFormDataForSubmission(formData);
-      
+
   //     await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
   //       method: 'PUT',
   //       headers: {
@@ -928,7 +928,7 @@ export default function TeleFormV2Page() {
   //         data_entry_status: 1
   //       })
   //     });
-      
+
   //     console.log('Auto-saved draft');
   //   } catch (error) {
   //     console.error('Auto-save error:', error);
@@ -940,11 +940,11 @@ export default function TeleFormV2Page() {
   //   if (autoSaveTimeoutRef.current) {
   //     clearTimeout(autoSaveTimeoutRef.current);
   //   }
-    
+
   //   autoSaveTimeoutRef.current = setTimeout(() => {
   //     autoSaveForm();
   //   }, 1000);
-    
+
   //   return () => {
   //     if (autoSaveTimeoutRef.current) {
   //       clearTimeout(autoSaveTimeoutRef.current);
@@ -956,7 +956,7 @@ export default function TeleFormV2Page() {
   const saveFormData = async (finalSubmit: number) => {
     try {
       setIsSubmitting(true);
-      
+
       const token = localStorage.getItem('accessToken');
       if (!token) {
         showToast('No authentication token found', 'error');
@@ -966,7 +966,7 @@ export default function TeleFormV2Page() {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const currentTime = new Date().toLocaleString();
-      
+
       // Determine status based on submission type
       // 1 = Call initiated, 2 = Successful submit, 3 = Partial submit, 4 = Draft
       let status = 4; // Default to draft
@@ -975,10 +975,10 @@ export default function TeleFormV2Page() {
       } else if (finalSubmit === 0) {
         status = 3; // Partial submit (call dropped)
       }
-      
+
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
-      
+
       const submissionData = {
         ...transformedData,
         status: status,
@@ -989,7 +989,7 @@ export default function TeleFormV2Page() {
         user_localdatetime: currentTime,
         data_entry_status: 1,
       };
-      
+
       const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}/data-entry-teleform`, {
         method: 'PUT',
         headers: {
@@ -998,9 +998,9 @@ export default function TeleFormV2Page() {
         },
         body: JSON.stringify(submissionData)
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         return true;
       } else {
@@ -1019,12 +1019,12 @@ export default function TeleFormV2Page() {
   // Validate all required fields
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
-    
+
     // Get all visible fields that are required
     processedFormConfig.forEach((field) => {
       if (field.required && isFieldVisible(field)) {
         const fieldValue = formData[field.tag];
-        
+
         // Check if field is empty
         if (field.type === 'checkbox') {
           if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
@@ -1037,7 +1037,7 @@ export default function TeleFormV2Page() {
         }
       }
     });
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -1046,10 +1046,10 @@ export default function TeleFormV2Page() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form before submission
     const validation = validateForm();
-    
+
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
@@ -1057,13 +1057,13 @@ export default function TeleFormV2Page() {
       processedFormConfig.forEach((field) => {
         if (field.required && isFieldVisible(field)) {
           const fieldValue = formData[field.tag];
-          const isEmpty = field.type === 'checkbox' 
+          const isEmpty = field.type === 'checkbox'
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
             : fieldValue === undefined || fieldValue === null || fieldValue === '';
-          
+
           // Mark all required fields as touched when form is submitted
           touched.add(field.tag);
-          
+
           if (isEmpty) {
             errorFields.add(field.tag);
           }
@@ -1071,35 +1071,35 @@ export default function TeleFormV2Page() {
       });
       setValidationErrors(errorFields);
       setTouchedFields(touched);
-      
+
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
-      
+
       // Scroll to first error
       const firstErrorField = processedFormConfig.find(
-        field => field.required && isFieldVisible(field) && 
-        (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
+        field => field.required && isFieldVisible(field) &&
+          (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
-      
+
       if (firstErrorField) {
         const element = document.getElementById(`${firstErrorField.tag}_container`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
-      
+
       return;
     }
-    
+
     // Clear validation errors if form is valid
     setValidationErrors(new Set());
-    
+
     showToast('Saving form data...', 'info');
-    
+
     const success = await saveFormData(1);
-    
+
     if (success) {
       showToast('Form updated successfully! Data has been saved.', 'success');
-      
+
       setTimeout(() => {
         if (dataEntryUserId) {
           router.push(`/cati/ss/data-entry-list/${dataEntryUserId}`);
@@ -1128,12 +1128,12 @@ export default function TeleFormV2Page() {
 
   const handleCallDropped = async () => {
     showToast('Saving partial data...', 'info');
-    
+
     const success = await saveFormData(0);
-    
+
     if (success) {
       showToast('Call dropped. Partial data has been saved.', 'success');
-      
+
       setTimeout(() => {
         if (dataEntryUserId) {
           router.push(`/cati/ss/data-entry-list/${dataEntryUserId}`);
@@ -1165,30 +1165,28 @@ export default function TeleFormV2Page() {
     if (!isFieldVisible(field)) return null;
 
     const fieldValue = formData[field.tag] || (field.type === 'checkbox' ? [] : '');
-    const isEmpty = field.type === 'checkbox' 
+    const isEmpty = field.type === 'checkbox'
       ? !Array.isArray(fieldValue) || fieldValue.length === 0
       : fieldValue === undefined || fieldValue === null || fieldValue === '';
-    
+
     // Show error if field is in validationErrors OR if it's required, visible, empty, and has been touched
     const hasError = validationErrors.has(field.tag) || (field.required && isEmpty && touchedFields.has(field.tag));
 
     switch (field.type) {
       case 'radio':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
-              hasError 
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${hasError
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20'
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-            }`}
+              }`}
           >
-            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
-              hasError 
-                ? 'text-red-700 dark:text-red-300' 
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${hasError
+                ? 'text-red-700 dark:text-red-300'
                 : 'text-blue-600 dark:text-blue-400'
-            }`}>
+              }`}>
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
@@ -1226,20 +1224,18 @@ export default function TeleFormV2Page() {
 
       case 'checkbox':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
-              hasError 
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${hasError
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20'
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-            }`}
+              }`}
           >
-            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
-              hasError 
-                ? 'text-red-700 dark:text-red-300' 
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${hasError
+                ? 'text-red-700 dark:text-red-300'
                 : 'text-blue-600 dark:text-blue-400'
-            }`}>
+              }`}>
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
@@ -1265,20 +1261,18 @@ export default function TeleFormV2Page() {
 
       case 'text':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
-              hasError 
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${hasError
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20'
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-            }`}
+              }`}
           >
-            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
-              hasError 
-                ? 'text-red-700 dark:text-red-300' 
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${hasError
+                ? 'text-red-700 dark:text-red-300'
                 : 'text-blue-600 dark:text-blue-400'
-            }`}>
+              }`}>
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
@@ -1317,20 +1311,18 @@ export default function TeleFormV2Page() {
 
       case 'number':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
-              hasError 
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${hasError
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20'
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-            }`}
+              }`}
           >
-            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
-              hasError 
-                ? 'text-red-700 dark:text-red-300' 
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${hasError
+                ? 'text-red-700 dark:text-red-300'
                 : 'text-blue-600 dark:text-blue-400'
-            }`}>
+              }`}>
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
@@ -1371,20 +1363,18 @@ export default function TeleFormV2Page() {
 
       case 'datetime-local':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${
-              hasError 
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20' 
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-3 sm:mb-4 md:mb-6 p-2 sm:p-3 md:p-4 rounded-lg border-2 transition-all duration-300 ${hasError
+                ? 'border-red-500 bg-red-50 dark:bg-red-900/20 shadow-lg shadow-red-200 dark:shadow-red-900/20'
                 : 'border-transparent hover:border-gray-200 dark:hover:border-gray-700'
-            }`}
+              }`}
           >
-            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${
-              hasError 
-                ? 'text-red-700 dark:text-red-300' 
+            <Text className={`text-sm sm:text-base font-medium mb-2 sm:mb-3 leading-relaxed ${hasError
+                ? 'text-red-700 dark:text-red-300'
                 : 'text-blue-600 dark:text-blue-400'
-            }`}>
+              }`}>
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
@@ -1474,12 +1464,31 @@ export default function TeleFormV2Page() {
             <div>
               <Heading level={4} className="text-base sm:text-lg md:text-xl">Edit Data Entry Form - WB Opinion Poll CATI 2025</Heading>
               <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
-                <div>Interview ID: <span className="font-mono font-semibold">{interviewId}</span></div>
-                <div>AC Code: <span className="font-semibold">{acCode}</span></div>
-                {instanceData.ac_name && (
-                  <div>AC Name: <span className="font-semibold">{instanceData.ac_name}</span></div>
-                )}
+                <div className="flex justify-between gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-0.5">
+                    <div>
+                      Server ID: <span className="font-mono font-semibold">{interviewId}</span>
+                    </div>
+                    <div>
+                      Interview ID: <span className="font-mono font-semibold">{instanceData.teleform_user_id}</span>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-0.5">
+                    <div>
+                      AC Code: <span className="font-semibold">{acCode}</span>
+                    </div>
+                    {instanceData.ac_name && (
+                      <div>
+                        AC Name: <span className="font-semibold">{instanceData.ac_name}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+
             </div>
             <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
               {/* Language Selector */}
@@ -1506,11 +1515,10 @@ export default function TeleFormV2Page() {
       {/* Sticky Audio Player */}
       <div
         ref={audioPlayerRef}
-        className={`${
-          isSticky 
-            ? 'fixed top-16 left-0 right-0 z-[60] shadow-lg transform translate-y-0' 
+        className={`${isSticky
+            ? 'fixed top-16 left-0 right-0 z-[60] shadow-lg transform translate-y-0'
             : 'relative mb-4'
-        } transition-transform duration-200 ease-out`}
+          } transition-transform duration-200 ease-out`}
       >
         <Card className={`${isSticky ? 'rounded-none' : ''}`}>
           <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
@@ -1599,7 +1607,7 @@ export default function TeleFormV2Page() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* Alternative Options */}
                 <div className="mt-4 flex justify-center items-center">
                   {!useIframe && audioError && (
@@ -1636,11 +1644,11 @@ export default function TeleFormV2Page() {
             </Heading>
             <div className="mb-3 sm:mb-4">
               <Text className="text-sm sm:text-base leading-relaxed font-medium text-blue-600 dark:text-blue-400 mb-3 sm:mb-4">
-                {language === 'hindi' 
+                {language === 'hindi'
                   ? `नमस्ते, मेरा नाम ${teleformUserName || '[enumerator name]'} है। हम कन्वर्जेंट नाम की एक संस्था से बात कर रहे हैं। हम पश्चिम बंगाल में लोगों से सरकार और राजनीति के बारे में उनकी राय जानने के लिए एक सर्वे कर रहे हैं। मैं आपसे कुछ सवाल पूछूँगा/पूछूँगी। आपके जवाब पूरी तरह गोपनीय रखे जाएंगे — किसी को भी आपकी जानकारी नहीं बताई जाएगी। ये सर्वे लगभग 5 से 10 मिनट का है, और आपकी सच्ची राय हमारे लिए बहुत ज़रूरी है।`
                   : language === 'bengali'
-                  ? `নমস্কার, আমার নাম ${teleformUserName || '[enumerator name]'}। আমরা কনভার্জেন্ট থেকে এসেছি, একটি স্বতন্ত্র গবেষণা সংস্থা। আমরা পশ্চিমবঙ্গে সামাজিক ও রাজনৈতিক বিষয়ে একটি সমীক্ষা পরিচালনা করছি, হাজার হাজার মানুষের সাক্ষাৎকার নিচ্ছি। আমি আপনাকে সরকারের কর্মক্ষমতা এবং আপনার পছন্দ সম্পর্কে কিছু প্রশ্ন জিজ্ঞাসা করব। আপনার উত্তরগুলি কঠোরভাবে গোপনীয় থাকবে এবং শুধুমাত্র অন্যদের সাথে মিলিয়ে বিশ্লেষণ করা হবে। কোনও ব্যক্তিগত বিবরণ কখনও শেয়ার করা হবে না। সমীক্ষাটি প্রায় ৫-১০ মিনিট সময় নেবে এবং আপনার সৎ মতামত আমাদের অত্যন্ত সাহায্য করবে।`
-                  : `Namaste, my name is ${teleformUserName || '[enumerator name]'}. We are from Convergent, an independent research organization. We are conducting a survey on social and political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about government performance and your preferences. Your responses will remain strictly confidential and will only be analysed in combination with others. No personal details will ever be shared. The survey will take about 5–10 minutes, and your honest opinions will greatly help us.`
+                    ? `নমস্কার, আমার নাম ${teleformUserName || '[enumerator name]'}। আমরা কনভার্জেন্ট থেকে এসেছি, একটি স্বতন্ত্র গবেষণা সংস্থা। আমরা পশ্চিমবঙ্গে সামাজিক ও রাজনৈতিক বিষয়ে একটি সমীক্ষা পরিচালনা করছি, হাজার হাজার মানুষের সাক্ষাৎকার নিচ্ছি। আমি আপনাকে সরকারের কর্মক্ষমতা এবং আপনার পছন্দ সম্পর্কে কিছু প্রশ্ন জিজ্ঞাসা করব। আপনার উত্তরগুলি কঠোরভাবে গোপনীয় থাকবে এবং শুধুমাত্র অন্যদের সাথে মিলিয়ে বিশ্লেষণ করা হবে। কোনও ব্যক্তিগত বিবরণ কখনও শেয়ার করা হবে না। সমীক্ষাটি প্রায় ৫-১০ মিনিট সময় নেবে এবং আপনার সৎ মতামত আমাদের অত্যন্ত সাহায্য করবে।`
+                    : `Namaste, my name is ${teleformUserName || '[enumerator name]'}. We are from Convergent, an independent research organization. We are conducting a survey on social and political issues in West Bengal, interviewing thousands of people. I will ask you a few questions about government performance and your preferences. Your responses will remain strictly confidential and will only be analysed in combination with others. No personal details will ever be shared. The survey will take about 5–10 minutes, and your honest opinions will greatly help us.`
                 }
               </Text>
             </div>
@@ -1691,8 +1699,8 @@ export default function TeleFormV2Page() {
         {/* Submit Buttons */}
         <Card className="p-3 sm:p-4 md:p-6">
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               size="lg"
               disabled={isSubmitting}
               className="w-full sm:w-auto sm:min-w-[150px] bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base"
@@ -1700,7 +1708,7 @@ export default function TeleFormV2Page() {
               <i className="fa fa-save mr-2"></i>
               {isSubmitting ? 'Updating...' : 'Update Form'}
             </Button>
-            <Button 
+            <Button
               type="button"
               onClick={handleCallDropped}
               size="lg"
@@ -1713,7 +1721,7 @@ export default function TeleFormV2Page() {
           </div>
         </Card>
       </form>
-      
+
       {/* Toast Container */}
       <ToastContainer
         toasts={toasts}

@@ -11,6 +11,7 @@ import { Phone, ArrowLeft, RefreshCw } from 'lucide-react';
 
 interface DataEntryItem {
   id: number;
+  teleform_user_id: number;
   data_entry_user_id: number;
   ac_code: number;
   ac_name: string;
@@ -113,6 +114,7 @@ export default function DataEntryListPage() {
         // Transform API data to our interface
         const dataEntryList = data.data.interviews.map((item: any) => ({
           id: item.id,
+          teleform_user_id: item.teleform_user_id,
           data_entry_user_id: item.data_entry_user_id,
           ac_code: item.ac_code,
           ac_name: item.ac_name,
@@ -249,7 +251,8 @@ export default function DataEntryListPage() {
             <Table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="px-2 md:px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left text-sm">ID</th>
+                  <th className="px-2 md:px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left text-sm">Server ID</th>
+                  <th className="px-2 md:px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left text-sm">Interview ID</th>
                   <th className="px-2 md:px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left text-sm">AC Code</th>
                   <th className="px-2 md:px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left text-sm">AC Name</th>
                   <th className="px-2 md:px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center text-sm">Action</th>
@@ -278,6 +281,9 @@ export default function DataEntryListPage() {
                     <tr key={dataEntry.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                       <td className="px-2 md:px-4 py-3 text-sm text-gray-900 dark:text-white font-mono font-semibold">
                         {dataEntry.id}
+                      </td>
+                      <td className="px-2 md:px-4 py-3 text-sm text-gray-900 dark:text-white font-mono font-semibold">
+                        {dataEntry.teleform_user_id}
                       </td>
                       <td className="px-2 md:px-4 py-3 text-sm text-gray-900 dark:text-white">
                         {dataEntry.ac_code}
