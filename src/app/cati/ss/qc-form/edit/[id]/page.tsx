@@ -1072,7 +1072,7 @@ export default function QCFormPage() {
                     <audio
                       controls
                       className="w-full"
-                      controlsList="nodownload noplaybackrate"
+                      controlsList="nodownload"
                       preload="metadata"
                       onError={handleAudioError}
                       onLoadStart={() => console.log('Audio loading started')}
