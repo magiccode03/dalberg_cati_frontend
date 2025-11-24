@@ -718,7 +718,13 @@ export default function QCFormPage() {
     // If qc_audio_status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
     if (qcAudioStatus === '1' || qcAudioStatus === '4') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
-      const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
+      // const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
+      const mandatoryBase = ['qc_q2', 'qc_q3', 'qc_q5'];
+      const mandatoryQuestions = [...mandatoryBase];
+      if (formData.qc_q4 !== undefined && formData.qc_q4 !== null && formData.qc_q4 !== '') {
+        // qc_q4 is present in the payload, make it mandatory in this check
+        mandatoryQuestions.push('qc_q4');
+      }
       
       for (const question of mandatoryQuestions) {
         if (formData[question] !== '1') {
