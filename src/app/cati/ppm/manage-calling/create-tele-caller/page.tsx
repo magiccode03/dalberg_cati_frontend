@@ -29,6 +29,7 @@ const teleCallerSchema = z.object({
   telecalling_group_id: z.string().min(1, 'Telecalling Group is required'),
   fill_form: z.boolean(),
   qc: z.boolean(),
+  data_entry: z.boolean(),
 });
 
 type TeleCallerFormData = z.infer<typeof teleCallerSchema>;
@@ -63,6 +64,7 @@ export default function CreateTeleCallerPage() {
       telecalling_group_id: '', // User must select from dropdown
       fill_form: false,
       qc: false,
+      data_entry: false,
     },
   });
 
@@ -152,6 +154,7 @@ export default function CreateTeleCallerPage() {
       form_data: 0,
       qc: data.qc ? 1 : 0,
       qc_recheck: 0,
+      data_entry: data.data_entry ? 1 : 0,
       supervisor_id: 1,
       agency_id: 1,
       telecalling_group_id: parseInt(data.telecalling_group_id),
@@ -359,6 +362,16 @@ export default function CreateTeleCallerPage() {
                       />
                       <label htmlFor="qc" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         QC User
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="data_entry"
+                        checked={watch('data_entry')}
+                        onCheckedChange={(checked) => setValue('data_entry', checked === true)}
+                      />
+                      <label htmlFor="data_entry" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Data Entry User
                       </label>
                     </div>
                   </div>
