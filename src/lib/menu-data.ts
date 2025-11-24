@@ -1550,6 +1550,14 @@ export const menuData: MenuItem[] = [
       // },
     ],
   },
+  {
+    id: 'cati-ppm-qc-data-entry-progress',
+    label: 'Data Entry Progress',
+    href: '/cati/ppm/data-entry-progress',
+    icon: 'BarChart3',
+    roles: ['ppm'],
+    system: 'cati',
+  },
   // {
   //   id: 'cati-ppm-upload',
   //   label: 'Upload',
