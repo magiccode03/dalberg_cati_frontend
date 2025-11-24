@@ -29,6 +29,7 @@ const teleCallerSchema = z.object({
   telecalling_group_id: z.string().min(1, 'Telecalling Group is required'),
   fill_form: z.boolean(),
   qc: z.boolean(),
+  data_entry: z.boolean(),
 });
 
 type TeleCallerFormData = z.infer<typeof teleCallerSchema>;
@@ -74,6 +75,7 @@ export default function EditTeleCallerPage() {
       telecalling_group_id: '', // Will be set from API data
       fill_form: false,
       qc: false,
+      data_entry: false,
     },
   });
 
@@ -166,6 +168,7 @@ export default function EditTeleCallerPage() {
         setValue('telecalling_group_id', data.telecalling_group_id ? data.telecalling_group_id.toString() : '');
         setValue('fill_form', data.fill_form === 1);
         setValue('qc', data.qc === 1);
+        setValue('data_entry', data.data_entry === 1);
       } else {
         setError(result.message || 'Failed to fetch telecaller data');
       }
@@ -197,6 +200,7 @@ export default function EditTeleCallerPage() {
         telecalling_group_id: parseInt(data.telecalling_group_id),
         fill_form: data.fill_form ? 1 : 0,
         qc: data.qc ? 1 : 0,
+        data_entry: data.data_entry ? 1 : 0, 
       };
 
       // Get auth token
@@ -415,6 +419,16 @@ export default function EditTeleCallerPage() {
                       />
                       <label htmlFor="qc" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         QC User
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="data_entry"
+                        checked={watch('data_entry')}
+                        onCheckedChange={(checked) => setValue('data_entry', checked === true)}
+                      />
+                      <label htmlFor="data_entry" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Data Entry User
                       </label>
                     </div>
                   </div>
