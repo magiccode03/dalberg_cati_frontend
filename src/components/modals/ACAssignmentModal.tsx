@@ -16,12 +16,11 @@ interface ACData {
   electorate: number;
   pc_code: number;
   pc_name: string;
-  total_data: number;
-  assigned_data: number;
-  pending_data: number;
-  complete_data: number;
-  data_available: number;
-  pending_for_assign: number;
+  total_assigned: number;
+  total_not_assigned: number;
+  total_pending: number;
+  total_pass: number;
+  total_fail: number;
 }
 
 interface ACAssignmentModalProps {
@@ -30,6 +29,7 @@ interface ACAssignmentModalProps {
   teleformUserId: number;
   telecallerName: string;
   onSuccess: () => void;
+  mode?: 'telecaller' | 'data_entry';
 }
 
 const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
@@ -38,6 +38,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   teleformUserId,
   telecallerName,
   onSuccess,
+  mode = 'telecaller',
 }) => {
   const [acList, setAcList] = useState<ACData[]>([]);
   const [allAcList, setAllAcList] = useState<ACData[]>([]); // Store all ACs for client-side filtering
@@ -95,18 +96,33 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const token = localStorage.getItem('accessToken');
       
-      const response = await fetch(`${apiUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // For data_entry users, use the unified-user-statistics endpoint with data_entry filter
+      const response = await (mode === 'data_entry'
+        ? fetch(`${apiUrl}/api/cati/unified-user-statistics?teleform_user_id=${teleformUserId}&data_entry=1`, {
+            method: 'GET',
+            headers: {
+              'accept': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+        : fetch(`${apiUrl}/api/cati/interviews/teleform-user/${teleformUserId}/statistics`, {
+            method: 'GET',
+            headers: {
+              'accept': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          })
+      );
 
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setUserStats(result.data);
+        if (mode === 'data_entry') {
+          // unified-user-statistics returns an array; pick first item
+          setUserStats(Array.isArray(result.data) ? result.data[0] : result.data);
+        } else {
+          setUserStats(result.data);
+        }
       }
     } catch (err) {
       console.error('Error fetching user statistics:', err);
@@ -127,7 +143,11 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
         limit: '1000', // Fetch all ACs at once
       });
 
-      const response = await fetch(`${apiUrl}/api/cati/ac-details?${params.toString()}`, {
+      // Use data-entry specific AC endpoint when mode === 'data_entry'
+      const endpoint = mode === 'data_entry'
+        ? `${apiUrl}/api/cati/ac-details/data-entry?${params.toString()}`
+        : `${apiUrl}/api/cati/ac-details?${params.toString()}`;
+      const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -143,7 +163,38 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       console.log('AC Details API Response:', data);
 
       if (data.success) {
-        const acData = Array.isArray(data.data?.data) ? data.data.data : [];
+        const acDataRaw = Array.isArray(data.data?.data) ? data.data.data : [];
+        // Normalize fields so UI can reuse the same ACData schema
+        const acData = acDataRaw.map((item: any) => {
+          const isDataEntry = mode === 'data_entry';
+          const dataEntryTotal = Number(item.data_entry_total_data ?? item.data_entry_total ?? 0);
+          const dataEntryAssigned = Number(item.data_entry_assigned_data ?? item.data_entry_assigned ?? 0);
+          const dataEntryPending = Number(item.data_entry_pending ?? item.data_entry_pending ?? 0);
+          const dataEntryComplete = Number(item.data_entry_complete_data ?? item.data_entry_complete ?? 0);
+
+          const total_assigned_val = isDataEntry ? dataEntryAssigned : (item.total_assigned ?? 0);
+          const total_pass_val = isDataEntry ? dataEntryComplete : (item.total_pass ?? 0);
+          const total_pending_val = isDataEntry ? dataEntryPending : (item.total_pending ?? 0);
+          const total_not_assigned_val = isDataEntry
+            ? Math.max(0, dataEntryTotal - dataEntryAssigned)
+            : (item.total_not_assigned ?? (item.total_assigned ? Math.max(0, (item.total_assigned - ((item.total_pass ?? 0) + (item.total_pending ?? 0)))) : 0));
+
+          return {
+            ac_code: item.ac_code,
+            ac_name: item.ac_name,
+            district_name: item.district_name || item.district || '',
+            zone_name: item.zone_name || '',
+            mla_name: item.mla_name || '',
+            electorate: item.electorate || 0,
+            pc_code: item.pc_code || 0,
+            pc_name: item.pc_name || '',
+            total_assigned: total_assigned_val,
+            total_not_assigned: total_not_assigned_val,
+            total_pass: total_pass_val,
+            total_pending: total_pending_val,
+            total_fail: item.total_fail ?? 0,
+          };
+        });
         setAllAcList(acData); // Store all ACs for client-side filtering
         setAcList(acData); // Initially show all ACs
         
@@ -192,12 +243,16 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     setShowUnassignModal(false);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        throw new Error('API URL not configured');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      if (!process.env.NEXT_PUBLIC_API_URL) {
+        console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
       }
 
-      const response = await fetch(`${apiUrl}/api/cati/ac-details/unassign-data`, {
+      const unassignEndpoint = mode === 'data_entry'
+        ? `${apiUrl}/api/cati/ac-details/data-entry/unassign-data`
+        : `${apiUrl}/api/cati/ac-details/unassign-data`;
+      console.log('Unassign endpoint chosen:', unassignEndpoint);
+      const response = await fetch(unassignEndpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -210,14 +265,17 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
       });
 
       if (response.ok) {
-        // Remove the unassigned AC from the local state immediately
+        // Remove the unassigned AC from the local state immediately (handle multiple shapes)
         setUserStats((prevStats: any) => {
-          if (!prevStats || !prevStats.ac_detail) return prevStats;
-          
-          return {
-            ...prevStats,
-            ac_detail: prevStats.ac_detail.filter((ac: any) => ac.ac_code !== acToUnassign.ac_code)
-          };
+          if (!prevStats) return prevStats;
+          const copy = { ...prevStats };
+          if (Array.isArray(copy.ac_detail)) {
+            copy.ac_detail = copy.ac_detail.filter((ac: any) => ac.ac_code !== acToUnassign.ac_code);
+          }
+          if (Array.isArray(copy.ac_wise_statistics)) {
+            copy.ac_wise_statistics = copy.ac_wise_statistics.filter((ac: any) => ac.ac_code !== acToUnassign.ac_code);
+          }
+          return copy;
         });
         
         // Refresh the data after successful unassignment
@@ -255,14 +313,19 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     setError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        throw new Error('API URL not configured');
-      }
+      // const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      // if (!apiUrl) {
+      //   throw new Error('API URL not configured');
+      // }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
 
       // Submit all selected ACs
+      const assignEndpoint = mode === 'data_entry'
+        ? `${apiUrl}/api/cati/ac-details/data-entry/assign-data`
+        : `${apiUrl}/api/cati/ac-details/assign-data`;
+      console.log('Assign endpoint chosen:', assignEndpoint);
       const promises = selectedAcs.map(ac => 
-        fetch(`${apiUrl}/api/cati/ac-details/assign-data`, {
+        fetch(assignEndpoint, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -302,7 +365,12 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
   };
 
   // Get assigned ACs from stats - filter out ACs with call_pending=0
-  const assignedACs = (userStats?.ac_detail || []).filter((ac: any) => ac.call_pending > 0);
+  // Support multiple stats shapes: ac_detail (telecaller), ac_wise_statistics (unified), ac_detail for QC as well
+  const userAcList = userStats?.ac_detail || userStats?.ac_wise_statistics || [];
+  const assignedACs = (userAcList || []).filter((ac: any) => {
+    const pending = ac.call_pending ?? ac.total_pending ?? ac.data_entry_pending ?? 0;
+    return pending > 0;
+  });
 
   return (
     <Modal
@@ -475,7 +543,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
                           <div className="text-right">
                             <div className="text-xs text-gray-500 dark:text-gray-400">Available</div>
                             <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {ac.pending_for_assign}
+                              {ac.total_not_assigned}
                             </div>
                           </div>
                         </div>

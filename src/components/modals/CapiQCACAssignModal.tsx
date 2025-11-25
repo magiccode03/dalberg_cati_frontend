@@ -246,9 +246,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     setError(null);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        throw new Error('API URL not configured');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      if (!process.env.NEXT_PUBLIC_API_URL) {
+        console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
       }
 
       // Submit all selected ACs
@@ -309,9 +309,9 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
     setShowConfirmModal(false);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiUrl) {
-        throw new Error('API URL not configured');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      if (!process.env.NEXT_PUBLIC_API_URL) {
+        console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
       }
 
       const response = await fetch(`${apiUrl}/api/capi/qc/unassign-ac`, {

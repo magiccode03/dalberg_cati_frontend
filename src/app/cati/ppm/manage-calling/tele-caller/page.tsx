@@ -109,7 +109,7 @@ const TeleUserInfoPage: React.FC = () => {
     expandedRows: new Set<number>(),
     isModalOpen: false,
     isQCModalOpen: false,
-    selectedTelecaller: null as {id: number, name: string} | null,
+    selectedTelecaller: null as {id: number, name: string, type?: 'telecaller' | 'qc_user' | 'data_entry'} | null,
   });
   
   // Use refs to prevent multiple calls
@@ -390,6 +390,9 @@ const TeleUserInfoPage: React.FC = () => {
       // Open the generic assignment modal for telecaller and data_entry users
       isModalOpen: user.user_type === 'telecaller' || user.user_type === 'data_entry',
     });
+    
+    // store user type on the selectedTelecaller for modal mode switching
+    updateState({ selectedTelecaller: { ...selectedTelecaller, type: user.user_type } });
   }, [updateState]);
 
   const handleModalClose = useCallback(() => {
@@ -986,11 +989,12 @@ const TeleUserInfoPage: React.FC = () => {
         {state.selectedTelecaller && (
           <>
             <ACAssignmentModal
-            isOpen={state.isModalOpen}
+              isOpen={state.isModalOpen}
               onClose={handleModalClose}
-            teleformUserId={state.selectedTelecaller.id}
-            telecallerName={state.selectedTelecaller.name}
+              teleformUserId={state.selectedTelecaller.id}
+              telecallerName={state.selectedTelecaller.name}
               onSuccess={handleAssignmentSuccess}
+              mode={state.selectedTelecaller?.type === 'data_entry' ? 'data_entry' : 'telecaller'}
             />
             <CatiQCACAssignModal
               isOpen={state.isQCModalOpen}
