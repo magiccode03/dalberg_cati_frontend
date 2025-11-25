@@ -18,7 +18,7 @@ interface UnifiedUserData {
   user_id: number;
   user_name: string;
   mobile_number: string;
-  user_type: 'telecaller' | 'qc_user';
+  user_type: 'telecaller' | 'qc_user' | 'data_entry';
   agency_id: number;
   agency_name: string;
   status: number;
@@ -30,6 +30,9 @@ interface UnifiedUserData {
   total_qc_pass?: number;
   total_qc_fail?: number;
   total_qc_pending?: number;
+  // For Data Entry users
+  data_entry_pass?: number;
+  data_entry_pending?: number;
   ac_wise_statistics: Array<{
     ac_code: number;
     ac_name: string;
@@ -41,6 +44,9 @@ interface UnifiedUserData {
     qc_pass?: number;
     qc_fail?: number;
     qc_pending?: number;
+    // For Data Entry users
+    data_entry_pass?: number;
+    data_entry_pending?: number;
   }>;
 }
 
@@ -123,6 +129,7 @@ const TeleUserInfoPage: React.FC = () => {
     { value: '', label: 'All Users' },
     { value: 'fill_form', label: 'Telecallers' },
     { value: 'qc', label: 'QC Users' },
+    { value: 'data_entry', label: 'Data Entry Users' },
   ], []);
 
   // Optimized state update helper
@@ -380,7 +387,8 @@ const TeleUserInfoPage: React.FC = () => {
     updateState({
       selectedTelecaller,
       isQCModalOpen: user.user_type === 'qc_user',
-      isModalOpen: user.user_type === 'telecaller',
+      // Open the generic assignment modal for telecaller and data_entry users
+      isModalOpen: user.user_type === 'telecaller' || user.user_type === 'data_entry',
     });
   }, [updateState]);
 
@@ -582,6 +590,7 @@ const TeleUserInfoPage: React.FC = () => {
               {state.userData.map((user, index) => {
                 const isExpanded = state.expandedRows.has(user.user_id);
                 const isQCUser = user.user_type === 'qc_user';
+                const isDataEntry = user.user_type === 'data_entry';
                 
                 return (
                   <div key={user.user_id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
@@ -620,7 +629,7 @@ const TeleUserInfoPage: React.FC = () => {
 
                         {/* Center Section - Quick Stats */}
                         <div className="flex items-center justify-center gap-4 md:gap-8 flex-1">
-                          {isQCUser ? (
+                            {isQCUser ? (
                               <>
                                 <div className="text-center min-w-[50px] md:min-w-[60px]">
                                   <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
@@ -644,6 +653,27 @@ const TeleUserInfoPage: React.FC = () => {
                                   <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
                                   <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
                                   {user.total_qc_pending || 0}
+                                  </p>
+                                </div>
+                              </>
+                            ) : isDataEntry ? (
+                              <>
+                                <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
+                                  <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {user.total_assigned}
+                                  </p>
+                                </div>
+                                <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
+                                  <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
+                                  {user.data_entry_pass || 0}
+                                  </p>
+                                </div>
+                                <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                  <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                                  {user.data_entry_pending || 0}
                                   </p>
                                 </div>
                               </>
@@ -757,6 +787,23 @@ const TeleUserInfoPage: React.FC = () => {
                                       </span>
                                     </div>
                                   </>
+                                ) : isDataEntry ? (
+                                  <>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pass:</span>
+                                      <span className="font-bold text-green-600 dark:text-green-400">
+                                        {user.data_entry_pass || 0}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
+                                      <span className="font-bold text-orange-600 dark:text-orange-400">
+                                        {user.data_entry_pending || 0}
+                                      </span>
+                                    </div>
+                                  </>
                                 ) : (
                                   <>
                                   <div className="flex items-center gap-2">
@@ -821,6 +868,30 @@ const TeleUserInfoPage: React.FC = () => {
                                               <span className="text-gray-600 dark:text-gray-400">Pending:</span>
                                               <span className="font-semibold text-orange-600 dark:text-orange-400">
                                                 {ac.qc_pending || 0}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
+                                              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                                                {ac.total_assigned}
+                                              </span>
+                                            </div>
+                                          </>
+                                        ) : isDataEntry ? (
+                                          <>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Pass:</span>
+                                              <span className="font-semibold text-green-600 dark:text-green-400">
+                                                {ac.data_entry_pass || 0}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Pending:</span>
+                                              <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                                {ac.data_entry_pending || 0}
                                               </span>
                                             </div>
                                             <div className="flex items-center gap-1">
