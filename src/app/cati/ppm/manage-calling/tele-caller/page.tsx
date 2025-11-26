@@ -13,6 +13,7 @@ import Alert from '@/components/ui/Alert';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
 import CatiQCACAssignModal from '@/components/modals/CatiQCACAssignModal';
+import QCMetrics from '@/components/telecaller/QCMetrics';
 
 interface UnifiedUserData {
   user_id: number;
@@ -565,6 +566,11 @@ const TeleUserInfoPage: React.FC = () => {
             </div>
           </form>
         </Card>
+
+        {/* QC Metrics - show when permission filter is 'qc' */}
+        {searchFilters.permission === 'qc' && (
+          <QCMetrics teleformUserId={searchFilters.teleform_user_id || undefined} />
+        )}
 
         {/* Tele Caller Cards */}
         <Card className="">
