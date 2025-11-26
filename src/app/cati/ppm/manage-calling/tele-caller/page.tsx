@@ -151,7 +151,17 @@ const TeleUserInfoPage: React.FC = () => {
       if (!token) return;
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiBaseUrl}/api/teleform-users?limit=1000`, {
+      if (!process.env.NEXT_PUBLIC_API_URL) {
+        console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
+      }
+      // Build params including the permission filter (fill_form | qc | data_entry)
+      const params: any = { limit: '1000' };
+      if (searchFilters.permission) {
+        // permission contains the exact query param name that the API expects (fill_form | qc | data_entry)
+        params[searchFilters.permission] = '1';
+      }
+      const queryParams = new URLSearchParams(params).toString();
+      const response = await fetch(`${apiBaseUrl}/api/teleform-users?${queryParams}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -172,7 +182,7 @@ const TeleUserInfoPage: React.FC = () => {
           }))
           .sort((a: TelecallerOption, b: TelecallerOption) => a.name.localeCompare(b.name));
         
-        updateState({ telecallerOptions: options });
+          updateState({ telecallerOptions: options });
       }
     } catch (err) {
       console.error('Error fetching telecaller options:', err);
@@ -180,7 +190,15 @@ const TeleUserInfoPage: React.FC = () => {
     } finally {
       updateState({ optionsLoading: false });
     }
-  }, [state.optionsLoading, updateState]);
+  }, [state.optionsLoading, updateState, searchFilters.permission]);
+
+  // Refetch telecaller options whenever permission filter changes
+  useEffect(() => {
+    // Reset the fetched flag so we can fetch new options scoped to the permission
+    optionsFetched.current = false;
+    fetchTelecallerOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFilters.permission]);
 
   // Fetch telecalling groups
   const fetchTelecallingGroups = useCallback(async () => {
