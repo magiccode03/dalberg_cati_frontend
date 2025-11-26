@@ -490,7 +490,7 @@ export default function QCUserProgressPage() {
       const url = URL.createObjectURL(blob);
       
       link.setAttribute('href', url);
-      link.setAttribute('download', `qc_user_progress_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `data_entry_user_progress_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
       
       document.body.appendChild(link);
@@ -613,10 +613,10 @@ export default function QCUserProgressPage() {
               </>
             )}
 
-            {/* QC User Status Filter */}
+            {/* Data entry User Status Filter */}
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                QC User Status
+                Data entry User Status
               </label>
                 <SelectDropdown
                 value={filters.qcUserStatus}
@@ -629,16 +629,16 @@ export default function QCUserProgressPage() {
                 />
               </div>
 
-            {/* QC User Filter */}
+            {/* Data entry User Filter */}
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                QC User
+                Data entry User
               </label>
                 <SelectDropdown
                 value={filters.teleformUserId}
                 onChange={(value) => handleFilterChange('teleformUserId', value as string)}
                 options={generateQCUserDropdownOptions()}
-                placeholder="Select QC User"
+                placeholder="Select Data entry User"
                 searchable={true}
                 clearable={true}
                 maxHeight={300}
