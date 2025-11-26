@@ -20,18 +20,18 @@ import Text from '@/components/ui/Text';
 interface PerformanceMetrics {
   number_status: {
     call_not_received_to_telecaller: number;
-  ringing: number;
-  not_ringing: number;
+    ringing: number;
+    not_ringing: number;
   };
   call_not_ring_status: {
-  switch_off: number;
-  number_not_reachable: number;
-  number_does_not_exist: number;
+    switch_off: number;
+    number_not_reachable: number;
+    number_does_not_exist: number;
     call_not_ring_no_response: number;
   };
   call_ring_status: {
-  picked: number;
-  did_not_picked: number;
+    picked: number;
+    did_not_picked: number;
     call_ring_no_response: number;
   };
   call_status: {
@@ -132,11 +132,11 @@ const TelecallerProgressPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'overall' | 'daywise'>('overall');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
+
   // Telecaller filter states
   const [telecallers, setTelecallers] = useState<Telecaller[]>([]);
   const [loadingTelecallers, setLoadingTelecallers] = useState(false);
-  
+
   // AC filter states
   const [acList, setAcList] = useState<ACData[]>([]);
   const [loadingACs, setLoadingACs] = useState(false);
@@ -193,9 +193,9 @@ const TelecallerProgressPage: React.FC = () => {
     ...acList
       .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
       .map((ac) => ({
-      value: ac.ac_code.toString(),
+        value: ac.ac_code.toString(),
         label: `${ac.ac_name} - (${ac.ac_code})`,
-    })),
+      })),
   ];
 
   const telecallerOptions = [
@@ -203,9 +203,9 @@ const TelecallerProgressPage: React.FC = () => {
     ...telecallers
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((tc) => ({
-      value: tc.teleform_user_id.toString(),
-      label: `${tc.name} (${tc.mobile_number})`,
-    })),
+        value: tc.teleform_user_id.toString(),
+        label: `${tc.name} (${tc.mobile_number})`,
+      })),
   ];
 
   const telecallingGroupOptions = [
@@ -412,21 +412,21 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build URL with filters
       const params = new URLSearchParams();
-      
+
       // Apply filters from UI
       // Telecaller filter
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       // AC Code filter
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
       // Telecaller status filter
       if (filters.telecallerStatus && filters.telecallerStatus !== '') {
         params.append('status', filters.telecallerStatus);
@@ -442,14 +442,14 @@ const TelecallerProgressPage: React.FC = () => {
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      
+
       // Legacy date parameter (for backward compatibility)
       if (date) {
         params.append('date', date);
       }
-      
+
       const url = `${apiUrl}/api/cati/telecaller-metrics${params.toString() ? `?${params.toString()}` : ''}`;
-      
+
       // Debug log for API calls
       console.log('Telecaller Metrics API URL:', url);
       console.log('Date range:', dateRange);
@@ -483,7 +483,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching performance data:', err);
-      
+
       if (err.message.includes('Failed to fetch')) {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else {
@@ -498,7 +498,7 @@ const TelecallerProgressPage: React.FC = () => {
   const fetchDayWiseData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -507,43 +507,43 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build URL with filters for day-wise data
       const params = new URLSearchParams();
-      
+
       // Apply filters from UI
       // Telecaller filter
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       // AC Code filter
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
       if (filters.telecallerStatus && filters.telecallerStatus !== '') {
         params.append('status', filters.telecallerStatus);
       }
-      
+
       if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
         params.append('telecalling_group_id', filters.telecallingGroupId);
       }
-      
+
       // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      
+
       params.append('days', '7'); // Default to 7 days
-      
+
       const url = `${apiUrl}/api/cati/telecaller-metrics/daywise${params.toString() ? `?${params.toString()}` : ''}`;
-      
+
       // Debug log for day-wise API calls
       console.log('Day-wise Telecaller Metrics API URL:', url);
       console.log('Date range:', dateRange);
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -569,7 +569,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching day-wise data:', err);
-      
+
       if (err.message.includes('Failed to fetch')) {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else {
@@ -691,7 +691,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Fetch all data by making multiple API calls
       let allData: TelecallerWiseData[] = [];
       let currentPage = 1;
@@ -700,54 +700,54 @@ const TelecallerProgressPage: React.FC = () => {
 
       while (hasMoreData) {
         // Build query parameters for current page
-      const params = new URLSearchParams({
+        const params = new URLSearchParams({
           page: currentPage.toString(),
           limit: limit.toString(),
-      });
-      
-      // Add filters (only if they have values)
-      if (filters.acCode && filters.acCode !== '') {
-        params.append('ac_code', filters.acCode);
-      }
-      
-      if (filters.telecaller && filters.telecaller !== '') {
-        params.append('teleform_user_id', filters.telecaller);
-      }
-      
-      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
-        params.append('status', filters.telecallerStatus);
-      }
+        });
 
-      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
-        params.append('telecalling_group_id', filters.telecallingGroupId);
-      }
+        // Add filters (only if they have values)
+        if (filters.acCode && filters.acCode !== '') {
+          params.append('ac_code', filters.acCode);
+        }
+
+        if (filters.telecaller && filters.telecaller !== '') {
+          params.append('teleform_user_id', filters.telecaller);
+        }
+
+        if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+          params.append('status', filters.telecallerStatus);
+        }
+
+        if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+          params.append('telecalling_group_id', filters.telecallingGroupId);
+        }
 
         // Date filter - handle custom dates and predefined ranges
         const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
         Object.entries(dateRange).forEach(([key, value]) => {
           if (value) params.append(key, value);
         });
-      
-      const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
-      // Debug log for telecaller summary API calls
-      console.log('Telecaller Summary API URL:', url);
-      console.log('Date range:', dateRange);
+        const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
+        // Debug log for telecaller summary API calls
+        console.log('Telecaller Summary API URL:', url);
+        console.log('Date range:', dateRange);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
 
-      const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      if (result.success && result.data) {
+        const result = await response.json();
+
+        if (result.success && result.data) {
           const pageData = Array.isArray(result.data) ? result.data : [];
           allData = [...allData, ...pageData];
 
@@ -755,9 +755,9 @@ const TelecallerProgressPage: React.FC = () => {
           const pagination = result.pagination;
           hasMoreData = pagination && currentPage < pagination.totalPages;
           currentPage++;
-      } else {
-        throw new Error(result.message || 'Failed to fetch telecaller summary data');
-      }
+        } else {
+          throw new Error(result.message || 'Failed to fetch telecaller summary data');
+        }
       } // End of while loop
 
       setTelecallerWiseData(allData);
@@ -824,22 +824,22 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
         limit: '1000', // API maximum limit
       });
-      
+
       // Add filters (only if they have values)
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       if (filters.telecallerStatus && filters.telecallerStatus !== '') {
         params.append('status', filters.telecallerStatus);
       }
@@ -853,7 +853,7 @@ const TelecallerProgressPage: React.FC = () => {
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      
+
       const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
       const response = await fetch(url, {
@@ -871,7 +871,7 @@ const TelecallerProgressPage: React.FC = () => {
 
       if (result.success && result.data) {
         const data = Array.isArray(result.data) ? result.data : [];
-        
+
         // Convert to CSV
         const headers = [
           'S.No',
@@ -956,7 +956,7 @@ const TelecallerProgressPage: React.FC = () => {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const csvUrl = URL.createObjectURL(blob);
-        
+
         link.setAttribute('href', csvUrl);
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
@@ -1041,44 +1041,44 @@ const TelecallerProgressPage: React.FC = () => {
     };
 
     return (
-    <>
-      {/* Caller Performance Section */}
-      <div className="mb-8">
-        <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
+      <>
+        {/* Caller Performance Section */}
+        <div className="mb-8">
+          <SectionHeader title="CALLER PERFORMANCE" icon={<Activity className="h-6 w-6 text-blue-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Total Callers"
+            <MetricCard
+              title="Total Callers"
               value={getValue(data?.caller_performance?.total_callers)}
-            icon={<Users className="h-6 w-6 text-blue-600" />}
-            color="border-blue-500"
-            bgColor="bg-blue-500"
-          />
-          <MetricCard
-            title="Number of Dials Attempted"
+              icon={<Users className="h-6 w-6 text-blue-600" />}
+              color="border-blue-500"
+              bgColor="bg-blue-500"
+            />
+            <MetricCard
+              title="Number of Dials Attempted"
               value={getValue(data?.caller_performance?.number_of_dials_attempted)}
-            icon={<Phone className="h-6 w-6 text-orange-600" />}
-            color="border-orange-500"
-            bgColor="bg-orange-500"
-          />
-          <MetricCard
-            title="Number of Calls Connected"
+              icon={<Phone className="h-6 w-6 text-orange-600" />}
+              color="border-orange-500"
+              bgColor="bg-orange-500"
+            />
+            <MetricCard
+              title="Number of Calls Connected"
               value={getValue(data?.caller_performance?.number_of_calls_connected)}
               icon={<Phone className="h-6 w-6 text-indigo-600" />}
-            color="border-indigo-500"
-            bgColor="bg-indigo-500"
-          />
-          <MetricCard
+              color="border-indigo-500"
+              bgColor="bg-indigo-500"
+            />
+            <MetricCard
               title="Total Form Duration"
               value={data?.caller_performance?.total_talk_duration ? formatDuration(data.caller_performance.total_talk_duration) : '—'}
-            icon={<Clock className="h-6 w-6 text-emerald-600" />}
-            color="border-emerald-500"
-            bgColor="bg-emerald-500"
-          />
+              icon={<Clock className="h-6 w-6 text-emerald-600" />}
+              color="border-emerald-500"
+              bgColor="bg-emerald-500"
+            />
+          </div>
         </div>
-      </div>
 
         {/* Number Status Section */}
-      <div className="mb-8">
+        <div className="mb-8">
           <SectionHeader title="NUMBER OF DIALS ATTEMPTED METRICS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
@@ -1088,133 +1088,133 @@ const TelecallerProgressPage: React.FC = () => {
               color="border-gray-400"
               bgColor="bg-gray-400"
             />
-          <MetricCard
-            title="Ringing"
+            <MetricCard
+              title="Ringing"
               value={getValue(data?.number_status?.ringing)}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
-            title="Not Ringing"
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
+              title="Not Ringing"
               value={getValue(data?.number_status?.not_ringing)}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
               title="No response by Telecaller"
               value={getValue(Math.max(0, (data?.caller_performance?.number_of_dials_attempted || 0) - (data?.number_status?.ringing || 0) - (data?.number_status?.not_ringing || 0) - (data?.number_status?.call_not_received_to_telecaller || 0)))}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
-          />
+            />
+          </div>
         </div>
-      </div>
 
         {/* Call Not Ring Status Section */}
         <div className="mb-8">
           <SectionHeader title="NOT RINGING METRICS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Switch Off"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Switch Off"
               value={getValue(data?.call_not_ring_status?.switch_off)}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="Number Not Reachable"
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="Number Not Reachable"
               value={getValue(data?.call_not_ring_status?.number_not_reachable)}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
-            title="Number Does Not Exist"
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
+              title="Number Does Not Exist"
               value={getValue(data?.call_not_ring_status?.number_does_not_exist)}
-            icon={<Phone className="h-6 w-6 text-red-600" />}
-            color="border-red-500"
-            bgColor="bg-red-500"
-          />
-          <MetricCard
+              icon={<Phone className="h-6 w-6 text-red-600" />}
+              color="border-red-500"
+              bgColor="bg-red-500"
+            />
+            <MetricCard
               title="No response by Telecaller"
               value={getValue(Math.max(0, (data?.number_status?.not_ringing || 0) - (data?.call_not_ring_status?.switch_off || 0) - (data?.call_not_ring_status?.number_not_reachable || 0) - (data?.call_not_ring_status?.number_does_not_exist || 0)))}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
-          />
-        </div>
+            />
+          </div>
         </div>
 
         {/* Call Ring Status Section */}
         <div className="mb-8">
           <SectionHeader title="RINGING METRICS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-          <MetricCard
+            <MetricCard
               title="Number of Calls Connected"
               value={getValue(data?.call_ring_status?.picked)}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
               title="Number of Calls Not Connected"
               value={getValue(data?.call_ring_status?.did_not_picked)}
-            icon={<Phone className="h-6 w-6 text-green-600" />}
-            color="border-green-500"
-            bgColor="bg-green-500"
-          />
-          <MetricCard
+              icon={<Phone className="h-6 w-6 text-green-600" />}
+              color="border-green-500"
+              bgColor="bg-green-500"
+            />
+            <MetricCard
               title="No response by Telecaller"
               value={getValue(Math.max(0, (data?.number_status?.ringing || 0) - (data?.call_ring_status?.picked || 0) - (data?.call_ring_status?.did_not_picked || 0)))}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
-          />
-        </div>
+            />
+          </div>
         </div>
 
         {/* Call Status Section */}
         <div className="mb-8">
           <SectionHeader title="NUMBER OF CALLS CONNECTED METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
-            title="Call Continue"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <MetricCard
+              title="Call Continue"
               value={getValue(data?.call_status?.continue)}
               icon={<Phone className="h-6 w-6 text-blue-600" />}
               color="border-blue-500"
               bgColor="bg-blue-500"
-          />
-          <MetricCard
+            />
+            <MetricCard
               title="Refuse to Respond"
               value={getValue(data?.call_status?.refuse_to_respond)}
               icon={<Phone className="h-6 w-6 text-amber-600" />}
               color="border-amber-500"
               bgColor="bg-amber-500"
-          />
-          <MetricCard
+            />
+            <MetricCard
               title="Call Back Later"
               value={getValue(data?.call_status?.call_back_later)}
               icon={<Clock className="h-6 w-6 text-teal-600" />}
               color="border-teal-500"
               bgColor="bg-teal-500"
-          />
-          <MetricCard
+            />
+            <MetricCard
               title="No response by Telecaller"
               value={getValue(Math.max(0, (data?.call_ring_status?.picked || 0) - (data?.call_status?.continue || 0) - (data?.call_status?.refuse_to_respond || 0) - (data?.call_status?.call_back_later || 0)))}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
-          />
-        </div>
+            />
+          </div>
         </div>
 
         {/* Interview Metrics Section */}
-      <div className="mb-8">
+        <div className="mb-8">
           <SectionHeader title="CALL CONTINUE METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <MetricCard
+            <MetricCard
               title="Completed"
               value={getValue(data?.interview_metrics?.successful)}
               icon={<TrendingUp className="h-6 w-6 text-cyan-600" />}
@@ -1242,10 +1242,10 @@ const TelecallerProgressPage: React.FC = () => {
               color="border-gray-600"
               bgColor="bg-gray-600"
             />
+          </div>
         </div>
-      </div>
-    </>
-  );
+      </>
+    );
   };
 
   return (
@@ -1258,14 +1258,14 @@ const TelecallerProgressPage: React.FC = () => {
             {/* Title Section */}
             <div className="flex-1">
               <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Telecaller Progress
+                Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
               </p> */}
             </div>
 
-            
+
             {/* View Mode Toggle and Refresh - Responsive */}
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
               {/* View Mode Toggle Buttons */}
@@ -1291,7 +1291,7 @@ const TelecallerProgressPage: React.FC = () => {
                   <span className="xs:hidden">Day</span>
                 </Button>
               </div> */}
-              
+
               {/* Refresh Button */}
               {/* <Button
                 variant="outline"
@@ -1315,7 +1315,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         </div>
 
-        
+
         {/* Search Filters */}
         <Card className="mb-4">
           <div className="flex flex-wrap items-end gap-4">
@@ -1358,15 +1358,15 @@ const TelecallerProgressPage: React.FC = () => {
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     From Date <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="date"
+                  </label>
+                  <Input
+                    type="date"
                     value={filters.customDateFrom}
                     onChange={(e) => handleFilterChange('customDateFrom', e.target.value)}
                     placeholder="Select From Date"
-              />
-            </div>
-                
+                  />
+                </div>
+
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     To Date <span className="text-red-500">*</span>
@@ -1447,15 +1447,15 @@ const TelecallerProgressPage: React.FC = () => {
 
             {/* View and Clear Buttons */}
             <div className="flex-shrink-0 flex gap-2">
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleSearch}
                 className="flex items-center"
               >
                 <Search className="w-4 h-4 mr-2" />
                 Search
               </Button>
-              
+
               {/* Clear Filters Button */}
               {/* <Button 
                 variant="outline" 
@@ -1592,19 +1592,19 @@ const TelecallerProgressPage: React.FC = () => {
           </>
         )}
       </div>
-      
+
       {/* Telecaller Summary Table */}
       <Card className="mt-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Telecaller Summary
-            </Heading>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Telecaller Summary
+              </Heading>
             </div>
           </div>
-          
+
           {/* Download Button */}
           <Button
             variant="primary"
@@ -1640,8 +1640,8 @@ const TelecallerProgressPage: React.FC = () => {
                 >
                   Retry
                 </Button>
-                </div>
-              </Alert>
+              </div>
+            </Alert>
           </div>
         )}
 
@@ -1658,136 +1658,156 @@ const TelecallerProgressPage: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Try adjusting your filters</p>
             </div>
           ) : (
-                <div className="table-responsive">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="bg-gray-50">
-                      <tr>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Dials</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Ringing</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Not Ringing</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: No Response by Telecaller</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Switch Off</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Not Reachable</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Does Not Exist</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: No Response by Telecaller</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Connected</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Not Connected</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: No Response by Telecaller</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Continue</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Refuse to Respond</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Back Later</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: No Response by Telecaller</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Completed</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Terminated</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Incompleted</th>
-                      <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Ineligible</th>
-                        {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
+            <div className="table-responsive">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-blue-500 text-white">Number of Dials</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-cyan-500 text-white"> Completed</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-green-500 text-white">Successful</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-yellow-500 text-white">Under QC</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-red-500 text-white">Rejected</th>
+                    {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Short Interview</th> */}
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Ringing</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Not Ringing</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Switch Off</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Not Reachable</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Does Not Exist</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Connected</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Not Connected</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Continue</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Refuse to Respond</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Back Later</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Completed</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Terminated</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Incompleted</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Ineligible</th>
+                    {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getPaginatedData().map((item, index) => (
-                        <tr key={item.caller_id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {(currentPage - 1) * pageSize + index + 1}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.caller_id || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">
-                            {item.caller_name || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.caller_mobile_no || '-'}
-                          </td>
-                         <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
-                            {item.telecalling_group_name || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_of_dials?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_of_calls_connected?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.talk_duration || '00:00:00'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.call_not_received_to_telecaller?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.ringing?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.not_ringing?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.switch_off?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_not_reachable?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_does_not_exist?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.picked?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.did_not_picked?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.continue?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.refuse_to_respond?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.call_back_later?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
-                            {item.successful?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
-                            {item.terminated?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
-                            {item.incompleted?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.ineligible?.toLocaleString() || 0}
-                          </td>
-                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                  </tr>
+                </thead>
+                <tbody>
+                  {getPaginatedData().map((item, index) => (
+                    <tr key={item.caller_id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {(currentPage - 1) * pageSize + index + 1}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.caller_id || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-left">
+                        {item.caller_name || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {item.caller_mobile_no || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                        {item.telecalling_group_name || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_of_dials?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400">
+                        {item.number_of_calls_connected?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-cyan-600 dark:text-cyan-400">
+                        {item.successful?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                        {item.pass?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-yellow-600 dark:text-yellow-400">
+                        {item.under_qc?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                        {item.qc_rejected?.toLocaleString() || 0}
+                      </td>
+                      {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
+                            {item.short_interview?.toLocaleString() || 0}
+                          </td> */}
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {item.talk_duration || '00:00:00'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.call_not_received_to_telecaller?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.ringing?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.not_ringing?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.switch_off?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_not_reachable?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_does_not_exist?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.picked?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.did_not_picked?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.continue?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.refuse_to_respond?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.call_back_later?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                        {item.successful?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                        {item.terminated?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
+                        {item.incompleted?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.ineligible?.toLocaleString() || 0}
+                      </td>
+                      {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.greater_than_180_sec?.toLocaleString() || 0}
                           </td> */}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
           )}
         </div>
 
