@@ -507,6 +507,7 @@ const TeleUserInfoPage: React.FC = () => {
                   className="w-full"
                   placeholder="Select Telecaller"
                   searchable
+                  clearable
                 />
               </div>
               <div className="lg:col-span-1">
