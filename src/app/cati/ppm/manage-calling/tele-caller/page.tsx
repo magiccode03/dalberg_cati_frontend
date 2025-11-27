@@ -92,27 +92,30 @@ const TeleUserInfoPage: React.FC = () => {
     telecallerOptions: [] as TelecallerOption[],
     telecallingGroups: [] as TelecallingGroup[],
     userData: [] as UnifiedUserData[],
-    
+
     // Loading states
     optionsLoading: false,
     groupsLoading: false,
     loading: false,
     isFetching: false,
     error: null as string | null,
-    
+
     // Pagination
     currentPage: 1,
     totalPages: 1,
     totalCount: 0,
     pageSize: 10,
-    
+
     // UI states
     expandedRows: new Set<number>(),
     isModalOpen: false,
     isQCModalOpen: false,
-    selectedTelecaller: null as {id: number, name: string, type?: 'telecaller' | 'qc_user' | 'data_entry'} | null,
+    selectedTelecaller: null as { id: number, name: string, type?: 'telecaller' | 'qc_user' | 'data_entry' } | null,
   });
-  
+
+  const [showQCMetrics, setShowQCMetrics] = useState(false);
+
+
   // Use refs to prevent multiple calls
   const hasInitialized = useRef(false);
   const optionsFetched = useRef(false);
@@ -175,15 +178,15 @@ const TeleUserInfoPage: React.FC = () => {
       if (response.ok && result.success) {
         const options: TelecallerOption[] = result.data
           .map((user: any) => ({
-          value: user.teleform_user_id.toString(),
-          label: `${user.name}(${user.teleform_user_id})`,
+            value: user.teleform_user_id.toString(),
+            label: `${user.name}(${user.teleform_user_id})`,
             user_id: user.teleform_user_id,
-          name: user.name,
-          mobile_number: user.mobile_number,
+            name: user.name,
+            mobile_number: user.mobile_number,
           }))
           .sort((a: TelecallerOption, b: TelecallerOption) => a.name.localeCompare(b.name));
-        
-          updateState({ telecallerOptions: options });
+
+        updateState({ telecallerOptions: options });
       }
     } catch (err) {
       console.error('Error fetching telecaller options:', err);
@@ -226,7 +229,7 @@ const TeleUserInfoPage: React.FC = () => {
       });
 
       if (response.ok) {
-      const result = await response.json();
+        const result = await response.json();
 
         if (result.success && Array.isArray(result.data)) {
           const groups: TelecallingGroup[] = result.data.map((item: any) => ({
@@ -234,7 +237,7 @@ const TeleUserInfoPage: React.FC = () => {
             name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
           }));
           updateState({ telecallingGroups: groups });
-      } else {
+        } else {
           updateState({ telecallingGroups: [{ id: 1, name: 'Group 1' }] });
         }
       } else {
@@ -253,11 +256,11 @@ const TeleUserInfoPage: React.FC = () => {
     if (state.isFetching || (useDefaultFilter && dataFetched.current)) {
       return;
     }
-    
+
     updateState({ isFetching: true, loading: true, error: null });
 
-      try {
-        const params: any = {
+    try {
+      const params: any = {
         page: page,
         limit: state.pageSize,
       };
@@ -281,48 +284,48 @@ const TeleUserInfoPage: React.FC = () => {
         console.log('🔍 No permission filter applied');
       }
 
-        const token = localStorage.getItem('accessToken');
-        if (!token) {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
         updateState({ error: 'Authentication required' });
-          return;
-        }
+        return;
+      }
 
-        const queryParams = new URLSearchParams(params).toString();
+      const queryParams = new URLSearchParams(params).toString();
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       const url = `${apiBaseUrl}/api/cati/unified-user-statistics?${queryParams}`;
 
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-        const result = await response.json();
+      const result = await response.json();
 
-        if (response.ok && result.success) {
+      if (response.ok && result.success) {
         if (useDefaultFilter) {
           dataFetched.current = true;
         }
-        
+
         const pagination = result.pagination;
         const totalPages = pagination ? pagination.total_pages : 1;
         const totalCount = pagination ? pagination.total_count : result.data.length;
-        
+
         updateState({
           userData: result.data,
           totalPages,
           totalCount,
           currentPage: page,
         });
-        } else {
+      } else {
         updateState({ error: result.message || 'Failed to fetch telecallers' });
-        }
-      } catch (err: any) {
+      }
+    } catch (err: any) {
       updateState({ error: err.message || 'Error fetching telecallers' });
-        console.error('Error fetching telecallers:', err);
-      } finally {
+      console.error('Error fetching telecallers:', err);
+    } finally {
       updateState({ loading: false, isFetching: false });
     }
   }, [state.pageSize, state.isFetching, searchFilters, updateState]); // Keep searchFilters in dependencies
@@ -344,7 +347,7 @@ const TeleUserInfoPage: React.FC = () => {
         fetchTelecallerOptions(),
         fetchTelecallingGroups()
       ]);
-      
+
       // Then fetch initial telecaller data with default filter
       await fetchTelecallers(1, true); // true = use default filter
     };
@@ -379,6 +382,10 @@ const TeleUserInfoPage: React.FC = () => {
   const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     console.log('🔍 Search triggered with filters:', searchFilters);
+
+    // Enable QC metrics only after clicking Search
+    setShowQCMetrics(searchFilters.permission === 'qc');
+
     updateState({ currentPage: 1 });
     fetchTelecallers(1);
   }, [updateState, searchFilters, fetchTelecallers]);
@@ -393,6 +400,10 @@ const TeleUserInfoPage: React.FC = () => {
       permission: '',
       telecalling_group_id: '',
     });
+
+    // Hide QC metrics
+    setShowQCMetrics(false);
+
     updateState({ currentPage: 1 });
     fetchTelecallers(1);
   }, [updateState, fetchTelecallers]);
@@ -402,14 +413,14 @@ const TeleUserInfoPage: React.FC = () => {
       id: user.user_id,
       name: user.user_name
     };
-    
+
     updateState({
       selectedTelecaller,
       isQCModalOpen: user.user_type === 'qc_user',
       // Open the generic assignment modal for telecaller and data_entry users
       isModalOpen: user.user_type === 'telecaller' || user.user_type === 'data_entry',
     });
-    
+
     // store user type on the selectedTelecaller for modal mode switching
     updateState({ selectedTelecaller: { ...selectedTelecaller, type: user.user_type } });
   }, [updateState]);
@@ -425,21 +436,21 @@ const TeleUserInfoPage: React.FC = () => {
   const handleAssignmentSuccess = useCallback(async () => {
     // Small delay to ensure backend has processed the assignment
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Refresh the telecallers data
     fetchTelecallers();
   }, [fetchTelecallers]);
 
   const toggleRowExpansion = useCallback((userId: number) => {
     const newExpandedRows = new Set(state.expandedRows);
-    
+
     if (newExpandedRows.has(userId)) {
       newExpandedRows.delete(userId);
-        } else {
+    } else {
       newExpandedRows.clear();
       newExpandedRows.add(userId);
     }
-    
+
     updateState({ expandedRows: newExpandedRows });
   }, [state.expandedRows, updateState]);
 
@@ -552,9 +563,9 @@ const TeleUserInfoPage: React.FC = () => {
                 </Button>
               </div>
               <div className="lg:col-span-1">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={handleClear}
                   disabled={state.loading}
                   className="w-full bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
@@ -567,8 +578,7 @@ const TeleUserInfoPage: React.FC = () => {
           </form>
         </Card>
 
-        {/* QC Metrics - show when permission filter is 'qc' */}
-        {searchFilters.permission === 'qc' && (
+        {showQCMetrics && (
           <QCMetrics teleformUserId={searchFilters.teleform_user_id || undefined} />
         )}
 
@@ -582,15 +592,15 @@ const TeleUserInfoPage: React.FC = () => {
               </Heading>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:space-x-2 gap-2 lg:gap-0">
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={() => router.push('/cati/ppm/manage-calling/create-tele-caller')}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Add New Telecaller</span>
                 <span className="sm:hidden">Add New Telecaller</span>
               </Button>
-             
+
               {/* <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
                 <Search className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Calling User Check</span>
@@ -619,7 +629,7 @@ const TeleUserInfoPage: React.FC = () => {
                 const isExpanded = state.expandedRows.has(user.user_id);
                 const isQCUser = user.user_type === 'qc_user';
                 const isDataEntry = user.user_type === 'data_entry';
-                
+
                 return (
                   <div key={user.user_id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
                     {/* Main Row Content */}
@@ -639,11 +649,10 @@ const TeleUserInfoPage: React.FC = () => {
                                 <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                   ID: {user.user_id}
                                 </span>
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${
-                                  user.status === 1 
-                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                }`}>
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${user.status === 1
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                  }`}>
                                   {user.status === 1 ? 'Active' : 'Inactive'}
                                 </span>
                               </div>
@@ -657,82 +666,82 @@ const TeleUserInfoPage: React.FC = () => {
 
                         {/* Center Section - Quick Stats */}
                         <div className="flex items-center justify-center gap-4 md:gap-8 flex-1">
-                            {isQCUser ? (
-                              <>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
-                                  <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
-                                  {user.total_assigned}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
-                                  <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {user.total_qc_pass || 0}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Fail</p>
-                                  <p className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
-                                  {user.total_qc_fail || 0}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                  <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
-                                  {user.total_qc_pending || 0}
-                                  </p>
-                                </div>
-                              </>
-                            ) : isDataEntry ? (
-                              <>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
-                                  <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
-                                  {user.total_assigned}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
-                                  <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {user.data_entry_pass || 0}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                  <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
-                                  {user.data_entry_pending || 0}
-                                  </p>
-                                </div>
-                              </>
-                            ) : (
-                              <>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
+                          {isQCUser ? (
+                            <>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
-                                  <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
+                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
                                   {user.total_assigned}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Attempted</p>
-                                  <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {user.total_call_attempted || 0}
-                                  </p>
-                                </div>
-                                <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
+                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
+                                  {user.total_qc_pass || 0}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Fail</p>
+                                <p className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
+                                  {user.total_qc_fail || 0}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
                                 <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                  <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                                  {user.total_qc_pending || 0}
+                                </p>
+                              </div>
+                            </>
+                          ) : isDataEntry ? (
+                            <>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
+                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {user.total_assigned}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
+                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
+                                  {user.data_entry_pass || 0}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                                  {user.data_entry_pending || 0}
+                                </p>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
+                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
+                                  {user.total_assigned}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Attempted</p>
+                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
+                                  {user.total_call_attempted || 0}
+                                </p>
+                              </div>
+                              <div className="text-center min-w-[50px] md:min-w-[60px]">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
                                   {user.total_call_pending || 0}
-                                  </p>
-                                </div>
-                              </>
+                                </p>
+                              </div>
+                            </>
                           )}
                         </div>
 
                         {/* Right Section - Actions */}
                         <div className="flex items-center justify-end gap-1 md:gap-2 flex-1 lg:flex-none">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => toggleRowExpansion(user.user_id)}
                             title={isExpanded ? "Hide assigned AC details" : "View assigned AC details"}
@@ -750,8 +759,8 @@ const TeleUserInfoPage: React.FC = () => {
                               </>
                             )}
                           </Button>
-                          <Button 
-                            variant="primary" 
+                          <Button
+                            variant="primary"
                             size="sm"
                             onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.user_id}`)}
                             title="Edit telecaller"
@@ -759,14 +768,13 @@ const TeleUserInfoPage: React.FC = () => {
                           >
                             <Edit className="w-3 h-3 md:w-4 md:h-4" />
                           </Button>
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            className={`px-2 md:px-3 ${
-                              isQCUser 
-                                ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-                                : 'bg-purple-500 hover:bg-purple-600 text-white'
-                            }`}
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className={`px-2 md:px-3 ${isQCUser
+                              ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                              : 'bg-purple-500 hover:bg-purple-600 text-white'
+                              }`}
                             onClick={() => handleAddData(user)}
                             title={isQCUser ? "Assign AC for QC" : "Assign AC data"}
                           >
@@ -780,17 +788,17 @@ const TeleUserInfoPage: React.FC = () => {
                     {isExpanded && (
                       <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                         <div className="p-3 md:p-4">
-                              <div className="space-y-3">
-                                {/* Detailed Stats Row */}
-                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 gap-3">
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
-                                      <span className="font-bold text-blue-600 dark:text-blue-400">
+                          <div className="space-y-3">
+                            {/* Detailed Stats Row */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 gap-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
+                                  <span className="font-bold text-blue-600 dark:text-blue-400">
                                     {user.total_assigned}
-                                      </span>
-                                    </div>
+                                  </span>
+                                </div>
                                 {isQCUser ? (
                                   <>
                                     <div className="flex items-center gap-2">
@@ -834,47 +842,47 @@ const TeleUserInfoPage: React.FC = () => {
                                   </>
                                 ) : (
                                   <>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
-                                    <span className="font-bold text-green-600 dark:text-green-400">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
+                                      <span className="font-bold text-green-600 dark:text-green-400">
                                         {user.total_call_attempted || 0}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                    <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
-                                    <span className="font-bold text-orange-600 dark:text-orange-400">
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
+                                      <span className="font-bold text-orange-600 dark:text-orange-400">
                                         {user.total_call_pending || 0}
-                                    </span>
-                                  </div>
+                                      </span>
+                                    </div>
                                   </>
                                 )}
-                                  </div>
-                                  <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-gray-400 flex-shrink-0" />
-                                </div>
-                              
-                              {/* AC Details Row */}
+                              </div>
+                              <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-gray-400 flex-shrink-0" />
+                            </div>
+
+                            {/* AC Details Row */}
                             {user.ac_wise_statistics && user.ac_wise_statistics.length > 0 && (
-                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <BarChart3 className="h-4 w-4 text-gray-500" />
-                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <BarChart3 className="h-4 w-4 text-gray-500" />
+                                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                                     AC-wise Breakdown ({user.ac_wise_statistics.length} ACs)
-                                    </span>
-                                  </div>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                   {user.ac_wise_statistics.map((ac) => (
-                                        <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                          <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                              {ac.ac_name}
-                                            </span>
-                                            <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
-                                              #{ac.ac_code}
-                                            </span>
-                                          </div>
-                                          <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                          {ac.ac_name}
+                                        </span>
+                                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
+                                          #{ac.ac_code}
+                                        </span>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
                                         {isQCUser ? (
                                           <>
                                             <div className="flex items-center gap-1">
@@ -932,20 +940,20 @@ const TeleUserInfoPage: React.FC = () => {
                                           </>
                                         ) : (
                                           <>
-                                          <div className="flex items-center gap-1">
-                                            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                            <span className="text-gray-600 dark:text-gray-400">Attempted:</span>
-                                            <span className="font-semibold text-green-600 dark:text-green-400">
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Attempted:</span>
+                                              <span className="font-semibold text-green-600 dark:text-green-400">
                                                 {ac.call_attempted || 0}
-                                            </span>
-                                          </div>
-                                          <div className="flex items-center gap-1">
-                                            <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                                            <span className="text-gray-600 dark:text-gray-400">Pending:</span>
-                                            <span className="font-semibold text-orange-600 dark:text-orange-400">
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                                              <span className="text-gray-600 dark:text-gray-400">Pending:</span>
+                                              <span className="font-semibold text-orange-600 dark:text-orange-400">
                                                 {ac.call_pending || 0}
-                                            </span>
-                                          </div>
+                                              </span>
+                                            </div>
                                             <div className="flex items-center gap-1">
                                               <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
                                               <span className="text-gray-600 dark:text-gray-400">Total:</span>
@@ -955,13 +963,13 @@ const TeleUserInfoPage: React.FC = () => {
                                             </div>
                                           </>
                                         )}
-                                        </div>
                                       </div>
-                                    ))}
-                                  </div>
+                                    </div>
+                                  ))}
                                 </div>
-                              )}
                               </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -989,8 +997,8 @@ const TeleUserInfoPage: React.FC = () => {
               <div className="text-sm text-gray-700 dark:text-gray-300">
                 Total: <span className="font-semibold">{totalCount}</span> telecaller{totalCount !== 1 ? 's' : ''}
               </div> */}
-              {/* Debug info - remove after testing */}
-              {/* <div className="ml-4 text-xs text-gray-500">
+          {/* Debug info - remove after testing */}
+          {/* <div className="ml-4 text-xs text-gray-500">
                 Debug: totalPages={totalPages}, currentPage={currentPage}, pageSize={pageSize}
               </div>
             </div>
@@ -999,13 +1007,13 @@ const TeleUserInfoPage: React.FC = () => {
           {/* Pagination */}
           {!state.loading && state.totalPages > 1 && (
             <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <PaginationStandard
-                  currentPage={state.currentPage}
-                  totalPages={state.totalPages}
+              <PaginationStandard
+                currentPage={state.currentPage}
+                totalPages={state.totalPages}
                 totalItems={state.totalCount}
                 itemsPerPage={state.pageSize}
-                  onPageChange={handlePageChange}
-                />
+                onPageChange={handlePageChange}
+              />
             </div>
           )}
         </Card>
