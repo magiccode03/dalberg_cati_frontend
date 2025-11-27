@@ -57,6 +57,7 @@ interface SearchFilters {
   mobile_number: string;
   status: string;
   telecaller: string;
+  ac_code: string;
   permission: string;
   telecalling_group_id: string;
 }
@@ -82,6 +83,7 @@ const TeleUserInfoPage: React.FC = () => {
     mobile_number: '',
     status: '',
     telecaller: '',
+    ac_code: '',
     permission: '', // No default permission filter
     telecalling_group_id: '',
   });
@@ -90,6 +92,7 @@ const TeleUserInfoPage: React.FC = () => {
   const [state, setState] = useState({
     // Data states
     telecallerOptions: [] as TelecallerOption[],
+      acOptions: [] as Array<{ value: string; label: string }>,
     telecallingGroups: [] as TelecallingGroup[],
     userData: [] as UnifiedUserData[],
 
@@ -196,6 +199,31 @@ const TeleUserInfoPage: React.FC = () => {
     }
   }, [state.optionsLoading, updateState, searchFilters.permission]);
 
+  // Fetch AC options for the AC dropdown
+  const fetchACOptions = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      if (!process.env.NEXT_PUBLIC_API_URL) console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
+      const response = await fetch(`${apiBaseUrl}/api/cati/ac-details?limit=1000`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (data.success) {
+        const acList = Array.isArray(data.data?.data) ? data.data.data : [];
+        updateState({ acOptions: acList.map((ac: any) => ({ value: ac.ac_code.toString(), label: `${ac.ac_name} - (${ac.ac_code})` })) });
+      }
+    } catch (err) {
+      console.error('Error fetching AC options:', err);
+    }
+  }, [updateState]);
+
   // Refetch telecaller options whenever permission filter changes
   useEffect(() => {
     // Reset the fetched flag so we can fetch new options scoped to the permission
@@ -267,6 +295,7 @@ const TeleUserInfoPage: React.FC = () => {
 
       // Add filters if they have values
       if (searchFilters.teleform_user_id) params.teleform_user_id = searchFilters.teleform_user_id;
+      if (searchFilters.ac_code) params.ac_code = searchFilters.ac_code;
       if (searchFilters.name) params.user_name = searchFilters.name;
       if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
       if (searchFilters.status) params.status = searchFilters.status;
@@ -346,6 +375,8 @@ const TeleUserInfoPage: React.FC = () => {
       await Promise.all([
         fetchTelecallerOptions(),
         fetchTelecallingGroups()
+        // Fetch AC options
+        , fetchACOptions()
       ]);
 
       // Then fetch initial telecaller data with default filter
@@ -397,6 +428,7 @@ const TeleUserInfoPage: React.FC = () => {
       mobile_number: '',
       status: '',
       telecaller: '',
+      ac_code: '',
       permission: '',
       telecalling_group_id: '',
     });
@@ -490,6 +522,20 @@ const TeleUserInfoPage: React.FC = () => {
         <Card className="">
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
+              <div className="lg:col-span-1">
+                <SelectDropdown
+                  options={state.acOptions}
+                  value={searchFilters.ac_code}
+                  onChange={(value) => {
+                    const selectedValue = Array.isArray(value) ? value[0] : value as string;
+                    handleInputChange('ac_code', selectedValue);
+                  }}
+                  className="w-full"
+                  placeholder="Select AC"
+                  searchable
+                  clearable
+                />
+              </div>
               <div className="lg:col-span-1">
                 <SelectDropdown
                   options={state.telecallerOptions}
