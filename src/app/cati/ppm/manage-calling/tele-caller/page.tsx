@@ -92,7 +92,7 @@ const TeleUserInfoPage: React.FC = () => {
   const [state, setState] = useState({
     // Data states
     telecallerOptions: [] as TelecallerOption[],
-      acOptions: [] as Array<{ value: string; label: string }>,
+    acOptions: [] as Array<{ value: string; label: string }>,
     telecallingGroups: [] as TelecallingGroup[],
     userData: [] as UnifiedUserData[],
 
@@ -625,7 +625,8 @@ const TeleUserInfoPage: React.FC = () => {
         </Card>
 
         {showQCMetrics && (
-          <QCMetrics teleformUserId={searchFilters.teleform_user_id || undefined} />
+          <QCMetrics teleformUserId={searchFilters.teleform_user_id || undefined}
+            ac_code={searchFilters.ac_code || undefined} />
         )}
 
         {/* Tele Caller Cards */}

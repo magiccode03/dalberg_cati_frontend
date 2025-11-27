@@ -36,7 +36,9 @@ const SectionHeader: React.FC<{ title: string; icon: React.ReactNode }> = ({ tit
   </div>
 );
 
-export default function QCMetrics({ teleformUserId }: { teleformUserId?: string | number }) {
+export default function QCMetrics({ teleformUserId, ac_code }: {
+  teleformUserId?: string | number, ac_code?: string | number;
+}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
@@ -57,6 +59,7 @@ export default function QCMetrics({ teleformUserId }: { teleformUserId?: string 
         if (!process.env.NEXT_PUBLIC_API_URL) console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
         const params = new URLSearchParams();
         if (teleformUserId) params.append('teleform_user_id', teleformUserId.toString());
+        if (ac_code) params.append('ac_code', ac_code.toString());
         const url = `${apiUrl}/api/cati/qc/totalrecordsqc${params.toString() ? `?${params.toString()}` : ''}`;
         const response = await fetch(url, {
           method: 'GET',
@@ -81,7 +84,7 @@ export default function QCMetrics({ teleformUserId }: { teleformUserId?: string 
     };
     run();
     return () => { mounted = false; };
-  }, [teleformUserId]);
+  }, [teleformUserId, ac_code]);
 
   return (
     <Card className="p-4 md:p-6 mb-4">
