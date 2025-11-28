@@ -176,8 +176,8 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
             {topACs.map((ac) => (
               <div key={ac.ac_code} className="min-w-[180px] bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
+                  <div className="text-s font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
+                  <div className="text-s text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
                 </div>
                 <div className="grid grid-cols-1 gap-2 text-xs">
                   <div className="flex items-center gap-1"><span className="font-semibold text-red-700 dark:text-red-300">{ac.total_not_assigned ?? 0}</span></div>
@@ -187,7 +187,6 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
             {/* View All card */}
             <div className="min-w-[200px] flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
               <div className="text-center">
-                <div className="text-sm md:text-base font-semibold mb-2">View All ACs</div>
                 <Button variant="primary" size="sm" onClick={() => setIsAcListModalOpen(true)}>View All</Button>
               </div>
             </div>
