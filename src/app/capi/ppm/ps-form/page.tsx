@@ -139,7 +139,7 @@ export default function PSForFormPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ps-form-data-${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `Master-Dynamic-PS-List-${new Date().toISOString().split('T')[0]}.csv`;
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
@@ -317,7 +317,7 @@ export default function PSForFormPage() {
                 ) : (
                   psFormData.map((ps, index) => (
                     <tr key={`${ps.ac_code}-${ps.polling_station_no}`}>
-                      <td className="text-center">{startIndex + index + 1}</td>
+                      <td className="text-center">{ps.id}</td>
                       <td className="text-center">{ps.ac_code}</td>
                       <td className="text-center">{ps.lot_no}</td>
                       <td className="text-center">{ps.ac_lot}</td>
@@ -331,7 +331,7 @@ export default function PSForFormPage() {
                         <Button
                           variant="primary"
                           size="sm"
-                          onClick={() => handleEditPS(ps.ac_code)}
+                          onClick={() => handleEditPS(ps.id)}
                           className="text-white bg-blue-500 hover:bg-blue-600 border-0"
                           title="Edit PS"
                         >
