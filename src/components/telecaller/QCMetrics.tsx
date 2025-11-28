@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
 import { BarChart3, CheckCircle, XCircle, Activity } from 'lucide-react';
 
 const MetricCard: React.FC<{
@@ -42,9 +44,13 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
+  const [topACs, setTopACs] = useState<any[]>([]);
+  const [topACsLoading, setTopACsLoading] = useState<boolean>(false);
+  const [topACsError, setTopACsError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true; 
     const run = async () => {
       try {
         setLoading(true);
@@ -86,6 +92,47 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
     return () => { mounted = false; };
   }, [teleformUserId, ac_code]);
 
+  // Fetch top 10 ACs by total_not_assigned to show unassigned ACs
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      try {
+        setTopACsLoading(true);
+        setTopACsError(null);
+        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        if (!token) {
+          setTopACsError('Authentication required');
+          setTopACsLoading(false);
+          return;
+        }
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+        if (!process.env.NEXT_PUBLIC_API_URL) console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
+        const url = `${apiUrl}/api/cati/qc/ac-list?page=1&limit=10&sort_by=total_not_assigned&sort_order=DESC`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          if (!mounted) return;
+          setTopACs(result.data || []);
+        } else {
+          setTopACsError(result.message || 'Failed to fetch top ACs');
+        }
+      } catch (err: any) {
+        console.error('Error fetching top ACs:', err);
+        setTopACsError(err?.message || 'Failed to fetch top ACs');
+      } finally {
+        setTopACsLoading(false);
+      }
+    };
+    run();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <Card className="p-4 md:p-6 mb-4">
       <div className="mb-4">
@@ -101,12 +148,46 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
           )
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-            {/* <MetricCard title="Total Interviews" value={stats?.total_interviews ?? '—'} icon={<BarChart3 className="h-6 w-6 text-blue-600" />} color="border-blue-500" bgColor="bg-blue-500" /> */}
             <MetricCard title="Total Assigned" value={stats?.total_assigned ?? '—'} icon={<CheckCircle className="h-6 w-6 text-green-600" />} color="border-green-500" bgColor="bg-green-500" />
             <MetricCard title="Total Unassigned" value={stats?.total_unassigned ?? '—'} icon={<XCircle className="h-6 w-6 text-gray-600" />} color="border-gray-500" bgColor="bg-gray-500" />
             <MetricCard title="Total Pass" value={stats?.total_pass ?? '—'} icon={<CheckCircle className="h-6 w-6 text-green-600" />} color="border-green-500" bgColor="bg-green-500" />
             <MetricCard title="Total Fail" value={stats?.total_fail ?? '—'} icon={<XCircle className="h-6 w-6 text-red-600" />} color="border-red-500" bgColor="bg-red-500" />
             <MetricCard title="Total Pending" value={stats?.total_pending ?? '—'} icon={<BarChart3 className="h-6 w-6 text-orange-600" />} color="border-orange-500" bgColor="bg-orange-500" />
+          </div>
+        )}
+      </div>
+      {/* Top 10 Unassigned ACs */}
+      <div className="mb-4">
+        <SectionHeader title="Top 10 Unassigned ACs" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+        {topACsLoading || topACsError ? (
+          topACsLoading ? (
+            <div className="text-center py-4">
+              <i className="fa fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading top unassigned ACs...</p>
+            </div>
+          ) : (
+            <div className="text-center py-4 text-red-600"><Text>{topACsError}</Text></div>
+          )
+        ) : (
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {topACs.map((ac) => (
+              <div key={ac.ac_code} className="min-w-[180px] bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
+                </div>
+                <div className="grid grid-cols-1 gap-2 text-xs">
+                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div><span className="text-gray-600 dark:text-gray-400">Not Unassigned:</span><span className="font-semibold text-red-700 dark:text-red-300">{ac.total_not_assigned ?? 0}</span></div>
+                </div>
+              </div>
+            ))}
+            {/* View All card */}
+            <div className="min-w-[180px] flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+              <div className="text-center">
+                <div className="text-sm md:text-base font-semibold mb-2">View All ACs</div>
+                <Button variant="primary" size="sm" onClick=''>View All</Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
