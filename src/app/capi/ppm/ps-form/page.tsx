@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Upload, Edit, RotateCcw } from 'lucide-react';
+import Alert from '@/components/ui/Alert';
 import { apiService } from '@/lib/api';
 
 interface PSForForm {
@@ -48,7 +49,11 @@ export default function PSForFormPage() {
   const [pageSize] = useState(25);
   const [psFormData, setPsFormData] = useState<PSForForm[]>([]);
   const [loading, setLoading] = useState(false);
+  const [calculating, setCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Display success alerts
+  const [success, setSuccess] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -122,9 +127,33 @@ export default function PSForFormPage() {
     fetchPSFormData();
   };
 
-  const handleCalculateValidInterview = () => {
-    // Handle calculate valid interview logic here
-    console.log('Calculate Valid Interview');
+  const handleCalculateValidInterview = async () => {
+    try {
+      setCalculating(true);
+      setError(null);
+      setSuccess(null);
+
+      // Call API via apiService to calculate valid interviews
+      const result = await apiService.calculateValidInterview();
+      if (result.success) {
+        // Display success message and affected rows if present
+        const affected = result.data?.affected_rows ?? result.data?.affectedRows ?? null;
+        const message = result.data?.message || result.message || 'Polling Station wise Interview Calculated Successfully!';
+        const fullMsg = message;
+        console.log(fullMsg + (affected !== null ? ` Affected Rows: ${affected}` : '')); 
+        setSuccess(fullMsg);
+        setTimeout(() => setSuccess(null), 8000);
+        // Refresh list after calculation
+        fetchPSFormData();
+      } else {
+        setError(result.message || 'Failed to calculate valid interviews');
+      }
+    } catch (err: any) {
+      console.error('Error calculating valid interviews:', err);
+      setError(err?.message || 'Error calculating valid interviews');
+    } finally {
+      setCalculating(false);
+    }
   };
 
   const handleDownloadPS = async () => {
@@ -241,9 +270,10 @@ export default function PSForFormPage() {
               variant="primary"
               size="sm"
               onClick={handleCalculateValidInterview}
+              disabled={calculating}
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              Calculate Valid Interview
+              {calculating ? 'Calculating...' : 'Calculate Valid Interview'}
             </Button>
             <Button
               variant="primary"
@@ -277,6 +307,11 @@ export default function PSForFormPage() {
               )}
             </Text>
           </div>
+          {success && (
+            <div className="mb-4">
+              <Alert type="success">{success}</Alert>
+            </div>
+          )}
           
           <div className="table-responsive">
             <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">

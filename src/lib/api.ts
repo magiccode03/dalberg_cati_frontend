@@ -1572,6 +1572,32 @@ class ApiService {
 
     return response.blob();
   }
+  
+  // Calculate valid interview for master polling stations
+  async calculateValidInterview(): Promise<ApiResponse<any>> {
+    try {
+      const apiUrl = API_BASE_URL;
+      const token = this.token || localStorage.getItem('accessToken');
+      const response = await fetch(`${apiUrl}/api/dashboard/master-polling-station-dynamic/Calculatevalidinterview`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      return result as ApiResponse;
+    } catch (err: any) {
+      console.error('Error calculating valid interviews:', err);
+      return {
+        success: false,
+        data: null,
+        message: err?.message || 'Error calculating valid interviews',
+        timestamp: new Date().toISOString(),
+      } as ApiResponse;
+    }
+  }
 
   // Demographic Methods
   async getDemographicGenderWise(): Promise<ApiResponse<any>> {
