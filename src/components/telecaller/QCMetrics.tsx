@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -47,10 +46,47 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
   const [topACs, setTopACs] = useState<any[]>([]);
   const [topACsLoading, setTopACsLoading] = useState<boolean>(false);
   const [topACsError, setTopACsError] = useState<string | null>(null);
-  const router = useRouter();
+  const [showAll, setShowAll] = useState<boolean>(false);
+  const [allACs, setAllACs] = useState<any[]>([]);
+  const [allACsLoading, setAllACsLoading] = useState<boolean>(false);
+  const [allACsError, setAllACsError] = useState<string | null>(null);
+
+  const fetchAllACs = async () => {
+    setAllACsLoading(true);
+    setAllACsError(null);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      if (!token) {
+        setAllACsError('Authentication required');
+        setAllACsLoading(false);
+        return;
+      }
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      if (!process.env.NEXT_PUBLIC_API_URL) console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
+      const url = `${apiUrl}/api/cati/qc/ac-list?limit=500&sort_by=ac_code&sort_order=ASC`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAllACs(Array.isArray(result.data?.data) ? result.data.data : (Array.isArray(result.data) ? result.data : []));
+      } else {
+        setAllACsError(result.message || 'Failed to fetch all ACs');
+      }
+    } catch (err: any) {
+      console.error('Error fetching all ACs:', err);
+      setAllACsError(err?.message || 'Failed to fetch all ACs');
+    } finally {
+      setAllACsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let mounted = true; 
+    let mounted = true;
     const run = async () => {
       try {
         setLoading(true);
@@ -154,11 +190,15 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
             <MetricCard title="Total Fail" value={stats?.total_fail ?? '—'} icon={<XCircle className="h-6 w-6 text-red-600" />} color="border-red-500" bgColor="bg-red-500" />
             <MetricCard title="Total Pending" value={stats?.total_pending ?? '—'} icon={<BarChart3 className="h-6 w-6 text-orange-600" />} color="border-orange-500" bgColor="bg-orange-500" />
           </div>
+
         )}
       </div>
+      
+
       {/* Top 10 Unassigned ACs */}
       <div className="mb-4">
         <SectionHeader title="Top 10 Unassigned ACs" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+
         {topACsLoading || topACsError ? (
           topACsLoading ? (
             <div className="text-center py-4">
@@ -169,27 +209,60 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
             <div className="text-center py-4 text-red-600"><Text>{topACsError}</Text></div>
           )
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {topACs.map((ac) => (
-              <div key={ac.ac_code} className="min-w-[180px] bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
+          <>
+            {/* TOP 10 CARDS */}
+            <div className="flex gap-3 overflow-x-auto pb-2">
+              {topACs.map((ac) => (
+                <div key={ac.ac_code} className="min-w-[180px] bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs">
+                    <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                    <span className="text-gray-600 dark:text-gray-400">Total Unassigned:</span>
+                    <span className="font-semibold text-red-700 dark:text-red-300">{ac.total_not_assigned ?? 0}</span>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div><span className="text-gray-600 dark:text-gray-400">Not Unassigned:</span><span className="font-semibold text-red-700 dark:text-red-300">{ac.total_not_assigned ?? 0}</span></div>
+              ))}
+
+              {/* VIEW ALL BUTTON */}
+              <div className="min-w-[180px] flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                <div className="text-center">
+                  <div className="text-sm md:text-base font-semibold mb-2">{showAll ? 'Hide All ACs' : 'View All ACs'}</div>
+                  <Button variant="primary" size="sm" onClick={async () => {
+                    if (!showAll && allACs.length === 0) await fetchAllACs();
+                    setShowAll(prev => !prev);
+                  }}>
+                    {showAll ? 'Hide' : 'View All'}
+                  </Button>
                 </div>
-              </div>
-            ))}
-            {/* View All card */}
-            <div className="min-w-[180px] flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-              <div className="text-center">
-                <div className="text-sm md:text-base font-semibold mb-2">View All ACs</div>
-                <Button variant="primary" size="sm" onClick=''>View All</Button>
               </div>
             </div>
-          </div>
+
+            {/* REMAINING ACs BELOW TOP 10 */}
+            {showAll && (
+              <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-3 mt-4">
+                {allACs
+                  .filter(ac => !topACs.some(t => t.ac_code === ac.ac_code))
+                  .map(ac => (
+                    <div key={ac.ac_code} className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                        <span className="text-gray-600 dark:text-gray-400">Total Unassigned:</span>
+                        <span className="font-semibold text-red-700 dark:text-red-300">{ac.total_not_assigned ?? 0}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </>
         )}
+
       </div>
     </Card>
   );
