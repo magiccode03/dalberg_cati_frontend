@@ -765,6 +765,66 @@ export const menuData: MenuItem[] = [
     system: 'capi',
   },
 
+  // DQM CATI Menu
+  {
+    id: 'cati-ppm-qc-progress',
+    label: 'QC Progress',
+    href: '/cati/dqm/qc-progress/overall-qc-progress',
+    icon: 'Users',
+    roles: ['dqm'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppm-qc-user-progress',
+        label: 'QC User Progress',
+        href: '/cati/dqm/qc-progress/qc-user-progress', 
+        icon: 'Users',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-user-progress-daily',
+        label: 'QC User Daily Progress',
+        href: '/cati/dqm/qc-progress/qc-user-progress-daily',
+        icon: 'Users',
+        roles: ['dqm'], 
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-ac-assigned',
+        label: 'Assigned AC - QC User',
+        href: '/cati/dqm/qc-progress/qc-ac-assigned',
+        icon: 'TrendingUp',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-ac-wise-progress',
+        label: 'AC Wise Progress',
+        href: '/cati/dqm/qc-progress/acwisereport',
+        icon: 'BarChart3',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-interview-list',
+        label: 'Interview List',
+        href: '/cati/dqm/qc-progress/interview-list',
+        icon: 'CheckCircle',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+    ],
+  },
+  {
+    id: 'cati-ppm-qc-data-entry-progress',
+    label: 'Data Entry Progress',
+    href: '/cati/dqm/data-entry-progress',
+    icon: 'BarChart3',
+    roles: ['dqm'],
+    system: 'cati',
+  },
+
   // CAPI Start QC Menu
   {
     id: 'capi-start-gps-qc',
