@@ -18,7 +18,7 @@ const roleRouteMap: Record<string, { capi: string; cati: string }> = {
   },
   dqm: {
     capi: '/capi/dqm/fieldwork-progress',
-    cati: '/cati/dqm/fieldwork-progress',
+    cati: '/cati/dqm//qc-progress/qc-user-progress',
   },
   dqmt: {
     capi: '/capi/dqmt/fieldwork-progress',
@@ -112,6 +112,7 @@ export default function HomePage() {
       router.push(targetRoute);
     }
   };
+  
 
   if (isLoading) {
     return (
