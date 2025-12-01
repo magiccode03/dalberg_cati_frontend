@@ -199,11 +199,11 @@ export default function SecondChoicePage() {
       {apiData?.state_level && renderTable(apiData.state_level.title, apiData.state_level.data)}
 
       {/* Zone Tables */}
-      {apiData?.zone_breakdown.map((zone, index) => (
+      {/* {apiData?.zone_breakdown.map((zone, index) => (
         <div key={zone.zone_code || `zone-${index}`}>
           {renderTable(`Zone - ${zone.zone_code} ${zone.zone_name}`, zone.data)}
         </div>
-      ))}
+      ))} */}
 
       <style jsx>{`
         .main-container {

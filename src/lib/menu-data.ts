@@ -920,14 +920,14 @@ export const menuData: MenuItem[] = [
         roles: ['fd'],
         system: 'capi',
       },
-      {
-        id: 'capi-fd-demographics-caste',
-        label: 'Caste',
-        href: '/capi/fd/demographics/caste',
-        icon: 'Database',
-        roles: ['fd'],
-        system: 'capi',
-      },
+      // {
+      //   id: 'capi-fd-demographics-caste',
+      //   label: 'Caste',
+      //   href: '/capi/fd/demographics/caste',
+      //   icon: 'Database',
+      //   roles: ['fd'],
+      //   system: 'capi',
+      // },
     ],
   },
   // {
