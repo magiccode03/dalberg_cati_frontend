@@ -284,7 +284,7 @@ export default function ACWiseReportPage() {
                     <th className="text-center">S.No</th>
                     <th className="text-center">AC Code</th>
                     <th className="text-center">Name</th>
-                    <th className="text-center">Agency Name</th>
+                    <th className="text-center">Team</th>
                     <th className="text-center">Sample</th>
                     <th className="text-center">Checker</th>
                     <th className="text-center">Alloted</th>

@@ -269,7 +269,7 @@ export default function MasterACPage() {
                   <th className="text-center">Zone Code</th>
                   <th className="text-center">Zone Name</th>
                   <th className="text-center">Current Mla</th>
-                  <th className="text-center">Agency</th>
+                  <th className="text-center">Team</th>
                   <th className="text-center">Actions</th>
                 </tr>
               </thead>

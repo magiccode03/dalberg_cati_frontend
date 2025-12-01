@@ -580,12 +580,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (role === 'capi_qc') return '/capi/capi-qc/qc-auth';
     
     // DQM role goes directly to QC user registration page
-    if (role === 'dqm') return '/capi/dqm/qc-user-registration';
+    // if (role === 'dqm') return '/capi/dqm/qc-user-registration';
     
     // Data Manager role goes directly to CAPI Data page
     if (role === 'data_manager') return '/dm/capi';
     
-    // All other roles (including research, ppm, fd, etc.) go to /home
+    // All other roles (including research, ppm,dqm fd, etc.) go to /home
     return '/home';
   };
 

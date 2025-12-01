@@ -42,12 +42,10 @@ interface APIResponse {
     under_qc: number;
   }>;
   pagination?: {
-    current_page: number;
-    total_pages: number;
-    total_count: number;
-    page_size: number;
-    has_next: boolean;
-    has_previous: boolean;
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
   error?: string;
   message?: string;
@@ -61,12 +59,15 @@ export default function ACWiseReportPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
   // Helper function to transform API data to UI format
-  const transformAPIData = (apiData: any[]): ACWiseReportData[] => {
+  const transformAPIData = (apiData: any[], currentPage: number, pageSize: number): ACWiseReportData[] => {
     return apiData.map((item, index) => ({
       id: index + 1,
-      sNo: index + 1,
+      sNo: (currentPage - 1) * pageSize + index + 1, // Calculate S.No. based on pagination
       acCode: item.ac_code,
       name: item.ac_name,
       agencyName: item.agency_name || '',
@@ -91,17 +92,20 @@ export default function ACWiseReportPage() {
       console.log('Access token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      console.log('Making API request to: /capi/ac-qc-statistics');
+      console.log('Making API request to: /teleform-users?qc=1');
       
       // Build query parameters
       const queryParams = new URLSearchParams();
       
       // Add pagination
       queryParams.append('page', currentPage.toString());
-      queryParams.append('pageSize', pageSize.toString());
+      queryParams.append('limit', pageSize.toString());
+      
+      // Add QC filter
+      queryParams.append('qc', '1');
       
       const queryString = queryParams.toString();
-      const endpoint = `/capi/ac-qc-statistics${queryString ? `?${queryString}` : ''}`;
+      const endpoint = `/teleform-users${queryString ? `?${queryString}` : ''}`;
       
       console.log('API endpoint:', endpoint);
       
@@ -120,12 +124,34 @@ export default function ACWiseReportPage() {
       
       console.log('API Response:', data);
       console.log('Response success:', data.success);
+      console.log('Raw data:', data.data);
       
       if (data.success && data.data && Array.isArray(data.data)) {
-        const transformedData = transformAPIData(data.data);
-        setAcWiseReportData(transformedData);
-        setTotalCount(data.pagination?.total_count || transformedData.length);
+        console.log('Data length:', data.data.length);
+        console.log('First AC data:', data.data[0]);
+        
+        const transformedData = transformAPIData(data.data, currentPage, pageSize);
         console.log('Transformed data:', transformedData);
+        setAcWiseReportData(transformedData);
+        
+        // Handle pagination info
+        if (data.pagination) {
+          console.log('Setting pagination from API:', data.pagination);
+          setTotalCount(data.pagination.total);
+          setTotalPages(data.pagination.totalPages);
+          setHasNext(data.pagination.page < data.pagination.totalPages);
+          setHasPrevious(data.pagination.page > 1);
+        } else {
+          // Fallback if no pagination info
+          console.log('No pagination info, using fallback');
+          setTotalCount(transformedData.length);
+          setTotalPages(1);
+          setHasNext(false);
+          setHasPrevious(false);
+        }
+        
+        console.log('Transformed data:', transformedData);
+        console.log('Pagination info:', data.pagination);
       } else {
         console.error('Invalid API response structure or API error:', data.error);
         setError(data.error || 'Invalid response format from server');
@@ -134,8 +160,12 @@ export default function ACWiseReportPage() {
           { id: 1, sNo: 1, acCode: 0, name: 'WB', agencyName: '', sample: 0, checker: '-', alloted: 0, completed: 0, accepted: 0, rejected: 0, underQc: 0 },
           { id: 2, sNo: 2, acCode: 1, name: 'Mekliganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 109, 114, 117, 123, 999', alloted: 97, completed: 95, accepted: 34, rejected: 62, underQc: 7 },
         ];
-        setAcWiseReportData(fallbackData);
+        const transformedFallbackData = transformAPIData(fallbackData, currentPage, pageSize);
+        setAcWiseReportData(transformedFallbackData);
         setTotalCount(fallbackData.length);
+        setTotalPages(1);
+        setHasNext(false);
+        setHasPrevious(false);
       }
     } catch (err: any) {
       console.error('Error fetching data:', err);
@@ -176,8 +206,12 @@ export default function ACWiseReportPage() {
         { id: 4, sNo: 4, acCode: 8, name: 'Natabari', agencyName: 'Ajit Barman', sample: 0, checker: '105, 113', alloted: 43, completed: 43, accepted: 37, rejected: 6, underQc: 0 },
         { id: 5, sNo: 5, acCode: 9, name: 'Tufanganj', agencyName: 'Ajit Barman', sample: 0, checker: '100, 103, 115', alloted: 59, completed: 56, accepted: 41, rejected: 15, underQc: 0 },
       ];
-      setAcWiseReportData(fallbackData);
+      const transformedFallbackData = transformAPIData(fallbackData, currentPage, pageSize);
+      setAcWiseReportData(transformedFallbackData);
       setTotalCount(fallbackData.length);
+      setTotalPages(1);
+      setHasNext(false);
+      setHasPrevious(false);
     } finally {
       setLoading(false);
     }
@@ -191,37 +225,35 @@ export default function ACWiseReportPage() {
       console.log('Downloading all AC wise report data...');
       
       // Call API with limit=300 to get all data
-      const response = await apiClient.get('/capi/ac-qc-statistics?limit=300');
+      const response = await apiClient.get('/teleform-users?qc=1&limit=300');
       const data: APIResponse = response.data;
       
       if (data.success && data.data && Array.isArray(data.data)) {
-        const transformedData = transformAPIData(data.data);
+        const transformedData = transformAPIData(data.data, 1, data.data.length); // Use page 1 for download
         
         // Convert to CSV
         const csvHeaders = [
           'S.No',
           'AC Code', 
           'Name',
-          'Team',
-          'Checker',
           'Alloted',
           'Completed',
-          'Accepted',
+          'Valid',
           'Rejected',
-          'Under QC'
+          'Under QC',
+          'Checker'
         ];
         
-        const csvRows = transformedData.map((item, index) => [
-          index + 1,
+        const csvRows = transformedData.map((item) => [
+          item.sNo, // Use the calculated S.No.
           item.acCode,
           `"${item.name}"`,
-          `"${item.agencyName}"`,
-          `"${item.checker}"`,
           new Intl.NumberFormat('en-IN').format(item.alloted),
           new Intl.NumberFormat('en-IN').format(item.completed),
           new Intl.NumberFormat('en-IN').format(item.accepted),
           new Intl.NumberFormat('en-IN').format(item.rejected),
-          new Intl.NumberFormat('en-IN').format(item.underQc)
+          new Intl.NumberFormat('en-IN').format(item.underQc),
+          `"${item.checker}"`
         ]);
         
         // Create CSV content
@@ -257,7 +289,7 @@ export default function ACWiseReportPage() {
   // Fetch data on component mount and when page changes
   useEffect(() => {
     fetchACWiseReportData();
-  }, [currentPage]);
+  }, [currentPage, pageSize]);
 
   const getAgencyBadge = (agencyName: string) => {
     if (!agencyName) return <span className="text-gray-400">-</span>;
@@ -278,139 +310,127 @@ export default function ACWiseReportPage() {
     );
   };
 
-  const totalPages = Math.ceil(totalCount / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const currentData = acWiseReportData;
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center">
-          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
-            AC Wise Report
-          </Heading>
-        </div>
-        <div className="flex items-center">
+      <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        AC Wise Report
+      </Heading>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+            <Text className="ml-2 text-gray-600">Loading AC wise report...</Text>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <Card className="mb-6">
+            <div className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
+                    Error Loading Data
+                  </Heading>
+                  <Text className="text-gray-600">{error}</Text>
+                </div>
+                <Button
+                  onClick={fetchACWiseReportData}
+                  variant="outline"
+                  size="sm"
+                >
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+      {/* AC Wise Report Table */}
+      <Card>
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC Wise Report</Heading>
+          </div>
           <Button
             variant="primary"
             onClick={downloadAllData}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex items-center bg-blue-600 text-white hover:bg-blue-500"
             disabled={loading}
           >
             <Download className="w-4 h-4 mr-2" />
             Download
           </Button>
         </div>
-      </div>
 
-      {/* Loading State */}
-      {loading && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <Text className="text-gray-600">Loading AC wise report...</Text>
+          <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
+            Total <strong>{totalCount}</strong> ACs.
+          </div>
+              <div className="overflow-x-auto">
+                <Table
+                  striped
+                  bordered
+                  hover
+                  className="w-full border-collapse"
+                >
+                  <thead className="sticky-header bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Valid</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Rejected</th>
+                      <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentData.map((data, index) => (
+                      <tr key={data.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.sNo}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{data.acCode}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.name}</td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                          <FormattedNumber value={data.alloted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">
+                          <FormattedNumber value={data.completed} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium text-center">
+                          <FormattedNumber value={data.accepted} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium text-center">
+                          <FormattedNumber value={data.rejected} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium text-center">
+                          <FormattedNumber value={data.underQc} locale="en-IN" />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalCount}
+            itemsPerPage={pageSize}
+            onPageChange={setCurrentPage}
+          />
         </div>
-      )}
 
-      {/* Error State */}
-      {error && (
-        <Card className="mb-6">
-          <div className="text-center py-8">
-            <div className="text-red-500 mb-4">
-              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-              </svg>
-            </div>
-            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
-            <Text className="text-gray-600 mb-4">{error}</Text>
-            <Button 
-              onClick={fetchACWiseReportData} 
-              className="bg-blue-500 text-white hover:bg-blue-600"
-            >
-              Retry
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {/* AC Wise Report Table */}
-      <Card className="">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              AC Wise Report
-            </Heading>
-          </div>
-        </div>
-
-        <div className="bg-white">
-          <div className="mb-4">
-            <Text className="text-sm text-gray-600">
-              Total <strong>{totalCount.toLocaleString()}</strong> ACs.
-            </Text>
-          </div>
-          
-          <div className="table-responsive">
-            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
-              <thead className="table-light bg-gray-50">
-                <tr>
-                  <th className="text-center">S.No</th>
-                  <th className="text-center">AC Code</th>
-                  <th className="text-center">Name</th>
-                  <th className="text-center">Team</th>
-                  <th className="text-center">Alloted</th>
-                  <th className="text-center">Completed</th>
-                  <th className="text-center">Valid</th>
-                  <th className="text-center">Rejected</th>
-                  <th className="text-center">Under QC</th>
-                  <th className="text-center">Checker</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentData.map((data, index) => (
-                  <tr key={data.id}>
-                    <td className="text-center">{startIndex + index + 1}</td>
-                    <td className="text-center">{data.acCode}</td>
-                    <td className="text-left">{data.name}</td>
-                    <td className="text-left">
-                      {getAgencyBadge(data.agencyName)}
-                    </td>
-                    <td className="text-center">
-                      <FormattedNumber value={data.alloted} locale="en-IN" />
-                    </td>
-                    <td className="text-center">
-                      <FormattedNumber value={data.completed} locale="en-IN" />
-                    </td>
-                    <td className="text-center text-green-600 font-medium">
-                      <FormattedNumber value={data.accepted} locale="en-IN" />
-                    </td>
-                    <td className="text-center text-red-600 font-medium">
-                      <FormattedNumber value={data.rejected} locale="en-IN" />
-                    </td>
-                    <td className="text-center text-blue-600 font-medium">
-                      <FormattedNumber value={data.underQc} locale="en-IN" />
-                    </td>
-                    <td className="text-left">{data.checker || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-6">
-            <PaginationStandard
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalCount}
-              itemsPerPage={pageSize}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        </div>
       </Card>
     </Container>
   );

@@ -50,7 +50,6 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
   const [topACsError, setTopACsError] = useState<string | null>(null);
   // No router usage, modal opens instead of navigation
   const [isAcListModalOpen, setIsAcListModalOpen] = useState(false);
-                <Button variant="primary" size="sm" onClick={() => setIsAcListModalOpen(true)}>View All</Button>
 
   useEffect(() => {
     let mounted = true; 
@@ -161,7 +160,19 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
       </div>
       {/* Top 10 Unassigned ACs */}
       <div className="mb-4">
-        <SectionHeader title="Top 10 Unassigned ACs" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg flex-shrink-0">
+              <BarChart3 className="h-6 w-6 text-blue-600" />
+            </div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Top 10 Unassigned ACs
+            </Heading>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setIsAcListModalOpen(true)}>
+            View All
+          </Button>
+        </div>
         {topACsLoading || topACsError ? (
           topACsLoading ? (
             <div className="text-center py-4">
@@ -172,23 +183,48 @@ export default function QCMetrics({ teleformUserId, ac_code }: {
             <div className="text-center py-4 text-red-600"><Text>{topACsError}</Text></div>
           )
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {topACs.map((ac) => (
-              <div key={ac.ac_code} className="min-w-[180px] bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="text-s font-semibold text-gray-900 dark:text-white truncate">{ac.ac_name}</div>
-                  <div className="text-s text-gray-500 dark:text-gray-400 px-2 py-1 rounded bg-gray-100 dark:bg-gray-700">#{ac.ac_code}</div>
-                </div>
-                <div className="grid grid-cols-1 gap-2 text-xs">
-                  <div className="flex items-center gap-1"><span className="font-semibold text-red-700 dark:text-red-300">{ac.total_not_assigned ?? 0}</span></div>
-                </div>
-              </div>
-            ))}
-            {/* View All card */}
-            <div className="min-w-[200px] flex items-center justify-center bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-              <div className="text-center">
-                <Button variant="primary" size="sm" onClick={() => setIsAcListModalOpen(true)}>View All</Button>
-              </div>
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
+            <div className="flex gap-3 pb-2 min-w-max">
+              {topACs.map((ac, index) => {
+                // Calculate heatmap intensity based on unassigned count (0-100 scale)
+                const unassignedCount = ac.total_not_assigned ?? 0;
+                const maxCount = topACs[0]?.total_not_assigned ?? 1;
+                const intensity = Math.min(100, Math.round((unassignedCount / maxCount) * 100));
+                
+                // Heatmap color: from light red (low) to dark red (high)
+                // Using opacity from 0.1 (lowest) to 0.5 (highest)
+                const opacity = 0.1 + (intensity / 100) * 0.4;
+                const heatmapColor = `rgba(239, 68, 68, ${opacity})`;
+                
+                return (
+                  <div 
+                    key={ac.ac_code} 
+                    className="min-w-[200px] max-w-[200px] rounded-lg p-3 shadow-sm hover:shadow-md transition-all duration-200"
+                    style={{
+                      backgroundColor: "#ddd",
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Left: Unassigned Count */}
+                      <div className="flex-shrink-0">
+                        <div className="text-3xl font-bold text-red-600 dark:text-red-400 leading-none">
+                          {unassignedCount}
+                        </div>
+                      </div>
+                      
+                      {/* Right: AC Code and Name */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-mono mb-1">
+                          #{ac.ac_code}
+                        </div>
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={ac.ac_name}>
+                          {ac.ac_name}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

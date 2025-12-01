@@ -5,15 +5,18 @@ import { useRouter } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
-import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
-import { Edit, Plus, Search, ChevronDown, ChevronRight, BarChart3, X } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
 import CatiQCACAssignModal from '@/components/modals/CatiQCACAssignModal';
 import QCMetrics from '@/components/telecaller/QCMetrics';
+import TelecallerSearchFilters from '@/components/telecaller/TelecallerSearchFilters';
+import TelecallerUserCard from '@/components/telecaller/TelecallerUserCard';
+import TelecallerExpandedDetails from '@/components/telecaller/TelecallerExpandedDetails';
+import { useTelecallerData } from '@/components/telecaller/useTelecallerData';
 
 interface UnifiedUserData {
   user_id: number;
@@ -519,110 +522,37 @@ const TeleUserInfoPage: React.FC = () => {
         )}
 
         {/* Search Form */}
-        <Card className="">
-          <form onSubmit={handleSearch}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 md:gap-4">
-              <div className="lg:col-span-1">
-                <SelectDropdown
-                  options={state.acOptions}
-                  value={searchFilters.ac_code}
-                  onChange={(value) => {
-                    const selectedValue = Array.isArray(value) ? value[0] : value as string;
-                    handleInputChange('ac_code', selectedValue);
-                  }}
-                  className="w-full"
-                  placeholder="Select AC"
-                  searchable
-                  clearable
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <SelectDropdown
-                  options={state.telecallerOptions}
-                  value={searchFilters.telecaller}
-                  onChange={(value) => {
-                    const selectedValue = Array.isArray(value) ? value[0] : value as string;
-                    handleInputChange('telecaller', selectedValue);
-                    // Auto-populate teleform_user_id when telecaller is selected
-                    if (selectedValue) {
-                      const selectedOption = state.telecallerOptions.find(opt => opt.value === selectedValue);
-                      if (selectedOption) {
-                        setSearchFilters(prev => ({
-                          ...prev,
-                          telecaller: selectedValue,
-                          teleform_user_id: selectedOption.user_id.toString(),
-                        }));
-                      }
-                    } else {
-                      // Clear teleform_user_id when telecaller is deselected
-                      setSearchFilters(prev => ({
-                        ...prev,
-                        telecaller: '',
-                        teleform_user_id: '',
-                      }));
-                    }
-                  }}
-                  className="w-full"
-                  placeholder="Select Telecaller"
-                  searchable
-                  clearable
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <SelectDropdown
-                  options={statusOptions}
-                  value={searchFilters.status}
-                  onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value as string)}
-                  className="w-full"
-                  placeholder="Telecaller Status"
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <SelectDropdown
-                  options={permissionOptions}
-                  value={searchFilters.permission}
-                  onChange={(value) => handleInputChange('permission', Array.isArray(value) ? value[0] : value as string)}
-                  className="w-full"
-                  placeholder="User Type"
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <SelectDropdown
-                  options={[
-                    { value: '', label: 'All Groups' },
-                    ...state.telecallingGroups.map(group => ({
-                      value: group.id.toString(),
-                      label: group.name,
-                    }))
-                  ]}
-                  value={searchFilters.telecalling_group_id}
-                  onChange={(value) => handleInputChange('telecalling_group_id', Array.isArray(value) ? value[0] : value as string)}
-                  className="w-full"
-                  placeholder="Telecalling Group"
-                  disabled={state.groupsLoading}
-                />
-              </div>
-              <div className="lg:col-span-1">
-                <Button type="submit" disabled={state.loading} className="w-full">
-                  <Search className="w-4 h-4 mr-2" />
-                  {state.loading ? 'Searching...' : 'Search'}
-                </Button>
-              </div>
-              <div className="lg:col-span-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClear}
-                  disabled={state.loading}
-                  className="w-full bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Clear
-                </Button>
-              </div>
-            </div>
-          </form>
-        </Card>
+        <TelecallerSearchFilters
+          searchFilters={searchFilters}
+          onFilterChange={handleInputChange}
+          onSearch={handleSearch}
+          onClear={handleClear}
+          acOptions={state.acOptions}
+          telecallerOptions={state.telecallerOptions}
+          telecallingGroups={state.telecallingGroups}
+          statusOptions={statusOptions}
+          permissionOptions={permissionOptions}
+          loading={state.loading}
+          groupsLoading={state.groupsLoading}
+          onTelecallerSelect={(selectedValue, options) => {
+            if (selectedValue) {
+              const selectedOption = options.find(opt => opt.value === selectedValue);
+              if (selectedOption) {
+                setSearchFilters(prev => ({
+                  ...prev,
+                  telecaller: selectedValue,
+                  teleform_user_id: selectedOption.user_id.toString(),
+                }));
+              }
+            } else {
+              setSearchFilters(prev => ({
+                ...prev,
+                telecaller: '',
+                teleform_user_id: '',
+              }));
+            }
+          }}
+        />
 
         {showQCMetrics && (
           <QCMetrics teleformUserId={searchFilters.teleform_user_id || undefined}
@@ -672,357 +602,16 @@ const TeleUserInfoPage: React.FC = () => {
             </div>
           ) : state.userData.length > 0 ? (
             <div className="space-y-3">
-              {state.userData.map((user, index) => {
-                const isExpanded = state.expandedRows.has(user.user_id);
-                const isQCUser = user.user_type === 'qc_user';
-                const isDataEntry = user.user_type === 'data_entry';
-
-                return (
-                  <div key={user.user_id} className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200">
-                    {/* Main Row Content */}
-                    <div className="p-3 md:p-4">
-                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                        {/* Left Section - User Info */}
-                        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                          <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm md:text-base">
-                            {user.user_name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                              <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white truncate">
-                                {user.user_name}
-                              </h3>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                  ID: {user.user_id}
-                                </span>
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full whitespace-nowrap ${user.status === 1
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                  }`}>
-                                  {user.status === 1 ? 'Active' : 'Inactive'}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                              <span className="font-mono">{user.mobile_number}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Center Section - Quick Stats */}
-                        <div className="flex items-center justify-center gap-4 md:gap-8 flex-1">
-                          {isQCUser ? (
-                            <>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
-                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
-                                  {user.total_assigned}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
-                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {user.total_qc_pass || 0}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Fail</p>
-                                <p className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
-                                  {user.total_qc_fail || 0}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
-                                  {user.total_qc_pending || 0}
-                                </p>
-                              </div>
-                            </>
-                          ) : isDataEntry ? (
-                            <>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
-                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
-                                  {user.total_assigned}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pass</p>
-                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {user.data_entry_pass || 0}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
-                                  {user.data_entry_pending || 0}
-                                </p>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Assigned</p>
-                                <p className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
-                                  {user.total_assigned}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Attempted</p>
-                                <p className="text-base md:text-lg font-bold text-green-600 dark:text-green-400">
-                                  {user.total_call_attempted || 0}
-                                </p>
-                              </div>
-                              <div className="text-center min-w-[50px] md:min-w-[60px]">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
-                                <p className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
-                                  {user.total_call_pending || 0}
-                                </p>
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Right Section - Actions */}
-                        <div className="flex items-center justify-end gap-1 md:gap-2 flex-1 lg:flex-none">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => toggleRowExpansion(user.user_id)}
-                            title={isExpanded ? "Hide assigned AC details" : "View assigned AC details"}
-                            className="text-xs md:text-sm px-2 md:px-3"
-                          >
-                            {isExpanded ? (
-                              <>
-                                <ChevronDown className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                                <span className="hidden sm:inline">Assigned AC</span>
-                              </>
-                            ) : (
-                              <>
-                                <ChevronRight className="w-3 h-3 md:w-4 md:h-4 mr-1" />
-                                <span className="hidden sm:inline">Assigned AC</span>
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => router.push(`/cati/ppm/manage-calling/edit-tele-caller/${user.user_id}`)}
-                            title="Edit telecaller"
-                            className="px-2 md:px-3"
-                          >
-                            <Edit className="w-3 h-3 md:w-4 md:h-4" />
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            className={`px-2 md:px-3 ${isQCUser
-                              ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                              : 'bg-purple-500 hover:bg-purple-600 text-white'
-                              }`}
-                            onClick={() => handleAddData(user)}
-                            title={isQCUser ? "Assign AC for QC" : "Assign AC data"}
-                          >
-                            <Plus className="w-3 h-3 md:w-4 md:h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Expanded Details Section */}
-                    {isExpanded && (
-                      <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                        <div className="p-3 md:p-4">
-                          <div className="space-y-3">
-                            {/* Detailed Stats Row */}
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 gap-3">
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                  <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Total Assigned:</span>
-                                  <span className="font-bold text-blue-600 dark:text-blue-400">
-                                    {user.total_assigned}
-                                  </span>
-                                </div>
-                                {isQCUser ? (
-                                  <>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pass:</span>
-                                      <span className="font-bold text-green-600 dark:text-green-400">
-                                        {user.total_qc_pass || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Fail:</span>
-                                      <span className="font-bold text-red-600 dark:text-red-400">
-                                        {user.total_qc_fail || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
-                                      <span className="font-bold text-orange-600 dark:text-orange-400">
-                                        {user.total_qc_pending || 0}
-                                      </span>
-                                    </div>
-                                  </>
-                                ) : isDataEntry ? (
-                                  <>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pass:</span>
-                                      <span className="font-bold text-green-600 dark:text-green-400">
-                                        {user.data_entry_pass || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
-                                      <span className="font-bold text-orange-600 dark:text-orange-400">
-                                        {user.data_entry_pending || 0}
-                                      </span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Attempted:</span>
-                                      <span className="font-bold text-green-600 dark:text-green-400">
-                                        {user.total_call_attempted || 0}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                      <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Pending:</span>
-                                      <span className="font-bold text-orange-600 dark:text-orange-400">
-                                        {user.total_call_pending || 0}
-                                      </span>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                              <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-gray-400 flex-shrink-0" />
-                            </div>
-
-                            {/* AC Details Row */}
-                            {user.ac_wise_statistics && user.ac_wise_statistics.length > 0 && (
-                              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                <div className="flex items-center gap-2 mb-3">
-                                  <BarChart3 className="h-4 w-4 text-gray-500" />
-                                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                    AC-wise Breakdown ({user.ac_wise_statistics.length} ACs)
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                  {user.ac_wise_statistics.map((ac) => (
-                                    <div key={ac.ac_code} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                                      <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                          {ac.ac_name}
-                                        </span>
-                                        <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded flex-shrink-0">
-                                          #{ac.ac_code}
-                                        </span>
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-2 text-xs">
-                                        {isQCUser ? (
-                                          <>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Pass:</span>
-                                              <span className="font-semibold text-green-600 dark:text-green-400">
-                                                {ac.qc_pass || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Fail:</span>
-                                              <span className="font-semibold text-red-600 dark:text-red-400">
-                                                {ac.qc_fail || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Pending:</span>
-                                              <span className="font-semibold text-orange-600 dark:text-orange-400">
-                                                {ac.qc_pending || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
-                                              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                                                {ac.total_assigned}
-                                              </span>
-                                            </div>
-                                          </>
-                                        ) : isDataEntry ? (
-                                          <>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Pass:</span>
-                                              <span className="font-semibold text-green-600 dark:text-green-400">
-                                                {ac.data_entry_pass || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Pending:</span>
-                                              <span className="font-semibold text-orange-600 dark:text-orange-400">
-                                                {ac.data_entry_pending || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
-                                              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                                                {ac.total_assigned}
-                                              </span>
-                                            </div>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Attempted:</span>
-                                              <span className="font-semibold text-green-600 dark:text-green-400">
-                                                {ac.call_attempted || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Pending:</span>
-                                              <span className="font-semibold text-orange-600 dark:text-orange-400">
-                                                {ac.call_pending || 0}
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                                              <span className="text-gray-600 dark:text-gray-400">Total:</span>
-                                              <span className="font-semibold text-blue-600 dark:text-blue-400">
-                                                {ac.total_assigned}
-                                              </span>
-                                            </div>
-                                          </>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {state.userData.map((user) => (
+                <TelecallerUserCard
+                  key={user.user_id}
+                  user={user}
+                  isExpanded={state.expandedRows.has(user.user_id)}
+                  onToggleExpand={toggleRowExpansion}
+                  onAddData={handleAddData}
+                  renderExpandedDetails={(user) => <TelecallerExpandedDetails user={user} />}
+                />
+              ))}
             </div>
           ) : (
             <div className="text-center py-12">
