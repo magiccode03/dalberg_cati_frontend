@@ -9,7 +9,7 @@ import Text from '@/components/ui/Text';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import { Download, Search, X } from 'lucide-react';
-import { apiService, CATIACData } from '@/lib/api';
+import { apiService, CATIACDQMData } from '@/lib/api';
 import Input from '@/components/ui/Input';
 
 
@@ -17,11 +17,12 @@ export default function CATIACProgressDQMPage() {
     const [callingDates, setCallingDates] = useState<string>('all');
     const [fromDate, setFromDate] = useState<string>('');
     const [toDate, setToDate] = useState<string>('');
-    const [filteredData, setFilteredData] = useState<CATIACData[]>([]);
-    const [acData, setAcData] = useState<CATIACData[]>([]);
+    const [filteredData, setFilteredData] = useState<CATIACDQMData[]>([]);
+    const [acData, setAcData] = useState<CATIACDQMData[]>([]);
     const [selectedAcCode, setSelectedAcCode] = useState<string>('');
     const [selectedAcName, setSelectedAcName] = useState<string>('');
     const [totalCount, setTotalCount] = useState(0);
+    const [summary, setSummary] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -121,10 +122,8 @@ export default function CATIACProgressDQMPage() {
     ], [acData]);
 
     const fetchCATIDQMData = useCallback(async () => {
-        // Prevent multiple simultaneous calls
-        if (fetchingDataRef.current) {
-            return;
-        }
+
+        if (fetchingDataRef.current) return;
 
         fetchingDataRef.current = true;
         setLoading(true);
@@ -138,44 +137,56 @@ export default function CATIACProgressDQMPage() {
                 fetchingDataRef.current = false;
                 return;
             }
+
             const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
             const params = new URLSearchParams();
+
             // Date filter
             const dateRange = getDateRangeForAPI(callingDates, fromDate, toDate);
             if (dateRange.start_date && dateRange.end_date) {
                 params.append('start_date', dateRange.start_date);
                 params.append('end_date', dateRange.end_date);
             }
-            // Optional AC filter (if a single AC selected)
+
+            // AC filter
             if (selectedAcCode) {
                 params.append('ac_code', selectedAcCode);
             }
+
             const url = `${apiBaseUrl}/api/cati/ac-progress-report/dqm${params.toString() ? `?${params.toString()}` : ''}`;
+
             const response = await fetch(url, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json',
-                },
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/json"
+                }
             });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
             const result = await response.json();
-            if (result.success && Array.isArray(result.data)) {
-                setAcData(result.data);
-                // If AC selected, keep server filtered; else show full list
-                setFilteredData(result.data);
+
+            if (result.success && result.data) {
+                const summary = result.data.summary;   // SUMMARY
+                const list = result.data.data;        // DATA ARRAY
+                setSummary(summary);
+                setTotalCount(list.length);
+                setAcData(list);
+                setFilteredData(list);
             } else {
-                setError(result.message || 'Failed to fetch CATI AC data');
+                setError(result.message || "Failed to fetch CATI AC data");
             }
+
         } catch (err) {
-            console.error('Error fetching CATI AC data:', err);
-            setError(err instanceof Error ? err.message : 'An error occurred while fetching data');
+            console.error("Error fetching CATI AC data:", err);
+            setError(err instanceof Error ? err.message : "An error occurred while fetching data");
         } finally {
             setLoading(false);
             fetchingDataRef.current = false;
         }
+
     }, [callingDates, fromDate, toDate, selectedAcCode]);
+
 
     useEffect(() => {
         if (!hasInitialFetchRef.current) {
@@ -183,6 +194,67 @@ export default function CATIACProgressDQMPage() {
             fetchCATIDQMData();
         }
     }, []);
+
+    const handleDownload = () => {
+        if (filteredData.length === 0) return;
+
+        // Create CSV content
+        const headers = ['AC Code', 'AC Name', 'Total Completed Data', 'Valid', 'QC Rejected', 'Short Interview Rejected', 'Total Under QC Data', 'Assigned to QC User', 'Pending For Assignment'];
+       
+
+        const rows: string[] = [];
+
+        // 👉 Add SUMMARY row first (if available)
+        if (summary) {
+            rows.push([
+                '-',                           
+                '"-"',                   
+                summary.total_success,
+                summary.total_pass,
+                summary.total_qc_rejected,
+                summary.total_short_interview ?? '',
+                summary.total_under_qc ?? '',
+                summary.total_assigned_to_qc_user ?? '',
+                summary.total_pending_for_assignment ?? ''
+            ].join(','));
+        }
+
+        // 👉 Add all AC rows
+        filteredData.forEach((item) => {
+            rows.push([
+                item.ac_code,
+                `"${item.ac_name}"`,
+                item.success,
+                item.pass,
+                item.qc_rejected,
+                item.short_interview ?? '',
+                item.under_qc ?? '',
+                item.assigned_to_qc_user ?? '',
+                item.pending_for_assignment ?? ''
+            ].join(','));
+        });
+
+        // 👉 Final CSV content
+        const csvContent = [headers.join(','), ...rows].join('\n');
+
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+
+        // Generate filename with current date
+        const currentDate = new Date().toISOString().split('T')[0];
+        const selectedAc = selectedAcCode ? acData.find(ac => ac.ac_code.toString() === selectedAcCode)?.ac_name : 'All';
+        const filename = `AC-Wise-Report-${selectedAc}-${currentDate}.csv`;
+
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -293,8 +365,8 @@ export default function CATIACProgressDQMPage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            //   onClick={handleDownload}
-                            //   disabled={loading || filteredData.length === 0}
+                            onClick={handleDownload}
+                            disabled={loading || filteredData.length === 0}
                             className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white border-blue-500 hover:border-blue-600"
                         >
                             <Download className="w-4 h-4" />
@@ -325,6 +397,21 @@ export default function CATIACProgressDQMPage() {
                             </tr>
                         </thead>
                         <tbody>
+
+                            {summary && (
+                                <tr className="bg-blue-100 font-semibold">
+                                    <td className="border border-gray-300 text-center">-</td>
+                                    <td className="border border-gray-300 text-left">-</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_success}</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_pass}</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_qc_rejected}</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_short_interview}</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_under_qc}</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_assigned_to_qc_user}</td>
+                                    <td className="border border-gray-300 text-center">{summary.total_pending_for_assignment}</td>
+                                </tr>
+                            )}
+
                             {filteredData.length === 0 ? (
                                 <tr>
                                     <td colSpan={11} className="text-center py-8 text-gray-500 border border-gray-300">
@@ -336,17 +423,19 @@ export default function CATIACProgressDQMPage() {
                                     <tr key={item.ac_code}>
                                         <td className="border border-gray-300 text-center">{item.ac_code}</td>
                                         <td className="border border-gray-300 text-left">{item.ac_name}</td>
-                                        <td className="border border-gray-300 text-center">{item.call_attempt}</td>
-                                        <td className="border border-gray-300 text-center">{item.call_connected}</td>
                                         <td className="border border-gray-300 text-center">{item.success}</td>
-                                        <td className="border border-gray-300 text-center">{item.pass ?? '-'}</td>
-                                        <td className="border border-gray-300 text-center">{item.under_qc ?? '-'}</td>
-                                        <td className="border border-gray-300 text-center">{item.qc_rejected ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.pass}</td>
+                                        <td className="border border-gray-300 text-center">{item.qc_rejected}</td>
                                         <td className="border border-gray-300 text-center">{item.short_interview ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.under_qc ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.assigned_to_qc_user ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.pending_for_assignment ?? '-'}</td>
                                     </tr>
                                 ))
                             )}
+
                         </tbody>
+
                     </Table>
                 </div>
 

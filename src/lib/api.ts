@@ -560,6 +560,22 @@ export interface CATIACData {
   total_caller_available: number;
 }
 
+export interface CATIACDQMData {
+  ac_code: number;
+  ac_name: string;
+  district_name: string;
+  call_attempt: number;
+  call_connected: number;
+  success: number;
+  total_records: number;
+  pass: number;
+  under_qc: number;
+  qc_rejected: number;
+  short_interview: number;
+  assigned_to_qc_user?: number;
+  pending_for_assignment?: number;
+}
+
 export interface CATIACResponse {
   success: boolean;
   data: CATIACData[];
