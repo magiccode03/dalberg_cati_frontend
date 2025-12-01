@@ -15,18 +15,20 @@ import Input from '@/components/ui/Input';
 
 export default function CATIACProgressDQMPage() {
     const [callingDates, setCallingDates] = useState<string>('all');
+    const [fromDate, setFromDate] = useState<string>('');
+    const [toDate, setToDate] = useState<string>('');
+    const [filteredData, setFilteredData] = useState<CATIACData[]>([]);
     const [acData, setAcData] = useState<CATIACData[]>([]);
     const [selectedAcCode, setSelectedAcCode] = useState<string>('');
     const [selectedAcName, setSelectedAcName] = useState<string>('');
     const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const acOptions = useMemo(() => [
-        { value: '', label: 'All ACs' },
-        ...acData.map(ac => ({
-            value: ac.ac_code.toString(),
-            label: `${ac.ac_name} (${ac.ac_code})`
-        }))
-    ], [acData]);
+    // Refs to prevent multiple simultaneous API calls
+    const fetchingDataRef = useRef(false);
+    const fetchingMetricsRef = useRef(false);
+    const hasInitialFetchRef = useRef(false);
 
     const callingDatesOptions = [
         { value: 'all', label: 'All' },
@@ -39,11 +41,59 @@ export default function CATIACProgressDQMPage() {
         { value: 'currentmonth', label: 'Current Month' },
         { value: 'custom', label: 'Custom Date Range' },
     ];
+    // Helper function to convert calling dates option to start_date and end_date
+    const getDateRangeForAPI = useCallback((callingDates: string, fromDate?: string, toDate?: string) => {
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        switch (callingDates) {
+            case 'all':
+                return { start_date: '', end_date: '' };
+            case 'today':
+                return { start_date: todayStr, end_date: todayStr };
+            case 'yesterday':
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                return { start_date: yesterdayStr, end_date: yesterdayStr };
+            case 'dby':
+                const dby = new Date(today);
+                dby.setDate(dby.getDate() - 2);
+                const dbyStr = dby.toISOString().split('T')[0];
+                return { start_date: dbyStr, end_date: dbyStr };
+            case 'l3':
+                const l3Start = new Date(today);
+                l3Start.setDate(l3Start.getDate() - 2);
+                return { start_date: l3Start.toISOString().split('T')[0], end_date: todayStr };
+            case 'l7':
+                const l7Start = new Date(today);
+                l7Start.setDate(l7Start.getDate() - 6);
+                return { start_date: l7Start.toISOString().split('T')[0], end_date: todayStr };
+            case 'l15':
+                const l15Start = new Date(today);
+                l15Start.setDate(l15Start.getDate() - 14);
+                return { start_date: l15Start.toISOString().split('T')[0], end_date: todayStr };
+            case 'currentmonth':
+                const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+                return { start_date: monthStart.toISOString().split('T')[0], end_date: todayStr };
+            case 'custom':
+                return { start_date: fromDate || '', end_date: toDate || '' };
+            default:
+                return { start_date: '', end_date: '' };
+        }
+    }, []);
 
 
     const handleCallingDatesChange = (value: string | string[]) => {
         const callingDatesValue = Array.isArray(value) ? value[0] : value;
         setCallingDates(callingDatesValue);
+    };
+    const handleFromDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFromDate(e.target.value);
+    };
+
+    const handleToDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setToDate(e.target.value);
     };
 
     const handleAcChange = (value: string | string[]) => {
@@ -51,11 +101,88 @@ export default function CATIACProgressDQMPage() {
         setSelectedAcCode(acCode);
     };
 
-    const handleAcNameChange = (value: string | string[]) => {
-        const acName = Array.isArray(value) ? value[0] : value;
-        setSelectedAcName(acName);
+    const handleSearch = () => {
+        fetchCATIDQMData();
     };
+    const handleClearFilters = () => {
+        setSelectedAcCode('');
+        setCallingDates('all');
+        setFromDate('');
+        setToDate('');
+        fetchCATIDQMData();
+    };
+    // Create dropdown options from AC data (memoized to prevent unnecessary re-renders)
+    const acOptions = useMemo(() => [
+        { value: '', label: 'All ACs' },
+        ...acData.map(ac => ({
+            value: ac.ac_code.toString(),
+            label: `${ac.ac_name} (${ac.ac_code})`
+        }))
+    ], [acData]);
 
+    const fetchCATIDQMData = useCallback(async () => {
+        // Prevent multiple simultaneous calls
+        if (fetchingDataRef.current) {
+            return;
+        }
+
+        fetchingDataRef.current = true;
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                setError('Authentication required');
+                setLoading(false);
+                fetchingDataRef.current = false;
+                return;
+            }
+            const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+            const params = new URLSearchParams();
+            // Date filter
+            const dateRange = getDateRangeForAPI(callingDates, fromDate, toDate);
+            if (dateRange.start_date && dateRange.end_date) {
+                params.append('start_date', dateRange.start_date);
+                params.append('end_date', dateRange.end_date);
+            }
+            // Optional AC filter (if a single AC selected)
+            if (selectedAcCode) {
+                params.append('ac_code', selectedAcCode);
+            }
+            const url = `${apiBaseUrl}/api/cati/ac-progress-report/dqm${params.toString() ? `?${params.toString()}` : ''}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'application/json',
+                },
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const result = await response.json();
+            if (result.success && Array.isArray(result.data)) {
+                setAcData(result.data);
+                // If AC selected, keep server filtered; else show full list
+                setFilteredData(result.data);
+            } else {
+                setError(result.message || 'Failed to fetch CATI AC data');
+            }
+        } catch (err) {
+            console.error('Error fetching CATI AC data:', err);
+            setError(err instanceof Error ? err.message : 'An error occurred while fetching data');
+        } finally {
+            setLoading(false);
+            fetchingDataRef.current = false;
+        }
+    }, [callingDates, fromDate, toDate, selectedAcCode]);
+
+    useEffect(() => {
+        if (!hasInitialFetchRef.current) {
+            hasInitialFetchRef.current = true;
+            fetchCATIDQMData();
+        }
+    }, []);
 
     return (
         <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -73,24 +200,10 @@ export default function CATIACProgressDQMPage() {
                             </label>
                             <SelectDropdown
                                 options={acOptions}
-                                value={selectedAcName}
-                                onChange={handleAcNameChange}
-                                className="w-full"
-                                placeholder="Select AC Name"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex-1 min-w-[200px]">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                AC Code
-                            </label>
-                            <SelectDropdown
-                                options={acOptions}
                                 value={selectedAcCode}
                                 onChange={handleAcChange}
                                 className="w-full"
-                                placeholder="Select AC Code"
+                                placeholder="Select AC Name"
                             />
                         </div>
                     </div>
@@ -119,8 +232,8 @@ export default function CATIACProgressDQMPage() {
                                     </label>
                                     <Input
                                         type="date"
-                                        // value={fromDate}
-                                        // onChange={handleFromDateChange}
+                                        value={fromDate}
+                                        onChange={handleFromDateChange}
                                         placeholder="Select From Date"
                                     />
                                 </div>
@@ -132,8 +245,8 @@ export default function CATIACProgressDQMPage() {
                                     </label>
                                     <Input
                                         type="date"
-                                        // value={toDate}
-                                        // onChange={handleToDateChange}
+                                        value={toDate}
+                                        onChange={handleToDateChange}
                                         placeholder="Select To Date"
                                     />
                                 </div>
@@ -148,15 +261,15 @@ export default function CATIACProgressDQMPage() {
                             <div className="flex gap-2">
                                 <Button
                                     type="button"
-                                    //   onClick={handleSearch}
-                                    //   disabled={loading}
+                                    onClick={handleSearch}
+                                    disabled={loading}
                                     className="flex-1"
                                 >
                                     <Search className="w-4 h-4 mr-2" />
                                     Search
                                 </Button>
                                 <Button
-                                    // onClick={handleClear}
+                                    onClick={handleClearFilters}
                                     className="bg-gray-500 text-white hover:bg-gray-600 flex items-center"
                                 >
                                     <X className="w-4 h-4 mr-2" />
@@ -167,11 +280,6 @@ export default function CATIACProgressDQMPage() {
                     </div>
                 </div>
             </Card>
-
-            {/*        "completed_interview": 1500,
-        "terminated_interview": 3907,
-        "incomplete_interview": 4368,
-        "ineligible_interview": 692, */}
 
 
             {/* CATI AC Data Table */}
@@ -208,7 +316,7 @@ export default function CATIACProgressDQMPage() {
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">AC Code</th>
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">AC Name</th>
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">Total Completed Data</th>
-                                <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">Valid</th>    
+                                <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">Valid</th>
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">QC Rejected</th>
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">Short Interview Rejected</th>
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">Total Under QC Data</th>
@@ -216,38 +324,28 @@ export default function CATIACProgressDQMPage() {
                                 <th className="border border-gray-300 bg-white dark:bg-gray-800 text-center">Pending For Assignment</th>
                             </tr>
                         </thead>
-                        {/* <tbody>
-                {filteredData.length === 0 ? (
-                  <tr>
-                    <td colSpan={11} className="text-center py-8 text-gray-500 border border-gray-300">
-                      {selectedAcCode ? 'No AC data found matching your selection' : 'No CATI AC data found'}
-                    </td>
-                  </tr>
-                ) : (
-                  filteredData.map((item) => (
-                    <tr key={item.ac_code}>
-                      <td className="border border-gray-300 text-center">{item.ac_code}</td>
-                      <td className="border border-gray-300 text-left">{item.ac_name}</td>
-                      <td className="border border-gray-300 text-center">{item.call_attempt}</td>
-                      <td className="border border-gray-300 text-center">{item.call_connected}</td>
-                      <td className="border border-gray-300 text-center">{item.success}</td>
-                      <td className="border border-gray-300 text-center">{item.pass ?? '-'}</td>
-                      <td className="border border-gray-300 text-center">{item.under_qc ?? '-'}</td>
-                      <td className="border border-gray-300 text-center">{item.qc_rejected ?? '-'}</td>
-                      <td className="border border-gray-300 text-center">{item.short_interview ?? '-'}</td>
-                      <td className="border border-gray-300 text-center">{item.total_caller_data ?? '-'}</td>
-                      <td className="border border-gray-300 text-center">{item.total_caller_available ?? '-'}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody> */}
-
                         <tbody>
-                            <tr>
-                                <td colSpan={11} className="text-center py-8 text-gray-500 border border-gray-300">
-                                    No data found
-                                </td>
-                            </tr>
+                            {filteredData.length === 0 ? (
+                                <tr>
+                                    <td colSpan={11} className="text-center py-8 text-gray-500 border border-gray-300">
+                                        {selectedAcCode ? 'No AC data found matching your selection' : 'No CATI AC data found'}
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredData.map((item) => (
+                                    <tr key={item.ac_code}>
+                                        <td className="border border-gray-300 text-center">{item.ac_code}</td>
+                                        <td className="border border-gray-300 text-left">{item.ac_name}</td>
+                                        <td className="border border-gray-300 text-center">{item.call_attempt}</td>
+                                        <td className="border border-gray-300 text-center">{item.call_connected}</td>
+                                        <td className="border border-gray-300 text-center">{item.success}</td>
+                                        <td className="border border-gray-300 text-center">{item.pass ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.under_qc ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.qc_rejected ?? '-'}</td>
+                                        <td className="border border-gray-300 text-center">{item.short_interview ?? '-'}</td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </Table>
                 </div>
