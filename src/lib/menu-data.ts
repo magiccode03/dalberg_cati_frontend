@@ -1378,6 +1378,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
+      {
+        id: 'cati-ppm-ac-progress-dqm',
+        label: 'AC Progress DQM',
+        href: '/cati/ppm/ac-progress/ac-progress-dqm',
+        icon: 'BarChart3',
+        roles: ['ppm'],
+        system: 'cati',
+      },
       // {
       //   id: 'cati-ppm-active-ac-progress',
       //   label: 'Active AC Progress',
