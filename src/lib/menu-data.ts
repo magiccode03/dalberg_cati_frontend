@@ -171,11 +171,11 @@ export const menuData: MenuItem[] = [
       },
     ],
   },
-  
+
   // ============================================
   // CAPI SYSTEM MENUS
   // ============================================
-  
+
   // CAPI Project Progress Monitoring (PPM) Menu
   {
     id: 'capi-ppm-overview',
@@ -385,7 +385,7 @@ export const menuData: MenuItem[] = [
       //   roles: ['ppm'],
       //   system: 'capi',
       // },
-      
+
     ],
   },
   {
@@ -772,6 +772,66 @@ export const menuData: MenuItem[] = [
     system: 'capi',
   },
 
+  // CATI Data Quality Management (DQM) Menu
+  {
+    id: 'cati-ppm-qc-progress',
+    label: 'QC Progress',
+    href: '/cati/dqm/qc-progress/overall-qc-progress',
+    icon: 'Users',
+    roles: ['dqm'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppm-qc-user-progress',
+        label: 'QC User Progress',
+        href: '/cati/dqm/qc-progress/qc-user-progress',
+        icon: 'Users',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-user-progress-daily',
+        label: 'QC User Daily Progress',
+        href: '/cati/dqm/qc-progress/qc-user-progress-daily',
+        icon: 'Users',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-ac-assigned',
+        label: 'Assigned AC - QC User',
+        href: '/cati/dqm/qc-progress/qc-ac-assigned',
+        icon: 'TrendingUp',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-ac-wise-progress',
+        label: 'AC Wise Progress',
+        href: '/cati/dqm/qc-progress/acwisereport',
+        icon: 'BarChart3',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-interview-list',
+        label: 'Interview List',
+        href: '/cati/dqm/qc-progress/interview-list',
+        icon: 'CheckCircle',
+        roles: ['dqm'],
+        system: 'cati',
+      },
+    ],
+  },
+  {
+    id: 'cati-ppm-qc-data-entry-progress',
+    label: 'Data Entry Progress',
+    href: '/cati/dqm/data-entry-progress',
+    icon: 'BarChart3',
+    roles: ['dqm'],
+    system: 'cati',
+  },
+
   // CAPI Start QC Menu
   {
     id: 'capi-start-gps-qc',
@@ -835,40 +895,40 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-  // {
-  //   id: 'capi-fd-fieldwork-progress-2',
-  //   label: 'Fieldwork Progress2',
-  //   href: '/capi/fd/fieldwork-progress2',
-  //   icon: 'TrendingUp',
-  //   roles: ['fd'],
-  //   system: 'capi',
-  // },
-  // {
-  //   id: 'demographics',
-  //   label: 'Demographics',
-  //   href: '/capi/fd/demographics',
-  //   icon: 'BarChart3',
-  //   roles: ['fd'],
-  //   system: 'capi',
-  //   children: [
-  //     {
-  //       id: 'capi-fd-demographics-basic',
-  //       label: 'Basic Demographics',
-  //       href: '/capi/fd/demographics/basic-demographics',
-  //       icon: 'Users',
-  //       roles: ['fd'],
-  //       system: 'capi',
-  //     },
-  //     // {
-  //     //   id: 'capi-fd-demographics-caste',
-  //     //   label: 'Caste',
-  //     //   href: '/capi/fd/demographics/caste',
-  //     //   icon: 'Database',
-  //     //   roles: ['fd'],
-  //     //   system: 'capi',
-  //     // },
-  //   ],
-  // },
+  {
+    id: 'capi-fd-fieldwork-progress-2',
+    label: 'Fieldwork Progress2',
+    href: '/capi/fd/fieldwork-progress2',
+    icon: 'TrendingUp',
+    roles: ['fd'],
+    system: 'capi',
+  },
+  {
+    id: 'demographics',
+    label: 'Demographics',
+    href: '/capi/fd/demographics',
+    icon: 'BarChart3',
+    roles: ['fd'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-fd-demographics-basic',
+        label: 'Basic Demographics',
+        href: '/capi/fd/demographics/basic-demographics',
+        icon: 'Users',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-demographics-caste',
+        label: 'Caste',
+        href: '/capi/fd/demographics/caste',
+        icon: 'Database',
+        roles: ['fd'],
+        system: 'capi',
+      },
+    ],
+  },
   // {
   //   id: 'capi-fd-progress-report',
   //   label: 'Progress Report',
@@ -877,57 +937,57 @@ export const menuData: MenuItem[] = [
   //   roles: ['fd'],
   //   system: 'capi',
   // },
-  // {
-  //   id: 'findings',
-  //   label: 'Findings',
-  //   href: '/capi/fd/findings',
-  //   icon: 'BarChart3',
-  //   roles: ['fd'],
-  //   system: 'capi',
-  //   children: [
-  //     {
-  //       id: 'capi-fd-findings-gain-losses',
-  //       label: 'Gain and Losses',
-  //       href: '/capi/fd/findings/gain-and-losses',
-  //       icon: 'TrendingUp',
-  //       roles: ['fd'],
-  //       system: 'capi',
-  //     },
-  //     {
-  //       id: 'capi-fd-findings-second-choice',
-  //       label: 'Second Choice',
-  //       href: '/capi/fd/findings/second-choice',
-  //       icon: 'Users',
-  //       roles: ['fd'],
-  //       system: 'capi',
-  //     },
-  //     {
-  //       id: 'capi-fd-findings-vote-share',
-  //       label: 'Vote Share Estimate',
-  //       href: '/capi/fd/findings/vote-share-estimate',
-  //       icon: 'BarChart3',
-  //       roles: ['fd'],
-  //       system: 'capi',
-  //     },
-  //     {
-  //       id: 'capi-fd-wisdom-of-crowds',
-  //       label: 'Wisdom of Crowds',
-  //       href: '/capi/fd/findings/wisdom-of-crowds',
-  //       icon: 'BarChart3',
-  //       roles: ['fd'],
-  //       system: 'capi',
-  //     },
-  //     {
-  //       id: 'capi-fd-approval-ratings',
-  //       label: 'Approval Ratings',
-  //       href: '/capi/fd/findings/approval-ratings',
-  //       icon: 'BarChart3',
-  //       roles: ['fd'],
-  //       system: 'capi',
-  //     },
-  //   ],
-  // },
- 
+  {
+    id: 'findings',
+    label: 'Findings',
+    href: '/capi/fd/findings',
+    icon: 'BarChart3',
+    roles: ['fd'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-fd-findings-gain-losses',
+        label: 'Gain and Losses',
+        href: '/capi/fd/findings/gain-and-losses',
+        icon: 'TrendingUp',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-findings-second-choice',
+        label: 'Second Choice',
+        href: '/capi/fd/findings/second-choice',
+        icon: 'Users',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-findings-vote-share',
+        label: 'Vote Share Estimate',
+        href: '/capi/fd/findings/vote-share-estimate',
+        icon: 'BarChart3',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-wisdom-of-crowds',
+        label: 'Wisdom of Crowds',
+        href: '/capi/fd/findings/wisdom-of-crowds',
+        icon: 'BarChart3',
+        roles: ['fd'],
+        system: 'capi',
+      },
+      {
+        id: 'capi-fd-approval-ratings',
+        label: 'Approval Ratings',
+        href: '/capi/fd/findings/approval-ratings',
+        icon: 'BarChart3',
+        roles: ['fd'],
+        system: 'capi',
+      },
+    ],
+  },
+
   // {
   //   id: 'capi-fd-client-comparison',
   //   label: 'Client Comparison',
@@ -1284,7 +1344,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
-      
+
       // {
       //   id: 'cati-ppm-monthly-report',
       //   label: 'Monthly Report',
@@ -1458,112 +1518,6 @@ export const menuData: MenuItem[] = [
       //   system: 'cati',
       // },
     ],
-  },
-  {
-    id: 'cati-ppm-qc-progress',
-    label: 'QC Progress',
-    href: '/cati/ppm/qc-progress/overall-qc-progress',
-    icon: 'Users',
-    roles: ['ppm'],
-    system: 'cati',
-    children: [
-      {
-        id: 'cati-ppm-qc-user-progress',
-        label: 'QC User Progress',
-        href: '/cati/ppm/qc-progress/qc-user-progress', 
-        icon: 'Users',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-qc-user-progress-daily',
-        label: 'QC User Daily Progress',
-        href: '/cati/ppm/qc-progress/qc-user-progress-daily',
-        icon: 'Users',
-        roles: ['ppm'], 
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-qc-ac-assigned',
-        label: 'Assigned AC - QC User',
-        href: '/cati/ppm/qc-progress/qc-ac-assigned',
-        icon: 'TrendingUp',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-qc-ac-wise-progress',
-        label: 'AC Wise Progress',
-        href: '/cati/ppm/qc-progress/acwisereport',
-        icon: 'BarChart3',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-interview-list',
-        label: 'Interview List',
-        href: '/cati/ppm/qc-progress/interview-list',
-        icon: 'CheckCircle',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      // {
-      //   id: 'cati-ppm-monthly-nov-2023',
-      //   label: 'Monthly: Nov 2023',
-      //   href: '/cati/ppm/ac-progress/monthly-nov-2023',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-dec-2023',
-      //   label: 'Monthly: Dec 2023',
-      //   href: '/cati/ppm/ac-progress/monthly-dec-2023',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-jan-2024',
-      //   label: 'Monthly: Jan 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-jan-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-feb-2024',
-      //   label: 'Monthly: Feb 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-feb-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-mar-2024',
-      //   label: 'Monthly: Mar 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-mar-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-apr-2024',
-      //   label: 'Monthly: Apr 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-apr-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-    ],
-  },
-  {
-    id: 'cati-ppm-qc-data-entry-progress',
-    label: 'Data Entry Progress',
-    href: '/cati/ppm/data-entry-progress',
-    icon: 'BarChart3',
-    roles: ['ppm'],
-    system: 'cati',
   },
   // {
   //   id: 'cati-ppm-upload',
@@ -1756,7 +1710,7 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
-  
+
   // {
   //   id: 'tracking-dashboard',
   //   label: 'Tracking Dashboard',
@@ -1808,7 +1762,7 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     dynamic: true, // This will be dynamically set based on teleform user data
   },
-  
+
   // Data Entry Role Menu (Simple like SS role)
   {
     id: 'cati-data-entry-auth',
@@ -1833,26 +1787,26 @@ export const menuData: MenuItem[] = [
 export const getMenuByRole = (role: string, userSystem?: 'capi' | 'cati'): MenuItem[] => {
   return menuData.filter(item => {
     const hasRole = item.roles.includes(role) || item.roles.includes('admin');
-    
+
     // If item has no system specified (common menus), show for all users
     if (!item.system) return hasRole;
-    
+
     // If user has no system (admin roles), show common menus only
     if (!userSystem) return hasRole && !item.system;
-    
+
     // Match both role and system
     return hasRole && item.system === userSystem;
   }).map(item => ({
     ...item,
     children: item.children ? item.children.filter(child => {
       const childHasRole = child.roles.includes(role) || child.roles.includes('admin');
-      
+
       // If child has no system specified, show for all users
       if (!child.system) return childHasRole;
-      
+
       // If user has no system, show common menus only
       if (!userSystem) return childHasRole && !child.system;
-      
+
       // Match both role and system
       return childHasRole && child.system === userSystem;
     }) : undefined,

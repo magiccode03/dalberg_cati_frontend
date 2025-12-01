@@ -17,8 +17,8 @@ const roleRouteMap: Record<string, { capi: string; cati: string }> = {
     cati: '/cati/ppmt/overview/fieldwork-progress',
   },
   dqm: {
-    capi: '/capi/dqm/fieldwork-progress',
-    cati: '/cati/dqm/fieldwork-progress',
+    capi: '/capi/dqm/qc-user-registration',
+    cati: '/cati/dqm/qc-progress/qc-user-progress',
   },
   dqmt: {
     capi: '/capi/dqmt/fieldwork-progress',
@@ -113,6 +113,20 @@ export default function HomePage() {
     }
   };
 
+  // Handle DQM system selection (for DQM users)
+  const handleDQMSystemSelect = (system: 'capi' | 'cati') => {
+    // Update context with selected system
+    updateUser({ system });
+
+    // Navigate to DQM role routes
+    const dqmRoutes = roleRouteMap['dqm'];
+    if (dqmRoutes) {
+      const targetRoute = dqmRoutes[system];
+      router.push(targetRoute);
+    }
+  };
+  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -137,6 +151,7 @@ export default function HomePage() {
   };
 
   const isResearchRole = user?.role === 'research' || user?.role === 'research_admin';
+  const isDQMRole = user?.role === 'dqm' || user?.role === 'dqmt';
 
   return (
     <div className="min-h-screen bg-blue-50 dark:bg-gray-900 p-4">
@@ -250,16 +265,10 @@ export default function HomePage() {
                         <span className="text-base font-bold text-gray-800 dark:text-white">CATI</span>
                       </button>
 
-                      {/* CAPI + CATI Button */}
-                      <button
-                        className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
-                      >
-                        <Database className="h-5 w-5 text-gray-800 dark:text-white" />
-                        <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
-                      </button>
                     </div>
                   </div>
-                )}
+                  )}
+                  {/* Note: DQM specific system buttons moved outside of Research block so DQM users can see them */}
               </div>
             )}
 
@@ -291,8 +300,8 @@ export default function HomePage() {
           </>
         )}
 
-        {/* CAPI/CATI Buttons - Show for non-research roles */}
-        {!isResearchRole && (
+        {/* CAPI/CATI Buttons for dqm*/}
+        {!isResearchRole && !isDQMRole && (
           <div className="flex gap-4">
             {/* CAPI Button */}
             <button
@@ -322,6 +331,31 @@ export default function HomePage() {
                 <span className="text-base font-bold text-gray-800 dark:text-white">Combine Data</span>
               </button>
             )}
+          </div>
+        )}
+
+        {/* DQM Role - Show DQM (F2F / CATI ) large buttons */}
+        {isDQMRole && (
+          <div className="mt-6">
+            <div className="flex gap-4">
+              {/* CAPI Button */}
+              <button
+                onClick={() => handleDQMSystemSelect('capi')}
+                className="flex-1 h-14 bg-[#a8d5a1] hover:bg-[#98c591] dark:bg-[#6b9b63] dark:hover:bg-[#5b8b53] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+              >
+                <FileText className="h-5 w-5 text-gray-800 dark:text-white" />
+                <span className="text-base font-bold text-gray-800 dark:text-white">F2F</span>
+              </button>
+
+              {/* CATI Button */}
+              <button
+                onClick={() => handleDQMSystemSelect('cati')}
+                className="flex-1 h-14 bg-[#e8d699] hover:bg-[#d8c689] dark:bg-[#b8a679] dark:hover:bg-[#a89669] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+              >
+                <Phone className="h-5 w-5 text-gray-800 dark:text-white" />
+                <span className="text-base font-bold text-gray-800 dark:text-white">CATI</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
