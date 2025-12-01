@@ -175,9 +175,7 @@ const ACAssignmentModal: React.FC<ACAssignmentModalProps> = ({
           const total_assigned_val = isDataEntry ? dataEntryAssigned : (item.total_assigned ?? 0);
           const total_pass_val = isDataEntry ? dataEntryComplete : (item.total_pass ?? 0);
           const total_pending_val = isDataEntry ? dataEntryPending : (item.total_pending ?? 0);
-          const total_not_assigned_val = isDataEntry
-            ? Math.max(0, dataEntryTotal - dataEntryAssigned)
-            : (item.total_not_assigned ?? (item.total_assigned ? Math.max(0, (item.total_assigned - ((item.total_pass ?? 0) + (item.total_pending ?? 0)))) : 0));
+          const total_not_assigned_val = Number(item.pending_for_assign)
 
           return {
             ac_code: item.ac_code,
