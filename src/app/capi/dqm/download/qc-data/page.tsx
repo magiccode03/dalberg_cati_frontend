@@ -52,7 +52,7 @@ export default function QCDataPage() {
         {/* Breadcrumb Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+            <Heading level={2} className="text-2xl font-semibold text-gray-900">
               QC Data
             </Heading>
           </div>
@@ -79,16 +79,16 @@ export default function QCDataPage() {
               <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top">
                 <thead>
                   <tr>
-                    <th className="text-left font-semibold text-gray-800">Action</th>
-                    <th className="text-left font-semibold text-gray-800">Overall</th>
-                    <th className="text-left font-semibold text-gray-800">Yesterday (26-09-2025)</th>
+                    <th className="text-center font-semibold text-gray-800">Action</th>
+                    <th className="text-center font-semibold text-gray-800">Overall</th>
+                    <th className="text-center font-semibold text-gray-800">Yesterday (26-09-2025)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {downloadData.map((item) => (
                     <tr key={item.id}>
-                      <td className="text-gray-900 font-medium">{item.action}</td>
-                      <td>
+                      <td className="text-gray-900 text-center font-medium">{item.action}</td>
+                      <td className="text-center">
                         <button
                           onClick={() => handleDownload(item.overallUrl)}
                           className="text-blue-600 hover:text-blue-800 flex items-center gap-2 transition-colors"
@@ -97,7 +97,7 @@ export default function QCDataPage() {
                           Download
                         </button>
                       </td>
-                      <td>
+                      <td className="text-center">
                         {item.yesterdayUrl ? (
                           <button
                             onClick={() => handleDownload(item.yesterdayUrl!)}

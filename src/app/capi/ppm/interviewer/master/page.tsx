@@ -19,7 +19,7 @@ const MasterInterviewerContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
@@ -375,8 +375,8 @@ const MasterInterviewerContent = () => {
           <Table className="table table-bordered table-striped table-hover">
             <thead className="sticky-header bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
-                <th className="px-4 py-3 font-semibold text-gray-700 text-left">Full Name</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                <th className="px-4 py-3 font-semibold text-gray-700 text-center">Full Name</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Login Id</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Data Submit</th>
                 <th className="px-4 py-3 font-semibold text-gray-700 text-center">Assigned ACS</th>
@@ -430,14 +430,13 @@ const MasterInterviewerContent = () => {
           </div>
         )}
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
+        <div className="mt-6">
           <PaginationStandard
             currentPage={currentPage}
             totalPages={totalPages}
             totalItems={totalCount}
             itemsPerPage={pageSize}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="justify-center"
+            onPageChange={setCurrentPage}
           />
         </div>
       </Card>

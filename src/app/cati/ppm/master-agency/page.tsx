@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Plus, Download, Edit, Trash2 } from 'lucide-react';
 
 // Interfaces
@@ -25,6 +26,10 @@ interface AgencyData {
 }
 
 const MasterAgencyPage = () => {
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+  
   // State for search filters
   const [filters, setFilters] = useState({
     agencyName: '',
@@ -169,6 +174,13 @@ const MasterAgencyPage = () => {
     },
   ]);
 
+  // Pagination calculations
+  const totalItems = agencyData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = agencyData.slice(startIndex, endIndex);
+
   // Status options
   const statusOptions = [
     { value: '', label: 'Select Status' },
@@ -205,10 +217,10 @@ const MasterAgencyPage = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
-        <Heading level={1} className="text-2xl font-bold text-gray-900">
+        <Heading level={2} className="text-2xl font-semibold text-gray-900">
           Master Agency
         </Heading>
       </div>
@@ -287,8 +299,8 @@ const MasterAgencyPage = () => {
       <Card>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-xl font-semibold text-gray-900">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               Agency List
             </Heading>
           </div>
@@ -304,7 +316,7 @@ const MasterAgencyPage = () => {
             <Button 
               variant="secondary" 
               onClick={handleDownload}
-              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex items-center bg-blue-500 hover:bg-blue-600 text-white"
             >
               <Download className="w-4 h-4 mr-2" />
               Download
@@ -312,59 +324,77 @@ const MasterAgencyPage = () => {
           </div>
         </div>
 
-        {/* Summary */}
-        <div className="mb-4 text-sm text-gray-600">
-          Showing <span className="font-semibold">1-{agencyData.length}</span> of <span className="font-semibold">{agencyData.length}</span> items.
-        </div>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
 
-        <div className="overflow-x-auto">
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Agency ID</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Agency Name</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Supervisor Login ID</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Training Manager Mobile</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Total Telecaller</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Valid Interview</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Reject Interview</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Telecaller Can Fill Form</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Status</th>
-                <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {agencyData.map((item, index) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b border-gray-200">{item.id}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.agencyName}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.supervisorLoginId}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.trainingManagerMobile}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.totalTelecaller.toLocaleString()}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.validInterview.toLocaleString()}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.rejectInterview.toLocaleString()}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">{item.telecallerCanFillForm}</td>
-                  <td className="px-4 py-3 border-b border-gray-200">
-                    <span className={getStatusColor(item.status)}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-200 flex justify-center">
-                    <button
-                      onClick={() => handleUpdateAgency(item.id)}
-                      className="w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded flex items-center justify-center"
-                      title="Update Agency"
-                    >
-                      <Edit className="w-4 h-4 text-white" />
-                    </button>
-                  </td>
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Agency ID</th>
+                  <th className="text-center">Agency Name</th>
+                  <th className="text-center">Supervisor Login ID</th>
+                  <th className="text-center">Training Manager Mobile</th>
+                  <th className="text-center">Total Telecaller</th>
+                  <th className="text-center">Valid Interview</th>
+                  <th className="text-center">Reject Interview</th>
+                  <th className="text-center">Telecaller</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {currentData.map((item, index) => (
+                  <tr key={item.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{item.id}</td>
+                    <td className="text-left">{item.agencyName}</td>
+                    <td className="text-left">{item.supervisorLoginId}</td>
+                    <td className="text-center">{item.trainingManagerMobile}</td>
+                    <td className="text-center">{item.totalTelecaller.toLocaleString()}</td>
+                    <td className="text-center">{item.validInterview.toLocaleString()}</td>
+                    <td className="text-center">{item.rejectInterview.toLocaleString()}</td>
+                    <td className="text-center">{item.telecallerCanFillForm}</td>
+                    <td className="text-center">
+                      <span className={getStatusColor(item.status)}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleUpdateAgency(item.id)}
+                        className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center"
+                        title="Update Agency"
+                      >
+                        <Edit className="w-4 h-4 text-white" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

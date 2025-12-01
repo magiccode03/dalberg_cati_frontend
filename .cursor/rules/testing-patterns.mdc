@@ -1,0 +1,73 @@
+---
+description: Testing patterns and best practices
+---
+
+# Testing Patterns
+
+## Testing Framework
+- **E2E Testing**: Playwright for end-to-end tests
+- **Test Location**: `tests/` directory
+- **Test Commands**: Defined in package.json
+
+## Test Commands
+- `npm run test:e2e` - Run all E2E tests
+- `npm run test:e2e:ui` - Run tests with UI
+- `npm run test:e2e:headed` - Run tests in headed mode
+- `npm run test:e2e:debug` - Debug tests
+- `npm run test:report` - Generate test report
+- `npm run test:chromium` - Run on Chromium
+- `npm run test:firefox` - Run on Firefox
+- `npm run test:webkit` - Run on WebKit
+- `npm run test:mobile` - Run on mobile Chrome
+
+## Test Categories
+- **Form Validation**: `test:validation` - Form validation tests
+- **Conditional Logic**: `test:conditional` - Conditional form logic
+- **Submission Status**: `test:submission` - Form submission tests
+- **Auto Save**: `test:autosave` - Auto-save functionality
+
+## Testing Best Practices
+- Test authentication flows
+- Test role-based access control
+- Test form validation
+- Test API integration
+- Test responsive design
+- Test dark mode functionality
+
+## Test Structure
+- Organize tests by feature
+- Use descriptive test names
+- Group related tests
+- Use proper setup/teardown
+- Clean up after tests
+
+## E2E Test Patterns
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('should login with valid credentials', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name="uniqueId"]', 'SUPER001');
+  await page.fill('[name="password"]', 'super123');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL('/super-admin/dashboard');
+});
+```
+
+## Test Data
+- Use test fixtures for consistent data
+- Mock API responses when needed
+- Use test users for authentication
+- Clean up test data after tests
+
+## Accessibility Testing
+- Test keyboard navigation
+- Test screen reader compatibility
+- Test color contrast
+- Test ARIA attributes
+
+## Performance Testing
+- Test page load times
+- Test API response times
+- Test large data sets
+- Test concurrent operations

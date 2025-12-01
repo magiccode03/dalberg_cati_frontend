@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Text from '@/components/ui/Text';
@@ -55,7 +55,7 @@ const TelecallerPendingDataPage = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       {/* Page Header */}
       <div className="mb-6">
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
@@ -110,8 +110,8 @@ const TelecallerPendingDataPage = () => {
             <Table className="table table-bordered table-striped table-hover">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Sr. No.</th>
-                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-left">Telecaller Name</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">S.No.</th>
+                  <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Telecaller Name</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Telecaller ID</th>
                   <th className="px-6 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap text-center">Pending Data (0)</th>
                 </tr>
@@ -198,7 +198,7 @@ const TelecallerPendingDataPage = () => {
           </div>
         </div>
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

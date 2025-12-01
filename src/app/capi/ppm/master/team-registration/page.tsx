@@ -45,7 +45,7 @@ interface TeamRegistrationResponse {
 const TeamRegistrationPage = () => {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   
   // Fetch team registration data from API
   const { data, loading, error, refetch } = useTeamRegistration(currentPage, pageSize);
@@ -188,9 +188,9 @@ const TeamRegistrationPage = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Team ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Team Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Zonal Manager Username</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">QC Team</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Team Name</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Zonal Manager Username</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Team</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total AC</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Interviews Conducted</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Valid</th>

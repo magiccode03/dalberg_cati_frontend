@@ -41,18 +41,47 @@ This is a Next.js 15+ application for Bihar Election 2025 Analysis Dashboard Sys
 
 ## File Organization
 - `/src/app/` - Next.js App Router pages
+  - `/src/app/capi/` - CAPI (Computer Assisted Personal Interview) system pages
+  - `/src/app/cati/` - CATI (Computer Assisted Telephone Interview) system pages
+  - `/src/app/dashboard/` - Main dashboard pages
+  - `/src/app/super-admin/` - Super admin pages
+  - `/src/app/portal-admin/` - Portal admin pages
+  - `/src/app/pmt/` - PMT (Project Management Team) pages
 - `/src/components/` - Reusable React components
+  - `/src/components/charts/` - Chart components (ECharts)
+  - `/src/components/forms/` - Form components
+  - `/src/components/layout/` - Layout components
+  - `/src/components/modals/` - Modal components
+  - `/src/components/tables/` - Table components
+  - `/src/components/ui/` - UI primitives (Radix UI)
 - `/src/contexts/` - React Context providers
 - `/src/stores/` - Redux store slices
 - `/src/lib/` - Utility functions and configurations
+  - `/src/lib/api.ts` - Centralized API service
+  - `/src/lib/menu-data.ts` - Menu structure with role-based access
 - `/src/types/` - TypeScript type definitions
 - `/src/hooks/` - Custom React hooks
 - `/public/` - Static assets (logo.png, etc.)
 
+## System Architecture
+- **CAPI System**: Computer Assisted Personal Interview system for field data collection
+  - QC (Quality Control) modules
+  - GPS tracking and validation
+  - Audio QC and validation
+  - Field data management
+- **CATI System**: Computer Assisted Telephone Interview system for telephonic surveys
+  - Telecaller management
+  - Call progress tracking
+  - Audio interview management
+  - Supervisor dashboard
+
 ## Key Features
 - **Unique ID Authentication**: Alphanumeric/numeric user IDs
-- **Role-Based Access Control**: SUPER_ADMIN, ADMIN, PMT, QC, etc.
+- **Role-Based Access Control**: SUPER_ADMIN, ADMIN, PMT, QC, PPM, PPMT, DQM, DQMT, FD, SS, etc.
 - **User Management**: SUPER ADMIN can create/edit/delete users
+- **Dual System Support**: CAPI and CATI systems with role-based access
 - **Responsive Design**: Mobile-first with Tailwind CSS
 - **Dark Mode**: Theme switching support
 - **Protected Routes**: Automatic authentication checks
+- **Real-time Data**: Socket-based real-time communication
+- **Data Visualization**: ECharts for charts and analytics

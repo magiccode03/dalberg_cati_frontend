@@ -47,6 +47,10 @@ export default function FieldworkProgressPage() {
           { details: 'ACs completed', measure: result.summary.acs_completed },
           { details: 'ACs not completed', measure: result.summary.acs_in_progress },
           { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate }
+
+          // { details: 'ACs completed', measure: result.summary.acs_completed, info: 'Achieved Sample >= Target Sample' },
+          // { details: 'ACs not completed', measure: result.summary.acs_in_progress, info: 'Achieved Sample > 10 and Achieved Sample < Target Sample' },
+          // { details: 'ACs yet to be initiated', measure: result.summary.acs_yet_to_initiate, info: 'Achieved Sample < 10' }
         ];
         setProgressSummaryData(summaryData);
 
@@ -298,10 +302,10 @@ export default function FieldworkProgressPage() {
                       </div>
                     </th>
                     <th 
-                      className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
                       onClick={() => handleACSort('acName')}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center justify-center">
                         <span>AC Name</span>
                         <div className="ml-1 flex flex-col">
                           <ChevronUp
@@ -314,10 +318,10 @@ export default function FieldworkProgressPage() {
                       </div>
                     </th>
                     <th 
-                      className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
                       onClick={() => handleACSort('districtName')}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center justify-center">
                         <span>District Name</span>
                         <div className="ml-1 flex flex-col">
                           <ChevronUp

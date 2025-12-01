@@ -199,7 +199,7 @@ export default function FieldworkProgressPage() {
       {/* Breadcrumb Header */}
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
-          <Heading level={2} className="text-2xl font-bold text-gray-900 dark:text-white">
+          <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
             Fieldwork Progress
           </Heading>
         </div>
@@ -290,11 +290,11 @@ export default function FieldworkProgressPage() {
                     </div>
                   </th>
                   <th 
-                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('acName')}
                   >
-                    <div className="flex items-center">
-                      <span>AC Name</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>AC Name</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'acName' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 
@@ -306,11 +306,11 @@ export default function FieldworkProgressPage() {
                     </div>
                   </th>
                   <th 
-                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
+                    className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                     onClick={() => handleSort('districtName')}
                   >
-                    <div className="flex items-center">
-                      <span>District Name</span>
+                    <div className="flex items-center justify-center">
+                      <span className='text-center'>District Name</span>
                       <div className="ml-1 flex flex-col">
                         <ChevronUp 
                           className={`h-3 w-3 ${sortConfig?.key === 'districtName' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`} 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
+import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
@@ -12,6 +12,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import TelecallerList from '@/components/telecaller/TelecallerList';
 import { Table } from '@/components/ui/Table';
+import TelecallerMetrics from '@/components/telecaller/TelecallerMetrics';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Text from '@/components/ui/Text';
 
@@ -48,6 +49,7 @@ interface PerformanceMetrics {
     successful: number;
     terminated: number;
     incompleted: number;
+    ineligible: number;
   };
   status_metrics: {
     tele_no_response: number;
@@ -77,11 +79,18 @@ interface ACData {
   district_name: string;
 }
 
+// Telecalling Group interface
+interface TelecallingGroup {
+  id: number;
+  name: string;
+}
+
 // Telecaller Summary Data interface
 interface TelecallerWiseData {
   caller_id: number;
   caller_name: string;
   caller_mobile_no: string;
+  telecalling_group_name?: string;
   number_of_dials: number;
   number_of_calls_connected: number;
   talk_duration: string;
@@ -99,8 +108,13 @@ interface TelecallerWiseData {
   successful: number;
   terminated: number;
   incompleted: number;
+  ineligible: number;
   less_than_180_sec: number;
   greater_than_180_sec: number;
+  pass?: number;
+  under_qc?: number;
+  qc_rejected?: number;
+  short_interview?: number;
 }
 
 // Pagination interface for telecaller data
@@ -118,14 +132,22 @@ const TelecallerProgressPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'overall' | 'daywise'>('overall');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  
+
   // Telecaller filter states
   const [telecallers, setTelecallers] = useState<Telecaller[]>([]);
   const [loadingTelecallers, setLoadingTelecallers] = useState(false);
-  
+
   // AC filter states
   const [acList, setAcList] = useState<ACData[]>([]);
   const [loadingACs, setLoadingACs] = useState(false);
+
+  // Telecalling Group filter states
+  interface TelecallingGroup {
+    id: number;
+    name: string;
+  }
+  const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   // Search filters state
   const [filters, setFilters] = useState({
@@ -138,6 +160,8 @@ const TelecallerProgressPage: React.FC = () => {
     phone: '',
     callOutcome: '',
     talkDuration: '',
+    telecallerStatus: '1',
+    telecallingGroupId: '',
   });
 
   // Telecaller-wise data states
@@ -151,6 +175,7 @@ const TelecallerProgressPage: React.FC = () => {
   const [telecallerDataLoading, setTelecallerDataLoading] = useState(false);
   const [telecallerDataError, setTelecallerDataError] = useState<string | null>(null);
   const [downloadingCSV, setDownloadingCSV] = useState(false);
+  const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Table sorting state
   const [sortConfig, setSortConfig] = useState<{
@@ -158,15 +183,19 @@ const TelecallerProgressPage: React.FC = () => {
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
   // Dropdown options
   const acCodeOptions = [
     { value: '', label: 'All ACs' },
     ...acList
       .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
       .map((ac) => ({
-      value: ac.ac_code.toString(),
+        value: ac.ac_code.toString(),
         label: `${ac.ac_name} - (${ac.ac_code})`,
-    })),
+      })),
   ];
 
   const telecallerOptions = [
@@ -174,9 +203,19 @@ const TelecallerProgressPage: React.FC = () => {
     ...telecallers
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((tc) => ({
-      value: tc.teleform_user_id.toString(),
-      label: `${tc.name} (${tc.mobile_number})`,
-    })),
+        value: tc.teleform_user_id.toString(),
+        label: `${tc.name} (${tc.mobile_number})`,
+      })),
+  ];
+
+  const telecallingGroupOptions = [
+    { value: '', label: 'All Groups' },
+    ...telecallingGroups
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((group) => ({
+        value: group.id.toString(),
+        label: group.name,
+      })),
   ];
 
   const callOutcomeOptions = [
@@ -193,6 +232,12 @@ const TelecallerProgressPage: React.FC = () => {
     { value: '60-120', label: '1-2 minutes' },
     { value: '120-180', label: '2-3 minutes' },
     { value: '180+', label: '3+ minutes' },
+  ];
+
+  const telecallerStatusOptions = [
+    { value: '', label: 'All Status' },
+    { value: '1', label: 'Active' },
+    { value: '0', label: 'Inactive' },
   ];
 
   const callingDatesOptions = [
@@ -343,9 +388,11 @@ const TelecallerProgressPage: React.FC = () => {
   // Search handler
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
+    setCurrentPage(1); // Reset to first page when searching
     // Trigger API calls with current filters
     if (viewMode === 'overall') {
-    fetchPerformanceData();
+      // For overall view, trigger the TelecallerMetrics component to fetch
+      setMetricsTrigger((t) => t + 1);
     } else {
       fetchDayWiseData();
     }
@@ -365,34 +412,44 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build URL with filters
       const params = new URLSearchParams();
-      
+
       // Apply filters from UI
       // Telecaller filter
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       // AC Code filter
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
+      // Telecaller status filter
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
+      // Telecalling group filter
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
       // Date filter - handle custom dates and predefined ranges (performance API uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      
+
       // Legacy date parameter (for backward compatibility)
       if (date) {
         params.append('date', date);
       }
-      
+
       const url = `${apiUrl}/api/cati/telecaller-metrics${params.toString() ? `?${params.toString()}` : ''}`;
-      
+
       // Debug log for API calls
       console.log('Telecaller Metrics API URL:', url);
       console.log('Date range:', dateRange);
@@ -426,7 +483,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching performance data:', err);
-      
+
       if (err.message.includes('Failed to fetch')) {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else {
@@ -441,7 +498,7 @@ const TelecallerProgressPage: React.FC = () => {
   const fetchDayWiseData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -450,35 +507,43 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build URL with filters for day-wise data
       const params = new URLSearchParams();
-      
+
       // Apply filters from UI
       // Telecaller filter
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
       // AC Code filter
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
       // Date filter - handle custom dates and predefined ranges (day-wise API also uses start_date/end_date)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      
+
       params.append('days', '7'); // Default to 7 days
-      
+
       const url = `${apiUrl}/api/cati/telecaller-metrics/daywise${params.toString() ? `?${params.toString()}` : ''}`;
-      
+
       // Debug log for day-wise API calls
       console.log('Day-wise Telecaller Metrics API URL:', url);
       console.log('Date range:', dateRange);
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -504,7 +569,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Error fetching day-wise data:', err);
-      
+
       if (err.message.includes('Failed to fetch')) {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
       } else {
@@ -578,6 +643,41 @@ const TelecallerProgressPage: React.FC = () => {
     }
   };
 
+  // Fetch telecalling groups
+  const fetchTelecallingGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiUrl}/api/teleform-users/telecalling-groups`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success && Array.isArray(result.data)) {
+          const groups: TelecallingGroup[] = result.data.map((item: any) => ({
+            id: item.telecalling_group_id || item.id,
+            name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+          }));
+          setTelecallingGroups(groups);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching telecalling groups:', err);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
   // Fetch telecaller-wise data - fetch all pages to get complete data
   const fetchTelecallerWiseData = async () => {
     setTelecallerDataLoading(true);
@@ -591,7 +691,7 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Fetch all data by making multiple API calls
       let allData: TelecallerWiseData[] = [];
       let currentPage = 1;
@@ -600,46 +700,54 @@ const TelecallerProgressPage: React.FC = () => {
 
       while (hasMoreData) {
         // Build query parameters for current page
-      const params = new URLSearchParams({
+        const params = new URLSearchParams({
           page: currentPage.toString(),
           limit: limit.toString(),
-      });
-      
-      // Add filters (only if they have values)
-      if (filters.acCode && filters.acCode !== '') {
-        params.append('ac_code', filters.acCode);
-      }
-      
-      if (filters.telecaller && filters.telecaller !== '') {
-        params.append('teleform_user_id', filters.telecaller);
-      }
-      
+        });
+
+        // Add filters (only if they have values)
+        if (filters.acCode && filters.acCode !== '') {
+          params.append('ac_code', filters.acCode);
+        }
+
+        if (filters.telecaller && filters.telecaller !== '') {
+          params.append('teleform_user_id', filters.telecaller);
+        }
+
+        if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+          params.append('status', filters.telecallerStatus);
+        }
+
+        if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+          params.append('telecalling_group_id', filters.telecallingGroupId);
+        }
+
         // Date filter - handle custom dates and predefined ranges
         const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
         Object.entries(dateRange).forEach(([key, value]) => {
           if (value) params.append(key, value);
         });
-      
-      const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
-      // Debug log for telecaller summary API calls
-      console.log('Telecaller Summary API URL:', url);
-      console.log('Date range:', dateRange);
+        const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
+        // Debug log for telecaller summary API calls
+        console.log('Telecaller Summary API URL:', url);
+        console.log('Date range:', dateRange);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
 
-      const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-      if (result.success && result.data) {
+        const result = await response.json();
+
+        if (result.success && result.data) {
           const pageData = Array.isArray(result.data) ? result.data : [];
           allData = [...allData, ...pageData];
 
@@ -647,9 +755,9 @@ const TelecallerProgressPage: React.FC = () => {
           const pagination = result.pagination;
           hasMoreData = pagination && currentPage < pagination.totalPages;
           currentPage++;
-      } else {
-        throw new Error(result.message || 'Failed to fetch telecaller summary data');
-      }
+        } else {
+          throw new Error(result.message || 'Failed to fetch telecaller summary data');
+        }
       } // End of while loop
 
       setTelecallerWiseData(allData);
@@ -696,6 +804,14 @@ const TelecallerProgressPage: React.FC = () => {
     });
   };
 
+  // Get paginated data
+  const getPaginatedData = () => {
+    const sortedData = getSortedData();
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return sortedData.slice(startIndex, endIndex);
+  };
+
   // Download telecaller data as CSV (limit 200 records with current filters)
   const handleDownloadTelecallerCSV = async () => {
     setDownloadingCSV(true);
@@ -708,28 +824,36 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+
       // Build query parameters with API maximum limit
       const params = new URLSearchParams({
         page: '1',
-        limit: '500', // API maximum limit
+        limit: '1000', // API maximum limit
       });
-      
+
       // Add filters (only if they have values)
       if (filters.acCode && filters.acCode !== '') {
         params.append('ac_code', filters.acCode);
       }
-      
+
       if (filters.telecaller && filters.telecaller !== '') {
         params.append('teleform_user_id', filters.telecaller);
       }
-      
+
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      }
+
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
       // Date filter - handle custom dates and predefined ranges (CSV download uses date_from/date_to)
       const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
       Object.entries(dateRange).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      
+
       const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
 
       const response = await fetch(url, {
@@ -747,16 +871,21 @@ const TelecallerProgressPage: React.FC = () => {
 
       if (result.success && result.data) {
         const data = Array.isArray(result.data) ? result.data : [];
-        
+
         // Convert to CSV
         const headers = [
-          'Sr. No.',
+          'S.No',
           'Caller ID',
           'Caller Name',
           'Caller Mobile No.',
+          'Group',
           'Number of Dials',
+          'Completed',
+          'Successful',
+          'Under QC',
+          'Rejected',
           'Number of Calls Connected',
-          'Talk Duration',
+          'Form Duration',
           'Call Not Received to Telecaller',
           'Ringing',
           'Not Ringing',
@@ -772,12 +901,11 @@ const TelecallerProgressPage: React.FC = () => {
           'Refuse to Respond',
           'Call Back Later',
           'No response by Telecaller (Call Status)',
-          'Successful',
+          'Completed',
           'Terminated',
           'Incompleted',
-          'No response by Telecaller (Interview)',
-          'Less Than 180 (Sec)',
-          'Greater Than 180 (Sec)',
+          'Ineligible',
+          'Short Interview',
         ];
 
         const csvRows = [
@@ -787,7 +915,12 @@ const TelecallerProgressPage: React.FC = () => {
             item.caller_id || '-',
             `"${item.caller_name || '-'}"`,
             `"${item.caller_mobile_no || '-'}"`,
+            `"${item.telecalling_group_name || '-'}"`,
             item.number_of_dials || 0,
+            item.successful || 0,
+            item.pass || 0,
+            item.under_qc || 0,
+            item.qc_rejected || 0,
             item.number_of_calls_connected || 0,
             `"${item.talk_duration || '00:00:00'}"`,
             item.call_not_received_to_telecaller || 0,
@@ -808,9 +941,8 @@ const TelecallerProgressPage: React.FC = () => {
             item.successful || 0,
             item.terminated || 0,
             item.incompleted || 0,
-            Math.max(0, (item.number_of_dials || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)),
-            item.less_than_180_sec || 0,
-            item.greater_than_180_sec || 0,
+            item.ineligible || 0,
+            item.short_interview || 0
           ].join(','))
         ];
 
@@ -824,7 +956,7 @@ const TelecallerProgressPage: React.FC = () => {
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const csvUrl = URL.createObjectURL(blob);
-        
+
         link.setAttribute('href', csvUrl);
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
@@ -849,12 +981,14 @@ const TelecallerProgressPage: React.FC = () => {
   useEffect(() => {
     fetchTelecallers();
     fetchACList();
+    fetchTelecallingGroups();
   }, []);
 
   // Fetch initial data on mount
   useEffect(() => {
     if (viewMode === 'overall') {
-      fetchPerformanceData();
+      // Trigger initial metrics load once on mount
+      setMetricsTrigger((t) => (t === 0 ? 1 : t));
     } else {
       fetchDayWiseData();
     }
@@ -934,7 +1068,7 @@ const TelecallerProgressPage: React.FC = () => {
               bgColor="bg-indigo-500"
             />
             <MetricCard
-              title="Total Talk Duration"
+              title="Total Form Duration"
               value={data?.caller_performance?.total_talk_duration ? formatDuration(data.caller_performance.total_talk_duration) : '—'}
               icon={<Clock className="h-6 w-6 text-emerald-600" />}
               color="border-emerald-500"
@@ -945,7 +1079,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Number Status Section */}
         <div className="mb-8">
-          <SectionHeader title="NUMBER STATUS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
+          <SectionHeader title="NUMBER OF DIALS ATTEMPTED METRICS" icon={<BarChart3 className="h-6 w-6 text-blue-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Call Not Received to Telecaller"
@@ -980,7 +1114,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Call Not Ring Status Section */}
         <div className="mb-8">
-          <SectionHeader title="CALL NOT RING STATUS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
+          <SectionHeader title="NOT RINGING METRICS" icon={<TrendingDown className="h-6 w-6 text-red-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Switch Off"
@@ -1015,7 +1149,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Call Ring Status Section */}
         <div className="mb-8">
-          <SectionHeader title="CALL RING STATUS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
+          <SectionHeader title="RINGING METRICS" icon={<TrendingUp className="h-6 w-6 text-green-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
             <MetricCard
               title="Number of Calls Connected"
@@ -1043,28 +1177,28 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Call Status Section */}
         <div className="mb-8">
-          <SectionHeader title="CALL STATUS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <SectionHeader title="NUMBER OF CALLS CONNECTED METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
-              title="Continue"
+              title="Call Continue"
               value={getValue(data?.call_status?.continue)}
-              icon={<Phone className="h-6 w-6 text-green-600" />}
-              color="border-green-500"
-              bgColor="bg-green-500"
+              icon={<Phone className="h-6 w-6 text-blue-600" />}
+              color="border-blue-500"
+              bgColor="bg-blue-500"
             />
             <MetricCard
               title="Refuse to Respond"
               value={getValue(data?.call_status?.refuse_to_respond)}
-              icon={<Phone className="h-6 w-6 text-green-600" />}
-              color="border-green-500"
-              bgColor="bg-green-500"
+              icon={<Phone className="h-6 w-6 text-amber-600" />}
+              color="border-amber-500"
+              bgColor="bg-amber-500"
             />
             <MetricCard
               title="Call Back Later"
               value={getValue(data?.call_status?.call_back_later)}
-              icon={<Clock className="h-6 w-6 text-green-600" />}
-              color="border-green-500"
-              bgColor="bg-green-500"
+              icon={<Clock className="h-6 w-6 text-teal-600" />}
+              color="border-teal-500"
+              bgColor="bg-teal-500"
             />
             <MetricCard
               title="No response by Telecaller"
@@ -1078,7 +1212,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         {/* Interview Metrics Section */}
         <div className="mb-8">
-          <SectionHeader title="INTERVIEW METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
+          <SectionHeader title="CALL CONTINUE METRICS" icon={<BarChart3 className="h-6 w-6 text-purple-600" />} />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <MetricCard
               title="Completed"
@@ -1102,8 +1236,8 @@ const TelecallerProgressPage: React.FC = () => {
               bgColor="bg-sky-500"
             />
             <MetricCard
-              title="No response by Telecaller"
-              value={getValue(Math.max(0, (data?.call_status?.continue || 0) - (data?.interview_metrics?.successful || 0) - (data?.interview_metrics?.terminated || 0) - (data?.interview_metrics?.incompleted || 0)))}
+              title="Ineligible"
+              value={getValue(data?.interview_metrics?.ineligible)}
               icon={<Phone className="h-6 w-6 text-gray-600" />}
               color="border-gray-600"
               bgColor="bg-gray-600"
@@ -1115,7 +1249,7 @@ const TelecallerProgressPage: React.FC = () => {
   };
 
   return (
-    <FluidContainer>
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4">
@@ -1124,14 +1258,14 @@ const TelecallerProgressPage: React.FC = () => {
             {/* Title Section */}
             <div className="flex-1">
               <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Telecaller Progress
+                Telecaller Progress
               </Heading>
               {/* <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
                 Real-time telecaller performance metrics and analytics
               </p> */}
             </div>
 
-            
+
             {/* View Mode Toggle and Refresh - Responsive */}
             <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
               {/* View Mode Toggle Buttons */}
@@ -1157,7 +1291,7 @@ const TelecallerProgressPage: React.FC = () => {
                   <span className="xs:hidden">Day</span>
                 </Button>
               </div> */}
-              
+
               {/* Refresh Button */}
               {/* <Button
                 variant="outline"
@@ -1181,7 +1315,7 @@ const TelecallerProgressPage: React.FC = () => {
 
         </div>
 
-        
+
         {/* Search Filters */}
         <Card className="mb-4">
           <div className="flex flex-wrap items-end gap-4">
@@ -1224,15 +1358,15 @@ const TelecallerProgressPage: React.FC = () => {
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     From Date <span className="text-red-500">*</span>
-              </label>
-              <Input
-                type="date"
+                  </label>
+                  <Input
+                    type="date"
                     value={filters.customDateFrom}
                     onChange={(e) => handleFilterChange('customDateFrom', e.target.value)}
                     placeholder="Select From Date"
-              />
-            </div>
-                
+                  />
+                </div>
+
                 <div className="flex-1 min-w-[200px]">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     To Date <span className="text-red-500">*</span>
@@ -1263,7 +1397,37 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            
+            {/* Telecalling Group */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Group
+              </label>
+              <SelectDropdown
+                value={filters.telecallingGroupId}
+                onChange={(value) => handleFilterChange('telecallingGroupId', value)}
+                options={telecallingGroupOptions}
+                placeholder="Select Group"
+                searchable={true}
+                clearable={true}
+                maxHeight={300}
+              />
+            </div>
+
+            {/* Telecaller Status */}
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Telecaller Status
+              </label>
+              <SelectDropdown
+                value={filters.telecallerStatus}
+                onChange={(value) => handleFilterChange('telecallerStatus', value)}
+                options={telecallerStatusOptions}
+                placeholder="Select Status"
+                searchable={false}
+                clearable={true}
+                maxHeight={300}
+              />
+            </div>
 
             {/* Call Outcome */}
             <div className="flex-1 min-w-[200px]">
@@ -1283,15 +1447,15 @@ const TelecallerProgressPage: React.FC = () => {
 
             {/* View and Clear Buttons */}
             <div className="flex-shrink-0 flex gap-2">
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleSearch}
                 className="flex items-center"
               >
                 <Search className="w-4 h-4 mr-2" />
                 Search
               </Button>
-              
+
               {/* Clear Filters Button */}
               {/* <Button 
                 variant="outline" 
@@ -1372,9 +1536,18 @@ const TelecallerProgressPage: React.FC = () => {
 
             {/* Overall View - Show cards even on error */}
             {viewMode === 'overall' && (
-              <Card className="p-4 md:p-6">
-                {renderMetrics(metrics)}
-              </Card>
+              <TelecallerMetrics
+                filters={{
+                  telecaller: filters.telecaller,
+                  acCode: filters.acCode,
+                  callingDates: filters.callingDates,
+                  customDateFrom: filters.customDateFrom,
+                  customDateTo: filters.customDateTo,
+                  telecallerStatus: filters.telecallerStatus,
+                  telecallingGroupId: filters.telecallingGroupId,
+                }}
+                trigger={metricsTrigger}
+              />
             )}
 
             {/* Day-wise View */}
@@ -1419,23 +1592,22 @@ const TelecallerProgressPage: React.FC = () => {
           </>
         )}
       </div>
-      
+
       {/* Telecaller Summary Table */}
       <Card className="mt-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
             <div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Telecaller Summary
-            </Heading>
+              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+                Telecaller Summary
+              </Heading>
             </div>
           </div>
-          
+
           {/* Download Button */}
           <Button
             variant="primary"
-            size="sm"
             onClick={handleDownloadTelecallerCSV}
             disabled={downloadingCSV || telecallerDataLoading}
             loading={downloadingCSV}
@@ -1473,7 +1645,7 @@ const TelecallerProgressPage: React.FC = () => {
           </div>
         )}
 
-        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+        <div className="overflow-x-auto">
           {telecallerDataLoading ? (
             <div className="text-center py-12">
               <LoadingSpinner size="lg" />
@@ -1486,137 +1658,174 @@ const TelecallerProgressPage: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">Try adjusting your filters</p>
             </div>
           ) : (
-                <div className="table-responsive">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Not Received to Telecaller</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Number Status)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Switch Off</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Not Reachable</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number Does Not Exist</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Not Ring)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Not Connected</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Ring)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Continue</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Refuse to Respond</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Back Later</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Call Status)</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Successful</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Terminated</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Incompleted</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">No response by Telecaller (Interview)</th>
-                        {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
+            <div className="table-responsive">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Id</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Mobile No.</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-blue-500 text-white">Number of Dials</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-cyan-500 text-white"> Completed</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-green-500 text-white">Successful</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-yellow-500 text-white">Under QC</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center bg-red-500 text-white">Rejected</th>
+                    {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Short Interview</th> */}
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Number of Calls Connected</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller Performance: Form Duration</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Call Not Received to Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Ringing</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: Not Ringing</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Dials Attempted: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Switch Off</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Not Reachable</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: Number Does Not Exist</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Not Ringing: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Connected</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: Number of Calls Not Connected</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Ringing: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Continue</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Refuse to Respond</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: Call Back Later</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Number of Calls Connected: No Response by Telecaller</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Completed</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Terminated</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Incompleted</th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Continue: Ineligible</th>
+                    {/* <th className="px-4 py-3 font-semibold text-gray-700 text-center">Less Than 180 (Sec)</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Greater Than 180 (Sec)</th> */}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getSortedData().map((item, index) => (
-                        <tr key={item.caller_id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {index + 1}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.caller_id || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">
-                            {item.caller_name || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.caller_mobile_no || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_of_dials?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_of_calls_connected?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.talk_duration || '00:00:00'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.call_not_received_to_telecaller?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.ringing?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.not_ringing?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.switch_off?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_not_reachable?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.number_does_not_exist?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.picked?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.did_not_picked?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.continue?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.refuse_to_respond?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.call_back_later?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)).toLocaleString()}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
-                            {item.successful?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
-                            {item.terminated?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
-                            {item.incompleted?.toLocaleString() || 0}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {Math.max(0, (item.continue || 0) - (item.successful || 0) - (item.terminated || 0) - (item.incompleted || 0)).toLocaleString()}
-                          </td>
-                          {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                  </tr>
+                </thead>
+                <tbody>
+                  {getPaginatedData().map((item, index) => (
+                    <tr key={item.caller_id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {(currentPage - 1) * pageSize + index + 1}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.caller_id || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-left">
+                        {item.caller_name || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {item.caller_mobile_no || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                        {item.telecalling_group_name || '-'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_of_dials?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400">
+                        {item.number_of_calls_connected?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-cyan-600 dark:text-cyan-400">
+                        {item.successful?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                        {item.pass?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-yellow-600 dark:text-yellow-400">
+                        {item.under_qc?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                        {item.qc_rejected?.toLocaleString() || 0}
+                      </td>
+                      {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
+                            {item.short_interview?.toLocaleString() || 0}
+                          </td> */}
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {item.talk_duration || '00:00:00'}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.call_not_received_to_telecaller?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.ringing?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.not_ringing?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.number_of_dials || 0) - (item.ringing || 0) - (item.not_ringing || 0) - (item.call_not_received_to_telecaller || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.switch_off?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_not_reachable?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_does_not_exist?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.not_ringing || 0) - (item.switch_off || 0) - (item.number_not_reachable || 0) - (item.number_does_not_exist || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.picked?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.did_not_picked?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.ringing || 0) - (item.picked || 0) - (item.did_not_picked || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.continue?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.refuse_to_respond?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.call_back_later?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {Math.max(0, (item.picked || 0) - (item.continue || 0) - (item.refuse_to_respond || 0) - (item.call_back_later || 0)).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-green-600 dark:text-green-400">
+                        {item.successful?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
+                        {item.terminated?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-amber-600 dark:text-amber-400">
+                        {item.incompleted?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.ineligible?.toLocaleString() || 0}
+                      </td>
+                      {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.less_than_180_sec?.toLocaleString() || 0}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.greater_than_180_sec?.toLocaleString() || 0}
                           </td> */}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
           )}
         </div>
 
+        {/* Pagination */}
+        {telecallerWiseData.length > 0 && (
+          <div className="mt-4">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalItems={telecallerWiseData.length}
+              totalPages={Math.ceil(telecallerWiseData.length / pageSize)}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
+
       </Card>
-    </FluidContainer>
+    </Container>
   );
 };
 

@@ -13,6 +13,7 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle, Play, Volume2 } from 'lucide-react';
+import TelecallerMetrics from '@/components/telecaller/TelecallerMetrics';
 
 // Interfaces
 interface SearchFilters {
@@ -30,12 +31,15 @@ interface CallDetailData {
   id: number;
   caller_id: number;
   caller_name: string;
+  telecalling_group_name?: string;
   phone: string;
   ac_code: number;
   call_time: string | null;
   call_received: number;
   ivr_duration: number | null;
   talk_duration: number | null;
+  form_duration: number | null;
+  status: number;
   audio: string | null;
 }
 
@@ -55,6 +59,7 @@ interface PerformanceMetrics {
   totalIvrDuration: string;
   callerDidNotPick: number;
   totalTalkDuration: string;
+  totalFormDuration: string;
 }
 
 interface CallOutcomeMetrics {
@@ -64,6 +69,10 @@ interface CallOutcomeMetrics {
   pickedAndRefused: number;
   totalNumberExhausted: number;
   pickedAndCallContinue: number;
+  completedInterview: number;
+  terminatedInterview: number;
+  incompleteInterview: number;
+  ineligibleInterview: number;
 }
 
 interface Telecaller {
@@ -84,6 +93,7 @@ interface DashboardFilters {
   fromDate: string;
   toDate: string;
   duration: string;
+  telecallingGroupId: string;
 }
 
 const TelecallerDailyCallDetailPage = () => {
@@ -107,6 +117,7 @@ const TelecallerDailyCallDetailPage = () => {
     totalIvrDuration: '00:00:00',
     callerDidNotPick: 0,
     totalTalkDuration: '00:00:00',
+    totalFormDuration: '00:00:00',
   });
 
   const [callOutcomeMetrics, setCallOutcomeMetrics] = useState<CallOutcomeMetrics>({
@@ -116,9 +127,14 @@ const TelecallerDailyCallDetailPage = () => {
     pickedAndRefused: 0,
     totalNumberExhausted: 0,
     pickedAndCallContinue: 0,
+    completedInterview: 0,
+    terminatedInterview: 0,
+    incompleteInterview: 0,
+    ineligibleInterview: 0,
   });
 
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Dashboard filters state
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({
@@ -128,6 +144,7 @@ const TelecallerDailyCallDetailPage = () => {
     fromDate: '',
     toDate: '',
     duration: '',
+    telecallingGroupId: '',
   });
 
   // Telecaller and AC list states
@@ -135,6 +152,14 @@ const TelecallerDailyCallDetailPage = () => {
   const [acList, setAcList] = useState<ACData[]>([]);
   const [loadingTelecallers, setLoadingTelecallers] = useState(false);
   const [loadingACs, setLoadingACs] = useState(false);
+
+  // Telecalling Group filter states
+  interface TelecallingGroup {
+    id: number;
+    name: string;
+  }
+  const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   // API state for call details
   const [callDetailData, setCallDetailData] = useState<CallDetailData[]>([]);
@@ -231,6 +256,16 @@ const TelecallerDailyCallDetailPage = () => {
       })),
   ];
 
+  const telecallingGroupOptions = [
+    { value: '', label: 'All Groups' },
+    ...telecallingGroups
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map((group) => ({
+        value: group.id.toString(),
+        label: group.name,
+      })),
+  ];
+
   const durationOptions = [
     { value: '', label: 'All Duration' },
     { value: '180', label: '180 seconds' },
@@ -315,6 +350,7 @@ const TelecallerDailyCallDetailPage = () => {
     console.log('Dashboard filters:', dashboardFilters);
     fetchDashboardMetrics();
     fetchCallDetails(1); // Also refresh call details table with filters
+    setMetricsTrigger((t) => t + 1); // trigger TelecallerMetrics fetch explicitly
   };
 
   // Fetch dashboard metrics from API
@@ -377,6 +413,7 @@ const TelecallerDailyCallDetailPage = () => {
           totalIvrDuration: result.data.total_ivr_duration || '00:00:00',
           callerDidNotPick: result.data.caller_did_not_pick || 0,
           totalTalkDuration: result.data.total_talk_duration || '00:00:00',
+          totalFormDuration: result.data.total_form_duration || '00:00:00',
         });
 
         // Update call outcome metrics
@@ -387,6 +424,10 @@ const TelecallerDailyCallDetailPage = () => {
           pickedAndRefused: result.data.picked_and_refused || 0,
           totalNumberExhausted: result.data.total_number_exhausted || 0,
           pickedAndCallContinue: result.data.picked_and_call_continue || 0,
+          completedInterview: result.data.completed_interview || 0,
+          terminatedInterview: result.data.terminated_interview || 0,
+          incompleteInterview: result.data.incomplete_interview || 0,
+          ineligibleInterview: result.data.ineligible_interview || 0,
         });
       } else {
         throw new Error(result.message || 'Failed to fetch dashboard metrics');
@@ -437,6 +478,10 @@ const TelecallerDailyCallDetailPage = () => {
       
       if (dashboardFilters.duration && dashboardFilters.duration !== '') {
         params.append('duration', dashboardFilters.duration);
+      }
+      
+      if (dashboardFilters.telecallingGroupId && dashboardFilters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', dashboardFilters.telecallingGroupId);
       }
       
       // Apply additional filters from the search form (if uncommented later)
@@ -497,6 +542,11 @@ const TelecallerDailyCallDetailPage = () => {
     setUseIframe(true);
   };
 
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error');
+    setAudioError(true);
+  };
+
   const formatDuration = (seconds: number | null) => {
     if (seconds === null) return '-';
     const mins = Math.floor(seconds / 60);
@@ -507,16 +557,33 @@ const TelecallerDailyCallDetailPage = () => {
   const formatDateTime = (dateTime: string | null) => {
     if (!dateTime) return '-';
     try {
-      return new Date(dateTime).toLocaleString('en-IN', {
+      // Parse the UTC time and format it without timezone conversion
+      const date = new Date(dateTime);
+      return date.toLocaleString('en-IN', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: 'UTC' // Force UTC timezone to prevent conversion
       });
     } catch {
       return '-';
     }
+  };
+
+  const getStatusText = (status: number) => {
+    const statusMap: { [key: number]: string } = {
+      0: 'Default',
+      1: 'Call Initiate',
+      2: 'Completed',
+      3: 'Incomplete',
+      4: 'Incomplete',
+      5: 'Ineligible',
+      6: 'Terminated',
+      7: 'Terminated'
+    };
+    return statusMap[status] || 'Unknown';
   };
 
   const handleSort = (key: keyof CallDetailData) => {
@@ -608,11 +675,48 @@ const TelecallerDailyCallDetailPage = () => {
     }
   };
 
+  // Fetch telecalling groups
+  const fetchTelecallingGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiUrl}/api/teleform-users/telecalling-groups`, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        if (response.ok && result.success && Array.isArray(result.data)) {
+          const groups: TelecallingGroup[] = result.data.map((item: any) => ({
+            id: item.telecalling_group_id || item.id,
+            name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+          }));
+          setTelecallingGroups(groups);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching telecalling groups:', err);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
+
   useEffect(() => {
     fetchTelecallers();
     fetchACList();
+    fetchTelecallingGroups();
     fetchDashboardMetrics();
     fetchCallDetails(1);
+    // Trigger initial metrics load for "today" on first mount
+    setMetricsTrigger((t) => (t === 0 ? 1 : t));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -687,6 +791,22 @@ const TelecallerDailyCallDetailPage = () => {
               onChange={(value) => handleDashboardFilterChange('acCode', value)}
               options={acCodeOptions}
               placeholder="Select AC"
+              searchable={true}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
+          {/* Telecalling Group Filter */}
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Group
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.telecallingGroupId}
+              onChange={(value) => handleDashboardFilterChange('telecallingGroupId', value)}
+              options={telecallingGroupOptions}
+              placeholder="Select Group"
               searchable={true}
               clearable={true}
               maxHeight={300}
@@ -895,119 +1015,18 @@ const TelecallerDailyCallDetailPage = () => {
         </div>
       </Card> */}
 
-      {/* Performance Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-4">
-        {/* Caller Performance */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Caller Performance
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-blue-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={Users}
-                title="Total Callers"
-                value={performanceMetrics.totalCallers}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Days till now"
-                value={performanceMetrics.daysTillNow}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Number of dials"
-                value={performanceMetrics.numberOfDials}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={Clock}
-                title="Total IVR Duration"
-                value={performanceMetrics.totalIvrDuration}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Caller did not pick"
-                value={performanceMetrics.callerDidNotPick}
-                bgColor="bg-blue-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Total Talk Duration"
-                value={performanceMetrics.totalTalkDuration}
-                bgColor="bg-blue-500"
-              />
-            </div>
-          )}
-        </Card>
-
-        {/* Call Outcome */}
-        <Card>
-          <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-green-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-              Call Outcome
-            </Heading>
-          </div>
-          {metricsLoading ? (
-            <div className="text-center py-12">
-              <i className="fa fa-spinner fa-spin text-3xl text-green-600 mb-3"></i>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Loading metrics...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <MetricCard
-                icon={PhoneOff}
-                title="Number does not exist"
-                value={callOutcomeMetrics.numberDoesNotExist}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Respondent did not pick"
-                value={callOutcomeMetrics.respondentDidNotPick}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Respondent Picked the call"
-                value={callOutcomeMetrics.respondentPickedCall}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Picked and Refused"
-                value={callOutcomeMetrics.pickedAndRefused}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneOff}
-                title="Total Number Exhausted"
-                value={callOutcomeMetrics.totalNumberExhausted}
-                bgColor="bg-green-500"
-              />
-              <MetricCard
-                icon={PhoneCall}
-                title="Picked and Call Continue"
-                value={callOutcomeMetrics.pickedAndCallContinue}
-                bgColor="bg-green-500"
-              />
-            </div>
-          )}
-        </Card>
-      </div>
-
+      {/* Telecaller Progress Metrics */}
+      <TelecallerMetrics
+        filters={{
+          telecaller: dashboardFilters.telecaller,
+          acCode: dashboardFilters.acCode,
+          callingDates: dashboardFilters.callingDates,
+          customDateFrom: dashboardFilters.fromDate,
+          customDateTo: dashboardFilters.toDate,
+          telecallingGroupId: dashboardFilters.telecallingGroupId,
+        }}
+        trigger={metricsTrigger}
+      />
       {/* Error Alert */}
       {error && (
         <div className="mb-4">
@@ -1030,7 +1049,7 @@ const TelecallerDailyCallDetailPage = () => {
       )}
 
       {/* Data Table */}
-      <Card className="">
+      <Card className="mt-4">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
@@ -1063,10 +1082,13 @@ const TelecallerDailyCallDetailPage = () => {
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Duration</th>
                         <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio File</th>
+                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1081,6 +1103,9 @@ const TelecallerDailyCallDetailPage = () => {
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {item.caller_id || '-'}
                           </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                            {item.telecalling_group_name || '-'}
+                          </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {formatDateTime(item.call_time)}
                           </td>
@@ -1089,6 +1114,9 @@ const TelecallerDailyCallDetailPage = () => {
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {formatDuration(item.talk_duration)}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {formatDuration(item.form_duration)}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
                             {item.audio ? (
@@ -1109,6 +1137,9 @@ const TelecallerDailyCallDetailPage = () => {
                             ) : (
                               '-'
                             )}
+                          </td>
+                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                            {getStatusText(item.status)}
                           </td>
                         </tr>
                       ))}
@@ -1152,60 +1183,112 @@ const TelecallerDailyCallDetailPage = () => {
 
             {/* Modal Body */}
             <div className="p-6">
-              {!audioError && !useIframe ? (
-                <div className="space-y-4">
+              {/* Audio Player */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
+                <div className="mb-3 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                  </p>
+                  {audioError && !useIframe && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      Audio player had an issue. Try the alternative options below.
+                    </p>
+                  )}
+                </div>
+
+                {!useIframe ? (
+                  currentAudio ? (
                   <audio
                     controls
                     className="w-full"
-                    autoPlay
-                    preload="metadata"
                     controlsList="nodownload"
-                    crossOrigin="anonymous"
+                      preload="metadata"
                     onError={handleAudioError}
+                      onLoadStart={() => console.log('Audio loading started')}
+                      onCanPlay={() => console.log('Audio can play')}
                   >
                     <source src={currentAudio} type="audio/mpeg" />
                     <source src={currentAudio} type="audio/mp3" />
                     Your browser does not support the audio element.
                   </audio>
-
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                    <a
-                      href={currentAudio}
-                      download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
-                    >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
-                    </a>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this call.
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {audioError && (
-                    <Alert type="warning">
-                      <strong>Playback Issue:</strong> The audio couldn't play directly. Trying alternative method...
-                    </Alert>
-                  )}
-
+                  )
+                ) : (
+                  currentAudio ? (
+                    <div className="w-full">
                   <iframe
                     src={currentAudio}
-                    className="w-full h-64 border-2 border-gray-300 dark:border-gray-600 rounded"
+                        className="w-full h-16 border-0 rounded"
                     title="Audio Player"
-                  />
+                        allow="autoplay"
+                        onError={handleAudioError}
+                        onLoad={() => {
+                          // Check if iframe content is just text (not audio player)
+                          setTimeout(() => {
+                            try {
+                              const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                              if (iframe && iframe.contentDocument) {
+                                const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                  console.warn('Iframe returned text instead of audio player');
+                                  setAudioError(true);
+                                }
+                              }
+                            } catch (e) {
+                              // Cross-origin restrictions, can't access iframe content
+                              console.log('Cannot access iframe content due to CORS');
+                            }
+                          }, 1000);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this call.
+                    </div>
+                  )
+                )}
 
-                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                {/* Error Message for Failed Audio */}
+                {audioError && (
+                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                    <div className="text-center">
+                      <div className="text-red-600 dark:text-red-400 mb-2">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold">Audio Playback Failed</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Alternative Options */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
+                  {!useIframe && audioError && (
+                    <button
+                      onClick={() => setUseIframe(true)}
+                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      Try Alternative Player
+                    </button>
+                  )}
                     <a
                       href={currentAudio}
                       download
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors text-sm"
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
+                    style={{ display: currentAudio ? 'inline' : 'none' }}
                     >
-                      <i className="fa fa-download mr-2"></i>
-                      Download Audio
+                    Download audio
                     </a>
                   </div>
                 </div>
-              )}
-
             </div>
           </div>
         </div>

@@ -56,6 +56,10 @@ const roleRouteMap: Record<string, { capi: string; cati: string }> = {
     capi: '/pmt/dashboard',
     cati: '/pmt/dashboard',
   },
+  data_manager: {
+    capi: '/dm/capi',
+    cati: '/dm/cati',
+  },
 };
 
 export default function HomePage() {
@@ -68,6 +72,16 @@ export default function HomePage() {
   const handleSystemSelect = (system: 'capi' | 'cati') => {
     if (!user) return;
 
+    // Special handling for data_manager role
+    if (user.role === 'data_manager') {
+      if (system === 'capi') {
+        router.push('/dm/capi');
+      } else if (system === 'cati') {
+        router.push('/dm/cati');
+      }
+      return;
+    }
+
     // Get the route for this role and system
     const routes = roleRouteMap[user.role];
     if (routes) {
@@ -79,6 +93,11 @@ export default function HomePage() {
       // Navigate to the appropriate page
       router.push(targetRoute);
     }
+  };
+
+  // Handle data manager combine data
+  const handleDataManagerCombine = () => {
+    router.push('/dm/combine');
   };
 
   // Handle PPM system selection (for research role Project Progress Monitoring)
@@ -293,13 +312,16 @@ export default function HomePage() {
               <span className="text-base font-bold text-gray-800 dark:text-white">CATI</span>
             </button>
 
-            {/* CAPI + CATI Button */}
-            {/* <button
-              className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
-            >
-              <Database className="h-5 w-5 text-gray-800 dark:text-white" />
-              <span className="text-base font-bold text-gray-800 dark:text-white">CAPI + CATI</span>
-            </button> */}
+            {/* Combine Data Button - Show only for data_manager role */}
+            {user?.role === 'data_manager' && (
+              <button
+                onClick={handleDataManagerCombine}
+                className="flex-1 h-14 bg-[#7dd3c0] hover:bg-[#6dc3b0] dark:bg-[#5da39f] dark:hover:bg-[#4d938f] rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-3"
+              >
+                <Database className="h-5 w-5 text-gray-800 dark:text-white" />
+                <span className="text-base font-bold text-gray-800 dark:text-white">Combine Data</span>
+              </button>
+            )}
           </div>
         )}
       </div>

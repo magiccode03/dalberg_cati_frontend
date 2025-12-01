@@ -9,8 +9,7 @@ import Text from '@/components/ui/Text';
 import Button from '@/components/ui/Button';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
-import { Loader2, Edit, Plus, Search, X } from 'lucide-react';
+import { Loader2, Edit, Plus, Search, X, ChevronUp, ChevronDown } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import { apiService } from '@/lib/api';
 
@@ -49,20 +48,23 @@ interface APIResponse {
 
 const ACListPage = () => {
   const router = useRouter();
-  
+
   const [filters, setFilters] = useState({
     agencyId: '',
     acCode: '',
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
   const [acData, setAcData] = useState<ACData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
   const [agencyOptions, setAgencyOptions] = useState([{ value: '', label: 'Select State Teams' }]);
+  const [sortConfig, setSortConfig] = useState<{ key: keyof ACData; direction: 'asc' | 'desc' } | null>(null);
+
+  // AC dropdown state
+  const [acList, setAcList] = useState<{ value: string; label: string }[]>([]);
+  const [acLoading, setAcLoading] = useState(false);
+
 
   const acOptions = [
     { value: '', label: 'Select AC' },
@@ -92,7 +94,7 @@ const ACListPage = () => {
   const fetchAgencies = async () => {
     try {
       const response = await apiService.getAgencies();
-      
+
       if (response.success && response.data && typeof response.data === 'object') {
         const options = [
           { value: '', label: 'Select State Teams' },
@@ -121,20 +123,58 @@ const ACListPage = () => {
     }));
   };
 
+
+  // Fetch AC list from API
+    const fetchAcList = async () => {
+      try {
+        setAcLoading(true);
+        console.log('🔍 Fetching AC list from API...');
+        
+        const response = await apiClient.get('/dropdown/ac-list');
+        console.log('📊 AC List API Response:', response);
+        
+        if (response.data.status === 'success' && response.data.data) {
+          // Transform the API response to dropdown format
+          const acData = Object.entries(response.data.data).map(([id, name]) => ({
+            value: id,
+            label: `${name} (${id})`,
+          }));
+          
+          // Add the default "Select AC" option
+          const acWithDefault = [
+            { value: '', label: 'Select AC' },
+            ...acData,
+          ];
+          
+          setAcList(acWithDefault);
+          console.log('✅ AC list loaded successfully:', acWithDefault);
+        } else {
+          console.error('❌ Invalid AC list API response:', response.data);
+          setAcList([{ value: '', label: 'Select AC' }]);
+        }
+      } catch (err: any) {
+        console.error('❌ Error fetching AC list:', err);
+        setAcList([{ value: '', label: 'Select AC' }]);
+      } finally {
+        setAcLoading(false);
+      }
+    };
+
+
   // Fetch data from API
   const fetchACData = async () => {
     return fetchACDataWithFilters(filters);
   };
 
-  // Fetch data on component mount and when page changes
+  // Fetch data on component mount
   useEffect(() => {
     fetchAgencies(); // Load agencies first
+    fetchAcList(); // Load AC list first
     fetchACData();
-  }, [currentPage]);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setCurrentPage(1); // Reset to first page when searching
     fetchACData();
   };
 
@@ -151,10 +191,9 @@ const ACListPage = () => {
       agencyId: '',
       acCode: '',
     };
-    
+
     setFilters(clearedFilters);
-    setCurrentPage(1);
-    
+
     // Fetch data with cleared filters immediately
     fetchACDataWithFilters(clearedFilters);
   };
@@ -164,49 +203,119 @@ const ACListPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log('Making API request to: /dashboard/master-ac-index/list');
-      
+
+      console.log('Making API request to: /api/dashboard/master-ac-index/list');
+
       // Build query parameters
       const queryParams = new URLSearchParams();
-      
+
       if (customFilters.agencyId) queryParams.append('agency_id', customFilters.agencyId);
       if (customFilters.acCode) queryParams.append('ac_code', customFilters.acCode);
-      
-      // Add pagination
-      queryParams.append('page', currentPage.toString());
-      queryParams.append('pageSize', pageSize.toString());
-      
+
+      // Force fetch all pages to get all 295 records
+      let allMasterAcs: any[] = [];
+      let currentPage = 1;
+      let totalPages = 1;
+      let totalCount = 0;
+
+      console.log('Starting to fetch all pages to get all 295 records...');
+
+      // First, get page 1 to understand the structure
+      queryParams.append('page', '1');
+      queryParams.append('limit', '20'); // Use the working limit from your curl
+
       const queryString = queryParams.toString();
-      const endpoint = `/dashboard/master-ac-index/list${queryString ? `?${queryString}` : ''}`;
-      
-      console.log('API endpoint:', endpoint);
-      
-      const response = await apiClient.get(endpoint, { timeout: 10000 });
-      const data: APIResponse = response.data;
-      
-      console.log('API Response:', data);
-      
-      if (data.success && data.data && Array.isArray(data.data.master_acs)) {
-        const transformedData = transformAPIData(data.data.master_acs);
+      const baseEndpoint = `/api/dashboard/master-ac-index/list`;
+
+      console.log('Base endpoint:', baseEndpoint);
+
+      // Try multiple approaches to handle different base URLs
+      let workingEndpoint = '';
+      const endpoints = [
+        `${baseEndpoint}?${queryString}`, // Try the original endpoint first
+        `http://localhost:4001${baseEndpoint}?${queryString}`, // Try with localhost:4001
+        `/dashboard/master-ac-index/list?${queryString}`, // Try without /api prefix
+      ];
+
+      for (const testEndpoint of endpoints) {
+        try {
+          console.log(`Testing endpoint: ${testEndpoint}`);
+          const testResponse = await apiClient.get(testEndpoint, { timeout: 10000 });
+          console.log(`Success with endpoint: ${testEndpoint}`);
+          workingEndpoint = testEndpoint.replace(`?${queryString}`, ''); // Get base endpoint
+          break;
+        } catch (err: any) {
+          console.log(`Failed with endpoint ${testEndpoint}:`, err.message);
+          if (testEndpoint === endpoints[endpoints.length - 1]) {
+            // If this was the last attempt, throw the error
+            throw err;
+          }
+          continue;
+        }
+      }
+
+      if (!workingEndpoint) {
+        throw new Error('All API endpoints failed');
+      }
+
+      // Now fetch all pages
+      while (currentPage <= 20) { // Safety limit to prevent infinite loops
+        try {
+          const pageQueryParams = new URLSearchParams();
+          if (customFilters.agencyId) pageQueryParams.append('agency_id', customFilters.agencyId);
+          if (customFilters.acCode) pageQueryParams.append('ac_code', customFilters.acCode);
+          pageQueryParams.append('page', currentPage.toString());
+          pageQueryParams.append('limit', '20');
+
+          const pageQueryString = pageQueryParams.toString();
+          const pageEndpoint = `${workingEndpoint}?${pageQueryString}`;
+
+          console.log(`Fetching page ${currentPage}: ${pageEndpoint}`);
+
+          const pageResponse = await apiClient.get(pageEndpoint, { timeout: 10000 });
+          const pageData = pageResponse.data;
+
+          console.log(`Page ${currentPage} response:`, pageData);
+
+          if (pageData.success && pageData.data && Array.isArray(pageData.data.master_acs)) {
+            allMasterAcs = [...allMasterAcs, ...pageData.data.master_acs];
+            totalPages = pageData.data.total_pages;
+            totalCount = pageData.data.total_count;
+
+            console.log(`Page ${currentPage} fetched. Records: ${pageData.data.master_acs.length}, Total so far: ${allMasterAcs.length}, Total count: ${totalCount}`);
+
+            // If we've got all records or no more pages, break
+            if (!pageData.data.has_next || allMasterAcs.length >= totalCount) {
+              console.log(`All pages fetched. Total records: ${allMasterAcs.length}`);
+              break;
+            }
+          } else {
+            console.log(`Page ${currentPage} failed or no data`);
+            break;
+          }
+
+          currentPage++;
+        } catch (pageErr: any) {
+          console.error(`Error fetching page ${currentPage}:`, pageErr);
+          break;
+        }
+      }
+
+      console.log(`Final result: ${allMasterAcs.length} records fetched out of ${totalCount} total`);
+
+      if (allMasterAcs.length > 0) {
+        const transformedData = transformAPIData(allMasterAcs);
         setAcData(transformedData);
-        setTotalCount(data.data.total_count);
-        setTotalPages(data.data.total_pages);
+        setTotalCount(allMasterAcs.length);
         console.log('Transformed data:', transformedData);
       } else {
-        console.error('Invalid API response structure:', data.error);
-        setError(data.error || 'Invalid response format from server');
-        // Use fallback data
-        const fallbackData: ACData[] = [
-          ...acData
-        ];
-        setAcData(fallbackData);
-        setTotalCount(fallbackData.length);
-        setTotalPages(Math.ceil(fallbackData.length / pageSize));
+        setError('No data received from API');
+        setAcData([]);
+        setTotalCount(0);
       }
     } catch (err: any) {
       console.error('Error fetching data:', err);
-      
+
       // Better error handling for different error types
       if (err.message === 'Request timeout after 10 seconds') {
         setError('Request timed out. The server may be slow or unavailable.');
@@ -225,34 +334,63 @@ const ACListPage = () => {
       } else {
         setError(err.message || 'An error occurred while fetching data');
       }
-      
+
       // Use sample data on error
       const sampleData: ACData[] = [
         {
           id: 1,
           acCode: 1,
-          acName: 'Valmiki Nagar',
-          agencyId: 4,
-          agencyName: 'Parbhat',
-          totalInterview: 330,
-          validInterview: 310,
+          acName: 'Mekliganj',
+          agencyId: 1,
+          agencyName: 'Ajit Barman',
+          totalInterview: 15,
+          validInterview: 8,
         },
         {
           id: 2,
           acCode: 2,
-          acName: 'Ramnagar (SC)',
-          agencyId: 4,
-          agencyName: 'Parbhat',
-          totalInterview: 395,
-          validInterview: 346,
+          acName: 'Mathabhanga',
+          agencyId: 1,
+          agencyName: 'Ajit Barman',
+          totalInterview: 0,
+          validInterview: 0,
         }
       ];
       setAcData(sampleData);
       setTotalCount(sampleData.length);
-      setTotalPages(Math.ceil(sampleData.length / pageSize));
     } finally {
       setLoading(false);
     }
+  };
+
+  // Sorting functionality
+  const handleSort = (key: keyof ACData) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortedData = () => {
+    if (!sortConfig) return acData;
+
+    return [...acData].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+
+      return 0;
+    });
   };
 
   // Navigation functions
@@ -302,133 +440,200 @@ const ACListPage = () => {
         <>
           {/* Search Form */}
           <Card className="mb-3">
-        <form onSubmit={handleSearch} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Text className="text-sm font-medium mb-2">State Teams</Text>
-              <SelectDropdown
-                options={agencyOptions}
-                value={filters.agencyId}
-                onChange={(value) => handleFilterChange('agencyId', value as string)}
-                placeholder="Search or select state teams"
-                searchable={true}
-              />
-            </div>
-            <div>
-              <Text className="text-sm font-medium mb-2">AC</Text>
-              <SelectDropdown
-                options={acOptions}
-                value={filters.acCode}
-                onChange={(value) => handleFilterChange('acCode', value as string)}
-                placeholder="Search or select AC"
-                searchable={true}
-              />
-            </div>
-            <div className="flex items-end gap-2">
-              <Button type="submit" className="flex-1">
-                <Search className="w-4 h-4 mr-2" />
-                Search
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={handleClearFilters}
-                className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Clear
-              </Button>
-            </div>
-          </div>
-        </form>
-      </Card>
+            <form onSubmit={handleSearch} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Text className="text-sm font-medium mb-2">State Teams</Text>
+                  <SelectDropdown
+                    options={agencyOptions}
+                    value={filters.agencyId}
+                    onChange={(value) => handleFilterChange('agencyId', value as string)}
+                    placeholder="Search or select state teams"
+                    searchable={true}
+                    clearable
+                  />
+                </div>
+                <div>
+                  <Text className="text-sm font-medium mb-2">AC</Text>
+                  <SelectDropdown
+                    options={acList}
+                    value={filters.acCode}
+                    onChange={(value) => handleFilterChange('acCode', value as string)}
+                    placeholder="Search or select AC" 
+                    searchable={true}
+                    clearable
+                  />
+                </div>
+                <div className="flex items-end gap-2">
+                  <Button type="submit" className="flex-1">
+                    <Search className="w-4 h-4 mr-2" />
+                    Search
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearFilters}
+                    className="flex-1 bg-gray-500 text-white hover:bg-gray-600 border-gray-500"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Card>
 
-      {/* AC List Table */}
-      <Card>
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>   
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC List</Heading>
-          </div>
-          <Button variant="primary" className="bg-blue-600 text-white hover:bg-blue-500">
+          {/* AC List Table */}
+          <Card>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center">
+                <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">AC List</Heading>
+              </div>
+              {/* <Button variant="primary" className="bg-blue-600 text-white hover:bg-blue-500">
           <Plus className="w-4 h-4 mr-2" />
             Update Data Team Wise
-          </Button>
-        </div>
+          </Button> */}
+            </div>
 
-        <div className="mb-4">
-          <Text className="text-sm text-gray-600">
-            Total <strong>{totalCount}</strong> items.
-          </Text>
-        </div>
-                
-                <div className="table-responsive">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">AC Code</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Zonal Manager ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Zonal Manager Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Total Interview</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Valid Interview</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {acData.map((item, index) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.acCode}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">
-                            {item.acName}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.agencyId}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">
-                            {item.agencyName}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.totalInterview}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.validInterview}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <div className="relative group">
-                              <button
-                                className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-                                onClick={() => handleUpdateAgency(item)}
-                                title="Update Agency"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              {/* Tooltip */}
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                                Update Agency
-                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
+            <div className="mb-4">
+              <Text className="text-sm text-gray-600">
+                Total <strong>{totalCount}</strong> items.
+              </Text>
+            </div>
 
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <PaginationStandard
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalCount}
-            itemsPerPage={pageSize}
-            onPageChange={(page) => setCurrentPage(page)}
-            className="justify-center"
-          />
-        </div>
-      </Card>
+            <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('acCode')}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span>AC Code</span>
+                        <div className="ml-1 flex flex-col">
+                          <ChevronUp
+                            className={`h-3 w-3 ${sortConfig?.key === 'acCode' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          <ChevronDown
+                            className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'acCode' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('acName')}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span>AC Name</span>
+                        <div className="ml-1 flex flex-col">
+                          <ChevronUp
+                            className={`h-3 w-3 ${sortConfig?.key === 'acName' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          <ChevronDown
+                            className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'acName' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('agencyId')}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span>Zonal Manager ID</span>
+                        <div className="ml-1 flex flex-col">
+                          <ChevronUp
+                            className={`h-3 w-3 ${sortConfig?.key === 'agencyId' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          <ChevronDown
+                            className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'agencyId' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('agencyName')}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span>Zonal Manager Name</span>
+                        <div className="ml-1 flex flex-col">
+                          <ChevronUp
+                            className={`h-3 w-3 ${sortConfig?.key === 'agencyName' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          <ChevronDown
+                            className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'agencyName' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('totalInterview')}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span>Total Interview</span>
+                        <div className="ml-1 flex flex-col">
+                          <ChevronUp
+                            className={`h-3 w-3 ${sortConfig?.key === 'totalInterview' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          <ChevronDown
+                            className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'totalInterview' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th
+                      className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('validInterview')}
+                    >
+                      <div className="flex items-center justify-center">
+                        <span>Valid Interview</span>
+                        <div className="ml-1 flex flex-col">
+                          <ChevronUp
+                            className={`h-3 w-3 ${sortConfig?.key === 'validInterview' && sortConfig?.direction === 'asc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                          <ChevronDown
+                            className={`h-3 w-3 -mt-1 ${sortConfig?.key === 'validInterview' && sortConfig?.direction === 'desc' ? 'text-blue-600' : 'text-gray-400'}`}
+                          />
+                        </div>
+                      </div>
+                    </th>
+                    <th className="text-center sticky top-0 z-10 bg-gray-50 dark:bg-gray-700 border-b-2 border-gray-300 dark:border-gray-500 px-3 py-3 font-semibold">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getSortedData().map((item, index) => (
+                    <tr key={item.id}>
+                      <td className="text-center">{item.acCode}</td>
+                      <td>{item.acName}</td>
+                      <td className="text-center">{item.agencyId}</td>
+                      <td>{item.agencyName}</td>
+                      <td className="text-center">{item.totalInterview}</td>
+                      <td className="text-center">{item.validInterview}</td>
+                      <td className="text-center">
+                        <div className="relative group">
+                          <button
+                            className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                            onClick={() => handleUpdateAgency(item)}
+                            title="Update Zonal Manager"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+
+          </Card>
         </>
       )}
     </Container>
@@ -436,3 +641,4 @@ const ACListPage = () => {
 };
 
 export default ACListPage;
+

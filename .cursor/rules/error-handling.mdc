@@ -1,0 +1,94 @@
+---
+globs: *.ts,*.tsx
+description: Error handling patterns and best practices
+---
+
+# Error Handling Guidelines
+
+## Error Handling Strategy
+- **Global Handler**: [src/lib/error-handler.ts](mdc:src/lib/error-handler.ts) - Centralized error handling
+- **API Errors**: Handled automatically by API service
+- **Component Errors**: Use try-catch blocks and error boundaries
+- **User Feedback**: Display user-friendly error messages
+
+## API Error Handling
+- API service automatically handles HTTP errors
+- 401 errors trigger token refresh
+- Failed token refresh redirects to login
+- Use try-catch for custom error handling
+
+## Component Error Handling
+```typescript
+// Pattern for async operations
+try {
+  setLoading(true);
+  const response = await apiService.getData();
+  if (response.success) {
+    setData(response.data);
+  } else {
+    setError(response.message || 'Failed to fetch data');
+  }
+} catch (error) {
+  console.error('Error:', error);
+  setError(error instanceof Error ? error.message : 'An error occurred');
+} finally {
+  setLoading(false);
+}
+```
+
+## Error State Management
+- Use local state for component errors
+- Use Redux for global error state
+- Clear errors when retrying operations
+- Display errors in user-friendly format
+
+## Error Messages
+- Use clear, actionable error messages
+- Avoid technical jargon for users
+- Include relevant context
+- Provide recovery suggestions when possible
+
+## Error Boundaries
+- Use React error boundaries for component tree errors
+- Catch and display fallback UI
+- Log errors for debugging
+- Prevent full app crashes
+
+## Validation Errors
+- Use Zod for form validation
+- Display field-level errors
+- Show validation errors inline
+- Prevent submission on validation errors
+
+## Network Errors
+- Handle network failures gracefully
+- Show retry options
+- Display offline indicators
+- Cache data when possible
+
+## Common Patterns
+```typescript
+// Loading and error states
+const [data, setData] = useState(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+
+// Error display
+{error && (
+  <div className="text-red-600 dark:text-red-400">
+    {error}
+  </div>
+)}
+```
+
+## Logging
+- Log errors to console for debugging
+- Use console.error for errors
+- Include relevant context in logs
+- Don't log sensitive information
+
+## User Feedback
+- Use toast notifications for errors
+- Display errors in modals for critical failures
+- Show inline errors for form validation
+- Provide clear error recovery paths

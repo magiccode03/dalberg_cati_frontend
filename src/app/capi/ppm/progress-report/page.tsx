@@ -10,6 +10,7 @@ import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
 import type { PerformanceReportData, PerformanceReportParams, ACListItem } from '@/lib/api';
@@ -33,6 +34,8 @@ export default function ProgressReportPage() {
   const [acListLoading, setAcListLoading] = useState(false);
   const [psModalOpen, setPsModalOpen] = useState(false);
   const [selectedAcCode, setSelectedAcCode] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
 
   // Load AC list and fetch progress report data on component mount
   useEffect(() => {
@@ -110,6 +113,7 @@ export default function ProgressReportPage() {
       return;
     }
     
+    setCurrentPage(1); // Reset to first page when searching
     fetchProgressReport(false);
   };
 
@@ -203,7 +207,7 @@ export default function ProgressReportPage() {
       switch (level) {
         case 'ac':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'ac_code', label: 'AC Code', width: 'w-20', align: 'center' },
             { key: 'ac_name', label: 'AC Name', width: 'w-32', align: 'left' },
             { key: 'pc_name', label: 'Pc Name', width: 'w-32', align: 'left' },
@@ -213,7 +217,7 @@ export default function ProgressReportPage() {
             { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'terminated_interviews', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'system_rejections', label: 'System rejections', width: 'w-40', align: 'center' },
-            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-80', align: 'center' },
+            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-40', align: 'center' },
             { key: 'gps_pending', label: 'GPS Pending', width: 'w-24', align: 'center' },
             { key: 'gps_fail', label: 'GPS Fail', width: 'w-20', align: 'center' },
             { key: 'passed', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
@@ -230,7 +234,7 @@ export default function ProgressReportPage() {
           ];
         case 'pc':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'pc_code', label: 'PC Code', width: 'w-20', align: 'center' },
             { key: 'pc_name', label: 'PC Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -239,7 +243,7 @@ export default function ProgressReportPage() {
             { key: 'completed_interviews', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'terminated_interviews', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'system_rejections', label: 'System rejections', width: 'w-40', align: 'center' },
-            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-80', align: 'center' },
+            { key: 'counts_after_terminated', label: 'Counts after Terminated and System Rejection', width: 'w-40', align: 'center' },
             { key: 'passed', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
             { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white', align: 'center' },
             { key: 'under_qc', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
@@ -252,14 +256,14 @@ export default function ProgressReportPage() {
           ];
         case 'interviewer':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'interviewer_id', label: 'Interviewer ID', width: 'w-32', align: 'center' },
             { key: 'no_of_ac', label: 'No of AC covered', width: 'w-40', align: 'center' },
             { key: 'pscovered', label: 'PS Covered', width: 'w-24', align: 'center' },
             { key: 'total_interview', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'invalid', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'reject_auto', label: 'System rejections', width: 'w-40', align: 'center' },
-            { key: 'count_after_termination_and_rejection', label: 'Counts after Terminated and System Rejection', width: 'w-80', align: 'center' },
+            { key: 'count_after_termination_and_rejection', label: 'Counts after Terminated and System Rejection', width: 'w-40', align: 'center' },
             { key: 'valid', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
             { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white', align: 'center' },
             { key: 'interview_in_qc_total', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
@@ -278,7 +282,7 @@ export default function ProgressReportPage() {
           ];
         case 'polingstation':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'polling_station_name', label: 'Polling Station Name', width: 'w-48', align: 'left' },
             { key: 'ac_name', label: 'AC Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -286,7 +290,7 @@ export default function ProgressReportPage() {
             { key: 'total_interview', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'invalid', label: 'Terminated Interviews', width: 'w-48', align: 'center' },
             { key: 'reject_auto', label: 'System Rejections', width: 'w-40', align: 'center' },
-            { key: 'count_after_termination_and_rejection', label: 'Counts After Terminated And System Rejection', width: 'w-80', align: 'center' },
+            { key: 'count_after_termination_and_rejection', label: 'Counts After Terminated And System Rejection', width: 'w-40', align: 'center' },
             { key: 'valid', label: 'Passed', width: 'w-20', className: 'bg-green-500 text-white', align: 'center' },
             { key: 'failed', label: 'Failed', width: 'w-20', className: 'bg-red-500 text-white', align: 'center' },
             { key: 'interview_in_qc_total', label: 'Under QC', width: 'w-24', className: 'bg-blue-500 text-white', align: 'center' },
@@ -304,7 +308,7 @@ export default function ProgressReportPage() {
       switch (level) {
         case 'ac':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'ac_code', label: 'Ac Code', width: 'w-20', align: 'center' },
             { key: 'ac_name', label: 'Ac Name', width: 'w-32', align: 'left' },
             { key: 'pc_name', label: 'Pc Name', width: 'w-32', align: 'left' },
@@ -323,14 +327,14 @@ export default function ProgressReportPage() {
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-48', align: 'center' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32', align: 'center' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-48', align: 'center' },
-            { key: 'reject_qc_audio_respondent', label: 'Interviewer acting as respondent', width: 'w-64', align: 'center' },
-            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-80', align: 'center' },
-            { key: 'reject_qc_audio_mechanical', label: 'The interviewer is asking questions mechanically', width: 'w-80', align: 'center' },
+            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-40', align: 'center' },
+            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
+            { key: 'reject_duplicate_audio', label: 'Duplicate Audio', width: 'w-40', align: 'center' },
             { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24', align: 'center' }
           ];
         case 'pc':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'pc_code', label: 'PC Code', width: 'w-20', align: 'center' },
             { key: 'pc_name', label: 'PC Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -349,7 +353,7 @@ export default function ProgressReportPage() {
           ];
         case 'interviewer':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'interviewer_id', label: 'Interviewer ID', width: 'w-32', align: 'center' },
             { key: 'total_interview', label: 'Completed Interviews', width: 'w-48', align: 'center' },
             { key: 'valid', label: 'Pass interviews', width: 'w-32', align: 'center' },
@@ -364,15 +368,15 @@ export default function ProgressReportPage() {
             { key: 'reject_qc_audio_gender', label: 'Survey conversation can be heard', width: 'w-48', align: 'center' },
             { key: 'reject_qc_audio_blank', label: 'No Conversation', width: 'w-32', align: 'center' },
             { key: 'reject_qc_audio_irrelevant', label: 'Irrelevant conversation', width: 'w-48', align: 'center' },
-            { key: 'reject_qc_audio_respondent', label: 'Interviewer acting as respondent', width: 'w-64', align: 'center' },
-            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-80', align: 'center' },
-            { key: 'reject_qc_audio_mechanical', label: 'The interviewer is asking questions mechanically', width: 'w-80', align: 'center' },
+            { key: 'reject_qc_audio_interviewer_more', label: 'Can hear the interviewer more than the respondent', width: 'w-40', align: 'center' },
+            { key: 'cannot_hear_the_response_clearly', label: 'Cannot hear the response clearly', width: 'w-64', align: 'center' },
+            { key: 'reject_duplicate_audio', label: 'Duplicate Audio', width: 'w-40', align: 'center' },
             { key: 'reject_rta', label: 'N+W+RTA Fail', width: 'w-24', align: 'center' },
             { key: 'rejection_per', label: 'Rejection %', width: 'w-24', align: 'center' }
           ];
         case 'polingstation':
           return [
-            { key: 'sr', label: 'Sr.No.', width: 'w-16', align: 'center' },
+            { key: 'sr', label: 'S.No', width: 'w-16', align: 'center' },
             { key: 'polling_station_name', label: 'Polling Station Name', width: 'w-48', align: 'left' },
             { key: 'ac_name', label: 'Ac Name', width: 'w-32', align: 'left' },
             { key: 'target_sample', label: 'Target Sample', width: 'w-24', align: 'center' },
@@ -567,12 +571,12 @@ export default function ProgressReportPage() {
         return item.reject_qc_audio_blank ?? '-';
       case 'reject_qc_audio_irrelevant':
         return item.reject_qc_audio_irrelevant ?? '-';
-      case 'reject_qc_audio_respondent':
-        return item.reject_qc_audio_respondent ?? '-';
       case 'reject_qc_audio_interviewer_more':
         return item.reject_qc_audio_interviewer_more ?? '-';
-      case 'reject_qc_audio_mechanical':
-        return item.reject_qc_audio_mechanical ?? '-';
+      case 'cannot_hear_the_response_clearly':
+        return item.cannot_hear_the_response_clearly ?? '-';
+      case 'reject_duplicate_audio':
+        return item.reject_duplicate_audio ?? '-';
       
       // Other fields
       case 'nwrta_fail':
@@ -715,14 +719,21 @@ export default function ProgressReportPage() {
       reject_qc_audio_gender: summaryData.reject_qc_audio_gender ?? '-',
       reject_qc_audio_irrelevant: summaryData.reject_qc_audio_irrelevant ?? '-',
       reject_qc_audio_interviewer_more: summaryData.reject_qc_audio_interviewer_more ?? '-',
-      reject_qc_audio_mechanical: summaryData.reject_qc_audio_mechanical ?? '-',
-      reject_qc_audio_respondent: summaryData.reject_qc_audio_respondent ?? '-',
+      cannot_hear_the_response_clearly: summaryData.cannot_hear_the_response_clearly ?? '-',
+      reject_duplicate_audio: summaryData.reject_duplicate_audio ?? '-',
       reject_rta: summaryData.reject_rta ?? '-',
       without_audio_valid: summaryData.without_audio_valid ?? '-'
     };
 
 
     return summaryRowData;
+  };
+
+  // Helper function to get paginated data
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return progressData.slice(startIndex, endIndex);
   };
 
   // Helper function to determine if a value should be highlighted in red
@@ -909,17 +920,23 @@ export default function ProgressReportPage() {
           </Button>
         </div>
 
+        <div className="summary mb-4">
+          <Text className="text-sm text-gray-600">
+            Total <b>{progressData.length}</b> items.
+          </Text>
+        </div>
+
         <div className="table-responsive">
           <Table 
             key={`${searchForm.typeOfReport}-${searchForm.level}-${searchForm.acCode}`}
-            className="table table-centered table-striped dt-responsive nowrap w-100 border border-gray-300"
+            className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300"
           >
             <thead className="table-light bg-gray-50">
               <tr>
                 {getTableHeaders().map((header) => (
                   <th 
                     key={header.key}
-                    className={`border border-gray-300 ${header.width} ${header.className || ''} text-${header.align || 'left'}`}
+                    className={`border border-gray-300 ${header.width} ${header.className || ''} text-center`}
                   >
                     {header.label}
                   </th>
@@ -980,10 +997,10 @@ export default function ProgressReportPage() {
                       </td>
                     </tr>
                   ) : (
-                    progressData.map((item, index) => (
+                    getPaginatedData().map((item, index) => (
                     <tr key={`${item.ac_code || item.pc_code || item.interviewer_id || item.polling_station_no || item.polling_station_name || index}-${index}`}>
                       {getTableHeaders().map((header) => {
-                        const value = getDataValue(item, header.key, index + 1); // +1 because summary row is at index 0
+                        const value = getDataValue(item, header.key, (currentPage - 1) * pageSize + index + 1); // +1 because summary row is at index 0
                         const isHighlighted = typeof value === 'number' && shouldHighlightRed(value, header.key);
                         const isPS = header.key === 'ps_covered' && value !== '-';
                         const isClickablePS = isPS && searchForm.typeOfReport === 'performance' && ['ac', 'pc'].includes(searchForm.level);
@@ -1014,6 +1031,17 @@ export default function ProgressReportPage() {
               )}
             </tbody>
           </Table>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <PaginationStandard
+            currentPage={currentPage}
+            totalPages={Math.ceil(progressData.length / pageSize)}
+            totalItems={progressData.length}
+            itemsPerPage={pageSize}
+            onPageChange={setCurrentPage}
+          />
         </div>
 
       </Card>

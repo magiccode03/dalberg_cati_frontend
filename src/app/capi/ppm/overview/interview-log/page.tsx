@@ -14,6 +14,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Volume2, MapPin, Loader2, Image, User, ChevronUp, ChevronDown } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import DateFormatter from '@/components/ui/DateFormatter';
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 
 // TypeScript interfaces for API response
@@ -120,6 +121,12 @@ interface APIResponse {
       field: string;
       direction: string;
     };
+    pagination?: {
+      current_page: number;
+      per_page: number;
+      total_count: number;
+      total_pages: number;
+    };
   };
   message: string;
   timestamp: string;
@@ -129,7 +136,9 @@ const InterviewLogPage = () => {
   const [filters, setFilters] = useState({
     agency_id: '',
     server_id: '',
-    interview_date: '',
+    interview_date: 'all',
+    custom_date: '',
+    custom_date_end: '',
     ac_code: '',
     ps_code: '',
     user_id: '',
@@ -144,10 +153,9 @@ const InterviewLogPage = () => {
   });
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
+  const [pageSize] = useState(25);
 
   // API state management
-  const [allInterviewData, setAllInterviewData] = useState<DisplayInterviewData[]>([]);
   const [interviewData, setInterviewData] = useState<DisplayInterviewData[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -179,8 +187,7 @@ const InterviewLogPage = () => {
 
   // Audio modal state
   const [audioModalOpen, setAudioModalOpen] = useState(false);
-  const [selectedServerId, setSelectedServerId] = useState<string>('');
-  const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
+  const [selectedInterviewData, setSelectedInterviewData] = useState<DisplayInterviewData | null>(null);
 
   // Sorting state
   const [sortConfig, setSortConfig] = useState<{ key: 'interview_date'; direction: 'asc' | 'desc' } | null>(null);
@@ -393,9 +400,17 @@ const InterviewLogPage = () => {
       // Build query parameters based on filters
       const queryParams = new URLSearchParams();
       
+      // Always add interview_date parameter (default to 'all' if not set)
+      queryParams.append('interview_date', filters.interview_date || 'all');
+      
+      // Add pagination parameters
+      queryParams.append('page', currentPage.toString());
+      queryParams.append('limit', pageSize.toString());
+      
       if (filters.agency_id) queryParams.append('agency_id', filters.agency_id);
       if (filters.server_id) queryParams.append('server_id', filters.server_id);
-      if (filters.interview_date) queryParams.append('interview_date', filters.interview_date);
+      if (filters.interview_date === 'custom' && filters.custom_date) queryParams.append('custom_date', filters.custom_date);
+      if (filters.interview_date === 'custom' && filters.custom_date_end) queryParams.append('custom_date_end', filters.custom_date_end);
       if (filters.ac_code) queryParams.append('ac_code', filters.ac_code);
       if (filters.ps_code) queryParams.append('ps_code', filters.ps_code);
       if (filters.user_id) queryParams.append('user_id', filters.user_id);
@@ -407,8 +422,6 @@ const InterviewLogPage = () => {
       if (filters.audio_qc_status_detailed.length > 0) queryParams.append('audio_qc_status_detailed', filters.audio_qc_status_detailed.join(','));
       if (filters.audio_re_qc_status.length > 0) queryParams.append('audio_re_qc_status', filters.audio_re_qc_status.join(','));
       if (filters.status.length > 0) queryParams.append('status', filters.status.join(','));
-      
-      // Note: Backend no longer supports pagination parameters
 
       console.log('🔍 Making API request to:', `/overview/interview-log?${queryParams.toString()}`);
       
@@ -419,13 +432,21 @@ const InterviewLogPage = () => {
       
       if (data.success && data.data.interviews) {
         const transformedData = transformAPIData(data.data.interviews);
-        setAllInterviewData(transformedData);
-        setTotalCount(transformedData.length);
-        setTotalPages(Math.ceil(transformedData.length / pageSize));
+        setInterviewData(transformedData);
+        
+        // Extract pagination info from API response
+        if (data.data.pagination) {
+          setTotalCount(data.data.pagination.total_count || transformedData.length);
+          setTotalPages(data.data.pagination.total_pages || Math.ceil(transformedData.length / pageSize));
+        } else {
+          // Fallback if pagination info is not available
+          setTotalCount(transformedData.length);
+          setTotalPages(Math.ceil(transformedData.length / pageSize));
+        }
+        
         setError(null);
       } else {
         console.error('API did not return interview data:', data);
-        setAllInterviewData([]);
         setInterviewData([]);
         setTotalCount(0);
         setTotalPages(0);
@@ -451,7 +472,6 @@ const InterviewLogPage = () => {
       }
       
       // Set empty data when API fails
-      setAllInterviewData([]);
       setInterviewData([]);
       setTotalCount(0);
       setTotalPages(0);
@@ -507,19 +527,10 @@ const InterviewLogPage = () => {
     }
   };
 
-  // Load data on component mount (pagination is now handled client-side)
+  // Load data on component mount and when filters change
   useEffect(() => {
     fetchInterviewLogs();
-  }, []);
-
-  // Handle client-side pagination
-  useEffect(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedData = allInterviewData.slice(startIndex, endIndex);
-    setInterviewData(paginatedData);
-    setTotalPages(Math.ceil(allInterviewData.length / pageSize));
-  }, [allInterviewData, currentPage, pageSize]);
+  }, [currentPage, pageSize]);
 
   // Load agencies, AC list, interviewers, and users on component mount
   useEffect(() => {
@@ -577,9 +588,8 @@ const InterviewLogPage = () => {
     // Add GPS map logic here
   };
 
-  const handlePlayAudio = (serverId: string, audioFile: string) => {
-    setSelectedServerId(serverId);
-    setSelectedAudioFile(audioFile);
+  const handlePlayAudio = (interview: DisplayInterviewData) => {
+    setSelectedInterviewData(interview);
     setAudioModalOpen(true);
   };
 
@@ -610,8 +620,7 @@ const InterviewLogPage = () => {
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
-    setSelectedServerId('');
-    setSelectedAudioFile('');
+    setSelectedInterviewData(null);
   };
 
   const handleSort = (key: 'interview_date') => {
@@ -678,12 +687,56 @@ const InterviewLogPage = () => {
               {/* Interview Date */}
               <div>
                 <Text className="text-sm font-medium mb-2">Interview Date</Text>
-                <Input
-                  type="date"
+                <SelectDropdown
+                  options={[
+                    { value: 'all', label: 'All' },
+                    { value: 'today', label: 'Today' },
+                    { value: 'yesterday', label: 'Yesterday' },
+                    { value: 'dby', label: 'Day Before Yesterday' },
+                    { value: 'l3', label: 'Last 3 Days' },
+                    { value: 'l7', label: 'Last 7 Days' },
+                    { value: 'l15', label: 'Last 15 Days' },
+                    { value: 'currentmonth', label: 'Current Month' },
+                    { value: 'custom', label: 'Custom' },
+                  ]}
                   value={filters.interview_date}
-                  onChange={(e) => handleFilterChange('interview_date', e.target.value)}
+                  onChange={(value) => handleFilterChange('interview_date', value as string)}
+                  placeholder="All"
+                  className="w-full"
                 />
               </div>
+
+              {/* Custom Date Fields - Only show when custom is selected */}
+              {filters.interview_date === 'custom' && (
+                <>
+                  <div>
+                    <Text className="text-sm font-medium mb-2">
+                      Start Date
+                      <span className="text-red-500 ml-1">*</span>
+                    </Text>
+                    <Input
+                      type="date"
+                      value={filters.custom_date}
+                      onChange={(e) => handleFilterChange('custom_date', e.target.value)}
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Text className="text-sm font-medium mb-2">
+                      End Date
+                      <span className="text-red-500 ml-1">*</span>
+                    </Text>
+                    <Input
+                      type="date"
+                      value={filters.custom_date_end}
+                      onChange={(e) => handleFilterChange('custom_date_end', e.target.value)}
+                      className="w-full"
+                      required
+                    />
+                  </div>
+                </>
+              )}
 
               {/* AC Code */}
               <div>
@@ -945,8 +998,8 @@ const InterviewLogPage = () => {
             )} */}
             
             {!loading && (
-            <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-              <div className="p-6">
+            <div className="bg-white ">
+              <div className="">
                 <div className="mb-4">
                   <Text className="text-sm text-gray-600">
                       Total <strong>{totalCount.toLocaleString()}</strong> items.
@@ -954,13 +1007,13 @@ const InterviewLogPage = () => {
                 </div>
                 
                 <div className="table-responsive">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
+                  <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+                    <thead className="table-light bg-gray-50">
                       <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Sr No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Server ID</th>
+                        <th className="text-center">S.No</th>
+                        <th className="text-center">Server ID</th>
                         <th 
-                          className="px-4 py-3 font-semibold text-gray-700 text-center cursor-pointer hover:bg-gray-100"
+                          className="text-center cursor-pointer hover:bg-gray-100"
                           onClick={() => handleSort('interview_date')}
                         >
                           <div className="flex items-center justify-center">
@@ -975,19 +1028,19 @@ const InterviewLogPage = () => {
                             </div>
                           </div>
                         </th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Sample Type</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">AC Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">PS Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Device ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Interviewer ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio QC</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio QC ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Audio Fail Reason</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">QC Outcome</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Status</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Gender</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Play Audio</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">GPS Map</th>
+                        <th className="text-center">Sample Type</th>
+                        <th className="text-center">AC Name</th>
+                        <th className="text-center">PS Name</th>
+                        <th className="text-center">Device ID</th>
+                        <th className="text-center">Interviewer ID</th>
+                        <th className="text-center">Audio QC</th>
+                        <th className="text-center">Audio QC ID</th>
+                        <th className="text-center">Audio Fail Reason</th>
+                        <th className="text-center">QC Outcome</th>
+                        <th className="text-center">Status</th>
+                        <th className="text-center">Gender</th>
+                        <th className="text-center">Play Audio</th>
+                        <th className="text-center">GPS Map</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -997,49 +1050,55 @@ const InterviewLogPage = () => {
                             {((currentPage - 1) * pageSize) + index + 1}
                           </td>
                           <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <span className="font-mono text-sm font-medium text-blue-600">
+                            <span className="font-mono text-sm font-medium text-gray-900">
                               {interview.server_id}
                             </span>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-mono text-sm text-center">{interview.interview_date}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.sample_type}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ac_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.ps_name}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.device_id}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.interviewer_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio_qc_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">{interview.audio_qc_id || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.audio1_status_label || '-'}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-center"><DateFormatter date={interview.interview_date} format="dd/mm/yyyy" /></td>
+                          <td className="text-left">{interview.sample_type}</td>
+                          <td className="text-left">{interview.ac_name}</td>
+                          <td className="text-left">{interview.ps_name}</td>
+                          <td className="text-center font-mono">{interview.device_id}</td>
+                          <td className="text-center">{interview.interviewer_id || '-'}</td>
+                          <td className="text-left">{interview.audio_qc_label}</td>
+                          <td className="text-center">{interview.audio_qc_id || '-'}</td>
+                          <td className={interview.audio1_status_label ? "text-left" : "text-center"}>{interview.audio1_status_label || '-'}</td>
+                          <td className="text-center">
                             {getQcOutcomeBadge(interview.qc_outcome)}
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">{interview.status_label}</td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
+                          <td className="text-left">{interview.status_label}</td>
+                          <td className="text-center">
                             <span className={`font-medium ${interview.gender_label === 'Male' ? 'text-blue-600' : 'text-pink-600'}`}>
                               {interview.gender_label || '-'}
                             </span>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="p-2 bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                              onClick={() => handlePlayAudio(interview.server_id, interview.audio1)}
-                              title="Play Audio"
+                          <td className="text-center">
+                            <button 
+                              className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                interview.audio_playback_available 
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                              title={interview.audio_playback_available ? "Play Audio" : "Audio Not Available"}
+                              disabled={!interview.audio_playback_available}
+                              onClick={() => handlePlayAudio(interview)}
                             >
-                              <Volume2 className="h-4 w-4" />
-                            </Button>
+                              <Volume2 className="w-4 h-4" />
+                            </button>
                           </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="p-2 bg-green-600 hover:bg-green-700 text-white border-green-600"
+                          <td className="text-center">
+                            <button 
+                              className={`w-8 h-8 rounded flex items-center justify-center transition-colors duration-200 ${
+                                interview.gps_available 
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              }`}
+                              title={interview.gps_available ? "View GPS Map" : "GPS Not Available"}
+                              disabled={!interview.gps_available}
                               onClick={() => handleGpsMap(interview)}
-                              title="View GPS Map"
                             >
-                              <MapPin className="h-4 w-4" />
-                            </Button>
+                              <MapPin className="w-4 h-4" />
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1056,24 +1115,15 @@ const InterviewLogPage = () => {
                   </div>
                 )}
 
-                {/* Pagination Controls */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    {/* Pagination Info */}
-                    <div className="text-sm text-gray-600">
-                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount.toLocaleString()} entries
-                    </div>
-
-                    {/* Pagination Component */}
-                    <PaginationStandard
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      totalItems={totalCount}
-                      itemsPerPage={pageSize}
-                      onPageChange={handlePageChange}
-                      className="justify-center"
-                    />
-                  </div>
+                {/* Pagination */}
+                <div className="mt-6">
+                  <PaginationStandard
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalCount}
+                    itemsPerPage={pageSize}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
               </div>
             </div>
@@ -1087,8 +1137,8 @@ const InterviewLogPage = () => {
       <AudioPlayerModal
         isOpen={audioModalOpen}
         onClose={handleCloseAudioModal}
-        serverId={selectedServerId}
-        audioFileName={selectedAudioFile}
+        serverId={selectedInterviewData?.server_id || ''}
+        audioFileName={selectedInterviewData?.audio1}
       />
     </Container>
   );

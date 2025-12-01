@@ -14,9 +14,17 @@ import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
 
 // Import form configurations
-import formEnConfig from '../../tele-form/form-en-config.json';
-import formBnConfig from '../../tele-form/form-bn-config.json';
-import formHiConfig from '../../tele-form/form-hi-config.json';
+import formEnConfig from '../../form-en-config.json';
+import formBnConfig from '../../form-bn-config.json';
+import formHiConfig from '../../form-hi-config.json';
+
+// Import JSON data files
+// @ts-ignore
+import partyData from '@/app/cati/josn/party_2021_q5.json';
+// @ts-ignore
+import mlaMpData from '@/app/cati/josn/mla-mp-ac-data.json';
+// @ts-ignore
+import casteOptions from '@/app/cati/josn/caste-options.json';
 
 // Type definitions
 interface FormOption {
@@ -55,6 +63,7 @@ export default function TeleFormV2Page() {
   const router = useRouter();
   const params = useParams();
   const interviewId = params.id as string;
+  const acCode = params.ac_code as string;
   
   const [language, setLanguage] = useState<string>('english');
   const [timer, setTimer] = useState<number>(0);
@@ -65,6 +74,11 @@ export default function TeleFormV2Page() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSticky, setIsSticky] = useState(false);
+  const audioPlayerRef = useRef<HTMLDivElement>(null);
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
+  const [instanceData, setInstanceData] = useState<any>({});
   
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -81,6 +95,67 @@ export default function TeleFormV2Page() {
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
+
+  // Audio error handling
+  const handleAudioError = () => {
+    console.error('Audio playback error');
+    setAudioError(true);
+  };
+
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error');
+    setAudioError(true);
+  };
+
+  // Get audio URL from instance data (prefer CAPI audio1 key)
+  const getAudioUrl = (): string | null => {
+    try {
+      // Prefer CAPI instance: audio1
+      if (instanceData && instanceData.audio1) {
+        const audio1 = instanceData.audio1;
+        const serverId = instanceData.server_id || instanceData.serverId;
+        // If string, construct convergentview URL
+        if (typeof audio1 === 'string' && audio1.trim().length > 0 && serverId) {
+          const url = `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${encodeURIComponent(audio1)}`;
+          console.log('Using audio1 (string) with server id:', url);
+          return url;
+        }
+        // If object, prefer file/filename to build convergentview URL
+        if (typeof audio1 === 'object') {
+          const possibleFile = audio1.file || audio1.filename || audio1.file_name || audio1.image || '';
+          if (typeof possibleFile === 'string' && possibleFile.trim().length > 0 && serverId) {
+            const url = `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${encodeURIComponent(possibleFile)}`;
+            console.log('Using audio1 (object file) with server id:', url);
+            return url;
+          }
+          // As a last resort, try embedded URL-like fields
+          const possibleUrl = audio1.url || audio1.audio_url || audio1.src || '';
+          if (typeof possibleUrl === 'string' && possibleUrl.trim().length > 0) {
+            console.log('Using audio1 (object url):', possibleUrl);
+            return possibleUrl;
+          }
+        }
+      }
+
+      // Backward compatibility with CATI structure
+      if (instanceData?.audio_url) {
+        console.log('Using audio_url:', instanceData.audio_url);
+        return instanceData.audio_url;
+      }
+      if (instanceData?.audio_file) {
+        const constructedUrl = `https://s-ct3.sarv.com/Audio/v1/recording?data={"userId":"50345024","token":"6JExgLsg6Vlsp5424S9U","file":"${instanceData.audio_file}"}`;
+        console.log('Using constructed audio URL:', constructedUrl);
+        return constructedUrl;
+      }
+    } catch (e) {
+      console.warn('Failed to resolve audio URL from instance data', e);
+    }
+
+    console.log('No audio URL available');
+    return null;
+  };
+
+  const audioUrl = getAudioUrl();
 
   // Load teleform user data on mount
   useEffect(() => {
@@ -101,12 +176,235 @@ export default function TeleFormV2Page() {
     const interval = setInterval(() => {
       setTimer(prev => prev + 1);
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
+  // Handle scroll for sticky audio player
+  useEffect(() => {
+    let ticking = false;
+    let originalTop = 0;
+    let isInitialized = false;
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          if (audioPlayerRef.current) {
+            // Store original position on first scroll
+            if (!isInitialized) {
+              const rect = audioPlayerRef.current.getBoundingClientRect();
+              originalTop = rect.top + window.scrollY;
+              isInitialized = true;
+            }
+            
+            const currentScrollY = window.scrollY;
+            const rect = audioPlayerRef.current.getBoundingClientRect();
+            
+            // Only become sticky if we've scrolled past the original position
+            // and the element is not in its original position
+            const shouldBeSticky = currentScrollY > (originalTop - 64) && rect.top <= 64;
+            setIsSticky(shouldBeSticky);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Load instance data
+  const fetchInstanceData = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        console.error('No authentication token found');
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${interviewId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setInstanceData(data.data);
+        console.log('Instance data loaded:', data.data);
+        
+        // Load existing form data if available
+        loadExistingFormData(data.data);
+      } else {
+        console.error('Failed to load instance data:', data.message);
+      }
+    } catch (err) {
+      console.error('Error fetching instance data:', err);
+    }
+  };
+
+  // Load instance data on mount
+  useEffect(() => {
+    fetchInstanceData();
+  }, [interviewId]);
+
+  // Load existing form data from instance data
+  const loadExistingFormData = (data: any) => {
+    const existingData: Record<string, any> = {};
+    
+    // Map all form fields from the instance data
+    // This will populate the form with existing values
+    Object.keys(data).forEach(key => {
+      if (data[key] !== undefined && data[key] !== null) {
+        // Convert to string for form compatibility
+        existingData[key] = String(data[key]);
+      }
+    });
+    
+    setFormData(existingData);
+    console.log('Loaded existing form data:', existingData);
+  };
+
   // Get current form configuration based on language
   const currentFormConfig = formConfigs[language] || formConfigs.english;
+
+  // Get MLA/MP data for the current AC code
+  const getMlaMpData = (acCode: string) => {
+    const acCodeNum = parseInt(acCode);
+    return mlaMpData.find((item: any) => item.ac_code === acCodeNum);
+  };
+
+  // Replace placeholders in labels with actual values
+  const replaceLabelPlaceholders = (label: string, acCode: string): string => {
+    const mlaMpInfo = getMlaMpData(acCode);
+    if (!mlaMpInfo) return label;
+    
+    return label
+      .replace(/\{\{mp_name\}\}/g, `"${mlaMpInfo.mp_name}"`)
+      .replace(/\{\{mla_name\}\}/g, `"${mlaMpInfo.mla_name}"`);
+  };
+
+  // Get party options for the current AC code
+  const getPartyOptions = (acCode: string): FormOption[] => {
+    const acCodeNum = parseInt(acCode);
+    const acPartyData = partyData.ac_data[acCodeNum.toString() as keyof typeof partyData.ac_data];
+    
+    if (!acPartyData) {
+      // Return default party options when specific AC data is not available
+      return [
+        {
+          label: language === 'bengali' ? 'AITC (Trinamool Congress)' : 'AITC (Trinamool Congress)',
+          value: '1',
+          tag: 'party_1'
+        },
+        {
+          label: language === 'bengali' ? 'BJP' : 'BJP',
+          value: '2',
+          tag: 'party_2'
+        },
+        {
+          label: language === 'bengali' ? 'INC (Congress)' : 'INC (Congress)',
+          value: '3',
+          tag: 'party_3'
+        },
+        {
+          label: language === 'bengali' ? 'Left Front' : 'Left Front',
+          value: '4',
+          tag: 'party_4'
+        },
+        {
+          label: language === 'bengali' ? 'Independent' : 'Independent',
+          value: '12',
+          tag: 'party_12'
+        },
+        {
+          label: language === 'bengali' ? 'Others (specify)' : 'Others (specify)',
+          value: '44',
+          tag: 'party_44'
+        },
+        {
+          label: language === 'bengali' ? 'NOTA' : 'NOTA',
+          value: '55',
+          tag: 'party_55'
+        },
+        {
+          label: language === 'bengali' ? 'Did not vote' : 'Did not vote',
+          value: '66',
+          tag: 'party_66'
+        },
+        {
+          label: language === 'bengali' ? 'Not eligible for voting' : 'Not eligible for voting',
+          value: '77',
+          tag: 'party_77'
+        },
+        {
+          label: language === 'bengali' ? 'No response/Refused to answer' : 'No response/Refused to answer',
+          value: '88',
+          tag: 'party_88'
+        }
+      ];
+    }
+    
+    return acPartyData.parties.map((party: any) => ({
+      label: language === 'bengali' ? party.party_name_bangla : party.party_name_english,
+      value: party.party_code.toString(),
+      tag: `party_${party.party_code}`
+    }));
+  };
+
+  // Get caste options based on selected religion
+  const getCasteOptions = (religionValue: string): FormOption[] => {
+    if (!religionValue) return [];
+    
+    const religionData = casteOptions[religionValue as keyof typeof casteOptions];
+    if (!religionData || !religionData.castes) return [];
+    
+    return religionData.castes.map((caste: any) => ({
+      label: language === 'bengali' ? caste.caste_name_bangla : 
+             language === 'hindi' ? caste.caste_name_hindi : 
+             caste.caste_name_english,
+      value: caste.caste_code.toString(),
+      tag: `caste_${caste.caste_code}`
+    }));
+  };
+
+  // Process form configuration to replace placeholders and add dynamic options
+  const processFormConfig = (config: FormField[]): FormField[] => {
+    return config.map(field => {
+      const processedField = { ...field };
+      
+      // Replace placeholders in label
+      processedField.label = replaceLabelPlaceholders(field.label, acCode);
+      
+      // Handle dynamic options for party data
+      if (typeof field.options === 'string' && field.options === `party_2021_q5.[ac_code]`) {
+        processedField.options = getPartyOptions(acCode);
+      }
+      
+      // Handle dynamic options for caste data
+      if (typeof field.options === 'string' && field.options === `caste-options[resp_religion.value].castes`) {
+        const religionValue = formData.resp_religion;
+        processedField.options = getCasteOptions(religionValue);
+      }
+      
+      return processedField;
+    });
+  };
+
+  // Get processed form configuration
+  const processedFormConfig = React.useMemo(() => {
+    return processFormConfig(currentFormConfig);
+  }, [currentFormConfig, acCode, language, formData.resp_religion]);
 
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string): boolean => {
@@ -171,10 +469,10 @@ export default function TeleFormV2Page() {
     }
   };
 
-  // Check if field should be visible
+  // Check if field should be visible - for edit page, show all fields
   const isFieldVisible = (field: FormField): boolean => {
-    if (!field.conditional) return true;
-    return evaluateCondition(field.conditional);
+    // For edit page, always show all fields regardless of conditions
+    return true;
   };
 
   // Handle input change
@@ -189,6 +487,12 @@ export default function TeleFormV2Page() {
           newErrors.delete(fieldTag);
           return newErrors;
         });
+      }
+      
+      // Clear caste field when religion changes
+      if (fieldTag === 'resp_religion') {
+        newData.resp_caste_jati = '';
+        newData.resp_caste_jati_oth = '';
       }
       
       // Apply clearing rules
@@ -290,7 +594,7 @@ export default function TeleFormV2Page() {
   const transformFormDataForSubmission = (data: Record<string, any>) => {
     const transformed: Record<string, any> = {};
     
-    currentFormConfig.forEach((field) => {
+    processedFormConfig.forEach((field) => {
       const fieldValue = data[field.tag];
       
       if (field.type === 'checkbox' && Array.isArray(fieldValue)) {
@@ -328,18 +632,23 @@ export default function TeleFormV2Page() {
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
-      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      // Merge with instance data and add required fields
+      const updateData = {
+        ...instanceData, // Include existing instance data
+        ...transformedData, // Override with form data
+        instance_status: formData.thanks_future == '1' || formData.thanks_future == '2' ? 1 : 0, // 1 = completed, 0 = draft
+        server_time: new Date().toISOString().replace('T', ' ').substring(0, 19), // Current server time
+        form_duration_seconds: timer,
+        language_used: language
+      };
+      
+      await fetch(`${apiBaseUrl}/api/capi/instance/${interviewId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...transformedData,
-          status: 4, // Draft status
-          form_duration_seconds: timer,
-          language_used: language,
-        })
+        body: JSON.stringify(updateData)
       });
       
       console.log('Auto-saved draft');
@@ -380,21 +689,24 @@ export default function TeleFormV2Page() {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const currentTime = new Date().toLocaleString();
       
-      // Determine status based on submission type
-      // 1 = Call initiated, 2 = Successful submit, 3 = Partial submit, 4 = Draft
-      let status = 4; // Default to draft
+      // Determine instance status based on submission type
+      // 1 = completed, 0 = draft
+      let instanceStatus = 0; // Default to draft
       if (finalSubmit === 1) {
-        status = 2; // Successful submit
+        instanceStatus = 1; // Completed
       } else if (finalSubmit === 0) {
-        status = 3; // Partial submit (call dropped)
+        instanceStatus = 0; // Draft (call dropped)
       }
       
       // Transform form data to match backend expectations
       const transformedData = transformFormDataForSubmission(formData);
       
+      // Merge with instance data and add required fields
       const submissionData = {
-        ...transformedData,
-        status: status,
+        ...instanceData, // Include existing instance data
+        ...transformedData, // Override with form data
+        instance_status: instanceStatus,
+        server_time: new Date().toISOString().replace('T', ' ').substring(0, 19), // Current server time
         form_duration_seconds: timer,
         final_submit: finalSubmit,
         language_used: language,
@@ -402,7 +714,7 @@ export default function TeleFormV2Page() {
         user_localdatetime: currentTime,
       };
       
-      const response = await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${interviewId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -432,9 +744,9 @@ export default function TeleFormV2Page() {
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    // Get all visible fields that are required
-    currentFormConfig.forEach((field) => {
-      if (field.required && isFieldVisible(field)) {
+    // Get all required fields (all fields are visible in edit mode)
+    processedFormConfig.forEach((field) => {
+      if (field.required) {
         const fieldValue = formData[field.tag];
         
         // Check if field is empty
@@ -465,8 +777,8 @@ export default function TeleFormV2Page() {
     if (!validation.isValid) {
       // Set validation errors for highlighting
       const errorFields = new Set<string>();
-      currentFormConfig.forEach((field) => {
-        if (field.required && isFieldVisible(field)) {
+      processedFormConfig.forEach((field) => {
+        if (field.required) {
           const fieldValue = formData[field.tag];
           const isEmpty = field.type === 'checkbox' 
             ? !Array.isArray(fieldValue) || fieldValue.length === 0
@@ -482,8 +794,8 @@ export default function TeleFormV2Page() {
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
       
       // Scroll to first error
-      const firstErrorField = currentFormConfig.find(
-        field => field.required && isFieldVisible(field) && 
+      const firstErrorField = processedFormConfig.find(
+        field => field.required && 
         (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
       
@@ -505,10 +817,10 @@ export default function TeleFormV2Page() {
     const success = await saveFormData(1);
     
     if (success) {
-      showToast('Form submitted successfully! Data has been saved.', 'success');
+      showToast('Form updated successfully! Data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        router.push(`/capi/dqm/progress/interview-list`);
       }, 1500);
     }
   };
@@ -522,7 +834,7 @@ export default function TeleFormV2Page() {
       showToast('Call dropped. Partial data has been saved.', 'success');
       
       setTimeout(() => {
-        router.push(`/cati/ss/new-call/${teleformUserId}`);
+        router.push(`/capi/dqm/progress/interview-list`);
       }, 1500);
     }
   };
@@ -733,7 +1045,7 @@ export default function TeleFormV2Page() {
       finalDemographics: [],
     };
 
-    currentFormConfig.forEach(field => {
+    processedFormConfig.forEach(field => {
       if (['number_status', 'call_not_ring', 'call_ring_status', 'q_call_status', 'call_reschedule'].includes(field.tag)) {
         sections.callStatus.push(field);
       } else if (field.tag === 'consent') {
@@ -754,12 +1066,12 @@ export default function TeleFormV2Page() {
 
   const sections = groupFieldsBySection();
 
-  // Check if sections should be visible
-  const showConsentSection = formData.q_call_status === '1';
-  const showDemographicsSection = formData.consent === '1';
-  const showPartyPreferencesSection = formData.resp_registered_voter === '1';
-  const showSatisfactionSection = formData.resp_registered_voter === '1';
-  const showFinalDemographicsSection = formData.resp_registered_voter === '1';
+  // For edit page, show all sections regardless of conditions
+  const showConsentSection = true;
+  const showDemographicsSection = true;
+  const showPartyPreferencesSection = true;
+  const showSatisfactionSection = true;
+  const showFinalDemographicsSection = true;
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
@@ -767,15 +1079,17 @@ export default function TeleFormV2Page() {
       <div className="mb-3 sm:mb-4 md:mb-6">
         <Card className="p-3 sm:p-4 md:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <Heading level={4} className="text-base sm:text-lg md:text-xl">WB Opinion Poll CATI 2025</Heading>
-            <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
-              {/* Timer */}
-              <div>
-                <Text className="text-sm sm:text-base md:text-lg font-semibold text-gray-700 dark:text-gray-300">
-                  Time: <span className="text-blue-600 dark:text-blue-400">{timer}s</span>
-                </Text>
+            <div>
+              <Heading level={4} className="text-base sm:text-lg md:text-xl">Edit Interview Form - WB Opinion Poll CAPI 2025</Heading>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 space-y-0.5">
+                <div>Interview ID: <span className="font-mono font-semibold">{interviewId}</span></div>
+                <div>AC Code: <span className="font-semibold">{acCode}</span></div>
+                {instanceData.ac_name && (
+                  <div>AC Name: <span className="font-semibold">{instanceData.ac_name}</span></div>
+                )}
               </div>
-              
+            </div>
+            <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3 sm:gap-4 md:gap-6">
               {/* Language Selector */}
               <div className="flex items-center gap-2 w-full xs:w-auto">
                 <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
@@ -796,6 +1110,122 @@ export default function TeleFormV2Page() {
           </div>
         </Card>
       </div>
+
+      {/* Sticky Audio Player */}
+      <div
+        ref={audioPlayerRef}
+        className={`${
+          isSticky 
+            ? 'fixed top-16 left-0 right-0 z-[60] shadow-lg transform translate-y-0' 
+            : 'relative mb-4'
+        } transition-transform duration-200 ease-out`}
+      >
+        <Card className={`${isSticky ? 'rounded-none' : ''}`}>
+          <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+            <div className="flex items-center gap-4 max-w-7xl mx-auto">
+              <div className="flex-1 min-w-0">
+                <div className="mb-3 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                  </p>
+                  {audioError && !useIframe && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      Audio player had an issue. Try the alternative options below.
+                    </p>
+                  )}
+                </div>
+
+                {!useIframe ? (
+                  audioUrl ? (
+                    <audio
+                      controls
+                      className="w-full"
+                      controlsList="nodownload"
+                      preload="metadata"
+                      onError={handleAudioError}
+                      onLoadStart={() => console.log('Audio loading started')}
+                      onCanPlay={() => console.log('Audio can play')}
+                    >
+                      <source src={audioUrl} type="audio/mpeg" />
+                      <source src={audioUrl} type="audio/mp3" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
+                ) : (
+                  audioUrl ? (
+                    <div className="w-full">
+                      <iframe
+                        src={audioUrl}
+                        className="w-full h-16 border-0 rounded"
+                        title="Audio Player"
+                        allow="autoplay"
+                        onError={handleIframeError}
+                        onLoad={() => {
+                          // Check if iframe content is just text (not audio player)
+                          setTimeout(() => {
+                            try {
+                              const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                              if (iframe && iframe.contentDocument) {
+                                const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                  console.warn('Iframe returned text instead of audio player');
+                                  setAudioError(true);
+                                }
+                              }
+                            } catch (e) {
+                              // Cross-origin restrictions, can't access iframe content
+                              console.log('Cannot access iframe content due to CORS');
+                            }
+                          }, 1000);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
+                )}
+
+                {/* Error Message for Failed Audio */}
+                {audioError && (
+                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                    <div className="text-center">
+                      <div className="text-red-600 dark:text-red-400 mb-2">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold">Audio Playback Failed</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Alternative Options */}
+                <div className="mt-4 flex justify-center items-center">
+                  {!useIframe && audioError && (
+                    <button
+                      onClick={() => setUseIframe(true)}
+                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      Try Alternative Player
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </div>
+      {/* Spacer to prevent content jump when sticky */}
+      {isSticky && <div style={{ height: '64px' }} />}
 
       <form onSubmit={handleSubmit}>
         {/* Call Status Section */}
@@ -876,7 +1306,7 @@ export default function TeleFormV2Page() {
               className="w-full sm:w-auto sm:min-w-[150px] bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base"
             >
               <i className="fa fa-save mr-2"></i>
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? 'Updating...' : 'Update Form'}
             </Button>
             <Button 
               type="button"

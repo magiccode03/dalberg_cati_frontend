@@ -89,6 +89,11 @@ export const API_ENDPOINTS = {
     REJECTION_REPORT: '/progress/rejectreport/filter-options'
   },
 
+  // Download APIs
+  DOWNLOAD: {
+    REJECTION_REPORT: '/progress/rejectreport/download'
+  },
+
   // QC User Registration
   QC_USER_REGISTRATION: '/qc-user-registration',
 
@@ -116,6 +121,9 @@ export const API_ENDPOINTS = {
     MASTER_AC_CASTE_LIST: '/dashboard/master-ac-caste/list',
     MASTER_POLLING_STATION_LIST: '/dashboard/master-polling-station/list',
     PS_FORM_LIST: '/dashboard/master-polling-station-dynamic',
+    PS_FORM_UPDATE: (id: string) => `/dashboard/master-polling-station-dynamic/update?id=${id}`,
+    PS_FORM_UPDATE_SUBMIT: '/dashboard/master-polling-station-dynamic/update',
+    PS_FORM_DOWNLOAD: '/dashboard/master-polling-station-dynamic/download',
     TEAM_REGISTRATION: '/dashboard/team-registration',
     TEAM_REGISTRATION_CREATE: '/dashboard/team-registration/newregistration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/dashboard/team-registration/newregistration/update/${id}`,
@@ -1284,6 +1292,7 @@ class ApiService {
     mobile_no?: string;
     fail_reason?: string;
     qualityreportstatus?: string;
+    audio_fail_reason?: string;
     page?: number;
     per_page?: number;
   }): Promise<ApiResponse<{
@@ -1342,6 +1351,43 @@ class ApiService {
         .map(([key, value]) => [key, String(value)])
     ).toString()}` : '';
     return this.request(`/progress/rejectreport${queryString}`);
+  }
+
+  async downloadRejectionReport(params?: {
+    report_days?: string;
+    custom_date?: string;
+    custom_date_end?: string;
+    report_level?: string;
+    interviewer_id?: string;
+    enumerator_id?: string;
+    ac_code?: string;
+    district_code?: string;
+    pc_code?: string;
+    supervisor_id?: string;
+    server_id?: string;
+    mobile_no?: string;
+    fail_reason?: string;
+    qualityreportstatus?: string;
+  }): Promise<Blob> {
+    const queryString = params ? `?${new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)])
+    ).toString()}` : '';
+    
+    const response = await fetch(`${this.baseURL}${API_ENDPOINTS.DOWNLOAD.REJECTION_REPORT}${queryString}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'text/csv',
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+
+    return response.blob();
   }
 
   // Assigned AC Report Methods
@@ -1497,6 +1543,60 @@ class ApiService {
   async getPSFormList(params?: { page?: number; limit?: number; polling_station_name?: string; polling_station_no?: string; ac_code?: string }): Promise<any> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.PS_FORM_LIST}${queryString}`);
+  }
+
+  async getPSFormForUpdate(id: string): Promise<ApiResponse<any>> {
+    return this.request(API_ENDPOINTS.DASHBOARD.PS_FORM_UPDATE(id));
+  }
+
+  async updatePSForm(id: string, psData: any): Promise<ApiResponse<any>> {
+    const url = `${API_ENDPOINTS.DASHBOARD.PS_FORM_UPDATE_SUBMIT}?id=${id}`;
+    return this.request(url, {
+      method: 'PUT',
+      body: JSON.stringify(psData),
+    });
+  }
+
+  async downloadPSForm(): Promise<Blob> {
+    const response = await fetch(`${this.baseURL}${API_ENDPOINTS.DASHBOARD.PS_FORM_DOWNLOAD}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'text/csv',
+        'Authorization': `Bearer ${this.getToken()}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+  
+  // Calculate valid interview for master polling stations
+  async calculateValidInterview(): Promise<ApiResponse<any>> {
+    try {
+      const apiUrl = API_BASE_URL;
+      const token = this.token || localStorage.getItem('accessToken');
+      const response = await fetch(`${apiUrl}/api/dashboard/master-polling-station-dynamic/Calculatevalidinterview`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await response.json();
+      return result as ApiResponse;
+    } catch (err: any) {
+      console.error('Error calculating valid interviews:', err);
+      return {
+        success: false,
+        data: null,
+        message: err?.message || 'Error calculating valid interviews',
+        timestamp: new Date().toISOString(),
+      } as ApiResponse;
+    }
   }
 
   // Demographic Methods

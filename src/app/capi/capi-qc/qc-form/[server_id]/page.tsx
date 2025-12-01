@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -12,17 +12,22 @@ import Radio from '@/components/ui/Radio';
 import Checkbox from '@/components/ui/Checkbox';
 import Text from '@/components/ui/Text';
 import { useToast, ToastContainer } from '@/components/ui/Toast';
-import { Volume2, Play, Pause } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import AudioPlayer from '@/components/ui/AudioPlayer';
+import ConcatenatedAudioPlayer from '@/components/ui/ConcatenatedAudioPlayer';
 
 // Import form configurations
 import formConfig from '../form-config.json';
+
+// Global variable to track API calls across component mounts
+const globalApiCallTracker = new Set<string>();
 
 // Type definitions
 interface FormOption {
   label: string | { en?: string; hi?: string; bn?: string };
   value: string;
   tag: string;
+  survey_q_tag?: string;
 }
 
 interface FormField {
@@ -40,6 +45,7 @@ interface FormField {
     options: Array<{
       value: number;
       lable: { en?: string; hi?: string; bn?: string };
+  survey_q_tag?: string;
     }>;
   };
   min?: number;
@@ -54,7 +60,7 @@ interface FormField {
   };
 }
 
-export default function QCFormPage() {
+function QCFormPage() {
   const router = useRouter();
   const params = useParams();
   const serverId = params.server_id as string;
@@ -70,11 +76,21 @@ export default function QCFormPage() {
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
+  const [audioError, setAudioError] = useState<Record<string, boolean>>({});
+  const [useIframe, setUseIframe] = useState<Record<string, boolean>>({});
+  const [activeAudioTab, setActiveAudioTab] = useState<string>('');
+  const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
+  const [audioProgress, setAudioProgress] = useState<Record<string, number>>({});
+  const [audioDuration, setAudioDuration] = useState<Record<string, number>>({});
+  const [isPlaying, setIsPlaying] = useState<Record<string, boolean>>({});
+  const [currentTime, setCurrentTime] = useState<Record<string, number>>({});
+  const hasFetchedData = useRef(false); // Prevent multiple API calls
+  const isInitialized = useRef(false); // Prevent multiple initializations
   
   // Use the imported formConfig directly
   const currentFormConfig = formConfig as FormField[];
   
-  const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
+  const showToast = useCallback((message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newToast = {
       id,
@@ -84,14 +100,201 @@ export default function QCFormPage() {
       duration: 3000,
     };
     setToasts(prev => [...prev, newToast]);
-  };
+  }, []);
   
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
+  // Audio error handling
+  const handleAudioError = (audioId: string) => {
+    console.error('Audio playback error for:', audioId);
+    setAudioError(prev => ({ ...prev, [audioId]: true }));
   };
+
+  const handleIframeError = (audioId: string) => {
+    console.error('Iframe audio playback error for:', audioId);
+    setAudioError(prev => ({ ...prev, [audioId]: true }));
+  };
+
+  const handleTryAlternativePlayer = (audioId: string) => {
+    setUseIframe(prev => ({ ...prev, [audioId]: true }));
+  };
+
+  // Audio player handlers
+  const handlePlayPause = (audioId: string) => {
+    const audio = audioRefs.current[audioId];
+    if (!audio) return;
+    
+    if (isPlaying[audioId]) {
+      audio.pause();
+      setIsPlaying(prev => ({ ...prev, [audioId]: false }));
+    } else {
+      audio.play();
+      setIsPlaying(prev => ({ ...prev, [audioId]: true }));
+    }
+  };
+
+  const handleTimeUpdate = (audioId: string, e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.currentTarget;
+    const progress = (audio.currentTime / audio.duration) * 100;
+    setCurrentTime(prev => ({ ...prev, [audioId]: audio.currentTime }));
+    setAudioProgress(prev => ({ ...prev, [audioId]: progress || 0 }));
+  };
+
+  const handleLoadedMetadata = (audioId: string, e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.currentTarget;
+    setAudioDuration(prev => ({ ...prev, [audioId]: audio.duration }));
+  };
+
+  const handleSeek = (audioId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRefs.current[audioId];
+    if (!audio) return;
+    const seekTime = (parseFloat(e.target.value) / 100) * audio.duration;
+    audio.currentTime = seekTime;
+    setAudioProgress(prev => ({ ...prev, [audioId]: parseFloat(e.target.value) }));
+    setCurrentTime(prev => ({ ...prev, [audioId]: seekTime }));
+  };
+
+  const formatTime = (seconds: number): string => {
+    if (isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleVolumeChange = (audioId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const audio = audioRefs.current[audioId];
+    if (!audio) return;
+    audio.volume = parseFloat(e.target.value) / 100;
+  };
+
+  // Handle tab change and auto-play audio
+  const handleTabChange = (audioId: string) => {
+    // Pause currently playing audio if any
+    if (activeAudioTab && activeAudioTab !== audioId) {
+      const currentAudio = audioRefs.current[activeAudioTab];
+      if (currentAudio) {
+        currentAudio.pause();
+        setIsPlaying(prev => ({ ...prev, [activeAudioTab]: false }));
+      }
+    }
+    
+    setActiveAudioTab(audioId);
+    
+    // Auto-play audio when tab is clicked
+    setTimeout(() => {
+      const audio = audioRefs.current[audioId];
+      if (audio) {
+        audio.play().catch((error) => {
+          console.log('Auto-play prevented by browser:', error);
+          // Browser may prevent auto-play, so we don't show error
+        });
+      }
+    }, 100); // Small delay to ensure audio element is ready
+  };
+
+  // Fetch instance data from API - memoized to prevent recreation
+  const fetchInstanceData = useCallback(async () => {
+    console.log('fetchInstanceData called with serverId:', serverId);
+    
+    if (!serverId) {
+      console.log('No serverId, returning');
+      setLoading(false);
+      return;
+    }
+    
+    // Check if we already have data in localStorage for this serverId
+    const cachedDataKey = `instanceData_${serverId}`;
+    const cachedData = localStorage.getItem(cachedDataKey);
+    
+    if (cachedData) {
+      try {
+        const parsedData = JSON.parse(cachedData);
+        setInstanceData(parsedData);
+        setLoading(false);
+        console.log('Using cached data, but still fetching fresh data');
+        // Still make API call to get fresh data
+      } catch (error) {
+        console.error('Error parsing cached data:', error);
+        localStorage.removeItem(cachedDataKey);
+      }
+    }
+    
+    // Prevent multiple API calls using global tracker
+    if (globalApiCallTracker.has(serverId)) {
+      console.log('API call already in progress for serverId:', serverId);
+      setLoading(false);
+      return;
+    }
+    
+    globalApiCallTracker.add(serverId);
+    console.log('Making API call for serverId:', serverId);
+    
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('accessToken');
+      if (!token || !serverId) {
+        console.log('Missing token or serverId');
+        setLoading(false);
+        globalApiCallTracker.delete(serverId);
+        return;
+      }
+
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const apiUrl = `${apiBaseUrl}/api/capi/instance/${serverId}`;
+      
+      console.log('Fetching from:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('API response status:', response.status);
+      const data = await response.json();
+      console.log('API response data:', data);
+      
+      if (data.success && data.data) {
+        // Store complete instance data for reference
+        setInstanceData(data.data);
+        
+        // Debug: Check for audio fields
+        console.log('Instance data keys:', Object.keys(data.data));
+        console.log('audio1 field:', data.data.audio1);
+        console.log('audio field:', data.data.audio);
+        console.log('All instance data:', data.data);
+        
+        // Cache the data in localStorage for future use
+        localStorage.setItem(cachedDataKey, JSON.stringify(data.data));
+        console.log('Data loaded and cached successfully');
+      } else {
+        console.error('API returned unsuccessful response:', data);
+        showToast('Failed to load interview data', 'error');
+      }
+    } catch (error) {
+      console.error('Error fetching instance data:', error);
+      showToast('Error loading interview data', 'error');
+    } finally {
+      setLoading(false);
+      // Remove from tracker after completion to allow retry if needed
+      globalApiCallTracker.delete(serverId);
+      console.log('API call completed, removed from tracker');
+    }
+  }, [serverId, showToast]); // Include showToast in dependencies
 
   // Load QC user data and interview data on mount
   useEffect(() => {
+    console.log('QC Form useEffect triggered, serverId:', serverId);
+    
+    if (!serverId) {
+      console.log('Waiting for serverId...');
+      return; // Wait for serverId to be available
+    }
+    
     const savedData = localStorage.getItem('qc_user_data');
     if (savedData) {
       try {
@@ -103,15 +306,20 @@ export default function QCFormPage() {
       }
     }
     
+    // Clear the tracker for this serverId to allow fresh fetch
+    globalApiCallTracker.delete(serverId);
+    
     // Fetch instance data
+    console.log('Calling fetchInstanceData...');
     fetchInstanceData();
-  }, []);
+  }, [serverId, fetchInstanceData]); // Include serverId and fetchInstanceData in dependencies
 
-  // Handle scroll for sticky audio player
+  // Handle scroll for sticky audio player - optimized to prevent unnecessary re-renders
   useEffect(() => {
     let ticking = false;
     let originalTop = 0;
     let isInitialized = false;
+    let lastStickyState = false;
     
     const handleScroll = () => {
       if (!ticking) {
@@ -130,7 +338,12 @@ export default function QCFormPage() {
             // Only become sticky if we've scrolled past the original position
             // and the element is not in its original position
             const shouldBeSticky = currentScrollY > (originalTop - 64) && rect.top <= 64;
-            setIsSticky(shouldBeSticky);
+            
+            // Only update state if the sticky state actually changed to prevent unnecessary re-renders
+            if (shouldBeSticky !== lastStickyState) {
+              lastStickyState = shouldBeSticky;
+              setIsSticky(shouldBeSticky);
+            }
           }
           ticking = false;
         });
@@ -142,48 +355,14 @@ export default function QCFormPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch instance data from API
-  const fetchInstanceData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken');
-      if (!token || !serverId) return;
-
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
-      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${serverId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (data.success && data.data) {
-        // Store complete instance data for reference
-        setInstanceData(data.data);
-        console.log('Instance data loaded:', data.data);
-      } else {
-        showToast('Failed to load interview data', 'error');
-      }
-    } catch (error) {
-      console.error('Error fetching instance data:', error);
-      showToast('Error loading interview data', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Helper function to get label in current language
-  const getLabel = (label: string | { en?: string; hi?: string; bn?: string }): string => {
+  // Helper function to get label in current language - memoized to prevent re-creation
+  const getLabel = useCallback((label: string | { en?: string; hi?: string; bn?: string }): string => {
     if (typeof label === 'string') return label;
     return label[language as keyof typeof label] || label.en || '';
-  };
+  }, [language]);
 
-  // Helper function to get survey answer display value
-  const getSurveyAnswerDisplay = (field: FormField): string | null => {
+  // Helper function to get survey answer display value - memoized to prevent re-creation
+  const getSurveyAnswerDisplay = useCallback((field: FormField): string | null => {
     if (!field.survey_q_tag) return null;
     
     // Handle object structure with options
@@ -197,7 +376,17 @@ export default function QCFormPage() {
       // Find matching option
       const matchingOption = options.find(opt => opt.value == surveyValue);
       if (matchingOption && matchingOption.lable) {
-        return getLabel(matchingOption.lable);
+        let displayText = getLabel(matchingOption.lable);
+        
+        // Check if this option has a survey_q_tag for "Others" responses
+        if (matchingOption.survey_q_tag && instanceData[matchingOption.survey_q_tag]) {
+          const otherValue = instanceData[matchingOption.survey_q_tag];
+          if (otherValue && otherValue.trim() !== '') {
+            displayText += `: ${otherValue}`;
+          }
+        }
+        
+        return displayText;
       }
       
       // Fallback to raw value if no matching option found
@@ -211,21 +400,80 @@ export default function QCFormPage() {
     }
     
     return null;
-  };
+  }, [instanceData, getLabel]);
 
-  // Get audio URL from instance data
-  const getAudioUrl = (): string | null => {
-    if (!instanceData.audio1) return null;
+  // Get all audio URLs from instance data - memoized to prevent re-renders
+  const audioUrls = useMemo(() => {
+    console.log('Generating audioUrls from instanceData:', instanceData);
+    console.log('instanceData.audio1:', instanceData?.audio1);
     
-    // Get first audio file if comma-separated
-    const audioFile = instanceData.audio1.split(',')[0].trim();
-    if (!audioFile) return null;
+    // Check for audio1 field specifically
+    const audioField = instanceData?.audio1;
     
-    return `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`;
-  };
+    if (!audioField) {
+      console.log('No audio1 field found in instanceData');
+      if (instanceData && Object.keys(instanceData).length > 0) {
+        console.log('Available fields:', Object.keys(instanceData));
+      }
+      return [];
+    }
+    
+    console.log('Audio field found:', audioField);
+    
+    // Handle both string (comma-separated) and array formats
+    let audioFiles: string[] = [];
+    
+    if (typeof audioField === 'string') {
+      // Split comma-separated audio files
+      audioFiles = audioField.split(',').map((file: string) => file.trim()).filter((file: string) => file);
+    } else if (Array.isArray(audioField)) {
+      audioFiles = audioField.filter((file: string) => file && file.trim());
+    }
+    
+    if (audioFiles.length === 0) {
+      console.log('No audio files found after parsing');
+      return [];
+    }
+    
+    console.log('Parsed audio files:', audioFiles);
+    
+    const urls = audioFiles.map((audioFile: string, index: number) => ({
+      id: `audio-${index}`,
+      fileName: audioFile,
+      url: `https://convergentview.co.in/image/showimage?formid=49&instanceid=${serverId}&image=${audioFile}`,
+      label: `A ${index + 1}`
+    }));
+    
+    console.log('Generated audioUrls:', urls);
+    return urls;
+  }, [instanceData, serverId]); // Use full instanceData to properly detect changes
 
-  // Format duration in hh:mm:ss format
-  const formatDuration = (seconds: string | null | undefined): string => {
+  // Set default active tab when audio URLs are loaded and auto-play first audio
+  useEffect(() => {
+    if (audioUrls.length > 0 && !activeAudioTab) {
+      const firstAudioId = audioUrls[0].id;
+      setActiveAudioTab(firstAudioId);
+      
+      // Auto-play first audio when loaded
+      setTimeout(() => {
+        const audio = audioRefs.current[firstAudioId];
+        if (audio) {
+          audio.play().catch((error) => {
+            console.log('Auto-play prevented by browser:', error);
+            // Browser may prevent auto-play, so we don't show error
+          });
+        }
+      }, 500); // Delay to ensure audio element is mounted
+    }
+  }, [audioUrls, activeAudioTab]);
+
+  // Get current active audio URL
+  const currentAudioUrl = useMemo(() => {
+    return audioUrls.find((audio: { id: string; url: string }) => audio.id === activeAudioTab)?.url || null;
+  }, [audioUrls, activeAudioTab]);
+
+  // Format duration in hh:mm:ss format - memoized to prevent re-creation
+  const formatDuration = useCallback((seconds: string | null | undefined): string => {
     if (!seconds) return '00:00:00';
     
     const totalSeconds = parseInt(seconds);
@@ -236,9 +484,14 @@ export default function QCFormPage() {
     const remainingSeconds = totalSeconds % 60;
     
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const audioUrl = getAudioUrl();
+  // Memoized language options to prevent re-creation
+  const languageOptions = useMemo(() => [
+    { value: 'en', label: 'English' },
+    { value: 'bn', label: 'বাংলা' },
+    { value: 'hi', label: 'हिंदी' },
+  ], []);
 
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string, useInstanceData: boolean = false): boolean => {
@@ -543,16 +796,22 @@ export default function QCFormPage() {
   const determineQCOutcome = (): { outcome: number; rejectionLevel: number } => {
     const qcAudioStatus = formData.qc_audio_status; // This is the question answer (1, 2, 3, 4, 7, 8)
     
-    // If qc_audio_status is 2 (No Conversation), 3 (Irrelevant), 7, or 8, it's fail
-    if (qcAudioStatus === '2' || qcAudioStatus === '3' || qcAudioStatus === '7' || qcAudioStatus === '8') {
+    // If qc_audio_status is 2 (No Conversation), 3 (Irrelevant), or 8 (Duplicate), it's fail
+    if (qcAudioStatus === '2' || qcAudioStatus === '3' || qcAudioStatus === '8') {
       return { outcome: 2, rejectionLevel: 1 }; // Fail at audio status level
     }
     
-    // If qc_audio_status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
-    if (qcAudioStatus === '1' || qcAudioStatus === '4') {
+    // If qc_audio_status is 1 (Survey Conversation can be heard), 4 (Interviewer more than respondent), or 7 (Cannot hear clearly), check other mandatory questions
+    if (qcAudioStatus === '1' || qcAudioStatus === '4' || qcAudioStatus === '7') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
-      const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
-      
+      const mandatoryQuestions = ['qc_q2', 'qc_q3']; //'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'
+      if(Number(instanceData.resp_age) >= 19) {
+        mandatoryQuestions.push('qc_q5');
+      }
+      if(Number(instanceData.resp_age) >= 22) {
+        mandatoryQuestions.push('qc_q4');
+      }
+        
       for (const question of mandatoryQuestions) {
         if (formData[question] !== '1') {
           // Find which question failed and set rejection level
@@ -637,7 +896,12 @@ export default function QCFormPage() {
     const success = await saveFormData(outcome, rejectionLevel);
     
     if (success) {
-      showToast(`QC evaluation completed! Interview marked as ${outcomeText}.`, 'success');
+      // Show green toast for Pass, red toast for Fail
+      const toastType = outcome === 1 ? 'success' : 'error';
+      const toastMessage = outcome === 1 
+        ? `QC Passed! Interview has been successfully evaluated.` 
+        : `QC Failed! Interview has been marked as failed.`;
+      showToast(toastMessage, toastType);
       
       setTimeout(() => {
         router.push(`/capi/capi-qc/new-qc/${qcUserId}`);
@@ -849,8 +1113,8 @@ export default function QCFormPage() {
 
 
   if (loading) {
-    return (
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
+  return (
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
         <div className="flex justify-center items-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
@@ -863,8 +1127,8 @@ export default function QCFormPage() {
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto py-3 sm:py-4 md:py-6 px-2 sm:px-4">
-      {/* Sticky Audio Player */}
-      {audioUrl && (
+      {/* Sticky Concatenated Audio Player */}
+      {audioUrls.length > 0 && (
         <>
           <div
             ref={audioPlayerRef}
@@ -875,24 +1139,27 @@ export default function QCFormPage() {
             } transition-transform duration-200 ease-out`}
           >
             <Card className={`${isSticky ? 'rounded-none' : ''}`}>
-              <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                <div className="flex items-center gap-4 max-w-7xl mx-auto">
-                  <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <AudioPlayer 
-                      src={audioUrl} 
-                      className="w-full"
-                    />
-                  </div>
-                  {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                    Duration: {formatDuration(instanceData.audio1_duration)}
-                  </Text> */}
+              <div className="px-2 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="max-w-7xl mx-auto">
+                  <ConcatenatedAudioPlayer
+                    audioTracks={audioUrls.map((audio: { id: string; url: string; label: string }) => ({
+                      id: audio.id,
+                      url: audio.url,
+                      label: audio.label
+                    }))}
+                    onError={(error) => {
+                      console.error('Audio player error:', error);
+                      showToast(error, 'error');
+                    }}
+                    key={`player-${serverId}-${audioUrls.length}`}
+                    showPlaybackSpeed={true}
+                  />
                 </div>
               </div>
             </Card>
           </div>
           {/* Spacer to prevent content jump when sticky */}
-          {isSticky && <div style={{ height: '64px' }} />}
+          {isSticky && <div style={{ height: '80px' }} />}
         </>
       )}
 
@@ -914,23 +1181,19 @@ export default function QCFormPage() {
                   <div>District: <span className="font-semibold">{instanceData.district_name}</span></div>
                 )}
                 <div>QC User: <span className="font-semibold">{qcUserName} (ID: {qcUserId})</span></div> */}
-              </div>
             </div>
-            
-            {/* Language Selector */}
+              </div>
+              
+              {/* Language Selector */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
+                <Text className="text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Language:</Text>
               <div className="w-full sm:w-48">
-                <SelectDropdown
-                  options={[
-                    { value: 'en', label: 'English' },
-                    { value: 'bn', label: 'বাংলা' },
-                    { value: 'hi', label: 'हिंदी' },
-                  ]}
-                  value={language}
-                  onChange={(value) => setLanguage(value as string)}
-                  placeholder="Select Language"
-                />
+                  <SelectDropdown
+                  options={languageOptions}
+                    value={language}
+                    onChange={(value) => setLanguage(value as string)}
+                    placeholder="Select Language"
+                  />
               </div>
             </div>
           </div>
@@ -971,4 +1234,7 @@ export default function QCFormPage() {
     </Container>
   );
 }
+
+// Wrap component with React.memo to prevent unnecessary re-renders
+export default React.memo(QCFormPage);
 

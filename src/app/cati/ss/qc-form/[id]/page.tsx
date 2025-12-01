@@ -22,6 +22,7 @@ interface FormOption {
   label: string | { en?: string; hi?: string; bn?: string };
   value: string;
   tag: string;
+  survey_q_tag?: string;
 }
 
 interface FormField {
@@ -39,6 +40,7 @@ interface FormField {
     options: Array<{
       value: number;
       lable: { en?: string; hi?: string; bn?: string };
+      survey_q_tag?: string;
     }>;
   };
   min?: number;
@@ -69,6 +71,9 @@ export default function QCFormPage() {
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [isSticky, setIsSticky] = useState(false);
   const audioPlayerRef = useRef<HTMLDivElement>(null);
+  const [audioError, setAudioError] = useState(false);
+  const [useIframe, setUseIframe] = useState(false);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Use the imported formConfig directly
   const currentFormConfig = formConfig as FormField[];
@@ -87,6 +92,17 @@ export default function QCFormPage() {
   
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
+  // Audio error handling
+  const handleAudioError = () => {
+    console.error('Audio playback error');
+    setAudioError(true);
+  };
+
+  const handleIframeError = () => {
+    console.error('Iframe audio playback error');
+    setAudioError(true);
   };
 
   // Load teleform user data and interview data on mount
@@ -196,7 +212,17 @@ export default function QCFormPage() {
       // Find matching option
       const matchingOption = options.find(opt => opt.value == surveyValue);
       if (matchingOption && matchingOption.lable) {
-        return getLabel(matchingOption.lable);
+        let displayText = getLabel(matchingOption.lable);
+        
+        // Check if this option has a survey_q_tag for "Others" responses
+        if (matchingOption.survey_q_tag && instanceData[matchingOption.survey_q_tag]) {
+          const otherValue = instanceData[matchingOption.survey_q_tag];
+          if (otherValue && otherValue.trim() !== '') {
+            displayText += `: ${otherValue}`;
+          }
+        }
+        
+        return displayText;
       }
       
       // Fallback to raw value if no matching option found
@@ -473,6 +499,9 @@ export default function QCFormPage() {
         qc_status: qcOutcome, // 1 = Pass, 2 = Fail
         qc_rejection_level: rejectionLevel, // 0 for pass, question number for fail
         qc_complete_date: currentDate, // Date of submission
+        // Include to trigger backend QC comprehensive log
+        qc_teleform_user_id: qcTeleformUserId ? Number(qcTeleformUserId) : undefined,
+        save_type: 2, // Submit
       };
       
       // Add form field values if they exist
@@ -520,6 +549,63 @@ export default function QCFormPage() {
     }
   };
 
+  // Auto-save handler (save_type = 1)
+  const autoSaveQCData = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token || !interviewId) return;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const requestBody: Record<string, any> = {
+        // Only send fields currently filled to avoid overwriting with nulls
+        qc_teleform_user_id: qcTeleformUserId ? Number(qcTeleformUserId) : undefined,
+        save_type: 1,
+      };
+      const formFields = ['qc_audio_status', 'qc_q2', 'qc_q3', 'qc_q4', 'qc_q5', 'qc_q6', 'qc_q7', 'qc_q8', 'qc_q9'];
+      formFields.forEach(fieldTag => {
+        const fieldValue = formData[fieldTag];
+        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+          if (fieldTag === 'qc_q9') {
+            requestBody[fieldTag] = fieldValue;
+          } else {
+            const numValue = parseInt(fieldValue);
+            requestBody[fieldTag] = isNaN(numValue) ? fieldValue : numValue;
+          }
+        }
+      });
+    // Ensure qc_q9 clears in DB when user deletes it (send empty string explicitly)
+    if (formData.qc_q9 === '' || formData.qc_q9 === null) {
+      requestBody.qc_q9 = '';
+    }
+      await fetch(`${apiBaseUrl}/api/cati/interviews/${interviewId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+    } catch (err) {
+      console.error('Auto-save QC error:', err);
+    }
+  };
+
+  // Debounce auto-save on form changes
+  useEffect(() => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    // If no changes, skip
+    if (!formData) return;
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      void autoSaveQCData();
+    }, 800);
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, [formData, qcTeleformUserId, interviewId]);
+
   // Validate all required fields
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
@@ -560,8 +646,14 @@ export default function QCFormPage() {
     // If qc_audio_status is 1 (Survey Conversation can be heard) or 4 (Interviewer more than respondent), check other mandatory questions
     if (qcAudioStatus === '1' || qcAudioStatus === '4') {
       // Check if all mandatory questions are answered with "Matched" (value "1")
-      const mandatoryQuestions = ['qc_q2', 'qc_q3', 'qc_q4', 'qc_q5'];
-      
+      // Treat `qc_q4` as optional: only require it if it's present in the payload
+      const mandatoryBase = ['qc_q2', 'qc_q3', 'qc_q5'];
+      const mandatoryQuestions = [...mandatoryBase];
+      if (formData.qc_q4 !== undefined && formData.qc_q4 !== null && formData.qc_q4 !== '') {
+        // qc_q4 is present in the payload, make it mandatory in this check
+        mandatoryQuestions.push('qc_q4');
+      }
+
       for (const question of mandatoryQuestions) {
         if (formData[question] !== '1') {
           // Find which question failed and set rejection level
@@ -897,26 +989,103 @@ export default function QCFormPage() {
         <Card className={`${isSticky ? 'rounded-none' : ''}`}>
           <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
             <div className="flex items-center gap-4 max-w-7xl mx-auto">
-              <Volume2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                {audioUrl ? (
-                  <audio 
-                    controls 
-                    className="w-full max-w-full h-8"
-                    style={{ maxHeight: '32px' }}
-                  >
-                    <source src={audioUrl} type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>
+                <div className="mb-3 text-center">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                  </p>
+                  {audioError && !useIframe && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                      Audio player had an issue. Try the alternative options below.
+                    </p>
+                  )}
+                </div>
+
+                {!useIframe ? (
+                  audioUrl ? (
+                      <audio
+                        controls
+                        className="w-full"
+                        controlsList="nodownload"
+                        preload="metadata"
+                        onError={handleAudioError}
+                        onLoadStart={() => console.log('Audio loading started')}
+                        onCanPlay={() => console.log('Audio can play')}
+                      >
+                        <source src={audioUrl} type="audio/mpeg" />
+                        <source src={audioUrl} type="audio/mp3" />
+                        Your browser does not support the audio element.
+                      </audio>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
                 ) : (
-                  <div className="text-red-500 text-sm">
-                    No audio file available
+                  audioUrl ? (
+                    <div className="w-full">
+                      <iframe
+                        src={audioUrl}
+                        className="w-full h-16 border-0 rounded"
+                        title="Audio Player"
+                        allow="autoplay"
+                        onError={handleIframeError}
+                        onLoad={() => {
+                          // Check if iframe content is just text (not audio player)
+                          setTimeout(() => {
+                            try {
+                              const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
+                              if (iframe && iframe.contentDocument) {
+                                const bodyText = iframe.contentDocument.body?.textContent?.trim();
+                                if (bodyText && bodyText.includes('recording for v2 is working fine')) {
+                                  console.warn('Iframe returned text instead of audio player');
+                                  setAudioError(true);
+                                }
+                              }
+                            } catch (e) {
+                              // Cross-origin restrictions, can't access iframe content
+                              console.log('Cannot access iframe content due to CORS');
+                            }
+                          }, 1000);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      No audio file available for this interview.
+                    </div>
+                  )
+                )}
+
+                {/* Error Message for Failed Audio */}
+                {audioError && (
+                  <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+                    <div className="text-center">
+                      <div className="text-red-600 dark:text-red-400 mb-2">
+                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold">Audio Playback Failed</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
+                
+                {/* Alternative Options */}
+                <div className="mt-4 flex justify-center items-center">
+                  {!useIframe && audioError && (
+                    <button
+                      onClick={() => setUseIframe(true)}
+                      className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      Try Alternative Player
+                    </button>
+                  )}
+                </div>
               </div>
-              {/* <Text className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                Duration: {formatDuration(instanceData.audio1_duration)}
-              </Text> */}
             </div>
           </div>
         </Card>

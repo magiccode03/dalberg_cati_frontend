@@ -68,17 +68,60 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  useEffect(() => {
+  useEffect(() => { 
     // Check for existing authentication on mount
     const checkAuth = async () => {
       try {
         const isAuth = localStorage.getItem('isAuthenticated');
         const userData = localStorage.getItem('user');
+        const accessToken = localStorage.getItem('accessToken');
         const usersData = localStorage.getItem('allUsers');
 
-        if (isAuth === 'true' && userData) {
-          const parsedUser = JSON.parse(userData);
-          setUser(parsedUser);
+        // Check if we're on the login page - if so, don't redirect
+        const currentPath = window.location.pathname;
+        const isLoginPage = currentPath === '/login';
+
+        // If accessToken is missing but user thinks they're authenticated, redirect to login
+        if (!accessToken && (isAuth === 'true' || userData)) {
+          console.log('Access token missing, clearing auth and redirecting to login');
+          localStorage.removeItem('isAuthenticated');
+          localStorage.removeItem('user');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          setUser(null);
+          
+          if (!isLoginPage) {
+            router.replace('/login');
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        // If both token and auth flags are missing, ensure we're logged out
+        if (!accessToken && isAuth !== 'true') {
+          setUser(null);
+          if (!isLoginPage) {
+            // Only redirect if we're not already on login page
+            router.replace('/login');
+          }
+          setIsLoading(false);
+          return;
+        }
+
+        // Valid authentication - set user
+        if (isAuth === 'true' && userData && accessToken) {
+          try {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+          } catch (parseError) {
+            console.error('Error parsing user data:', parseError);
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('user');
+            setUser(null);
+            if (!isLoginPage) {
+              router.replace('/login');
+            }
+          }
         }
 
         // Load all users for SUPER ADMIN functionality
@@ -110,13 +153,81 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('Error checking authentication:', error);
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        setUser(null);
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/login') {
+          router.replace('/login');
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAuth();
-  }, []);
+
+    // Monitor authentication state changes and redirect if authentication is lost
+    const handleAuthChange = () => {
+      const accessToken = localStorage.getItem('accessToken');
+      const isAuth = localStorage.getItem('isAuthenticated');
+      const currentPath = window.location.pathname;
+      const isLoginPage = currentPath === '/login';
+      const isUnauthorizedPage = currentPath === '/unauthorized';
+
+      // If we're not on login/unauthorized page and auth is lost, redirect
+      if (!isLoginPage && !isUnauthorizedPage && (!accessToken || isAuth !== 'true')) {
+        console.log('Authentication lost, redirecting to login');
+        setUser(null);
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        router.replace('/login');
+      }
+    };
+
+    // Check auth state periodically (every 2 seconds)
+    const authCheckInterval = setInterval(handleAuthChange, 2000);
+
+    // Also listen to storage events (when cookies/localStorage are cleared in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'accessToken' || e.key === 'isAuthenticated' || e.key === 'user') {
+        handleAuthChange();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Listen to custom events for logout
+    const handleLogoutEvent = () => {
+      handleAuthChange();
+    };
+
+    window.addEventListener('auth:logout', handleLogoutEvent);
+
+    return () => {
+      clearInterval(authCheckInterval);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth:logout', handleLogoutEvent);
+    };
+  }, [router]);
+
+  // Additional useEffect to monitor user state and redirect when it becomes null
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    const isLoginPage = currentPath === '/login';
+    const isUnauthorizedPage = currentPath === '/unauthorized';
+
+    // If user becomes null and we're not on login/unauthorized page, redirect
+    if (!user && !isLoading && !isLoginPage && !isUnauthorizedPage) {
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.log('User state lost, redirecting to login');
+        router.replace('/login');
+      }
+    }
+  }, [user, isLoading, router]);
 
   const login = async (uniqueId: string, password: string, rememberMe = false): Promise<{ success: boolean; user?: User }> => {
     try {
@@ -197,23 +308,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    // Redirect first, then clear state to avoid UI flash
-    router.replace('/login');
+    // Clear state immediately
+    setUser(null);
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('tokenExpiresAt');
+    localStorage.removeItem('teleform_user_data'); // Clear teleform data as well
     
-    // Use setTimeout to clear state after redirect starts
-    setTimeout(() => {
-      setUser(null);
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('user');
-      localStorage.removeItem('rememberMe');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('tokenExpiresAt');
-      localStorage.removeItem('teleform_user_data'); // Clear teleform data as well
-      
-      // Dispatch event to update header
-      window.dispatchEvent(new Event('teleformUserUpdated'));
-    }, 0);
+    // Dispatch events
+    window.dispatchEvent(new Event('teleformUserUpdated'));
+    window.dispatchEvent(new Event('auth:logout'));
+    
+    // Redirect to login
+    router.replace('/login');
     
     // Call API logout endpoint in background (don't wait for it)
     apiService.logout().catch(error => {
@@ -435,6 +545,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'data_quality': 'DQ',
       'convergent_analysis': 'CA',
       'capi_qc': 'CAPIQC',
+      'data_entry': 'DE',
     };
 
     const prefix = rolePrefix[role as keyof typeof rolePrefix] || 'USER';
@@ -459,6 +570,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // SS role (CATI System Supervisor/Telecaller) goes to start-form-filling page
     if (role === 'ss') return '/cati/ss/start-form-filling';
     
+    // Data Entry role goes to custom data entry dashboard
+    if (role === 'data_entry') return '/cati/data-entry';
+    
     // PPMT role goes directly to fieldwork progress page
     if (role === 'ppmt') return '/capi/ppmt/overview/fieldwork-progress';
     
@@ -467,6 +581,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // DQM role goes directly to QC user registration page
     if (role === 'dqm') return '/capi/dqm/qc-user-registration';
+    
+    // Data Manager role goes directly to CAPI Data page
+    if (role === 'data_manager') return '/dm/capi';
     
     // All other roles (including research, ppm, fd, etc.) go to /home
     return '/home';

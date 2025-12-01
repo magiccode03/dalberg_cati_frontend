@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,16 +26,26 @@ const teleCallerSchema = z.object({
     .max(10, 'Mobile number must be 10 digits')
     .regex(/^[0-9]+$/, 'Mobile number must contain only digits'),
   status: z.string().min(1, 'Status is required'),
+  telecalling_group_id: z.string().min(1, 'Telecalling Group is required'),
   fill_form: z.boolean(),
   qc: z.boolean(),
+  data_entry: z.boolean(),
 });
 
 type TeleCallerFormData = z.infer<typeof teleCallerSchema>;
+
+interface TelecallingGroup {
+  id: number;
+  name: string;
+  group_name?: string;
+}
 
 export default function CreateTeleCallerPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   const {
     register,
@@ -51,21 +61,81 @@ export default function CreateTeleCallerPage() {
       name: '',
       mobile_number: '',
       status: '1', // Default to Active
+      telecalling_group_id: '', // User must select from dropdown
       fill_form: false,
       qc: false,
+      data_entry: false,
     },
   });
+
+  // Fetch telecalling groups
+  useEffect(() => {
+    const fetchTelecallingGroups = async () => {
+      setLoadingGroups(true);
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        
+        if (!token) {
+          console.warn('No auth token, using default groups');
+          setTelecallingGroups([{ id: 1, name: 'Group 1' }]);
+          return;
+        }
+
+        // Fetch telecalling groups from the API
+        const endpoint = `${apiUrl}/api/teleform-users/telecalling-groups`;
+        console.log('Fetching telecalling groups from:', endpoint);
+        
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        console.log('Response status:', response.status, response.statusText);
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('API Response:', result);
+          
+          if (result.success && Array.isArray(result.data)) {
+            console.log('Groups data array:', result.data);
+            const groups: TelecallingGroup[] = result.data.map((item: any) => ({
+              id: item.telecalling_group_id || item.id,
+              name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+            }));
+            console.log('Mapped groups:', groups);
+            setTelecallingGroups(groups);
+          } else {
+            console.warn('Invalid API response format:', result);
+            console.warn('Response success:', result.success, 'Data is array:', Array.isArray(result.data));
+            setTelecallingGroups([{ id: 1, name: 'Group 1' }]);
+          }
+        } else {
+          const errorText = await response.text();
+          console.warn('Failed to fetch telecalling groups. Status:', response.status, 'Response:', errorText);
+          setTelecallingGroups([{ id: 1, name: 'Group 1' }]);
+        }
+      } catch (err) {
+        console.error('Error fetching telecalling groups:', err);
+        // Fallback to default
+        setTelecallingGroups([{ id: 1, name: 'Group 1' }]);
+      } finally {
+        setLoadingGroups(false);
+      }
+    };
+
+    fetchTelecallingGroups();
+  }, []);
 
   const onSubmit = async (data: TeleCallerFormData): Promise<void> => {
     setError(null);
     setSuccess(null);
 
-    // Check API URL configuration
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      setError('API URL not configured');
-      return;
-    }
+    // Get API URL with fallback
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
 
     // Get auth token (with SSR guard)
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -84,9 +154,10 @@ export default function CreateTeleCallerPage() {
       form_data: 0,
       qc: data.qc ? 1 : 0,
       qc_recheck: 0,
+      data_entry: data.data_entry ? 1 : 0,
       supervisor_id: 1,
       agency_id: 1,
-      telecalling_group_id: 1,
+      telecalling_group_id: parseInt(data.telecalling_group_id),
       under_training: 0,
       status: parseInt(data.status),
     };
@@ -217,6 +288,29 @@ export default function CreateTeleCallerPage() {
                     Enter 10-digit mobile number without country code
                   </p>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Telecalling Group *
+                  </label>
+                  <SelectDropdown
+                    value={watch('telecalling_group_id')}
+                    onChange={(value) => setValue('telecalling_group_id', value as string)}
+                    options={telecallingGroups.map(group => ({
+                      value: String(group.id),
+                      label: group.name,
+                    }))}
+                    placeholder={loadingGroups ? "Loading groups..." : "Select Telecalling Group"}
+                    disabled={loadingGroups}
+                  />
+                  {errors.telecalling_group_id && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.telecalling_group_id.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Select the telecalling group for this user
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -257,7 +351,7 @@ export default function CreateTeleCallerPage() {
                         onCheckedChange={(checked) => setValue('fill_form', checked === true)}
                       />
                       <label htmlFor="fill_form" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Can Fill Form
+                        Telecaller
                       </label>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -268,6 +362,16 @@ export default function CreateTeleCallerPage() {
                       />
                       <label htmlFor="qc" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         QC User
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="data_entry"
+                        checked={watch('data_entry')}
+                        onCheckedChange={(checked) => setValue('data_entry', checked === true)}
+                      />
+                      <label htmlFor="data_entry" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Data Entry User
                       </label>
                     </div>
                   </div>

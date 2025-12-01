@@ -220,14 +220,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'capi',
       },
-      {
-        id: 'capi-ppm-project-setting',
-        label: 'Project Setting',
-        href: '/capi/ppm/master/project-setting',
-        icon: 'Settings',
-        roles: ['ppm'],
-        system: 'capi',
-      },
+      // {
+      //   id: 'capi-ppm-project-setting',
+      //   label: 'Project Setting',
+      //   href: '/capi/ppm/master/project-setting',
+      //   icon: 'Settings',
+      //   roles: ['ppm'],
+      //   system: 'capi',
+      // },
     ],
   },
   {
@@ -330,48 +330,65 @@ export const menuData: MenuItem[] = [
   //     },
   //   ],
   // },
-  // {
-  //   id: 'capi-ppm-master-data',
-  //   label: 'Master Data',
-  //   href: '/capi/ppm/master-data/master-ac',
-  //   icon: 'Database',
-  //   roles: ['ppm'],
-  //   system: 'capi',
-  //   children: [
-  //     {
-  //       id: 'capi-ppm-master-ac',
-  //       label: 'Master AC',
-  //       href: '/capi/ppm/master-data/master-ac',
-  //       icon: 'Users',
-  //       roles: ['ppm'],
-  //       system: 'capi',
-  //     },
-  //     {
-  //       id: 'capi-ppm-master-ac-caste',
-  //       label: 'Master AC Caste',
-  //       href: '/capi/ppm/master-data/master-ac-caste',
-  //       icon: 'Users',
-  //       roles: ['ppm'],
-  //       system: 'capi',
-  //     },
-  //     {
-  //       id: 'capi-ppm-master-ps',
-  //       label: 'Master PS',
-  //       href: '/capi/ppm/master-data/master-ps',
-  //       icon: 'MapPin',
-  //       roles: ['ppm'],
-  //       system: 'capi',
-  //     },
-  //   ],
-  // },
-  // {
-  //   id: 'capi-ppm-ps-form',
-  //   label: 'PS for Form',
-  //   href: '/capi/ppm/ps-form',
-  //   icon: 'FileText',
-  //   roles: ['ppm'],
-  //   system: 'capi',
-  // },
+  {
+    id: 'capi-ppm-master-data',
+    label: 'Master Data',
+    href: '/capi/ppm/master-data/master-ac',
+    icon: 'Database',
+    roles: ['ppm'],
+    system: 'capi',
+    children: [
+      {
+        id: 'capi-ppm-master-ac',
+        label: 'Master AC',
+        href: '/capi/ppm/master-data/master-ac',
+        icon: 'Users',
+        roles: ['ppm'],
+        system: 'capi',
+      },
+      // {
+      //   id: 'capi-ppm-master-pc',
+      //   label: 'Master PC',
+      //   href: '/capi/ppm/master-data/master-pc',
+      //   icon: 'Users',
+      //   roles: ['ppm'],
+      //   system: 'capi',
+      // },
+      // {
+      //   id: 'capi-ppm-master-district',
+      //   label: 'Master District',
+      //   href: '/capi/ppm/master-data/master-district',
+      //   icon: 'Users',
+      //   roles: ['ppm'],
+      //   system: 'capi',
+      // },
+      // {
+      //   id: 'capi-ppm-master-region',
+      //   label: 'Master Region',
+      //   href: '/capi/ppm/master-data/master-region',
+      //   icon: 'Users',
+      //   roles: ['ppm'],
+      //   system: 'capi',
+      // },
+      // {
+      //   id: 'capi-ppm-master-ac-caste',
+      //   label: 'Master AC Caste',
+      //   href: '/capi/ppm/master-data/master-ac-caste',
+      //   icon: 'Users',
+      //   roles: ['ppm'],
+      //   system: 'capi',
+      // },
+      
+    ],
+  },
+  {
+    id: 'capi-ppm-ps-form',
+    label: 'PS for Form',
+    href: '/capi/ppm/ps-form',
+    icon: 'FileText',
+    roles: ['ppm'],
+    system: 'capi',
+  },
 
   // CAPI Project Progress Monitoring Team (PPMT) Menu
   {
@@ -442,22 +459,22 @@ export const menuData: MenuItem[] = [
     roles: ['ppmt'],
     system: 'capi',
   },
-  {
-    id: 'capi-ppmt-gps-map',
-    label: 'GPS Map',
-    href: '/capi/ppmt/gps-map',
-    icon: 'Map',
-    roles: ['ppmt'],
-    system: 'capi',
-  },
-  {
-    id: 'capi-ppmt-demographic',
-    label: 'Demographic %',
-    href: '/capi/ppmt/demographic',
-    icon: 'Users',
-    roles: ['ppmt'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-ppmt-gps-map',
+  //   label: 'GPS Map',
+  //   href: '/capi/ppmt/gps-map',
+  //   icon: 'Map',
+  //   roles: ['ppmt'],
+  //   system: 'capi',
+  // },
+  // {
+  //   id: 'capi-ppmt-demographic',
+  //   label: 'Demographic %',
+  //   href: '/capi/ppmt/demographic',
+  //   icon: 'Users',
+  //   roles: ['ppmt'],
+  //   system: 'capi',
+  // },
 
   // CAPI Data Quality Management (DQM) Menu
   {
@@ -500,14 +517,14 @@ export const menuData: MenuItem[] = [
         roles: ['dqm'],
         system: 'capi',
       },
-      // {
-      //   id: 'capi-dqm-interview-list',
-      //   label: 'Interview List',
-      //   href: '/capi/dqm/progress/interview-list',
-      //   icon: 'FileText',
-      //   roles: ['dqm'],
-      //   system: 'capi',
-      // },
+      {
+        id: 'capi-dqm-interview-list',
+        label: 'Interview List',
+        href: '/capi/dqm/progress/interview-list',
+        icon: 'FileText',
+        roles: ['dqm'],
+        system: 'capi',
+      },
       // // 
       // {
       //   id: 'capi-dqm-qc-user-pending-data',
@@ -783,6 +800,24 @@ export const menuData: MenuItem[] = [
     roles: ['capi_qc'],
     system: 'capi',
   },
+  {
+    id: 'capi-audio-qc',
+    label: 'Audio QC',
+    href: '/capi/capi-qc/new-qc/0', // Will be updated dynamically with actual qc_id
+    icon: 'Mic',
+    roles: ['capi_qc'],
+    system: 'capi',
+    dynamic: true, // Show only when qc_user_data exists in localStorage
+  },
+  // {
+  //   id: 'capi-gps-qc',
+  //   label: 'GPS QC',
+  //   href: '/capi/capi-qc/gps-qc/0', // Will be updated dynamically with actual qc_id
+  //   icon: 'Map',
+  //   roles: ['capi_qc'],
+  //   system: 'capi',
+  //   dynamic: true, // Show only when qc_user_data exists in localStorage
+  // },
 
   // CAPI Findings Dashboard Menu
   {
@@ -1148,6 +1183,29 @@ export const menuData: MenuItem[] = [
     ],
   },
 
+  // Data Manager Menu
+  {
+    id: 'data-manager-capi',
+    label: 'CAPI Data',
+    href: '/dm/capi',
+    icon: 'Database',
+    roles: ['data_manager'],
+  },
+  {
+    id: 'data-manager-cati',
+    label: 'CATI Data',
+    href: '/dm/cati',
+    icon: 'Phone',
+    roles: ['data_manager'],
+  },
+  {
+    id: 'data-manager-combine',
+    label: 'Combine Data',
+    href: '/dm/combine',
+    icon: 'GitCompare',
+    roles: ['data_manager'],
+  },
+
   // ============================================
   // CATI SYSTEM MENUS
   // ============================================
@@ -1211,14 +1269,15 @@ export const menuData: MenuItem[] = [
       //   roles: ['ppm'],
       //   system: 'cati',
       // },
-      // {
-      //   id: 'cati-ppm-completed-numbers',
-      //   label: 'Completed Numbers',
-      //   href: '/cati/ppm/progress/completed-numbers',
-      //   icon: 'CheckCircle',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
+      {
+        id: 'cati-ppm-ac-wise-report',
+        label: 'AC Wise Report',
+        href: '/cati/ppm/progress/acwisereport',
+        icon: 'CheckCircle',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      
       // {
       //   id: 'cati-ppm-monthly-report',
       //   label: 'Monthly Report',
@@ -1227,14 +1286,14 @@ export const menuData: MenuItem[] = [
       //   roles: ['ppm'],
       //   system: 'cati',
       // },
-      {
-        id: 'cati-ppm-telecaller-pending-data',
-        label: 'Telecaller Pending Data',
-        href: '/cati/ppm/progress/telecaller-pending-data',
-        icon: 'Clock',
-        roles: ['ppm'],
-        system: 'cati',
-      },
+      // {
+      //   id: 'cati-ppm-telecaller-pending-data',
+      //   label: 'Telecaller Pending Data',
+      //   href: '/cati/ppm/progress/telecaller-pending-data',
+      //   icon: 'Clock',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
       // {
       //   id: 'cati-ppm-qc-data',
       //   label: 'QC Data',
@@ -1298,7 +1357,7 @@ export const menuData: MenuItem[] = [
   {
     id: 'cati-ppm-ac-progress',
     label: 'AC Progress',
-    href: '/cati/ppm/ac-progress/overall ac-progress',
+    href: '/cati/ppm/ac-progress/overall-ac-progress',
     icon: 'MapPin',
     roles: ['ppm'],
     system: 'cati',
@@ -1307,6 +1366,14 @@ export const menuData: MenuItem[] = [
         id: 'cati-ppm-overall-ac-progress',
         label: 'Overall AC Progress',
         href: '/cati/ppm/ac-progress/overall-ac-progress',
+        icon: 'BarChart3',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-ac-progress',
+        label: 'AC Progress',
+        href: '/cati/ppm/ac-progress/ac-progress',
         icon: 'BarChart3',
         roles: ['ppm'],
         system: 'cati',
@@ -1384,6 +1451,112 @@ export const menuData: MenuItem[] = [
       //   system: 'cati',
       // },
     ],
+  },
+  {
+    id: 'cati-ppm-qc-progress',
+    label: 'QC Progress',
+    href: '/cati/ppm/qc-progress/overall-qc-progress',
+    icon: 'Users',
+    roles: ['ppm'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppm-qc-user-progress',
+        label: 'QC User Progress',
+        href: '/cati/ppm/qc-progress/qc-user-progress', 
+        icon: 'Users',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-user-progress-daily',
+        label: 'QC User Daily Progress',
+        href: '/cati/ppm/qc-progress/qc-user-progress-daily',
+        icon: 'Users',
+        roles: ['ppm'], 
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-ac-assigned',
+        label: 'Assigned AC - QC User',
+        href: '/cati/ppm/qc-progress/qc-ac-assigned',
+        icon: 'TrendingUp',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-qc-ac-wise-progress',
+        label: 'AC Wise Progress',
+        href: '/cati/ppm/qc-progress/acwisereport',
+        icon: 'BarChart3',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-interview-list',
+        label: 'Interview List',
+        href: '/cati/ppm/qc-progress/interview-list',
+        icon: 'CheckCircle',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      // {
+      //   id: 'cati-ppm-monthly-nov-2023',
+      //   label: 'Monthly: Nov 2023',
+      //   href: '/cati/ppm/ac-progress/monthly-nov-2023',
+      //   icon: 'Calendar',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+      // {
+      //   id: 'cati-ppm-monthly-dec-2023',
+      //   label: 'Monthly: Dec 2023',
+      //   href: '/cati/ppm/ac-progress/monthly-dec-2023',
+      //   icon: 'Calendar',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+      // {
+      //   id: 'cati-ppm-monthly-jan-2024',
+      //   label: 'Monthly: Jan 2024',
+      //   href: '/cati/ppm/ac-progress/monthly-jan-2024',
+      //   icon: 'Calendar',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+      // {
+      //   id: 'cati-ppm-monthly-feb-2024',
+      //   label: 'Monthly: Feb 2024',
+      //   href: '/cati/ppm/ac-progress/monthly-feb-2024',
+      //   icon: 'Calendar',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+      // {
+      //   id: 'cati-ppm-monthly-mar-2024',
+      //   label: 'Monthly: Mar 2024',
+      //   href: '/cati/ppm/ac-progress/monthly-mar-2024',
+      //   icon: 'Calendar',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+      // {
+      //   id: 'cati-ppm-monthly-apr-2024',
+      //   label: 'Monthly: Apr 2024',
+      //   href: '/cati/ppm/ac-progress/monthly-apr-2024',
+      //   icon: 'Calendar',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
+    ],
+  },
+  {
+    id: 'cati-ppm-qc-data-entry-progress',
+    label: 'Data Entry Progress',
+    href: '/cati/ppm/data-entry-progress',
+    icon: 'BarChart3',
+    roles: ['ppm'],
+    system: 'cati',
   },
   // {
   //   id: 'cati-ppm-upload',
@@ -1629,6 +1802,24 @@ export const menuData: MenuItem[] = [
     dynamic: true, // This will be dynamically set based on teleform user data
   },
   
+  // Data Entry Role Menu (Simple like SS role)
+  {
+    id: 'cati-data-entry-auth',
+    label: 'Authentication',
+    href: '/cati/data-entry',
+    icon: 'Shield',
+    roles: ['data_entry'],
+    system: 'cati',
+  },
+  {
+    id: 'cati-data-entry',
+    label: 'Start QC',
+    href: '/cati/ss/data-entry-list',
+    icon: 'CheckCircle',
+    roles: ['data_entry'],
+    system: 'cati',
+    dynamic: true, // This will be dynamically set based on data entry user data
+  },
 
 ];
 

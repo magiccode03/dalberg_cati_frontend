@@ -12,9 +12,11 @@ import Badge from '@/components/ui/Badge';
 import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import { Search, Download, Play, Map, Loader2, Volume2, X } from 'lucide-react';
-import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';
+import { useRejectionReport, useACDropdown, useRejectionReportFilterOptions, useInterviewerDropdown } from '@/hooks/useApi';                                                                 
 import AudioPlayerModal from '@/components/modals/AudioPlayerModal';
 import formConfig from '@/app/capi/capi-qc/qc-form/form-config.json';
+import apiClient from '@/lib/api-client';
+import { apiService } from '@/lib/api';
 
 interface RejectionData {
   srNo: number;
@@ -25,7 +27,7 @@ interface RejectionData {
   interviewerId: string;
   interviewDuration: string;
   respondentName: string;
-  respondentMobile: string;
+  // respondentMobile: string;
   failReason: string;
   audioQcId: string;
   audioFailReason: string;
@@ -61,7 +63,8 @@ export default function RejectionReportPage() {
     serverId: '',
     mobileNo: '',
     failReason: '',
-    qualityreportstatus: ''
+    qualityreportstatus: '',
+    audioFailReason: ''
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,16 +72,14 @@ export default function RejectionReportPage() {
   const [appliedFilters, setAppliedFilters] = useState<any>(null); // Track applied filters separately - start with null to prevent initial API call
 
   // Audio modal state
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<any>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const [audioModalOpen, setAudioModalOpen] = useState(false);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [selectedAudioFile, setSelectedAudioFile] = useState<string>('');
   
-  // QC details state
-  const [qcDetailsCache, setQcDetailsCache] = useState<Record<string, string>>({});
-  const [loadingQcDetails, setLoadingQcDetails] = useState<Set<string>>(new Set());
-  const [qcDetailsModalOpen, setQcDetailsModalOpen] = useState(false);
-  const [qcDetailsContent, setQcDetailsContent] = useState('');
-  const [qcDetailsLoaded, setQcDetailsLoaded] = useState<Set<string>>(new Set());
   
   // Memoize the API parameters based on applied filters (not current filters)
   const apiParams = React.useMemo(() => {
@@ -98,6 +99,7 @@ export default function RejectionReportPage() {
       mobile_no: appliedFilters.mobileNo,
       fail_reason: appliedFilters.failReason,
       qualityreportstatus: appliedFilters.qualityreportstatus,
+      audio_fail_reason: appliedFilters.audioFailReason,
       page: currentPage,
       per_page: pageSize
     };
@@ -226,6 +228,30 @@ export default function RejectionReportPage() {
     ];
   }, [filterOptionsData]);
 
+  const audioFailReasonOptions = React.useMemo(() => {
+    return [
+      { value: '', label: 'Select Audio Fail Reason' },
+      { value: 'survey_conversation_gender', label: 'Survey Conversation can be heard | Gender Rejection' },
+      { value: 'survey_conversation_upcoming', label: 'Survey Conversation can be heard | Upcoming Election Rejection' },
+      { value: 'survey_conversation_2021_ae', label: 'Survey Conversation can be heard | 2021 AE Rejection' },
+      { value: 'survey_conversation_2024_election', label: 'Survey Conversation can be heard | 2024 Election Rejection' },
+      { value: 'survey_conversation_cannot_hear_previous', label: 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)' },
+      { value: 'no_conversation', label: 'No Conversation' },
+      { value: 'irrelevant_conversation', label: 'Irrelevant Conversation' },
+      { value: 'interviewer_more_than_respondent_gender', label: 'Can hear the interviewer more than the respondent | Gender Rejection' },
+      { value: 'interviewer_more_than_respondent_upcoming', label: 'Can hear the interviewer more than the respondent | Upcoming Election Rejection' },
+      { value: 'interviewer_more_than_respondent_2021_ae', label: 'Can hear the interviewer more than the respondent | 2021 AE Rejection' },
+      { value: 'interviewer_more_than_respondent_2024_election', label: 'Can hear the interviewer more than the respondent | 2024 Election Rejection' },
+      { value: 'cannot_hear_response_clearly_gender', label: 'Cannot hear the response clearly | Gender Rejection' },
+      { value: 'cannot_hear_response_clearly_upcoming', label: 'Cannot hear the response clearly | Upcoming Election Rejection' },
+      { value: 'cannot_hear_response_clearly_2021_ae', label: 'Cannot hear the response clearly | 2021 AE Rejection' },
+      { value: 'cannot_hear_response_clearly_2024_election', label: 'Cannot hear the response clearly | 2024 Election Rejection' },
+      { value: 'duplicate_audio', label: 'Duplicate Audio' },
+      { value: 'interviewer_acting_as_respondent', label: 'Interviewer acting as respondent' },
+      { value: 'same_respondent_as_before', label: 'Same respondent as before' }
+    ];
+  }, []);
+
   // Auto-load data with default parameters when component mounts
   useEffect(() => {
     // Only auto-load if no filters have been applied yet
@@ -272,9 +298,9 @@ export default function RejectionReportPage() {
         psCode: item.ps_code,
         interviewDate: new Date(item.interview_date).toISOString().split('T')[0],
         interviewerId: item.interviewer_id,
-        interviewDuration: item.interview_duration_human || formatDuration(item.total_duration),
+        interviewDuration: item.interview_duration_human || formatDuration(item.audio_duration),
         respondentName: item.respondent_name,
-        respondentMobile: item.mobile_no || '',
+        // respondentMobile: item.mobile_no || '',
         failReason: item.fail_reason,
         audioQcId: item.qc_id?.toString() || '',
         audioFailReason: item.audio_qc_rejection_level || '',
@@ -339,23 +365,128 @@ export default function RejectionReportPage() {
       serverId: '',
       mobileNo: '',
       failReason: '',
-      qualityreportstatus: ''
+      qualityreportstatus: '',
+      audioFailReason: ''
     };
     setFilters(defaultFilters);
     setAppliedFilters(defaultFilters); // Apply default filters to reload data
     setCurrentPage(1);
   };
 
+  const fetchAudioData = async (serverId: string, audioFileName: string) => {
+    try {
+      setAudioLoading(true);
+      setAudioError(null);
+      
+      console.log('🔍 Fetching audio data for server_id:', serverId, 'audioFileName:', audioFileName);
+      
+      // Use the actual audio file name from the interview data, or fallback to 'audio1'
+      const imageParam = audioFileName && audioFileName.trim() !== '' ? audioFileName : 'audio1';
+      
+      const response = await apiClient.get(`/overview/interview-log/audio-data?server_id=${serverId}&image=${imageParam}`);
+      console.log('📊 Audio Data API Response:', response);
+      
+      if (response.data.success && response.data.data) {
+        const audioData = response.data.data;
+        const processedAudioData = {
+          ...audioData,
+          audio: audioData.audio1 && audioData.audio1.trim() !== '' 
+            ? `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=${audioData.audio1}`
+            : `https://convergentview.co.in/image/showimage?formid=49&instanceid=${audioData.server_id}&image=audio1`
+        };
+        
+        setCurrentAudio(processedAudioData);
+        setShowAudioModal(true);
+      } else {
+        setAudioError('Failed to load audio data');
+      }
+    } catch (err: any) {
+      console.error('❌ Error fetching audio data:', err);
+      setAudioError(`Failed to load audio data: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setAudioLoading(false);
+    }
+  };
+
   const handlePlayAudio = (serverId: string, audioFile: string) => {
     setSelectedServerId(serverId);
     setSelectedAudioFile(audioFile);
     setAudioModalOpen(true);
+    setAudioError(null);
+    fetchAudioData(serverId, audioFile);
   };
 
   const handleCloseAudioModal = () => {
     setAudioModalOpen(false);
     setSelectedServerId('');
     setSelectedAudioFile('');
+    setAudioError(null);
+  };
+
+  const handleCloseModal = () => {
+    setShowAudioModal(false);
+    setCurrentAudio(null);
+    setAudioError(null);
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      // Use applied filters for download parameters
+      if (!appliedFilters) {
+        console.error('No filters applied');
+        return;
+      }
+
+      const downloadParams: any = {
+        report_days: appliedFilters.reportDays,
+        report_level: appliedFilters.reportLevel,
+        interviewer_id: appliedFilters.interviewerId,
+        enumerator_id: appliedFilters.enumeratorId,
+        district_code: appliedFilters.districtCode,
+        pc_code: appliedFilters.pcCode,
+        supervisor_id: appliedFilters.supervisorId,
+        server_id: appliedFilters.serverId,
+        mobile_no: appliedFilters.mobileNo,
+        fail_reason: appliedFilters.failReason,
+        qualityreportstatus: appliedFilters.qualityreportstatus,
+        audio_fail_reason: appliedFilters.audioFailReason
+      };
+
+      // Add custom date parameters if applicable
+      if (appliedFilters.reportDays === 'custom') {
+        if (appliedFilters.customDate && appliedFilters.customDate.trim() !== '') {
+          downloadParams.custom_date = appliedFilters.customDate;
+        }
+        if (appliedFilters.customDateEnd && appliedFilters.customDateEnd.trim() !== '') {
+          downloadParams.custom_date_end = appliedFilters.customDateEnd;
+        }
+      }
+
+      // Add AC code if applicable
+      if (appliedFilters.acCode && appliedFilters.acCode.trim() !== '') {
+        downloadParams.ac_code = appliedFilters.acCode;
+      }
+
+      // Call the download API
+      const blob = await apiService.downloadRejectionReport(downloadParams);
+      
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `rejection-report-${new Date().toISOString().split('T')[0]}.csv`;
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error downloading rejection report:', error);
+      // You could add a toast notification here
+    }
   };
 
   const getFailReasonBadge = (reason: string) => {
@@ -382,254 +513,86 @@ export default function RejectionReportPage() {
       return row.audioFailReason?.toString() || '-';
     }
 
-    const cacheKey = `${row.serverId}_${row.audioFailReason}`;
-    const cachedDetails = qcDetailsCache[cacheKey];
-    
-    if (cachedDetails) {
-      // Extract the selected option from the cached details
-      const lines = cachedDetails.split('\n');
-      const selectedOptionLine = lines.find(line => line.startsWith('Selected Option: '));
-      if (selectedOptionLine) {
-        const selectedOption = selectedOptionLine.replace('Selected Option: ', '');
-        return selectedOption;
-      }
+    const audioQcRejectionLevel = parseInt(row.audioFailReason.toString());
+    const qcAudioStatus = row.qcData?.qc_audio_status;
+
+    // Handle specific mappings based on audio_qc_rejection_level and qc_audio_status
+    if (audioQcRejectionLevel === 2 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | Gender Rejection';
     }
     
-    // If no cached details, try to get the option text directly from QC data
-    const levelStr = row.audioFailReason?.toString() || '';
-    let qcQuestion;
-    let qcAnswer;
-    
-    console.log('Debug Audio Fail Reason:', {
-      levelStr,
-      qcData: row.qcData,
-      serverId: row.serverId
-    });
-    
-    if (levelStr === '1') {
-      qcQuestion = formConfig.find(q => q.tag === 'qc_audio_status');
-      qcAnswer = row.qcData?.qc_audio_status;
-    } else if (levelStr === '4') {
-      qcQuestion = formConfig.find(q => q.tag === 'qc_q4');
-      qcAnswer = row.qcData?.qc_q4;
-    } else {
-      qcQuestion = formConfig.find(q => q.key.toString() === levelStr);
-      qcAnswer = (row.qcData as any)?.[`qc_q${levelStr}`];
+    if (audioQcRejectionLevel === 3 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | Upcoming Election Rejection';
     }
     
-    console.log('Debug QC Question and Answer:', {
-      qcQuestion: qcQuestion ? { key: qcQuestion.key, tag: qcQuestion.tag, label: qcQuestion.label } : null,
-      qcAnswer,
-      hasOptions: qcQuestion?.options ? qcQuestion.options.length : 0
-    });
-    
-    if (qcQuestion && qcAnswer !== undefined && qcAnswer !== null) {
-      // Handle special case where qcAnswer is 0 (not answered)
-      if (qcAnswer === 0) {
-        console.log('Debug QC Answer is 0 - Not answered');
-        return 'Not Answered';
-      }
-      
-      const selectedOption = qcQuestion.options?.find((opt: any) => opt.value === qcAnswer.toString());
-      console.log('Debug Selected Option:', {
-        selectedOption,
-        qcAnswerString: qcAnswer.toString(),
-        allOptions: qcQuestion.options?.map(opt => ({ value: opt.value, label: opt.label }))
-      });
-      
-      if (selectedOption) {
-        const optionLabel = typeof selectedOption.label === 'string' ? selectedOption.label : selectedOption.label?.en || '';
-        console.log('Debug Final Label:', optionLabel);
-        return optionLabel;
-      }
+    if (audioQcRejectionLevel === 4 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | 2021 AE Rejection';
     }
     
-    // Fallback to raw value
-    console.log('Debug Fallback to raw value:', row.audioFailReason?.toString());
+    if (audioQcRejectionLevel === 5 && qcAudioStatus === 1) {
+      return 'Survey Conversation can be heard | 2024 Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 2) {
+      return 'No Conversation';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 3) {
+      return 'Irrelevant Conversation';
+    }
+    
+    if (audioQcRejectionLevel === 2 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | Gender Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 3 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | Upcoming Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 4 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | 2021 AE Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 5 && qcAudioStatus === 4) {
+      return 'Can hear the interviewer more than the respondent | 2024 Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 2 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Gender Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 3 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | Upcoming Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 4 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2021 AE Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 5 && qcAudioStatus === 7) {
+      return 'Cannot hear the response clearly | 2024 Election Rejection';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 8) {
+      return 'Duplicate Audio';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 9) {
+      return 'Interviewer acting as respondent';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 10) {
+      return 'Same respondent as before';
+    }
+    
+    if (audioQcRejectionLevel === 1 && qcAudioStatus === 7) {
+      return 'Survey Conversation can be heard | Cannot hear the response clearly (Previous)';
+    }
+
+    // Fallback to raw value if no mapping matches
     return row.audioFailReason?.toString() || '-';
   };
 
-  // Function to load QC details for display (without showing modal)
-  const loadQCDetailsForDisplay = async (serverId: string, audioQcRejectionLevel: string | number, qcData: any) => {
-    const cacheKey = `${serverId}_${audioQcRejectionLevel}`;
-    
-    // Check if already cached
-    if (qcDetailsCache[cacheKey]) {
-      setQcDetailsLoaded(prev => new Set(prev).add(cacheKey));
-      return;
-    }
-    
-    // Check if already loading
-    if (loadingQcDetails.has(cacheKey)) {
-      return;
-    }
-    
-    // Mark as loading
-    setLoadingQcDetails(prev => new Set(prev).add(cacheKey));
-    
-    try {
-      const details = await getDetailedQCInfo(serverId, audioQcRejectionLevel, qcData);
-      
-      // Cache the result
-      setQcDetailsCache(prev => ({
-        ...prev,
-        [cacheKey]: details
-      }));
-      
-      // Mark as loaded
-      setQcDetailsLoaded(prev => new Set(prev).add(cacheKey));
-    } catch (error) {
-      console.error('Error loading QC details:', error);
-    } finally {
-      // Remove from loading set
-      setLoadingQcDetails(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(cacheKey);
-        return newSet;
-      });
-    }
-  };
-
-  // Function to load QC details and show modal
-  const loadQCDetails = async (serverId: string, audioQcRejectionLevel: string | number, qcData: any) => {
-    const cacheKey = `${serverId}_${audioQcRejectionLevel}`;
-    
-    console.log('loadQCDetails called with:', { serverId, audioQcRejectionLevel, qcData, cacheKey });
-    console.log('Current cache:', qcDetailsCache);
-    
-    // Check if already cached
-    if (qcDetailsCache[cacheKey]) {
-      console.log('Using cached details for modal:', qcDetailsCache[cacheKey]);
-      setQcDetailsContent(qcDetailsCache[cacheKey]);
-      setQcDetailsModalOpen(true);
-      return;
-    }
-    
-    // Check if already loading
-    if (loadingQcDetails.has(cacheKey)) {
-      console.log('Already loading details for:', cacheKey);
-      return;
-    }
-    
-    // Mark as loading
-    setLoadingQcDetails(prev => new Set(prev).add(cacheKey));
-    
-    try {
-      console.log('Fetching new details for:', cacheKey);
-      const details = await getDetailedQCInfo(serverId, audioQcRejectionLevel, qcData);
-      console.log('Fetched details:', details);
-      
-      // Cache the result
-      setQcDetailsCache(prev => ({
-        ...prev,
-        [cacheKey]: details
-      }));
-      
-      // Show modal with details
-      setQcDetailsContent(details);
-      setQcDetailsModalOpen(true);
-    } catch (error) {
-      console.error('Error loading QC details:', error);
-      setQcDetailsContent('Error loading details');
-      setQcDetailsModalOpen(true);
-    } finally {
-      // Remove from loading set
-      setLoadingQcDetails(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(cacheKey);
-        return newSet;
-      });
-    }
-  };
-
-  // Function to get detailed QC information
-  const getDetailedQCInfo = async (serverId: string, audioQcRejectionLevel: string | number, qcData: any) => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return 'Authentication required';
-
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
-      // Fetch instance data
-      const response = await fetch(`${apiBaseUrl}/api/capi/instance/${serverId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success || !data.data) {
-        return 'Failed to load instance data';
-      }
-
-      const instanceData = data.data;
-      const levelStr = audioQcRejectionLevel?.toString() || '';
-
-      // Find the QC question based on rejection level
-      let qcQuestion;
-      let qcAnswer;
-      
-      if (levelStr === '1') {
-        // Level 1 corresponds to qc_audio_status
-        qcQuestion = formConfig.find(q => q.tag === 'qc_audio_status');
-        qcAnswer = qcData.qc_audio_status;
-      } else {
-        // Other levels correspond to qc_q{level}
-        qcQuestion = formConfig.find(q => q.key.toString() === levelStr);
-        qcAnswer = qcData[`qc_q${levelStr}`];
-      }
-      
-      if (!qcQuestion) {
-        return `Level ${levelStr}`;
-      }
-
-      if (qcAnswer === undefined || qcAnswer === null) {
-        return `Level ${levelStr}`;
-      }
-
-      // Handle special case where qcAnswer is 0 (not answered)
-      if (qcAnswer === 0) {
-        return `Level ${levelStr} - Not Answered`;
-      }
-
-      // Find the selected QC option
-      const selectedQCOption = qcQuestion.options?.find((opt: any) => opt.value === qcAnswer.toString());
-      if (!selectedQCOption) {
-        return `Level ${levelStr}`;
-      }
-
-      // Get survey answer
-      let surveyAnswer = '';
-      if (qcQuestion.survey_q_tag) {
-        if (typeof qcQuestion.survey_q_tag === 'string') {
-          // Simple string tag
-          surveyAnswer = instanceData[qcQuestion.survey_q_tag] || '';
-        } else if (typeof qcQuestion.survey_q_tag === 'object' && qcQuestion.survey_q_tag.tag && qcQuestion.survey_q_tag.options) {
-          // Object with tag and options
-          const surveyValue = instanceData[qcQuestion.survey_q_tag.tag];
-          const matchingOption = qcQuestion.survey_q_tag.options.find((opt: any) => opt.value == surveyValue);
-          if (matchingOption && matchingOption.lable) {
-            surveyAnswer = matchingOption.lable.en || '';
-          } else {
-            surveyAnswer = surveyValue || '';
-          }
-        }
-      }
-
-      // Format the result
-      const questionLabel = typeof qcQuestion.label === 'string' ? qcQuestion.label : qcQuestion.label.en || '';
-      const selectedOptionLabel = typeof selectedQCOption.label === 'string' ? selectedQCOption.label : selectedQCOption.label.en || '';
-
-      return `${questionLabel}\nRespondent: ${surveyAnswer}\nSelected Option: ${selectedOptionLabel}`;
-
-    } catch (error) {
-      console.error('Error fetching detailed QC info:', error);
-      return `Level ${audioQcRejectionLevel}`;
-    }
-  };
 
   // Extract data from API response
   const rejectionData = (data && typeof data === 'object' && 'interviews' in data && Array.isArray(data.interviews)) 
@@ -639,19 +602,6 @@ export default function RejectionReportPage() {
   const totalCount = (data && typeof data === 'object' && 'pagination' in data && data.pagination && typeof data.pagination === 'object' && 'total_count' in data.pagination) 
     ? (data.pagination as any).total_count || 0 : 0;
 
-  // Auto-load QC details when rejection data changes
-  useEffect(() => {
-    if (rejectionData && rejectionData.length > 0) {
-      rejectionData.forEach((row) => {
-        if (row.audioFailReason && row.qcData) {
-          const cacheKey = `${row.serverId}_${row.audioFailReason}`;
-          if (!qcDetailsLoaded.has(cacheKey) && !loadingQcDetails.has(cacheKey)) {
-            loadQCDetailsForDisplay(row.serverId, row.audioFailReason, row.qcData);
-          }
-        }
-      });
-    }
-  }, [rejectionData, qcDetailsLoaded, loadingQcDetails]);
 
   // Debug logging
   console.log('API Response:', { data, loading, error });
@@ -724,37 +674,25 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
-                value={filters.qualityreportstatus}
-                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
-                options={failReasonOptions}
-                disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Server ID</Text>
-              <Input
-                type="text"
-                placeholder="Search by Server ID"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div>
-
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
             {filters.reportLevel === 'interviewer' && (
               <div>
                 <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
@@ -772,22 +710,36 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -878,37 +830,25 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
-                value={filters.qualityreportstatus}
-                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
-                options={failReasonOptions}
-                disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Server ID</Text>
-              <Input
-                type="text"
-                placeholder="Search by Server ID"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div>
-
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
             {filters.reportLevel === 'interviewer' && (
               <div>
                 <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
@@ -926,22 +866,36 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -1050,37 +1004,25 @@ export default function RejectionReportPage() {
               />
             </div>
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
-              <SelectDropdown
-                value={filters.qualityreportstatus}
-                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
-                options={failReasonOptions}
-                disabled={filterOptionsLoading}
-                clearable={true}
-              />
-            </div>
+            {/* AC Code - Show immediately after Level when level is 'ac' or 'polingstation' */}
+            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
+              <div>
+                <Text className="block text-sm font-medium mb-2">AC Code</Text>
+                <SelectDropdown
+                  value={filters.acCode}
+                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
+                  options={[
+                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
+                    ...acDropdownOptions
+                  ]}
+                  disabled={acDropdownLoading || filterOptionsLoading}
+                  searchable={true}
+                  clearable={true}
+                />
+              </div>
+            )}
 
-            <div>
-              <Text className="block text-sm font-medium mb-2">Server ID</Text>
-              <Input
-                type="text"
-                placeholder="Search by Server ID"
-                value={filters.serverId}
-                onChange={(e) => handleFilterChange('serverId', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Text className="block text-sm font-medium mb-2">Respondent Mobile</Text>
-              <Input
-                type="text"
-                placeholder="Search by Mobile Number"
-                value={filters.mobileNo}
-                onChange={(e) => handleFilterChange('mobileNo', e.target.value)}
-              />
-            </div>
-
+            {/* Interviewer ID - Show immediately after Level when level is 'interviewer' */}
             {filters.reportLevel === 'interviewer' && (
               <div>
                 <Text className="block text-sm font-medium mb-2">Interviewer ID</Text>
@@ -1098,22 +1040,36 @@ export default function RejectionReportPage() {
               </div>
             )}
 
-            {(filters.reportLevel === 'ac' || filters.reportLevel === 'polingstation') && (
-              <div>
-                <Text className="block text-sm font-medium mb-2">AC Code</Text>
-                <SelectDropdown
-                  value={filters.acCode}
-                  onChange={(value) => handleFilterChange('acCode', Array.isArray(value) ? value[0] : value)}
-                  options={[
-                    { value: '', label: acDropdownLoading ? 'Loading AC List...' : 'Select All AC Code' },
-                    ...acDropdownOptions
-                  ]}
-                  disabled={acDropdownLoading || filterOptionsLoading}
-                  searchable={true}
-                  clearable={true}
-                />
-              </div>
-            )}
+            <div>
+              <Text className="block text-sm font-medium mb-2">Fail Reason</Text>
+              <SelectDropdown
+                value={filters.qualityreportstatus}
+                onChange={(value) => handleFilterChange('qualityreportstatus', Array.isArray(value) ? value[0] : value)}
+                options={failReasonOptions}
+                disabled={filterOptionsLoading}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Audio Fail Reason</Text>
+              <SelectDropdown
+                value={filters.audioFailReason}
+                onChange={(value) => handleFilterChange('audioFailReason', Array.isArray(value) ? value[0] : value)}
+                options={audioFailReasonOptions}
+                clearable={true}
+              />
+            </div>
+
+            <div>
+              <Text className="block text-sm font-medium mb-2">Server ID</Text>
+              <Input
+                type="text"
+                placeholder="Search by Server ID"
+                value={filters.serverId}
+                onChange={(e) => handleFilterChange('serverId', e.target.value)}
+              />
+            </div>
 
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} className="flex-1">
@@ -1135,13 +1091,30 @@ export default function RejectionReportPage() {
         {/* Rejection Report Table */}
         <Card className="">
           <div className="mb-6">
-            <div className="flex items-center mb-2">
-              <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
-              <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center">
+                <div className="w-1 h-6 bg-blue-500 mr-3"></div>  
+                <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">Rejection Report</Heading>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleDownloadReport}
+                className="flex items-center"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Download Report
+              </Button>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400 ml-4">
               Total <span className="font-bold text-black dark:text-white">{totalCount.toLocaleString()}</span> items
             </div>
+          </div>
+          
+          <div className="summary mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <b>{totalCount}</b> items.
+            </Text>
           </div>
           
 
@@ -1149,18 +1122,18 @@ export default function RejectionReportPage() {
             <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
               <thead className="table-light bg-gray-50">
                 <tr>
-                  <th className="text-center">Sr. No</th>
+                  <th className="text-center">S.No</th>
                   <th className="text-center">Server ID</th>
-                  <th className="text-left">AC Name</th>
+                  <th className="text-center">AC Name</th>
                   <th className="text-center">PS Code</th>
                   <th className="text-center">Interview Date</th>
                   <th className="text-center">Interviewer ID</th>
                   <th className="text-center">Interview Duration</th>
-                  <th className="text-left">Respondent Name</th>
-                  <th className="text-center">Respondent Mobile</th>
-                  <th className="text-left">Fail Reason</th>
+                  <th className="text-center">Respondent Name</th>
+                  <th className="text-center">Fail Reason</th>
                   <th className="text-center">Audio QC ID</th>
-                  <th className="text-left">Audio Fail Reason</th>
+                  <th className="text-center">Audio Fail Reason</th>
+                  <th className="text-left">QC Remark</th>
                   <th className="text-center">Audio</th>
                   <th className="text-center">GPS</th>
                 </tr>
@@ -1170,13 +1143,9 @@ export default function RejectionReportPage() {
                   <tr key={row.srNo}>
                     <td className="text-center">{row.srNo}</td>
                     <td className="text-center">
-                      <a 
-                        href={`/interview-detail?server_id=${row.serverId}`}
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-800 font-mono"
-                      >
+                      <span className="font-mono text-sm font-medium text-gray-900">
                         {row.serverId}
-                      </a>
+                      </span>
                     </td>
                     <td>{row.acName}</td>
                     <td className="font-mono">{row.psCode}</td>
@@ -1184,24 +1153,21 @@ export default function RejectionReportPage() {
                     <td>{row.interviewerId}</td>
                     <td className="font-mono">{row.interviewDuration}</td>
                     <td>{row.respondentName}</td>
-                    <td>{row.respondentMobile || '-'}</td>
+                    {/* <td>{row.respondentMobile || '-'}</td> */}
                     <td>{row.failReason}</td>
                     <td>{row.audioQcId || '-'}</td>
                     <td>
                       <div className="max-w-xs">
-                        {row.audioFailReason && row.qcData ? (
-                          <button
-                            onClick={() => loadQCDetails(row.serverId, row.audioFailReason, row.qcData)}
-                            className="text-left text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 underline cursor-pointer px-2 py-1 rounded transition-colors duration-200"
-                            title="Click to view detailed QC information"
-                          >
-                            {getAudioFailReasonDisplayText(row)}
-                          </button>
-                        ) : (
-                          <span className="text-gray-600 dark:text-gray-400">
-                            {row.audioFailReason?.toString() || '-'}
-                          </span>
-                        )}
+                        <span className="text-gray-900 dark:text-gray-100 text-sm">
+                          {getAudioFailReasonDisplayText(row)}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="max-w-xs">
+                        <span className="text-gray-900 dark:text-gray-100 text-sm">
+                          {row.qcData?.qc_q9 || '-'}
+                        </span>
                       </div>
                     </td>
                     <td>
@@ -1249,36 +1215,6 @@ export default function RejectionReportPage() {
           audioFileName={selectedAudioFile}
         />
 
-        {/* QC Details Modal */}
-        {qcDetailsModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white">
-                  QC Details
-                </Heading>
-                <button
-                  onClick={() => setQcDetailsModalOpen(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-              <div className="whitespace-pre-line text-sm text-gray-700 dark:text-gray-300">
-                {qcDetailsContent}
-              </div>
-              <div className="mt-6 flex justify-end">
-                <Button
-                  onClick={() => setQcDetailsModalOpen(false)}
-                  variant="outline"
-                  className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </Container>
   );
 }

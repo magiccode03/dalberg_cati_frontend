@@ -231,3 +231,13 @@ body {
 body.hide-horizontal-nav nav {
   display: none !important;
 }
+
+/* Scrollbar hide utility for mobile-friendly tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

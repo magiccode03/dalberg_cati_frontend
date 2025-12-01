@@ -56,7 +56,7 @@ interface APIResponse {
 
 export default function ACWiseReportPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(25);
   const [acWiseReportData, setAcWiseReportData] = useState<ACWiseReportData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -284,150 +284,134 @@ export default function ACWiseReportPage() {
   const currentData = acWiseReportData;
 
   return (
-    <div className="main-content horizontal-content">
-      <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
-        {/* Breadcrumb Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex-1">
-            <Heading level={1} className="text-2xl font-semibold text-gray-900">
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center">
+          <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+          <Heading level={2} className="text-lg font-semibold text-gray-900 dark:text-white">
+            AC Wise Report
+          </Heading>
+        </div>
+        <div className="flex items-center">
+          <Button
+            variant="primary"
+            onClick={downloadAllData}
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={loading}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download
+          </Button>
+        </div>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <Text className="text-gray-600">Loading AC wise report...</Text>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Card className="mb-6">
+          <div className="text-center py-8">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <Heading level={3} className="text-red-600 mb-2">Error Loading Data</Heading>
+            <Text className="text-gray-600 mb-4">{error}</Text>
+            <Button 
+              onClick={fetchACWiseReportData} 
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              Retry
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* AC Wise Report Table */}
+      <Card className="">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
               AC Wise Report
             </Heading>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1">
-            <span></span>
-          </div>
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center items-center py-8">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-            <Text className="ml-2 text-gray-600">Loading AC wise report...</Text>
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalCount.toLocaleString()}</strong> ACs.
+            </Text>
           </div>
-        )}
+          
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">AC Code</th>
+                  <th className="text-center">Name</th>
+                  <th className="text-center">Agency Name</th>
+                  <th className="text-center">Alloted</th>
+                  <th className="text-center">Completed</th>
+                  <th className="text-center">Valid</th>
+                  <th className="text-center">Rejected</th>
+                  <th className="text-center">Under QC</th>
+                  <th className="text-center">Checker</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((data, index) => (
+                  <tr key={data.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{data.acCode}</td>
+                    <td className="text-left">{data.name}</td>
+                    <td className="text-left">
+                      {getAgencyBadge(data.agencyName)}
+                    </td>
+                    <td className="text-center">
+                      <FormattedNumber value={data.alloted} locale="en-IN" />
+                    </td>
+                    <td className="text-center">
+                      <FormattedNumber value={data.completed} locale="en-IN" />
+                    </td>
+                    <td className="text-center text-green-600 font-medium">
+                      <FormattedNumber value={data.accepted} locale="en-IN" />
+                    </td>
+                    <td className="text-center text-red-600 font-medium">
+                      <FormattedNumber value={data.rejected} locale="en-IN" />
+                    </td>
+                    <td className="text-center text-blue-600 font-medium">
+                      <FormattedNumber value={data.underQc} locale="en-IN" />
+                    </td>
+                    <td className="text-left">{data.checker || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
 
-        {/* Error State */}
-        {error && (
-          <Card className="mb-6">
-            <div className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Heading level={4} className="text-lg font-semibold text-red-600 mb-2">
-                    Error Loading Data
-                  </Heading>
-                  <Text className="text-gray-600">{error}</Text>
-                </div>
-                <Button
-                  onClick={fetchACWiseReportData}
-                  variant="outline"
-                  size="sm"
-                >
-                  Retry
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* AC Wise Report Table */}
-        <div className="w-full">
-          <Card>
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="w-1 h-6 bg-blue-500 mr-3"></div> 
-                  <Heading level={4} className="text-lg font-semibold text-gray-900">
-                    AC Wise Report
-                  </Heading>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={downloadAllData}
-                    size="sm"
-                    className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white border-0"
-                    disabled={loading}
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Download</span>
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="p-6">
-              <div className="overflow-x-auto">
-                <Table
-                  striped
-                  bordered
-                  hover
-                  className="w-full border-collapse"
-                >
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">S.No</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">AC Code</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Agency Name</th>
-                      {/* <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Sample</th> */}
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Checker</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Alloted</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Completed</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Accepted</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Rejected</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-800 uppercase tracking-wider">Under QC</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {currentData.map((data) => (
-                      <tr key={data.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.sNo}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.acCode}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{data.name}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getAgencyBadge(data.agencyName)}
-                        </td>
-                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{data.sample.toLocaleString()}</td> */}
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{data.checker || '-'}</td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                          <FormattedNumber value={data.alloted} locale="en-IN" />
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                          <FormattedNumber value={data.completed} locale="en-IN" />
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-green-600 font-medium">
-                          <FormattedNumber value={data.accepted} locale="en-IN" />
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-red-600 font-medium">
-                          <FormattedNumber value={data.rejected} locale="en-IN" />
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-blue-600 font-medium">
-                          <FormattedNumber value={data.underQc} locale="en-IN" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-
-              {/* Table Footer */}
-              <div className="flex justify-between items-center mt-4 px-6 py-4 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-semibold">{startIndex + 1}</span> - <span className="font-semibold">{Math.min(endIndex, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> items
-                </div>
-                <div>
-                  <PaginationStandard
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalItems={totalCount}
-                    itemsPerPage={pageSize}
-                    onPageChange={setCurrentPage}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
-      </Container>
-    </div>
+      </Card>
+    </Container>
   );
 }

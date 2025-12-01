@@ -12,7 +12,7 @@ const API_VERSION = '/api';
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: `${API_BASE_URL}${API_VERSION}`,
-  timeout: 10000, // Reduced from 30000 to 10000ms (10 seconds)
+  timeout: 30000, // 30 seconds timeout for large data requests
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
-    // Handle 401 errors (token expired)
+    // Handle 401 errors (token expired or invalid)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -68,13 +68,37 @@ apiClient.interceptors.response.use(
           }
         }
       } catch (refreshError) {
-        // Refresh failed, redirect to login
+        // Refresh failed or no refresh token - clear auth and redirect to login
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('user');
+        localStorage.removeItem('rememberMe');
+        
+        // Dispatch logout event for AuthContext
+        window.dispatchEvent(new Event('auth:logout'));
+        
+        // Redirect to login (use window.location.href for full page reload to ensure clean state)
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/login') {
         window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
+      }
+      
+      // No refresh token available - clear auth and redirect
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
+      
+      // Dispatch logout event for AuthContext
+      window.dispatchEvent(new Event('auth:logout'));
+      
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/login') {
+        window.location.href = '/login';
       }
     }
 
