@@ -824,6 +824,14 @@ export const menuData: MenuItem[] = [
     ],
   },
   {
+    id: 'ccati/dqm/ac-progress/ac-progress-dqm',
+    label: 'Ac Progress',
+    href: '/cati/dqm/ac-progress/ac-progress-dqm',
+    icon: 'BarChart3',
+    roles: ['dqm'],
+    system: 'cati',
+  },
+  {
     id: 'cati-ppm-qc-data-entry-progress',
     label: 'Data Entry Progress',
     href: '/cati/dqm/data-entry-progress',
@@ -919,14 +927,14 @@ export const menuData: MenuItem[] = [
         roles: ['fd'],
         system: 'capi',
       },
-      {
-        id: 'capi-fd-demographics-caste',
-        label: 'Caste',
-        href: '/capi/fd/demographics/caste',
-        icon: 'Database',
-        roles: ['fd'],
-        system: 'capi',
-      },
+      // {
+      //   id: 'capi-fd-demographics-caste',
+      //   label: 'Caste',
+      //   href: '/capi/fd/demographics/caste',
+      //   icon: 'Database',
+      //   roles: ['fd'],
+      //   system: 'capi',
+      // },
     ],
   },
   // {
@@ -1445,6 +1453,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
+     
       // {
       //   id: 'cati-ppm-active-ac-progress',
       //   label: 'Active AC Progress',

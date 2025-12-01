@@ -22,7 +22,7 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth/register', // Added register endpoint
     CHANGE_PASSWORD: '/auth/change-password',
   },
-  
+
   // User Management (SUPER ADMIN only)
   USERS: {
     LIST: '/users',
@@ -76,7 +76,7 @@ export const API_ENDPOINTS = {
     HEALTH: '/health',
     INFO: '/system/info',
   },
-  
+
   // Dropdown APIs
   DROPDOWN: {
     AGENCIES: '/dropdown/agencies',
@@ -147,14 +147,14 @@ export const API_ENDPOINTS = {
     PROGRESS: '/analysis/progress',
     TRENDS: '/analysis/trends',
   },
-  
+
   // PMT System
   PMT: {
     AGENCIES: '/pmt/agencies',
     AGENCY: (id: string) => `/pmt/agencies/${id}`,
     AUDIT_LOGS: '/pmt/audit-logs',
   },
-  
+
   // QC Management
   QC: {
     TASKS: '/qc/tasks',
@@ -165,14 +165,14 @@ export const API_ENDPOINTS = {
     TEAM_REGISTRATIONS: '/qc-team-registration',
     TEAM_REGISTRATION_UPDATE: (id: string) => `/qc-team-registration/update/${id}`,
   },
-  
+
   // Data Quality
   DATA_QUALITY: {
     VALIDATION: '/data-quality/validation',
     METRICS: '/data-quality/metrics',
     ISSUES: '/data-quality/issues',
   },
-  
+
   // Demographic Data
   DEMOGRAPHIC: {
     GENDER_WISE: '/demographic/genderwise',
@@ -183,7 +183,7 @@ export const API_ENDPOINTS = {
     CASTE_WISE: '/demographic/castewise',
     CASTE_DETAILS: '/demographics/caste',
   },
-  
+
   // Field Data (FD)
   FD: {
     INTERNAL_DASHBOARD: '/fd/internal-dashboard',
@@ -191,7 +191,7 @@ export const API_ENDPOINTS = {
     INTERVIEW_AUDIO_SEARCH_CAPI: '/fd/interviewaudio/search',
     AC_WISE_DATA: '/cati/ac-progress-report',
   },
-  
+
   // Interview Masters
   INTERVIEW_MASTERS: '/interview-masters',
 
@@ -552,6 +552,28 @@ export interface CATIACData {
   call_connected: number;
   success: number;
   total_records: number;
+  pass: number;
+  under_qc: number;
+  qc_rejected: number;
+  short_interview: number;
+  total_caller_data: number;
+  total_caller_available: number;
+}
+
+export interface CATIACDQMData {
+  ac_code: number;
+  ac_name: string;
+  district_name: string;
+  call_attempt: number;
+  call_connected: number;
+  success: number;
+  total_records: number;
+  pass: number;
+  under_qc: number;
+  qc_rejected: number;
+  short_interview: number;
+  assigned_to_qc_user?: number;
+  pending_for_assignment?: number;
 }
 
 export interface CATIACResponse {
@@ -679,31 +701,31 @@ export interface PerformanceReportData {
   target_sample: number;
   interviewer: number;
   pscovered: number;
-  
+
   // Interview Counts
   total_interview: number;
   invalid: number;
   reject_auto: number;
   count_after_termination_and_rejection: number;
-  
+
   // GPS Status
   interview_gps_pending: number;
   interview_gps_reject: number;
-  
+
   // QC Status
   interview_in_qc: number;
   interview_in_qc_complete: number;
   interview_in_reqc: number;
   interview_in_reqc_complete: number;
-  
+
   // Final Results
   valid: number;
   reject: number;
-  
+
   // Demographics - Actual Percentages
   sc: string;
   muslim: string;
-  
+
   // Demographics - Interview Percentages
   female_per: number;
   without_phone_per: number;
@@ -778,7 +800,7 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const defaultHeaders: HeadersInit = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -811,32 +833,32 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      
-    // Debug response for PUT requests
-    if (config.method === 'PUT') {
-      console.log(`PUT response status:`, response.status);
-      console.log(`PUT response headers:`, Object.fromEntries(response.headers.entries()));
-      
-      // Clone response to read body without consuming it
-      const responseClone = response.clone();
-      try {
-        const responseText = await responseClone.text();
-        console.log(`PUT response body:`, responseText);
-        
-        // Try to parse as JSON if it looks like JSON
-        if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
-          try {
-            const jsonData = JSON.parse(responseText);
-            console.log(`PUT response JSON:`, jsonData);
-          } catch (e) {
-            console.log(`PUT response is not valid JSON:`, e);
+
+      // Debug response for PUT requests
+      if (config.method === 'PUT') {
+        console.log(`PUT response status:`, response.status);
+        console.log(`PUT response headers:`, Object.fromEntries(response.headers.entries()));
+
+        // Clone response to read body without consuming it
+        const responseClone = response.clone();
+        try {
+          const responseText = await responseClone.text();
+          console.log(`PUT response body:`, responseText);
+
+          // Try to parse as JSON if it looks like JSON
+          if (responseText.trim().startsWith('{') || responseText.trim().startsWith('[')) {
+            try {
+              const jsonData = JSON.parse(responseText);
+              console.log(`PUT response JSON:`, jsonData);
+            } catch (e) {
+              console.log(`PUT response is not valid JSON:`, e);
+            }
           }
+        } catch (e) {
+          console.log(`Could not read PUT response body:`, e);
         }
-      } catch (e) {
-        console.log(`Could not read PUT response body:`, e);
       }
-    }
-      
+
       // Handle token refresh if 401
       if (response.status === 401 && this.refreshToken) {
         const newToken = await tokenManager.refreshAccessToken();
@@ -888,10 +910,10 @@ class ApiService {
           console.error('Error response data:', data);
           console.error('Error response data type:', typeof data);
           console.error('Error response data keys:', Object.keys(data || {}));
-          
+
           // Handle different error response formats
           let errorMessage = `HTTP error! status: ${response.status}`;
-          
+
           if (data && typeof data === 'object') {
             if (data.message) {
               errorMessage = data.message;
@@ -903,7 +925,7 @@ class ApiService {
               errorMessage = `Server error: ${JSON.stringify(data)}`;
             }
           }
-          
+
           throw new Error(errorMessage);
         } catch (parseError) {
           console.error('Failed to parse error response as JSON:', parseError);
@@ -924,7 +946,7 @@ class ApiService {
     if (isJson) {
       try {
         const data = await response.json();
-        
+
         // Normalize API response format
         // Some APIs return 'status: "success"' instead of 'success: true'
         if (data.status === 'success' && !data.hasOwnProperty('success')) {
@@ -935,7 +957,7 @@ class ApiService {
             timestamp: data.timestamp || new Date().toISOString()
           };
         }
-        
+
         return data;
       } catch (parseError) {
         throw new Error('Invalid JSON response from server');
@@ -1167,31 +1189,31 @@ class ApiService {
       let page = 1;
       const limit = 100;
       let foundAgency = null;
-      
+
       // Search through multiple pages if needed (max 10 pages to avoid infinite loop)
       while (page <= 10 && !foundAgency) {
         const response = await this.getTeamRegistration(page, limit);
-        
+
         if (response.success && response.data?.team_registrations) {
           foundAgency = response.data.team_registrations.find(
             (item: any) => item.agency_id === agencyId
           );
-          
+
           if (foundAgency) {
             break;
           }
-          
+
           // If this is the last page, stop searching
           if (!response.data.has_next) {
             break;
           }
-          
+
           page++;
         } else {
           break;
         }
       }
-      
+
       if (foundAgency) {
         // Map the list data to the expected single agency format
         return {
@@ -1374,7 +1396,7 @@ class ApiService {
         .filter(([_, value]) => value !== undefined && value !== null && value !== '')
         .map(([key, value]) => [key, String(value)])
     ).toString()}` : '';
-    
+
     const response = await fetch(`${this.baseURL}${API_ENDPOINTS.DOWNLOAD.REJECTION_REPORT}${queryString}`, {
       method: 'GET',
       headers: {
@@ -1498,33 +1520,33 @@ class ApiService {
     return this.request(API_ENDPOINTS.DASHBOARD.SAMPLE_STATISTICS);
   }
 
-  async getMasterACList(params?: { 
-    page?: number; 
-    limit?: number; 
-    ac_name?: string; 
-    ac_code?: string; 
+  async getMasterACList(params?: {
+    page?: number;
+    limit?: number;
+    ac_name?: string;
+    ac_code?: string;
   }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_LIST}${queryString}`);
   }
 
-  async getMasterACCasteList(params?: { 
-    page?: number; 
-    limit?: number; 
-    caste_name?: string; 
-    ac_code?: string; 
-    caste_code?: string; 
+  async getMasterACCasteList(params?: {
+    page?: number;
+    limit?: number;
+    caste_name?: string;
+    ac_code?: string;
+    caste_code?: string;
   }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_AC_CASTE_LIST}${queryString}`);
   }
 
-  async getMasterPollingStationList(params?: { 
-    page?: number; 
-    limit?: number; 
-    polling_station_name?: string; 
-    ac_code?: string; 
-    polling_station_no?: string; 
+  async getMasterPollingStationList(params?: {
+    page?: number;
+    limit?: number;
+    polling_station_name?: string;
+    ac_code?: string;
+    polling_station_no?: string;
   }): Promise<ApiResponse<any>> {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
     return this.request(`${API_ENDPOINTS.DASHBOARD.MASTER_POLLING_STATION_LIST}${queryString}`);
@@ -1572,7 +1594,7 @@ class ApiService {
 
     return response.blob();
   }
-  
+
   // Calculate valid interview for master polling stations
   async calculateValidInterview(): Promise<ApiResponse<any>> {
     try {
@@ -1734,12 +1756,12 @@ class ApiService {
       'Accept': 'application/json',
       'Authorization': 'Bearer [token]'
     });
-    
+
     // Use the QC endpoint for QC team registration updates
     const qcEndpoint = API_ENDPOINTS.QC.TEAM_REGISTRATION_UPDATE(id);
     console.log('🔄 API Service: Using QC endpoint:', qcEndpoint);
     console.log('🔄 API Service: QC URL:', `${this.baseURL}${qcEndpoint}`);
-    
+
     try {
       const response = await this.request<{
         agency_id: number;
@@ -2015,12 +2037,12 @@ class ApiService {
     message: string;
   }>> {
     console.log('Attempting toggle Re-QC with:', { agencyId, dataSendForReqc });
-    
+
     // Try the original endpoint first
     try {
       const primaryEndpoint = '/dashboard/team-registration/newregistration/toggle-reqc';
       console.log('Trying primary endpoint:', primaryEndpoint);
-      
+
       return await this.request(primaryEndpoint, {
         method: 'POST',
         body: JSON.stringify({
@@ -2030,12 +2052,12 @@ class ApiService {
       });
     } catch (error) {
       console.error('Primary endpoint failed:', error);
-      
+
       // Try alternative endpoint format
       try {
         const secondaryEndpoint = '/dashboard/team-registration/toggle-reqc';
         console.log('Trying alternative endpoint:', secondaryEndpoint);
-        
+
         return await this.request(secondaryEndpoint, {
           method: 'POST',
           body: JSON.stringify({
@@ -2044,8 +2066,8 @@ class ApiService {
           })
         });
       } catch (secondError) {
-        console.error('Both endpoints failed:', { 
-          primary: error, 
+        console.error('Both endpoints failed:', {
+          primary: error,
           secondary: secondError,
           agencyId,
           dataSendForReqc
@@ -2060,11 +2082,11 @@ class ApiService {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
-    
-    const url = queryParams.toString() 
+
+    const url = queryParams.toString()
       ? `${API_ENDPOINTS.INTERVIEW_MASTERS}?${queryParams.toString()}`
       : `${API_ENDPOINTS.INTERVIEW_MASTERS}`;
-    
+
     return this.request(url);
   }
 
@@ -2077,7 +2099,7 @@ class ApiService {
     const body = JSON.stringify({
       assigned_ac: assignedACs
     });
-    
+
     console.log('API Request:', {
       url,
       method: 'PUT',
@@ -2085,7 +2107,7 @@ class ApiService {
       userId,
       assignedACs
     });
-    
+
     return this.request(url, {
       method: 'PUT',
       body
@@ -2097,11 +2119,11 @@ class ApiService {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
-    
-    const url = queryParams.toString() 
+
+    const url = queryParams.toString()
       ? `${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list?${queryParams.toString()}`
       : `${API_ENDPOINTS.INTERVIEW_ASSIGNED}/list`;
-    
+
     return this.request(url);
   }
 
@@ -2251,11 +2273,11 @@ class ApiService {
         }
       });
     }
-    
-    const url = queryParams.toString() 
+
+    const url = queryParams.toString()
       ? `${API_ENDPOINTS.QC_USER_PROGRESS}?${queryParams.toString()}`
       : API_ENDPOINTS.QC_USER_PROGRESS;
-    
+
     return this.request(url);
   }
 
@@ -2473,7 +2495,7 @@ class ApiService {
   // Performance Report Methods
   async getPerformanceReport(params?: PerformanceReportParams): Promise<ApiResponse<PerformanceReportResponse>> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.report_days) {
       queryParams.append('report_days', params.report_days);
     }
@@ -2492,10 +2514,10 @@ class ApiService {
     if (params?.custom_date_end) {
       queryParams.append('custom_date_end', params.custom_date_end);
     }
-    
+
     const queryString = queryParams.toString();
     const endpoint = queryString ? `${API_ENDPOINTS.PERFORMANCE_REPORT}?${queryString}` : API_ENDPOINTS.PERFORMANCE_REPORT;
-    
+
     return this.request<PerformanceReportResponse>(endpoint);
   }
 
@@ -2537,16 +2559,16 @@ class ApiService {
     };
   }>> {
     const queryParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         queryParams.append(key, value.toString());
       }
     });
-    
+
     const queryString = queryParams.toString();
     const endpoint = `/ps-covered?${queryString}`;
-    
+
     return this.request<{
       title: string;
       ps_covered_type: string;
@@ -2629,7 +2651,7 @@ class ApiService {
         }
       });
     }
-    
+
     const queryString = queryParams.toString();
     return this.request(`${REPORT_ENDPOINTS.ENUMERATOR_WISE}${queryString ? `?${queryString}` : ''}`);
   }
