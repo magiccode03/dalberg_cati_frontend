@@ -164,11 +164,11 @@ export const menuData: MenuItem[] = [
       },
     ],
   },
-  
+
   // ============================================
   // CAPI SYSTEM MENUS
   // ============================================
-  
+
   // CAPI Project Progress Monitoring (PPM) Menu
   {
     id: 'capi-ppm-overview',
@@ -378,7 +378,7 @@ export const menuData: MenuItem[] = [
       //   roles: ['ppm'],
       //   system: 'capi',
       // },
-      
+
     ],
   },
   {
@@ -777,7 +777,7 @@ export const menuData: MenuItem[] = [
       {
         id: 'cati-ppm-qc-user-progress',
         label: 'QC User Progress',
-        href: '/cati/dqm/qc-progress/qc-user-progress', 
+        href: '/cati/dqm/qc-progress/qc-user-progress',
         icon: 'Users',
         roles: ['dqm'],
         system: 'cati',
@@ -787,7 +787,7 @@ export const menuData: MenuItem[] = [
         label: 'QC User Daily Progress',
         href: '/cati/dqm/qc-progress/qc-user-progress-daily',
         icon: 'Users',
-        roles: ['dqm'], 
+        roles: ['dqm'],
         system: 'cati',
       },
       {
@@ -980,7 +980,7 @@ export const menuData: MenuItem[] = [
   //     },
   //   ],
   // },
- 
+
   // {
   //   id: 'capi-fd-client-comparison',
   //   label: 'Client Comparison',
@@ -1337,7 +1337,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
-      
+
       // {
       //   id: 'cati-ppm-monthly-report',
       //   label: 'Monthly Report',
@@ -1511,112 +1511,6 @@ export const menuData: MenuItem[] = [
       //   system: 'cati',
       // },
     ],
-  },
-  {
-    id: 'cati-ppm-qc-progress',
-    label: 'QC Progress',
-    href: '/cati/ppm/qc-progress/overall-qc-progress',
-    icon: 'Users',
-    roles: ['ppm'],
-    system: 'cati',
-    children: [
-      {
-        id: 'cati-ppm-qc-user-progress',
-        label: 'QC User Progress',
-        href: '/cati/ppm/qc-progress/qc-user-progress', 
-        icon: 'Users',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-qc-user-progress-daily',
-        label: 'QC User Daily Progress',
-        href: '/cati/ppm/qc-progress/qc-user-progress-daily',
-        icon: 'Users',
-        roles: ['ppm'], 
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-qc-ac-assigned',
-        label: 'Assigned AC - QC User',
-        href: '/cati/ppm/qc-progress/qc-ac-assigned',
-        icon: 'TrendingUp',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-qc-ac-wise-progress',
-        label: 'AC Wise Progress',
-        href: '/cati/ppm/qc-progress/acwisereport',
-        icon: 'BarChart3',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      {
-        id: 'cati-ppm-interview-list',
-        label: 'Interview List',
-        href: '/cati/ppm/qc-progress/interview-list',
-        icon: 'CheckCircle',
-        roles: ['ppm'],
-        system: 'cati',
-      },
-      // {
-      //   id: 'cati-ppm-monthly-nov-2023',
-      //   label: 'Monthly: Nov 2023',
-      //   href: '/cati/ppm/ac-progress/monthly-nov-2023',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-dec-2023',
-      //   label: 'Monthly: Dec 2023',
-      //   href: '/cati/ppm/ac-progress/monthly-dec-2023',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-jan-2024',
-      //   label: 'Monthly: Jan 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-jan-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-feb-2024',
-      //   label: 'Monthly: Feb 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-feb-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-mar-2024',
-      //   label: 'Monthly: Mar 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-mar-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-      // {
-      //   id: 'cati-ppm-monthly-apr-2024',
-      //   label: 'Monthly: Apr 2024',
-      //   href: '/cati/ppm/ac-progress/monthly-apr-2024',
-      //   icon: 'Calendar',
-      //   roles: ['ppm'],
-      //   system: 'cati',
-      // },
-    ],
-  },
-  {
-    id: 'cati-ppm-qc-data-entry-progress',
-    label: 'Data Entry Progress',
-    href: '/cati/ppm/data-entry-progress',
-    icon: 'BarChart3',
-    roles: ['ppm'],
-    system: 'cati',
   },
   // {
   //   id: 'cati-ppm-upload',
@@ -1809,7 +1703,7 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'cati',
   },
-  
+
   // {
   //   id: 'tracking-dashboard',
   //   label: 'Tracking Dashboard',
@@ -1861,7 +1755,7 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     dynamic: true, // This will be dynamically set based on teleform user data
   },
-  
+
   // Data Entry Role Menu (Simple like SS role)
   {
     id: 'cati-data-entry-auth',
@@ -1886,26 +1780,26 @@ export const menuData: MenuItem[] = [
 export const getMenuByRole = (role: string, userSystem?: 'capi' | 'cati'): MenuItem[] => {
   return menuData.filter(item => {
     const hasRole = item.roles.includes(role) || item.roles.includes('admin');
-    
+
     // If item has no system specified (common menus), show for all users
     if (!item.system) return hasRole;
-    
+
     // If user has no system (admin roles), show common menus only
     if (!userSystem) return hasRole && !item.system;
-    
+
     // Match both role and system
     return hasRole && item.system === userSystem;
   }).map(item => ({
     ...item,
     children: item.children ? item.children.filter(child => {
       const childHasRole = child.roles.includes(role) || child.roles.includes('admin');
-      
+
       // If child has no system specified, show for all users
       if (!child.system) return childHasRole;
-      
+
       // If user has no system, show common menus only
       if (!userSystem) return childHasRole && !child.system;
-      
+
       // Match both role and system
       return childHasRole && child.system === userSystem;
     }) : undefined,
