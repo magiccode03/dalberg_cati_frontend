@@ -334,7 +334,7 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* DQM Role - Show PPM-like (F2F / CATI / CAPI + CATI) large buttons */}
+        {/* DQM Role - Show DQM (F2F / CATI ) large buttons */}
         {isDQMRole && (
           <div className="mt-6">
             <div className="flex gap-4">
