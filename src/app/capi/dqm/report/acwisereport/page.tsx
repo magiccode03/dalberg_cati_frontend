@@ -202,7 +202,7 @@ export default function ACWiseReportPage() {
           'S.No',
           'AC Code', 
           'Name',
-          'Agency Name',
+          'Team',
           'Checker',
           'Alloted',
           'Completed',
@@ -360,7 +360,7 @@ export default function ACWiseReportPage() {
                   <th className="text-center">S.No</th>
                   <th className="text-center">AC Code</th>
                   <th className="text-center">Name</th>
-                  <th className="text-center">Agency Name</th>
+                  <th className="text-center">Team</th>
                   <th className="text-center">Alloted</th>
                   <th className="text-center">Completed</th>
                   <th className="text-center">Valid</th>
