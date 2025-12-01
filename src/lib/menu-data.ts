@@ -48,6 +48,13 @@ export const menuData: MenuItem[] = [
       },
     ],
   },
+  {
+    id: 'portal-admin-cron-jobs',
+    label: 'CRON Job Manager',
+    href: '/portal-admin/cron-jobs',
+    icon: 'Clock',
+    roles: ['portal_admin'],
+  },
 
   // Super Admin Menu
   {
