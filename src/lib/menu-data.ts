@@ -765,7 +765,7 @@ export const menuData: MenuItem[] = [
     system: 'capi',
   },
 
-  // DQM CATI Menu
+  // CATI Data Quality Management (DQM) Menu
   {
     id: 'cati-ppm-qc-progress',
     label: 'QC Progress',
