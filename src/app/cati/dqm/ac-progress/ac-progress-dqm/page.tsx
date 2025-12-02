@@ -11,6 +11,7 @@ import Card from '@/components/ui/Card';
 import { Download, Search, X } from 'lucide-react';
 import { apiService, CATIACDQMData } from '@/lib/api';
 import Input from '@/components/ui/Input';
+import { Loader2 } from 'lucide-react';
 
 
 export default function CATIACProgressDQMPage() {
@@ -200,15 +201,15 @@ export default function CATIACProgressDQMPage() {
 
         // Create CSV content
         const headers = ['AC Code', 'AC Name', 'Total Completed Data', 'Valid', 'QC Rejected', 'Short Interview Rejected', 'Total Under QC Data', 'Assigned to QC User', 'Pending For Assignment'];
-       
+
 
         const rows: string[] = [];
 
         // 👉 Add SUMMARY row first (if available)
         if (summary) {
             rows.push([
-                '-',                           
-                '"-"',                   
+                '-',
+                '"-"',
                 summary.total_success,
                 summary.total_pass,
                 summary.total_qc_rejected,
@@ -255,6 +256,19 @@ export default function CATIACProgressDQMPage() {
         link.click();
         document.body.removeChild(link);
     };
+
+    if (loading) {
+        return (
+            <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto">
+                <div className="flex items-center justify-center min-h-[400px]">
+                    <div className="flex items-center space-x-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                        <Text>Loading AC progress data...</Text>
+                    </div>
+                </div>
+            </Container>
+        );
+    }
 
     return (
         <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -412,13 +426,7 @@ export default function CATIACProgressDQMPage() {
                                 </tr>
                             )}
 
-                            {filteredData.length === 0 ? (
-                                <tr>
-                                    <td colSpan={11} className="text-center py-8 text-gray-500 border border-gray-300">
-                                        {selectedAcCode ? 'No AC data found matching your selection' : 'No CATI AC data found'}
-                                    </td>
-                                </tr>
-                            ) : (
+                            {(
                                 filteredData.map((item) => (
                                     <tr key={item.ac_code}>
                                         <td className="border border-gray-300 text-center">{item.ac_code}</td>
