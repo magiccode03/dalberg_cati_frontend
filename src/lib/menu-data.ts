@@ -910,14 +910,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-  {
-    id: 'capi-fd-fieldwork-progress-2',
-    label: 'Fieldwork Progress2',
-    href: '/capi/fd/fieldwork-progress2',
-    icon: 'TrendingUp',
-    roles: ['fd'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-fd-fieldwork-progress-2',
+  //   label: 'Fieldwork Progress2',
+  //   href: '/capi/fd/fieldwork-progress2',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'capi',
+  // },
   {
     id: 'demographics',
     label: 'Demographics',
