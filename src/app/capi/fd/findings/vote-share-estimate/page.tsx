@@ -124,20 +124,22 @@ export default function VoteShareEstimatePage() {
   // Transform API data for charts
   const getChartData = (chartData: any) => {
     if (!chartData) return null;
-    
+
     return {
-      categories: chartData.data.map((item: any) => item.name),
-      values: chartData.data.map((item: any) => item.y),
-      colors: chartData.colors,
+      categories: chartData.data.map((item: any) => item.name).reverse(),
+      values: chartData.data.map((item: any) => item.y).reverse(),
+      // colors: chartData.colors.reverse(),
+      colors: [...chartData.colors].reverse(),
       interviewsAchieved: chartData.total_sample
     };
+
   };
 
   const preference2025Data = voteShareData?.charts ? getChartData(voteShareData.charts['2025_preference']) : null;
   // Try both 2021_ae and 2020_ae for backward compatibility
-  const ae2021Data = voteShareData?.charts ? 
+  const ae2021Data = voteShareData?.charts ?
     (getChartData(voteShareData.charts['2021_ae']) || getChartData(voteShareData.charts['2020_ae'])) : null;
-  
+
 
 
   // Transform API demographic data to table format
@@ -167,7 +169,7 @@ export default function VoteShareEstimatePage() {
         ...mapPartyData(data)
       });
     });
-    
+
     // Locality
     Object.entries(breakdown.locality).forEach(([subcategory, data]) => {
       demographicData.push({
@@ -176,7 +178,7 @@ export default function VoteShareEstimatePage() {
         ...mapPartyData(data)
       });
     });
-    
+
     // Social Category
     Object.entries(breakdown.social_category).forEach(([subcategory, data]) => {
       demographicData.push({
@@ -194,7 +196,7 @@ export default function VoteShareEstimatePage() {
         ...mapPartyData(data)
       });
     });
-    
+
     // Religion
     Object.entries(breakdown.religion).forEach(([subcategory, data]) => {
       demographicData.push({
@@ -232,7 +234,7 @@ export default function VoteShareEstimatePage() {
                 <th colSpan={8} className="bg-tableheader text-center">Vote Share (%)</th>
               </tr>
               <tr>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
@@ -294,7 +296,7 @@ export default function VoteShareEstimatePage() {
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">PC Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">PC Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
@@ -339,7 +341,7 @@ export default function VoteShareEstimatePage() {
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">District Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">District Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
@@ -384,7 +386,7 @@ export default function VoteShareEstimatePage() {
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">Zone Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">Zone Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
@@ -419,9 +421,9 @@ export default function VoteShareEstimatePage() {
 
   const renderDemographicTable = () => {
     if (!demographicData.length) return null;
-    
+
     const categories = [...new Set(demographicData.map(item => item.category))];
-    
+
     return (
       <div className="card-border p-3">
         <h4 className="text-center mb-4">Vote Share Estimate - 2025 Preference Demographics (%)</h4>
@@ -435,7 +437,7 @@ export default function VoteShareEstimatePage() {
                     {/* Category Header */}
                     <tr>
                       <th style={{ width: '10%' }} className="bg-tableheader">{category}</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
@@ -444,7 +446,7 @@ export default function VoteShareEstimatePage() {
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
                     </tr>
-                    
+
                     {/* Category Data Rows */}
                     {categoryData.map((row, rowIndex) => (
                       <tr key={`${category}-${rowIndex}`}>
@@ -492,8 +494,8 @@ export default function VoteShareEstimatePage() {
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Data</h3>
             <p className="text-gray-600 mb-4">{error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
+            <Button
+              onClick={() => window.location.reload()}
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               Retry
@@ -522,9 +524,8 @@ export default function VoteShareEstimatePage() {
       {/* Progress Type Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div
-          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${
-            progressType === 'ac' ? 'opacity-100' : 'opacity-50'
-          }`}
+          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${progressType === 'ac' ? 'opacity-100' : 'opacity-50'
+            }`}
           onClick={() => handleCardClick('ac')}
           data-progress-type="ac"
         >
@@ -536,9 +537,8 @@ export default function VoteShareEstimatePage() {
         </div>
 
         <div
-          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${
-            progressType === 'pc' ? 'opacity-100' : 'opacity-50'
-          }`}
+          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${progressType === 'pc' ? 'opacity-100' : 'opacity-50'
+            }`}
           onClick={() => handleCardClick('pc')}
           data-progress-type="pc"
         >
@@ -550,9 +550,8 @@ export default function VoteShareEstimatePage() {
         </div>
 
         <div
-          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${
-            progressType === 'district' ? 'opacity-100' : 'opacity-50'
-          }`}
+          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${progressType === 'district' ? 'opacity-100' : 'opacity-50'
+            }`}
           onClick={() => handleCardClick('district')}
           data-progress-type="district"
         >
@@ -564,9 +563,8 @@ export default function VoteShareEstimatePage() {
         </div>
 
         <div
-          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${
-            progressType === 'zone' ? 'opacity-100' : 'opacity-50'
-          }`}
+          className={`bg-green-600 text-white cursor-pointer hover:opacity-90 transition-opacity rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 ${progressType === 'zone' ? 'opacity-100' : 'opacity-50'
+            }`}
           onClick={() => handleCardClick('zone')}
           data-progress-type="zone"
         >
@@ -634,14 +632,14 @@ export default function VoteShareEstimatePage() {
             </div>
           )}
 
-      {/* Demographic Table Section */}
-      <Card className="">
-        <div className="row">
-          <div className="col-md-12">
-            {renderDemographicTable()}
-          </div>
-        </div>
-      </Card>
+          {/* Demographic Table Section */}
+          <Card className="">
+            <div className="row">
+              <div className="col-md-12">
+                {renderDemographicTable()}
+              </div>
+            </div>
+          </Card>
         </>
       )}
 

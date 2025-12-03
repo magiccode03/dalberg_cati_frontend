@@ -952,7 +952,7 @@ export const menuData: MenuItem[] = [
   //   roles: ['fd'],
   //   system: 'capi',
   // },
-  /*{
+  {
     id: 'findings',
     label: 'Findings',
     href: '/capi/fd/findings',
@@ -1001,7 +1001,7 @@ export const menuData: MenuItem[] = [
         system: 'capi',
       },
     ],
-  },*/
+  },
 
   // {
   //   id: 'capi-fd-client-comparison',
