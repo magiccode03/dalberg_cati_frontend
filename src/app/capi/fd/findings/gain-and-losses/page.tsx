@@ -197,11 +197,11 @@ export default function GainAndLossesPage() {
       )}
 
       {/* Zone Tables */}
-      {/* {!loading && !error && zoneData.map((zone, index) => (
+      {!loading && !error && zoneData.map((zone, index) => (
         <div key={zone.zone_code || `zone-${index}`}>
           {renderTable(`Zone - ${zone.zone_code} ${zone.zone_name}`, zone.data)}
         </div>
-      ))} */}
+      ))}
 
       {/* Empty State */}
       {!loading && !error && stateLevelData.length === 0 && (
