@@ -256,10 +256,10 @@ export default function FieldworkProgress2Page() {
       }
     },
     grid: {
-      left: '10%',
-      right: '10%',
+      left: '0%',
+      right: '0%',
       bottom: '20%',
-      top: '15%',
+      top: '10%',
       containLabel: true
     },
     xAxis: {
@@ -352,8 +352,8 @@ export default function FieldworkProgress2Page() {
       }
     },
     grid: {
-      left: '10%',
-      right: '10%',
+      left: '0%',
+      right: '0%',
       bottom: '20%',
       top: '15%',
       containLabel: true
@@ -436,8 +436,8 @@ export default function FieldworkProgress2Page() {
       }
     },
     grid: {
-      left: '10%',
-      right: '10%',
+      left: '0%',
+      right: '0%',
       bottom: '20%',
       top: '15%',
       containLabel: true
@@ -520,8 +520,8 @@ export default function FieldworkProgress2Page() {
       }
     },
     grid: {
-      left: '10%',
-      right: '10%',
+      left: '0%',
+      right: '0%',
       bottom: '20%',
       top: '15%',
       containLabel: true
@@ -650,7 +650,7 @@ export default function FieldworkProgress2Page() {
 
       {/* Charts Section - Hide when in drill-down mode */}
       {!selectedProgressSubTypeCode && (
-        <div className={`grid gap-6 ${selectedProgressType && selectedProgressSubType ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
+        <div className={`grid gap-3 ${selectedProgressType && selectedProgressSubType ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'}`}>
         {/* Field Status - AC */}
         {(!selectedProgressType || selectedProgressType === 4) && (
           <Card className="p-0 border border-black">
