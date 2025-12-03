@@ -234,7 +234,7 @@ export default function VoteShareEstimatePage() {
                 <th colSpan={8} className="bg-tableheader text-center">Vote Share (%)</th>
               </tr>
               <tr>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
@@ -296,7 +296,7 @@ export default function VoteShareEstimatePage() {
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">PC Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">PC Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
@@ -341,7 +341,7 @@ export default function VoteShareEstimatePage() {
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">District Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">District Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
@@ -386,7 +386,7 @@ export default function VoteShareEstimatePage() {
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">Zone Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">Zone Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
@@ -437,7 +437,7 @@ export default function VoteShareEstimatePage() {
                     {/* Category Header */}
                     <tr>
                       <th style={{ width: '10%' }} className="bg-tableheader">{category}</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
