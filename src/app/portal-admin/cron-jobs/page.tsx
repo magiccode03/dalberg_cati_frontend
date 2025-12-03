@@ -7,15 +7,13 @@ import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Button from '@/components/ui/Button';
 import { Table } from '@/components/ui/Table';
-import { Plus, Play, Pause, Square, Copy, Trash2, Eye, Clock, CheckCircle, XCircle, AlertCircle, Search, Filter, RefreshCw } from 'lucide-react';
+import { Plus, Play, Pause, Copy, Trash2, Eye, Clock, CheckCircle, XCircle, AlertCircle, Search, RefreshCw, Pencil, Activity, TrendingUp, AlertTriangle, Zap, RotateCw } from 'lucide-react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Input from '@/components/ui/Input';
 import apiClient from '@/lib/api-client';
-import CreateEditCronJobModal from '@/components/cron-jobs/CreateEditCronJobModal';
-import CronJobDetailModal from '@/components/cron-jobs/CronJobDetailModal';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 interface CronJob {
@@ -38,6 +36,17 @@ interface CronJob {
   createdBy: string;
 }
 
+interface DashboardStats {
+  totalJobs: number;
+  enabledJobs: number;
+  disabledJobs: number;
+  runningJobs: number;
+  failedJobs: number;
+  totalExecutions: number;
+  totalFailures: number;
+  successRate: number;
+}
+
 interface APIResponse {
   success: boolean;
   data?: {
@@ -52,9 +61,10 @@ interface APIResponse {
   message?: string;
 }
 
-export default function CronJobManagerPage() {
+export default function CronJobDashboardPage() {
   const router = useRouter();
   const [jobs, setJobs] = useState<CronJob[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,10 +73,6 @@ export default function CronJobManagerPage() {
   const [pageSize] = useState(20);
   
   // UI States
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<CronJob | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<CronJob | null>(null);
   const [isActionLoading, setIsActionLoading] = useState<string | null>(null);
@@ -76,14 +82,14 @@ export default function CronJobManagerPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [typeFilter, setTypeFilter] = useState<string>('');
   
-  const dataFetched = useRef(false);
+  const isFetching = useRef(false);
 
   const fetchJobs = useCallback(async () => {
-    if (dataFetched.current && loading) return;
+    if (isFetching.current) return;
     
+    isFetching.current = true;
     setLoading(true);
     setError(null);
-    dataFetched.current = true;
 
     try {
       const params = new URLSearchParams({
@@ -99,11 +105,16 @@ export default function CronJobManagerPage() {
       const data: APIResponse = response.data;
 
       if (data.success && data.data) {
-        setJobs(data.data.data || []);
+        const jobsData = data.data.data || [];
+        setJobs(jobsData);
+        
         if (data.data.pagination) {
           setTotalPages(data.data.pagination.totalPages);
           setTotalCount(data.data.pagination.total);
         }
+
+        // Calculate dashboard statistics
+        calculateStats(jobsData);
       } else {
         setError(data.message || 'Failed to fetch cron jobs');
       }
@@ -112,33 +123,47 @@ export default function CronJobManagerPage() {
       setError(err.response?.data?.message || err.message || 'Failed to fetch cron jobs');
     } finally {
       setLoading(false);
-      dataFetched.current = false;
+      isFetching.current = false;
     }
-  }, [currentPage, pageSize, searchTerm, statusFilter, typeFilter, loading]);
+  }, [currentPage, pageSize, searchTerm, statusFilter, typeFilter]);
+
+  const calculateStats = (jobsData: CronJob[]) => {
+    const stats: DashboardStats = {
+      totalJobs: jobsData.length,
+      enabledJobs: jobsData.filter(j => j.enabled).length,
+      disabledJobs: jobsData.filter(j => !j.enabled).length,
+      runningJobs: jobsData.filter(j => j.lastRunStatus === 'running').length,
+      failedJobs: jobsData.filter(j => j.lastRunStatus === 'failed').length,
+      totalExecutions: jobsData.reduce((sum, j) => sum + j.executionCount, 0),
+      totalFailures: jobsData.reduce((sum, j) => sum + j.failureCount, 0),
+      successRate: 0
+    };
+
+    if (stats.totalExecutions > 0) {
+      stats.successRate = Math.round(((stats.totalExecutions - stats.totalFailures) / stats.totalExecutions) * 100);
+    }
+
+    setStats(stats);
+  };
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
 
   const handleCreateJob = () => {
-    setSelectedJob(null);
-    setIsCreateModalOpen(true);
-  };
-
-  const handleEditJob = (job: CronJob) => {
-    setSelectedJob(job);
-    setIsEditModalOpen(true);
+    router.push('/portal-admin/cron-jobs/create');
   };
 
   const handleViewJob = (job: CronJob) => {
-    setSelectedJob(job);
-    setIsDetailModalOpen(true);
+    router.push(`/portal-admin/cron-jobs/${job.id}`);
+  };
+
+  const handleEditJob = (job: CronJob) => {
+    router.push(`/portal-admin/cron-jobs/${job.id}/edit`);
   };
 
   const handleCloneJob = (job: CronJob) => {
-    const clonedJob = { ...job, id: '', name: `${job.name} (Copy)` };
-    setSelectedJob(clonedJob);
-    setIsCreateModalOpen(true);
+    router.push(`/portal-admin/cron-jobs/create?clone=${job.id}`);
   };
 
   const handleDeleteJob = (job: CronJob) => {
@@ -280,8 +305,8 @@ export default function CronJobManagerPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-              CRON Job Manager
+            <Heading level={2} className="text-3xl font-bold text-gray-900 dark:text-white">
+              CRON Jobs
             </Heading>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
               Manage and monitor scheduled jobs
@@ -302,6 +327,71 @@ export default function CronJobManagerPage() {
           <Alert type="error" className="mb-6">
             {error}
           </Alert>
+        )}
+
+        {/* Dashboard Statistics */}
+        {stats && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-blue-500 rounded-lg p-3 md:p-4 border-l-4 border-blue-500 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs md:text-sm font-medium text-white opacity-90 truncate">Total Jobs</p>
+                  <p className="text-lg md:text-2xl font-bold text-white mt-1 break-all">{stats.totalJobs}</p>
+                  <p className="text-xs text-white opacity-75 mt-1">
+                    {stats.enabledJobs} enabled
+                  </p>
+                </div>
+                <div className="p-2 md:p-3 rounded-full bg-white bg-opacity-20 flex-shrink-0 ml-2">
+                  <Activity className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-green-500 rounded-lg p-3 md:p-4 border-l-4 border-green-500 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs md:text-sm font-medium text-white opacity-90 truncate">Success Rate</p>
+                  <p className="text-lg md:text-2xl font-bold text-white mt-1 break-all">{stats.successRate}%</p>
+                  <p className="text-xs text-white opacity-75 mt-1">
+                    {stats.totalExecutions - stats.totalFailures} / {stats.totalExecutions} executions
+                  </p>
+                </div>
+                <div className="p-2 md:p-3 rounded-full bg-white bg-opacity-20 flex-shrink-0 ml-2">
+                  <TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-500 rounded-lg p-3 md:p-4 border-l-4 border-yellow-500 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs md:text-sm font-medium text-white opacity-90 truncate">Running</p>
+                  <p className="text-lg md:text-2xl font-bold text-white mt-1 break-all">{stats.runningJobs}</p>
+                  <p className="text-xs text-white opacity-75 mt-1">
+                    Active executions
+                  </p>
+                </div>
+                <div className="p-2 md:p-3 rounded-full bg-white bg-opacity-20 flex-shrink-0 ml-2">
+                  <Zap className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-red-500 rounded-lg p-3 md:p-4 border-l-4 border-red-500 shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs md:text-sm font-medium text-white opacity-90 truncate">Failed Jobs</p>
+                  <p className="text-lg md:text-2xl font-bold text-white mt-1 break-all">{stats.failedJobs}</p>
+                  <p className="text-xs text-white opacity-75 mt-1">
+                    {stats.totalFailures} total failures
+                  </p>
+                </div>
+                <div className="p-2 md:p-3 rounded-full bg-white bg-opacity-20 flex-shrink-0 ml-2">
+                  <AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Filters */}
@@ -410,7 +500,12 @@ export default function CronJobManagerPage() {
                       <tr key={job.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-4 py-4">
                           <div>
-                            <div className="font-semibold text-gray-900 dark:text-white">{job.name}</div>
+                            <button
+                              onClick={() => handleViewJob(job)}
+                              className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer text-left"
+                            >
+                              {job.name}
+                            </button>
                             {job.description && (
                               <div className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">
                                 {job.description}
@@ -494,7 +589,7 @@ export default function CronJobManagerPage() {
                                 disabled={isActionLoading === job.id}
                                 title="Resume"
                               >
-                                <Play className="w-4 h-4" />
+                                <RotateCw className="w-4 h-4" />
                               </Button>
                             )}
                             <Button
@@ -503,7 +598,7 @@ export default function CronJobManagerPage() {
                               onClick={() => handleEditJob(job)}
                               title="Edit"
                             >
-                              <Copy className="w-4 h-4" />
+                              <Pencil className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="outline"
@@ -567,27 +662,7 @@ export default function CronJobManagerPage() {
         </Card>
       </div>
 
-      {/* Modals */}
-      <CreateEditCronJobModal
-        isOpen={isCreateModalOpen || isEditModalOpen}
-        onClose={() => {
-          setIsCreateModalOpen(false);
-          setIsEditModalOpen(false);
-          setSelectedJob(null);
-        }}
-        job={selectedJob}
-        onSuccess={fetchJobs}
-      />
-
-      <CronJobDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedJob(null);
-        }}
-        jobId={selectedJob?.id || ''}
-      />
-
+      {/* Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => {
@@ -605,4 +680,3 @@ export default function CronJobManagerPage() {
     </Container>
   );
 }
-

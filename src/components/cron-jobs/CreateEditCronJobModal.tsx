@@ -6,8 +6,9 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import Alert from '@/components/ui/Alert';
-import { Calendar, Clock, Globe, Code, Database, Zap, Webhook } from 'lucide-react';
+import { Calendar, Clock, Globe, Code, Database, Zap, Webhook, CheckCircle, XCircle } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { validateCronExpression, getCronDescription } from '@/lib/cron-expression-helper';
 
 interface CronJob {
   id: string;
@@ -56,6 +57,7 @@ const CreateEditCronJobModal: React.FC<CreateEditCronJobModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [schedulePreset, setSchedulePreset] = useState<string>('custom');
+  const [cronValidation, setCronValidation] = useState<{ valid: boolean; error?: string; description?: string } | null>(null);
 
   useEffect(() => {
     if (job) {
@@ -63,6 +65,11 @@ const CreateEditCronJobModal: React.FC<CreateEditCronJobModalProps> = ({
         ...job,
         config: job.config || {},
       });
+      // Validate existing cron expression
+      if (job.cronExpression) {
+        const validation = validateCronExpression(job.cronExpression);
+        setCronValidation(validation);
+      }
     } else {
       setFormData({
         name: '',
@@ -73,6 +80,9 @@ const CreateEditCronJobModal: React.FC<CreateEditCronJobModalProps> = ({
         enabled: true,
         config: {},
       });
+      // Validate default cron expression
+      const validation = validateCronExpression('0 0 * * *');
+      setCronValidation(validation);
     }
   }, [job, isOpen]);
 
@@ -91,11 +101,25 @@ const CreateEditCronJobModal: React.FC<CreateEditCronJobModalProps> = ({
     setSchedulePreset(preset);
     if (preset !== 'custom') {
       setFormData(prev => ({ ...prev, cronExpression: preset }));
+      // Validate preset cron expression
+      const validation = validateCronExpression(preset);
+      setCronValidation(validation);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate cron expression before submission
+    if (formData.cronExpression) {
+      const validation = validateCronExpression(formData.cronExpression);
+      if (!validation.valid) {
+        setError(validation.error || 'Invalid cron expression');
+        setCronValidation(validation);
+        return;
+      }
+    }
+    
     setLoading(true);
     setError(null);
 
@@ -344,15 +368,65 @@ const CreateEditCronJobModal: React.FC<CreateEditCronJobModalProps> = ({
               type="text"
               value={formData.cronExpression || ''}
               onChange={(e) => {
-                setFormData(prev => ({ ...prev, cronExpression: e.target.value }));
+                const value = e.target.value;
+                setFormData(prev => ({ ...prev, cronExpression: value }));
                 setSchedulePreset('custom');
+                
+                // Validate cron expression
+                if (value.trim()) {
+                  const validation = validateCronExpression(value);
+                  setCronValidation(validation);
+                } else {
+                  setCronValidation(null);
+                }
               }}
               placeholder="0 0 * * *"
               required
+              className={cronValidation && !cronValidation.valid ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Format: minute hour day month dayOfWeek (e.g., "0 0 * * *" = daily at midnight)
-            </p>
+            {cronValidation && (
+              <div className={`mt-2 p-2 rounded-md flex items-start gap-2 ${
+                cronValidation.valid 
+                  ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' 
+                  : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+              }`}>
+                {cronValidation.valid ? (
+                  <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+                )}
+                <div className="flex-1">
+                  {cronValidation.valid ? (
+                    <div>
+                      <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                        Valid Expression
+                      </p>
+                      {cronValidation.description && (
+                        <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                          {cronValidation.description}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                        Invalid Expression
+                      </p>
+                      {cronValidation.error && (
+                        <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                          {cronValidation.error}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {!cronValidation && (
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Format: minute hour day month dayOfWeek (e.g., "0 0 * * *" = daily at midnight)
+              </p>
+            )}
           </div>
 
           <div>

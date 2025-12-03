@@ -218,12 +218,11 @@ export default function PortalAdminEnumeratorsPage() {
       <div className="mb-6">
         <div className="flex items-center mb-4">
           <Button
-            variant="ghost"
-            size="sm"
+            variant="outline"
             onClick={() => router.push('/portal-admin')}
-            className="mr-4"
+            className="flex items-center gap-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Button>
         </div>

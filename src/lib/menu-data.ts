@@ -55,6 +55,13 @@ export const menuData: MenuItem[] = [
     icon: 'Clock',
     roles: ['portal_admin'],
   },
+  {
+    id: 'portal-admin-downloads',
+    label: 'Downloads',
+    href: '/portal-admin/downloads',
+    icon: 'Download',
+    roles: ['portal_admin'],
+  },
 
   // Super Admin Menu
   {

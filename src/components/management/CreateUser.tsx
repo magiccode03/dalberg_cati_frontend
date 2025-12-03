@@ -136,7 +136,7 @@ export default function CreateUser({
               onClick={() => router.push(backUrl)}
               className="flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
             <div className="flex items-center gap-3">
