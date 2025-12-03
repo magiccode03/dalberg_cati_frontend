@@ -26,6 +26,7 @@ interface FieldworkProgressData {
   progress_sub_type_code?: string;
   progress_page?: string;
   progress_label?: string;
+  sub_progress_label?: string;
   progress_sub_type_label?: string;
   progress_bg_color_label?: string;
   summary_tiles?: {
@@ -1047,7 +1048,7 @@ export default function FieldworkProgress2Page() {
           <Card className="p-6">
             <div className="flex justify-between items-center mb-4">
               <Heading level={3} className="text-xl font-semibold">
-                {apiData.progress_label || 'Progress Details'}
+                {apiData.sub_progress_label || 'Progress Details'}
               </Heading>
               <button
                 onClick={selectedProgressSubTypeCode ? handleBackToParent : handleBackToMain}
