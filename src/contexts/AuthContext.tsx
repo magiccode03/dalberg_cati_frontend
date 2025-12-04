@@ -584,6 +584,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // Data Manager role goes directly to CAPI Data page
     if (role === 'data_manager') return '/dm/capi';
+
+    // ppmt role goes directly to cati ppmt  page
+    if (role === 'group') return '/cati/ppmt/progress/telecaller-progress';
     
     // All other roles (including research, ppm,dqm fd, etc.) go to /home
     return '/home';

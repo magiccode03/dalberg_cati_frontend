@@ -1659,6 +1659,41 @@ export const menuData: MenuItem[] = [
   //     },
   //   ],
   // },
+
+
+  //  ===========================================Team (PPMT) Menu
+  {
+    id: 'cati-ppm-progress',
+    label: 'Progress',
+    href: '/cati/ppmt/progress/telecaller-progress',
+    icon: 'BarChart3',
+    roles: ['group'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppm-telecaller-daily-progress',
+        label: 'Telecaller Progress',
+        href: '/cati/ppm/progress/telecaller-progress',
+        icon: 'TrendingUp',
+        roles: ['group'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-telecaller-daily-call-detail',
+        label: 'Telecaller Daily Call Detail',
+        href: '/cati/ppm/progress/telecaller-daily-call-detail',
+        icon: 'FileText',
+        roles: ['group'],
+        system: 'cati',
+      },
+    ],
+  },
+
+  // ===========================================
+  // ===========================================
+  // ===========================================
+
+
   // CATI Client Dashboard (CD) Menu
   {
     id: 'cati-fd-telecaller-progress',
