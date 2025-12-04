@@ -1397,21 +1397,7 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            {/* Telecalling Group */}
-            <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Group
-              </label>
-              <SelectDropdown
-                value={filters.telecallingGroupId}
-                onChange={(value) => handleFilterChange('telecallingGroupId', value)}
-                options={telecallingGroupOptions}
-                placeholder="Select Group"
-                searchable={true}
-                clearable={true}
-                maxHeight={300}
-              />
-            </div>
+            
 
             {/* Telecaller Status */}
             <div className="flex-1 min-w-[200px]">
