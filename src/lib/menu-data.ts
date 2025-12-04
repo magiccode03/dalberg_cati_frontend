@@ -1671,17 +1671,17 @@ export const menuData: MenuItem[] = [
     system: 'cati',
     children: [
       {
-        id: 'cati-ppm-telecaller-daily-progress',
+        id: 'cati-ppmt-telecaller-daily-progress',
         label: 'Telecaller Progress',
-        href: '/cati/ppm/progress/telecaller-progress',
+        href: '/cati/ppmt/progress/telecaller-progress',
         icon: 'TrendingUp',
         roles: ['group'],
         system: 'cati',
       },
       {
-        id: 'cati-ppm-telecaller-daily-call-detail',
+        id: 'cati-ppmt-telecaller-daily-call-detail',
         label: 'Telecaller Daily Call Detail',
-        href: '/cati/ppm/progress/telecaller-daily-call-detail',
+        href: '/cati/ppmt/progress/telecaller-daily-call-detail',
         icon: 'FileText',
         roles: ['group'],
         system: 'cati',
