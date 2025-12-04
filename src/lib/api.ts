@@ -1144,6 +1144,39 @@ class ApiService {
     return this.request(`/dashboard/team-registration${queryString}`);
   }
 
+  // CATI Teams - new endpoint used by `team-registration` page
+  async getCatiTeams(page: number = 1, limit: number = 50): Promise<ApiResponse<{
+    data: Array<{
+      id: number;
+      username: string;
+      email: string;
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+      portalSlug?: string;
+      roleId?: number;
+      group?: number;
+      isActive?: number;
+      totalCallers?: number;
+      createdAt?: string;
+      updatedAt?: string;
+    }>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }>> {
+    const queryString = `?${new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    }).toString()}`;
+
+    // Note: baseURL already includes API_VERSION (`/api`), so endpoint here is `/cati/teams`
+    return this.request(`/cati/teams${queryString}`);
+  }
+
   async createTeamRegistration(data: {
     agency_name: string;
     qc_agency_id: number;

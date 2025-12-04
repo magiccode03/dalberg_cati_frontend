@@ -1460,7 +1460,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
-     
+
       // {
       //   id: 'cati-ppm-active-ac-progress',
       //   label: 'Active AC Progress',
@@ -1534,6 +1534,14 @@ export const menuData: MenuItem[] = [
       //   system: 'cati',
       // },
     ],
+  },
+  {
+    id: 'cati-ppm-team-registration',
+    label: 'Team Registration',
+    href: '/cati/ppm/team-registration',
+    icon: 'Users',
+    roles: ['ppm'],
+    system: 'cati',
   },
   // {
   //   id: 'cati-ppm-upload',
