@@ -1663,7 +1663,7 @@ export const menuData: MenuItem[] = [
 
   //  ===========================================Team (PPMT) Menu
   {
-    id: 'cati-ppm-progress',
+    id: 'cati-ppmt-progress',
     label: 'Progress',
     href: '/cati/ppmt/progress/telecaller-progress',
     icon: 'BarChart3',
