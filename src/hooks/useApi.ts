@@ -300,6 +300,11 @@ export function useGPSData(params?: any) {
 export function useTeamRegistration(page: number = 1, limit: number = 20) {
   return useApi(() => apiService.getTeamRegistration(page, limit), [page, limit]);
 }
+// Team Registration Hooks
+export function useCatiTeamRegistration(page: number = 1, limit: number = 20) {
+  return useApi(() => apiService.getCatiTeams(page, limit), [page, limit]);
+}
+
 
 // Rejection Report Hooks
 export function useRejectionReport(params?: any) {

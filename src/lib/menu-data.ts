@@ -48,6 +48,20 @@ export const menuData: MenuItem[] = [
       },
     ],
   },
+  {
+    id: 'portal-admin-cron-jobs',
+    label: 'CRON Job Manager',
+    href: '/portal-admin/cron-jobs',
+    icon: 'Clock',
+    roles: ['portal_admin'],
+  },
+  {
+    id: 'portal-admin-downloads',
+    label: 'Downloads',
+    href: '/portal-admin/downloads',
+    icon: 'Download',
+    roles: ['portal_admin'],
+  },
 
   // Super Admin Menu
   {
@@ -817,6 +831,14 @@ export const menuData: MenuItem[] = [
     ],
   },
   {
+    id: 'ccati/dqm/ac-progress/ac-progress-dqm',
+    label: 'Ac Progress',
+    href: '/cati/dqm/ac-progress/ac-progress-dqm',
+    icon: 'BarChart3',
+    roles: ['dqm'],
+    system: 'cati',
+  },
+  {
     id: 'cati-ppm-qc-data-entry-progress',
     label: 'Data Entry Progress',
     href: '/cati/dqm/data-entry-progress',
@@ -888,14 +910,14 @@ export const menuData: MenuItem[] = [
     roles: ['fd'],
     system: 'capi',
   },
-  {
-    id: 'capi-fd-fieldwork-progress-2',
-    label: 'Fieldwork Progress2',
-    href: '/capi/fd/fieldwork-progress2',
-    icon: 'TrendingUp',
-    roles: ['fd'],
-    system: 'capi',
-  },
+  // {
+  //   id: 'capi-fd-fieldwork-progress-2',
+  //   label: 'Fieldwork Progress2',
+  //   href: '/capi/fd/fieldwork-progress2',
+  //   icon: 'TrendingUp',
+  //   roles: ['fd'],
+  //   system: 'capi',
+  // },
   {
     id: 'demographics',
     label: 'Demographics',
@@ -912,14 +934,14 @@ export const menuData: MenuItem[] = [
         roles: ['fd'],
         system: 'capi',
       },
-      {
-        id: 'capi-fd-demographics-caste',
-        label: 'Caste',
-        href: '/capi/fd/demographics/caste',
-        icon: 'Database',
-        roles: ['fd'],
-        system: 'capi',
-      },
+      // {
+      //   id: 'capi-fd-demographics-caste',
+      //   label: 'Caste',
+      //   href: '/capi/fd/demographics/caste',
+      //   icon: 'Database',
+      //   roles: ['fd'],
+      //   system: 'capi',
+      // },
     ],
   },
   // {
@@ -1438,14 +1460,7 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
-      {
-        id: 'cati-ppm-ac-progress-dqm',
-        label: 'AC Progress DQM',
-        href: '/cati/ppm/ac-progress/ac-progress-dqm',
-        icon: 'BarChart3',
-        roles: ['ppm'],
-        system: 'cati',
-      },
+
       // {
       //   id: 'cati-ppm-active-ac-progress',
       //   label: 'Active AC Progress',
@@ -1519,6 +1534,14 @@ export const menuData: MenuItem[] = [
       //   system: 'cati',
       // },
     ],
+  },
+  {
+    id: 'cati-ppm-team-registration',
+    label: 'Team Registration',
+    href: '/cati/ppm/team-registration',
+    icon: 'Users',
+    roles: ['ppm'],
+    system: 'cati',
   },
   // {
   //   id: 'cati-ppm-upload',
@@ -1636,6 +1659,41 @@ export const menuData: MenuItem[] = [
   //     },
   //   ],
   // },
+
+
+  //  ===========================================Team (PPMT) Menu
+  {
+    id: 'cati-ppmt-progress',
+    label: 'Progress',
+    href: '/cati/ppmt/progress/telecaller-progress',
+    icon: 'BarChart3',
+    roles: ['group'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppmt-telecaller-daily-progress',
+        label: 'Telecaller Progress',
+        href: '/cati/ppmt/progress/telecaller-progress',
+        icon: 'TrendingUp',
+        roles: ['group'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppmt-telecaller-daily-call-detail',
+        label: 'Telecaller Daily Call Detail',
+        href: '/cati/ppmt/progress/telecaller-daily-call-detail',
+        icon: 'FileText',
+        roles: ['group'],
+        system: 'cati',
+      },
+    ],
+  },
+
+  // ===========================================
+  // ===========================================
+  // ===========================================
+
+
   // CATI Client Dashboard (CD) Menu
   {
     id: 'cati-fd-telecaller-progress',

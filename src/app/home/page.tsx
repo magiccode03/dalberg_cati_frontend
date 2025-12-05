@@ -60,6 +60,10 @@ const roleRouteMap: Record<string, { capi: string; cati: string }> = {
     capi: '/dm/capi',
     cati: '/dm/cati',
   },
+  group: {
+    capi: '/cati/ppmt/progress/telecaller-progress',
+    cati: '/cati/ppmt/progress/telecaller-progress',
+  },
 };
 
 export default function HomePage() {

@@ -249,7 +249,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const roleName = apiUser.roleName || apiUser.role?.name || 'super_admin';
         
         // Determine system based on API response or default to 'capi' for system-specific roles
-        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc'];
+        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc','group'];
         const userSystem = apiUser.system || (systemRoles.includes(roleName) ? 'capi' : undefined);
         
         const userData: User = {
@@ -584,6 +584,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     // Data Manager role goes directly to CAPI Data page
     if (role === 'data_manager') return '/dm/capi';
+
+    // ppmt role goes directly to cati ppmt  page
+    if (role === 'group') return '/cati/ppmt/progress/telecaller-progress';
     
     // All other roles (including research, ppm,dqm fd, etc.) go to /home
     return '/home';

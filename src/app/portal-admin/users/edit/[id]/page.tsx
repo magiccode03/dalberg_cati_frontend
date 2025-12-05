@@ -182,7 +182,7 @@ export default function EditUserPage() {
               onClick={() => router.push('/portal-admin/users')}
               className="flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="w-4 h-4" />
               Back to Users
             </Button>
             <div className="flex items-center gap-3">

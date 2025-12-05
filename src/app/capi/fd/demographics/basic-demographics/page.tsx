@@ -971,6 +971,21 @@ export default function BasicDemographicsPage() {
 
         {/* Third Row - Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+          {/* ACs Card */}
+          <div 
+            className={`transition-all duration-200 rounded-lg shadow-md cursor-pointer ${
+              selectedProgressType === 4 
+                ? 'bg-green-600' 
+                : 'bg-green-500 bg-opacity-50 hover:bg-opacity-100'
+            }`}
+            onClick={() => handleProgressTypeChange(4)}
+          >
+            <div className="p-4 text-center">
+              <h2 className="text-white text-3xl font-bold mb-2">ACs</h2>
+              <h4 className="text-white text-2xl font-semibold">{mainApiData?.navigation_tiles?.total_ac_count || 0}</h4>
+            </div>
+          </div>
           {/* PCs Card */}
           <div 
             className={`transition-all duration-200 rounded-lg shadow-md cursor-pointer ${
@@ -1013,21 +1028,6 @@ export default function BasicDemographicsPage() {
             <div className="p-4 text-center">
               <h2 className="text-white text-3xl font-bold mb-2">Zones</h2>
               <h4 className="text-white text-2xl font-semibold">{mainApiData?.navigation_tiles?.total_zone_count || 0}</h4>
-            </div>
-          </div>
-
-          {/* ACs Card */}
-          <div 
-            className={`transition-all duration-200 rounded-lg shadow-md cursor-pointer ${
-              selectedProgressType === 4 
-                ? 'bg-green-600' 
-                : 'bg-green-500 bg-opacity-50 hover:bg-opacity-100'
-            }`}
-            onClick={() => handleProgressTypeChange(4)}
-          >
-            <div className="p-4 text-center">
-              <h2 className="text-white text-3xl font-bold mb-2">ACs</h2>
-              <h4 className="text-white text-2xl font-semibold">{mainApiData?.navigation_tiles?.total_ac_count || 0}</h4>
             </div>
           </div>
         </div>

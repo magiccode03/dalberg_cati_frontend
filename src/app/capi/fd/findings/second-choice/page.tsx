@@ -135,7 +135,7 @@ export default function SecondChoicePage() {
                      <tr>
                        <th rowSpan={9} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">Upcoming Elections</th>
                 <th className="bg-blue-100 border border-gray-300 font-semibold">Party Name</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>AITC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
@@ -168,7 +168,7 @@ export default function SecondChoicePage() {
 
   const getPartyColor = (party: string): string => {
     const colors: { [key: string]: string } = {
-      'AITC': '#00b0f0',
+      'AITC': '#6189e6ff',
       'BJP': '#e97132',
       'INC': '#00b0f0',
       'Left Front': '#ff0000',

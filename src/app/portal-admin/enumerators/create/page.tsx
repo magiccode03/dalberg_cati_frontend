@@ -83,7 +83,7 @@ export default function CreateEnumeratorPage() {
               onClick={() => router.push('/portal-admin/enumerators')}
               className="flex items-center gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="w-4 h-4" />
               Back to Enumerators
             </Button>
             <div className="flex items-center gap-3">
