@@ -18,7 +18,7 @@ export function useApi<T>(
   const execute = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiCall();
       if (response.success) {
@@ -48,7 +48,7 @@ export function useLogin() {
   const login = useCallback(async (uniqueId: string, password: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.login({ uniqueId, password });
       if (response.success) {
@@ -69,7 +69,7 @@ export function useLogin() {
   const logout = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       await apiService.logout();
     } catch (err) {
@@ -82,7 +82,7 @@ export function useLogin() {
   const register = useCallback(async (userData: any) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.register(userData);
       if (response.success) {
@@ -179,7 +179,7 @@ export function useCreateUser() {
   const createUser = useCallback(async (userData: any) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.createUser(userData);
       if (response.success) {
@@ -207,7 +207,7 @@ export function useUpdateUser() {
   const updateUser = useCallback(async (id: string, userData: any) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.updateUser(id, userData);
       if (response.success) {
@@ -235,7 +235,7 @@ export function useDeleteUser() {
   const deleteUser = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.deleteUser(id);
       if (response.success) {
@@ -313,8 +313,8 @@ export function useRejectionReport(params?: any) {
       // Return a promise that resolves with empty data when params is null
       return Promise.resolve({
         success: true,
-        data: { 
-          interviews: [], 
+        data: {
+          interviews: [],
           pagination: { current_page: 1, per_page: 25, total_count: 0, total_pages: 0 },
           filters_applied: {},
           sorting: {},
@@ -355,33 +355,33 @@ export function useToggleReQcStatus() {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('Toggling Re-QC status:', { agencyId, dataSendForReqc });
-      
+
       // First, let's test if the endpoint exists with a simple request
       console.log('Testing endpoint availability...');
-      
+
       const response = await apiService.toggleReQcStatus(agencyId, dataSendForReqc);
-      
+
       console.log('Toggle Re-QC response:', response);
-      
+
       return response;
     } catch (err: any) {
       console.error('Toggle Re-QC error:', err);
-      
+
       let errorMessage = 'Failed to toggle Re-QC status';
-      
+
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
       } else if (err.message) {
         errorMessage = err.message;
       }
-      
+
       // Add more specific error information
       if (err.message?.includes('500')) {
         errorMessage += ' (Server Error - Check if endpoint exists)';
       }
-      
+
       setError(errorMessage);
       throw err;
     } finally {
@@ -424,7 +424,7 @@ export function useCreateTeamRegistration() {
   }) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.createTeamRegistration(data);
       if (response.success) {
@@ -464,7 +464,7 @@ export function useUpdateTeamRegistration() {
   }) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.updateTeamRegistration(agencyId, data);
       if (response.success) {
@@ -485,6 +485,7 @@ export function useUpdateTeamRegistration() {
   return { updateTeamRegistration, loading, error };
 }
 
+
 // Get Team Registration by ID Hook
 export function useGetTeamRegistrationById() {
   const [loading, setLoading] = useState(false);
@@ -493,7 +494,7 @@ export function useGetTeamRegistrationById() {
   const getTeamRegistrationById = useCallback(async (agencyId: number) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.getTeamRegistrationById(agencyId);
       if (response.success) {
@@ -514,6 +515,109 @@ export function useGetTeamRegistrationById() {
   return { getTeamRegistrationById, loading, error };
 }
 
+
+// group Team Registration Hooks
+export function useCreateGroupTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createGroupTeamRegistration = useCallback(async (data: {
+    name: string;
+    username: string; // maps to unique_id in the table
+    password: string;
+    role_id?: number;
+    group?: number | null;
+    is_active?: number | boolean;
+  }) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiService.createGroupTeamRegistration(data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to create team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { createGroupTeamRegistration, loading, error };
+}
+
+// group Team Registration Update Hook
+export function useUpdateGroupTeamRegistration() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const updateGroupTeamRegistration = useCallback(async (Id: number, data: {
+    name: string;
+    username: string; // maps to unique_id in the table
+    password: string;
+    role_id?: number;
+    group?: number | null;
+    is_active?: number | boolean;
+  }) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiService.updateGroupTeamRegistration(Id, data);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to update team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { updateGroupTeamRegistration, loading, error };
+}
+
+
+// Get group Team user for Group creation  by ID Hook
+export function useGetGroupTeamRegistrationById() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getGroupTeamRegistrationById = useCallback(async (Id: number) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await apiService.getGroupTeamRegistrationById(Id);
+      if (response.success) {
+        return response.data;
+      } else {
+        setError(response.message || 'Failed to fetch team registration');
+        return null;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return { getGroupTeamRegistrationById, loading, error };
+}
+
 // Fieldwork Progress Hook
 export function useFieldworkProgress() {
   const [loading, setLoading] = useState(false);
@@ -522,7 +626,7 @@ export function useFieldworkProgress() {
   const getFieldworkProgress = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.getFieldworkProgress();
       if (response.success) {
@@ -555,7 +659,7 @@ export function useCreateQCTeamRegistration() {
   }) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.createQCTeamRegistration(data);
       if (response.success) {
@@ -583,7 +687,7 @@ export function useGetQCTeamRegistrations() {
   const getQCTeamRegistrations = useCallback(async (params?: { page?: number; pageSize?: number }) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.getQCTeamRegistrations(params);
       if (response.success) {
@@ -622,12 +726,12 @@ export function useUpdateQCTeamRegistration() {
   }) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       console.log('🔄 Hook: Updating QC team registration:', { id, data });
       const response = await apiService.updateQCTeamRegistration(id, data);
       console.log('🔄 Hook: API response:', response);
-      
+
       if (response.success) {
         return response.data;
       } else {
@@ -665,7 +769,7 @@ export function useGetTeamRegistrationDropdownOptions() {
   const getDropdownOptions = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.getTeamRegistrationDropdownOptions();
       if (response.success) {
@@ -700,7 +804,7 @@ export function useGetQCAgencies() {
   const getQCAgencies = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.getQCAgencies();
       if (response.success) {
@@ -731,7 +835,7 @@ export function useGetAgencies() {
   const getAgencies = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiService.getAgencies();
       if (response.success) {
@@ -763,7 +867,7 @@ export function useApiCall() {
   ): Promise<T | null> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiCall();
       if (response.success) {

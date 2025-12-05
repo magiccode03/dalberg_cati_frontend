@@ -65,9 +65,9 @@ const TeamRegistrationPage = () => {
     }
   };
 
-  const handleUpdateAgency = (agencyId: number) => {
-    // Navigate to the update page with agency ID as dynamic route
-    router.push(`/capi/ppm/create-team/${agencyId}`);
+  const handleUpdateAgency = (Id: number) => {
+    // Navigate to the update page with  ID as dynamic route
+    router.push(`/cati/ppm/team-registration/${Id}`);
   };
 
   // Show loading state
@@ -120,7 +120,7 @@ const TeamRegistrationPage = () => {
           </div>
           <Button
             variant="primary"
-            onClick={() => router.push('/capi/ppm/team-registration/newagency')}
+            onClick={() => router.push('/cati/ppm/team-registration/createteam')}
           >
             <Plus className="w-4 h-4 mr-2" />
             New Team Registration
@@ -173,7 +173,7 @@ const TeamRegistrationPage = () => {
                       <button
                         onClick={() => handleUpdateAgency(teamId as number)}
                         className="inline-flex items-center justify-center w-8 h-8 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
-                        title="Update Agency"
+                        title="Update Team"
                       >
                         <Edit size={16} />
                       </button>
