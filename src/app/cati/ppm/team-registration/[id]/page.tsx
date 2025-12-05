@@ -14,12 +14,6 @@ import { useUpdateGroupTeamRegistration, useGetGroupTeamRegistrationById } from 
 import { useToast } from '@/components/ui/Toast';
 import SuccessBanner from '@/components/ui/SuccessBanner';
 
-interface Groups {
-  id: number;
-  name: string;
-  group_name?: string;
-}
-
 const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const resolvedParams = use(params);
@@ -28,14 +22,11 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
-  const [groups, setGroups] = useState<Groups[]>([]);
-  const [loadingGroups, setLoadingGroups] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     username: '',
     password: '',
     is_active: '',
-    group: '',
   });
 
   const { updateGroupTeamRegistration, loading: updateLoading, error: updateError } = useUpdateGroupTeamRegistration();
@@ -62,67 +53,7 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [Id]);
 
-  // Fetch telecalling groups
-  useEffect(() => {
-    const fetchGroups = async () => {
-      setLoadingGroups(true);
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
-        if (!token) {
-          console.warn('No auth token, using default groups');
-          setGroups([{ id: 1, name: 'Group 1' }]);
-          return;
-        }
-
-        // Fetch groups from the API
-        const endpoint = `${apiUrl}/api/teleform-users/telecalling-groups`;
-        console.log('Fetching  groups from:', endpoint);
-
-        const response = await fetch(endpoint, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        console.log('Response status:', response.status, response.statusText);
-
-        if (response.ok) {
-          const result = await response.json();
-          console.log('API Response:', result);
-
-          if (result.success && Array.isArray(result.data)) {
-            console.log('Groups data array:', result.data);
-            const groups: Groups[] = result.data.map((item: any) => ({
-              id: item.group || item.id,
-              name: item.group || item.name || `Group ${item.group || item.id}`,
-            }));
-            console.log('Mapped groups:', groups);
-            setGroups(groups);
-          } else {
-            console.warn('Invalid API response format:', result);
-            console.warn('Response success:', result.success, 'Data is array:', Array.isArray(result.data));
-            setGroups([{ id: 1, name: 'Group 1' }]);
-          }
-        } else {
-          const errorText = await response.text();
-          console.warn('Failed to fetch groups. Status:', response.status, 'Response:', errorText);
-          setGroups([{ id: 1, name: 'Group 1' }]);
-        }
-      } catch (err) {
-        console.error('Error fetching groups:', err);
-        // Fallback to default
-        setGroups([{ id: 1, name: 'Group 1' }]);
-      } finally {
-        setLoadingGroups(false);
-      }
-    };
-
-    fetchGroups();
-  }, []);
+  // Note: Group selection is managed by backend; removed client-side group dropdown.
 
   const fetchGroupTeamData = async () => {
     if (!Id) {
@@ -146,7 +77,6 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
           username: teamData.username || '',
           password: '', // Always blank for update form
           is_active: isActiveRaw !== undefined ? String(isActiveRaw) : '',
-          group: teamData.group ? String(teamData.group) : '',
         };
         console.log(' Mapped form data:', mappedData);
         console.log('raw is_active:', isActiveRaw, 'mapped:', mappedData.is_active);
@@ -192,7 +122,7 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
         name: formData.name,
         username: formData.username,
         is_active: formData.is_active ? parseInt(formData.is_active) : null,
-        group: formData.group ? parseInt(formData.group) : undefined,
+        // backend will handle group assignment; do not send `group` from client
       };
 
       // Only include password if it's not empty
@@ -310,50 +240,6 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
                   required
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Groups *
-                </label>
-                <SelectDropdown
-                  value={formData.group || ''}
-                  onChange={(value) => handleInputChange('group', Array.isArray(value) ? String(value[0]) : String(value))}
-                  options={groups.map(group => ({
-                    value: String(group.id),
-                    label: group.name,
-                  }))}
-                  placeholder={loadingGroups ? "Loading groups..." : "Select Telecalling Group"}
-                  disabled={loadingGroups}
-                />
-              </div>
-            </div>
-
-            {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Status <span className="text-red-500">*</span>
-                </Text>
-                <SelectDropdown
-                  value={formData.is_active}
-                  onChange={(value) => handleInputChange('is_active', Array.isArray(value) ? String(value[0]) : String(value))}
-                  options={statusOptions}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <hr className="my-6 border-gray-200" />
-
-          {/* Team Supervisor User Details Section */}
-          <div>
-            <Heading level={5} className="text-gray-800 mb-4">
-              User Login Details
-            </Heading>
-
-            {/* Row 1 - Username and Password */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
                   Username <span className="text-red-500">*</span>
@@ -366,7 +252,10 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
                   required
                 />
               </div>
+            </div>
 
+            {/* Row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
                   Password <span className="text-gray-500">(Optional - leave blank to keep current)</span>
@@ -389,6 +278,18 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
+              </div>
+
+
+              <div>
+                <Text className="block text-sm font-medium text-gray-700 mb-2">
+                  Status <span className="text-red-500">*</span>
+                </Text>
+                <SelectDropdown
+                  value={formData.is_active}
+                  onChange={(value) => handleInputChange('is_active', Array.isArray(value) ? String(value[0]) : String(value))}
+                  options={statusOptions}
+                />
               </div>
             </div>
           </div>
