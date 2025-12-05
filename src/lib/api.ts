@@ -1257,8 +1257,8 @@ class ApiService {
     name: string;
     username: string;
     password?: string;
-    group?: number;
-    is_active?: number;
+    group?: number | string | null;
+    is_active?: number | string;
   }): Promise<ApiResponse<{
     id: number;
     username: string;

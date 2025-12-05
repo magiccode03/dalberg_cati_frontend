@@ -141,8 +141,8 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
           name: teamData.name || '',
           username: teamData.username || '',
           password: '',// Always blank for update form
-          is_active: teamData.is_active?.toString() || '',
-          group: teamData.group || '',
+          is_active: teamData.is_active ? String(teamData.is_active) : '',
+          group: teamData.group ? String(teamData.group) : '',
         };
         console.log(' Mapped form data:', mappedData);
         setFormData(mappedData);
@@ -181,19 +181,21 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
       return;
     }
 
-    // If password is blank, we'll skip updating it
-    if (!formData.password.trim()) {
-      console.log('Password is blank, will not update password');
-    }
-
     try {
-      const result = await updateGroupTeamRegistration(parseInt(Id), {
+      // Build update data - only send password if it's not empty
+      const updateData: any = {
         name: formData.name,
         username: formData.username,
-        password: formData.password,
-        is_active: parseInt(formData.is_active),
-        group: formData.group,
-      });
+        is_active: formData.is_active ? parseInt(formData.is_active) : 1,
+        group: formData.group ? parseInt(formData.group) : undefined,
+      };
+
+      // Only include password if it's not empty
+      if (formData.password && formData.password.trim()) {
+        updateData.password = formData.password;
+      }
+
+      const result = await updateGroupTeamRegistration(parseInt(Id), updateData);
 
       if (result) {
         setShowSuccessBanner(true);

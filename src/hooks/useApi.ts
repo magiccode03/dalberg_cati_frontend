@@ -560,10 +560,10 @@ export function useUpdateGroupTeamRegistration() {
   const updateGroupTeamRegistration = useCallback(async (Id: number, data: {
     name: string;
     username: string; // maps to unique_id in the table
-    password: string;
+    password?: string;
     role_id?: number;
-    group?: number | null;
-    is_active?: number | boolean;
+    group?: number | string | null;
+    is_active?: number | string | boolean;
   }) => {
     setLoading(true);
     setError(null);
