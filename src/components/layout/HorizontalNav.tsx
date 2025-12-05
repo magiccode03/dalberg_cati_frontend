@@ -157,8 +157,8 @@ export default function HorizontalNav() {
   const getFilteredMenuItems = () => {
     if (!user) return [];
     
-    // For SS and Data Entry roles, force system to 'cati' to ensure menu items are loaded
-    const systemToUse = (user.role === 'ss' || user.role === 'data_entry') ? 'cati' : user.system;
+    // For SS, Data Entry, and Group roles, force system to 'cati' to ensure menu items are loaded
+    const systemToUse = (user.role === 'ss' || user.role === 'data_entry' || user.role === 'group') ? 'cati' : user.system;
     let baseMenuItems = getMenuByRole(user.role, systemToUse);
     
     // Debug logging (removed to prevent console spam during re-renders)

@@ -95,12 +95,14 @@ export default function Sidebar() {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Determine current system based on pathname for FD role
+  // Determine current system based on pathname for FD role, or force 'cati' for group role
   const getCurrentSystem = (): 'capi' | 'cati' | undefined => {
     if (user?.role === 'fd') {
       if (pathname.startsWith('/cati/fd')) return 'cati';
       if (pathname.startsWith('/capi/fd')) return 'capi';
     }
+    // Force 'cati' system for group role to ensure menu items are loaded
+    if (user?.role === 'group') return 'cati';
     return user?.system;
   };
 
