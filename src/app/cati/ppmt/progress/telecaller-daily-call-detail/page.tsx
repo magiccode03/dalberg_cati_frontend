@@ -797,22 +797,6 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
-          {/* Telecalling Group Filter */}
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Group
-            </label>
-            <SelectDropdown
-              value={dashboardFilters.telecallingGroupId}
-              onChange={(value) => handleDashboardFilterChange('telecallingGroupId', value)}
-              options={telecallingGroupOptions}
-              placeholder="Select Group"
-              searchable={true}
-              clearable={true}
-              maxHeight={300}
-            />
-          </div>
-
           {/* Calling Dates Filter */}
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
