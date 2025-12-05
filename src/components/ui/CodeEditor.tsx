@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from './Button';
+import Button from './Button';
 import { 
   Copy, 
   Download, 
