@@ -101,14 +101,14 @@ export default function GainAndLossesPage() {
               <tr>
                 <th rowSpan={9} style={{ width: '2%', writingMode: 'sideways-lr', textAlign: 'center' }} className="bg-blue-100 border border-gray-300 font-semibold">2021 AE</th>
                 <th className="bg-blue-100 border border-gray-300 font-semibold">Party Name</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#4EA72E' }}>AITC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#E97132' }}>BJP</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#00B0F0' }}>INC</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#EE0000' }}>Left Front</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
                 <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
-                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#A6A6A6' }}>Others</th>
+                <th className="text-center font-semibold border border-gray-300" style={{ width: '10%', color: 'black', backgroundColor: '#A6A6A6' }}>NOTA</th>
               </tr>
               {data.map((row, index) => {
                 const partyName = getPartyName(row);
@@ -139,16 +139,16 @@ export default function GainAndLossesPage() {
 
   const getPartyColor = (party: string): string => {
     const colors: { [key: string]: string } = {
-      'AITC': '#6189e6ff',
-      'BJP': '#e97132',
-      'INC': '#00b0f0',
-      'Left Front': '#ff0000',
+      'AITC': '#4EA72E',
+      'BJP': '#E97132',
+      'INC': '#00B0F0',
+      'Left Front': '#EE0000',
       'Independent': '#92d050',
       'AJSU': '#dce119',
-      'Others': '#aeaeae',
-      'NOTA': '#aeaeae',
+      'Others': '#A6A6A6',
+      'NOTA': '#A6A6A6',
     };
-    return colors[party] || '#aeaeae';
+    return colors[party] || '#A6A6A6';
   };
 
   return (

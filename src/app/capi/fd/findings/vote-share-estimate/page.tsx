@@ -222,7 +222,7 @@ export default function VoteShareEstimatePage() {
 
     return (
       <div className="card-border p-3">
-        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <h4 className="text-center mb-4 text-lg font-semibold">{voteShareData.page_info.page_title}</h4>
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <thead>
@@ -234,14 +234,14 @@ export default function VoteShareEstimatePage() {
                 <th colSpan={8} className="bg-tableheader text-center">Vote Share (%)</th>
               </tr>
               <tr>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#4EA72E' }}>AITC</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#E97132' }}>BJP</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#00B0F0' }}>INC</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#EE0000' }}>Left Front</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
                 <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
-                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#A6A6A6' }}>Others</th>
+                <th className="number" style={{ width: '6%', color: 'black', backgroundColor: '#A6A6A6' }}>NOTA</th>
               </tr>
             </thead>
             <tbody>
@@ -289,21 +289,21 @@ export default function VoteShareEstimatePage() {
 
     return (
       <div className="card-border p-3">
-        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <h4 className="text-center mb-4 text-lg font-semibold">{voteShareData.page_info.page_title}</h4>
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <thead>
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">PC Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">PC Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#4EA72E' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#E97132' }} className="number">BJP</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00B0F0' }} className="number">INC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#EE0000' }} className="number">Left Front</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }} className="number">Independent</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }} className="number">AJSU</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">Others</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">NOTA</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }} className="number">Others</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }} className="number">NOTA</th>
               </tr>
             </thead>
             <tbody>
@@ -334,21 +334,21 @@ export default function VoteShareEstimatePage() {
 
     return (
       <div className="card-border p-3">
-        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <h4 className="text-center mb-4 text-lg font-semibold">{voteShareData.page_info.page_title}</h4>
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <thead>
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">District Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">District Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#4EA72E' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#E97132' }} className="number">BJP</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00B0F0' }} className="number">INC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#EE0000' }} className="number">Left Front</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }} className="number">Independent</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }} className="number">AJSU</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">Others</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">NOTA</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }} className="number">Others</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }} className="number">NOTA</th>
               </tr>
             </thead>
             <tbody>
@@ -379,21 +379,21 @@ export default function VoteShareEstimatePage() {
 
     return (
       <div className="card-border p-3">
-        <h4 className="text-center mb-4">{voteShareData.page_info.page_title}</h4>
+        <h4 className="text-center mb-4 text-lg font-semibold">{voteShareData.page_info.page_title}</h4>
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <thead>
               <tr>
                 <th style={{ width: '5%' }} className="bg-tableheader">Zone Code</th>
                 <th style={{ width: '20%' }} className="bg-tableheader">Zone Name</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }} className="number">AITC</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }} className="number">BJP</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }} className="number">INC</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }} className="number">Left Front</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#4EA72E' }} className="number">AITC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#E97132' }} className="number">BJP</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#00B0F0' }} className="number">INC</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#EE0000' }} className="number">Left Front</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }} className="number">Independent</th>
                 <th style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }} className="number">AJSU</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">Others</th>
-                <th style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }} className="number">NOTA</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }} className="number">Others</th>
+                <th style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }} className="number">NOTA</th>
               </tr>
             </thead>
             <tbody>
@@ -426,7 +426,7 @@ export default function VoteShareEstimatePage() {
 
     return (
       <div className="card-border p-3">
-        <h4 className="text-center mb-4">Vote Share Estimate - 2025 Preference Demographics (%)</h4>
+        <h4 className="text-center mb-4 text-lg font-semibold">Vote Share Estimate - 2025 Preference Demographics (%)</h4>
         <div className="table-responsive">
           <table className="table table-bordered table-hover">
             <tbody>
@@ -437,14 +437,14 @@ export default function VoteShareEstimatePage() {
                     {/* Category Header */}
                     <tr>
                       <th style={{ width: '10%' }} className="bg-tableheader">{category}</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#6189e6ff' }}>AITC</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#e97132' }}>BJP</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00b0f0' }}>INC</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#ff0000' }}>Left Front</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#4EA72E' }}>AITC</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#E97132' }}>BJP</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#00B0F0' }}>INC</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#EE0000' }}>Left Front</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#92d050' }}>Independent</th>
                       <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#dce119' }}>AJSU</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>Others</th>
-                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#aeaeae' }}>NOTA</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }}>Others</th>
+                      <th className="number" style={{ width: '5%', color: 'black', backgroundColor: '#A6A6A6' }}>NOTA</th>
                     </tr>
 
                     {/* Category Data Rows */}
