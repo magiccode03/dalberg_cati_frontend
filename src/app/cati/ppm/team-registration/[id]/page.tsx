@@ -137,21 +137,26 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
       console.log('Raw API response:', teamData);
 
       if (teamData) {
+        const isActiveRaw = teamData.is_active !== undefined && teamData.is_active !== null
+          ? teamData.is_active
+          : (teamData.isActive !== undefined && teamData.isActive !== null ? teamData.isActive : undefined);
+
         const mappedData = {
           name: teamData.name || '',
           username: teamData.username || '',
-          password: '',// Always blank for update form
-          is_active: teamData.is_active ? String(teamData.is_active) : '',
+          password: '', // Always blank for update form
+          is_active: isActiveRaw !== undefined ? String(isActiveRaw) : '',
           group: teamData.group ? String(teamData.group) : '',
         };
         console.log(' Mapped form data:', mappedData);
+        console.log('raw is_active:', isActiveRaw, 'mapped:', mappedData.is_active);
         setFormData(mappedData);
       } else {
-        console.error('❌ No agency data received from API');
+        console.error('No agency data received from API');
         showError('Failed to fetch agency data - no data returned');
       }
     } catch (err) {
-      console.error('❌ Error fetching agency data:', err);
+      console.error('Error fetching agency data:', err);
       showError(`Failed to fetch agency data: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -186,7 +191,7 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
       const updateData: any = {
         name: formData.name,
         username: formData.username,
-        is_active: formData.is_active ? parseInt(formData.is_active) : 1,
+        is_active: formData.is_active ? parseInt(formData.is_active) : null,
         group: formData.group ? parseInt(formData.group) : undefined,
       };
 
@@ -199,7 +204,6 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
 
       if (result) {
         setShowSuccessBanner(true);
-        // Navigate back to team registration list after showing success message
         setTimeout(() => {
           router.push('/cati/ppm/team-registration');
         }, 2000); // Show banner for 2 seconds before navigating
@@ -312,7 +316,7 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
                   Groups *
                 </label>
                 <SelectDropdown
-                  value={formData.group}
+                  value={formData.group || ''}
                   onChange={(value) => handleInputChange('group', Array.isArray(value) ? String(value[0]) : String(value))}
                   options={groups.map(group => ({
                     value: String(group.id),
@@ -332,7 +336,7 @@ const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </Text>
                 <SelectDropdown
                   value={formData.is_active}
-                  onChange={(value) => handleInputChange('is_active', Array.isArray(value) ? value[0] : value)}
+                  onChange={(value) => handleInputChange('is_active', Array.isArray(value) ? String(value[0]) : String(value))}
                   options={statusOptions}
                 />
               </div>
