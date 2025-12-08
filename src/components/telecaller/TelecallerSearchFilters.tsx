@@ -103,7 +103,7 @@ const TelecallerSearchFilters: React.FC<TelecallerSearchFiltersProps> = ({
               placeholder="Telecaller Status"
             />
           </div>
-          <div className="lg:col-span-1">
+          {/* <div className="lg:col-span-1">
             <SelectDropdown
               options={permissionOptions}
               value={searchFilters.permission}
@@ -111,7 +111,7 @@ const TelecallerSearchFilters: React.FC<TelecallerSearchFiltersProps> = ({
               className="w-full"
               placeholder="User Type"
             />
-          </div>
+          </div> */}
           <div className="lg:col-span-1">
             <SelectDropdown
               options={[

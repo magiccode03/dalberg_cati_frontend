@@ -11,12 +11,9 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Alert from '@/components/ui/Alert';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import ACAssignmentModal from '@/components/modals/ACAssignmentModal';
-import CatiQCACAssignModal from '@/components/modals/CatiQCACAssignModal';
-import QCMetrics from '@/components/telecaller/QCMetrics';
 import TelecallerSearchFilters from '@/components/telecaller/TelecallerSearchFilters';
 import TelecallerUserCard from '@/components/telecaller/TelecallerUserCard';
 import TelecallerExpandedDetails from '@/components/telecaller/TelecallerExpandedDetails';
-import { useTelecallerData } from '@/components/telecaller/useTelecallerData';
 
 interface UnifiedUserData {
   user_id: number;
@@ -78,7 +75,7 @@ interface TelecallerOption {
   mobile_number: string;
 }
 
-const TeleUserInfoPage: React.FC = () => {
+const DataEntryUserPage: React.FC = () => {
   const router = useRouter();
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     teleform_user_id: '',
@@ -87,7 +84,7 @@ const TeleUserInfoPage: React.FC = () => {
     status: '',
     telecaller: '',
     ac_code: '',
-    permission: 'fill_form', // Default to telecallers
+    permission: 'data_entry', // Default to Data Entry users
     telecalling_group_id: '',
   });
 
@@ -115,12 +112,8 @@ const TeleUserInfoPage: React.FC = () => {
     // UI states
     expandedRows: new Set<number>(),
     isModalOpen: false,
-    isQCModalOpen: false,
     selectedTelecaller: null as { id: number, name: string, type?: 'telecaller' | 'qc_user' | 'data_entry' } | null,
   });
-
-  const [showQCMetrics, setShowQCMetrics] = useState(false);
-
 
   // Use refs to prevent multiple calls
   const hasInitialized = useRef(false);
@@ -136,7 +129,7 @@ const TeleUserInfoPage: React.FC = () => {
   ], []);
 
   const permissionOptions = useMemo(() => [
-    { value: 'fill_form', label: 'Telecallers' },
+    { value: 'data_entry', label: 'Data Entry Users' },
   ], []);
 
   // Optimized state update helper
@@ -144,8 +137,8 @@ const TeleUserInfoPage: React.FC = () => {
     setState(prev => ({ ...prev, ...updates }));
   }, []);
 
-  // Optimized fetch telecaller options with useCallback
-  const fetchTelecallerOptions = useCallback(async () => {
+  // Optimized fetch data entry user options with useCallback
+  const fetchDataEntryUserOptions = useCallback(async () => {
     if (optionsFetched.current || state.optionsLoading) {
       return;
     }
@@ -161,12 +154,8 @@ const TeleUserInfoPage: React.FC = () => {
       if (!process.env.NEXT_PUBLIC_API_URL) {
         console.warn('NEXT_PUBLIC_API_URL is not set, falling back to http://localhost:4001');
       }
-      // Build params including the permission filter (fill_form | qc | data_entry)
-      const params: any = { limit: '1000' };
-      if (searchFilters.permission) {
-        // permission contains the exact query param name that the API expects (fill_form | qc | data_entry)
-        params[searchFilters.permission] = '1';
-      }
+      // Build params with data_entry filter
+      const params: any = { limit: '1000', data_entry: '1' };
       const queryParams = new URLSearchParams(params).toString();
       const response = await fetch(`${apiBaseUrl}/api/teleform-users?${queryParams}`, {
         method: 'GET',
@@ -192,12 +181,12 @@ const TeleUserInfoPage: React.FC = () => {
         updateState({ telecallerOptions: options });
       }
     } catch (err) {
-      console.error('Error fetching telecaller options:', err);
+      console.error('Error fetching data entry user options:', err);
       optionsFetched.current = false;
     } finally {
       updateState({ optionsLoading: false });
     }
-  }, [state.optionsLoading, updateState, searchFilters.permission]);
+  }, [state.optionsLoading, updateState]);
 
   // Fetch AC options for the AC dropdown
   const fetchACOptions = useCallback(async () => {
@@ -223,14 +212,6 @@ const TeleUserInfoPage: React.FC = () => {
       console.error('Error fetching AC options:', err);
     }
   }, [updateState]);
-
-  // Refetch telecaller options whenever permission filter changes
-  useEffect(() => {
-    // Reset the fetched flag so we can fetch new options scoped to the permission
-    optionsFetched.current = false;
-    fetchTelecallerOptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchFilters.permission]);
 
   // Fetch telecalling groups
   const fetchTelecallingGroups = useCallback(async () => {
@@ -279,8 +260,8 @@ const TeleUserInfoPage: React.FC = () => {
     }
   }, [state.groupsLoading, updateState]);
 
-  // Optimized fetch telecallers with useCallback
-  const fetchTelecallers = useCallback(async (page: number = state.currentPage, useDefaultFilter: boolean = false) => {
+  // Optimized fetch data entry users with useCallback
+  const fetchDataEntryUsers = useCallback(async (page: number = state.currentPage, useDefaultFilter: boolean = false) => {
     if (state.isFetching || (useDefaultFilter && dataFetched.current)) {
       return;
     }
@@ -291,6 +272,7 @@ const TeleUserInfoPage: React.FC = () => {
       const params: any = {
         page: page,
         limit: state.pageSize,
+        data_entry: '1', // Always filter for Data Entry users
       };
 
       // Add filters if they have values
@@ -300,18 +282,6 @@ const TeleUserInfoPage: React.FC = () => {
       if (searchFilters.mobile_number) params.mobile_number = searchFilters.mobile_number;
       if (searchFilters.status) params.status = searchFilters.status;
       if (searchFilters.telecalling_group_id) params.telecalling_group_id = searchFilters.telecalling_group_id;
-
-      // Permission filter: fill_form=1 (telecallers), qc=1 (QC users), or data_entry=1 (Data Entry users)
-      if (searchFilters.permission) {
-        params[searchFilters.permission] = '1';
-        console.log('🔍 Using permission filter:', searchFilters.permission, '→', params[searchFilters.permission]);
-      } else if (useDefaultFilter) {
-        // Default filter: show only active telecallers (fill_form=1) when no permission filter is selected
-        params.fill_form = '1';
-        console.log('🔍 Using default filter: fill_form=1');
-      } else {
-        console.log('🔍 No permission filter applied');
-      }
 
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -349,15 +319,15 @@ const TeleUserInfoPage: React.FC = () => {
           currentPage: page,
         });
       } else {
-        updateState({ error: result.message || 'Failed to fetch telecallers' });
+        updateState({ error: result.message || 'Failed to fetch data entry users' });
       }
     } catch (err: any) {
-      updateState({ error: err.message || 'Error fetching telecallers' });
-      console.error('Error fetching telecallers:', err);
+      updateState({ error: err.message || 'Error fetching data entry users' });
+      console.error('Error fetching data entry users:', err);
     } finally {
       updateState({ loading: false, isFetching: false });
     }
-  }, [state.pageSize, state.isFetching, searchFilters, updateState]); // Keep searchFilters in dependencies
+  }, [state.pageSize, state.isFetching, searchFilters, updateState]);
 
   // Initial data fetch on component mount
   useEffect(() => {
@@ -368,38 +338,36 @@ const TeleUserInfoPage: React.FC = () => {
     }
 
     hasInitialized.current = true;
-    console.log('Initializing component data...');
+    console.log('Initializing data entry user data...');
 
     const initializeData = async () => {
-      // Fetch telecaller options and telecalling groups
+      // Fetch data entry user options and telecalling groups
       await Promise.all([
-        fetchTelecallerOptions(),
-        fetchTelecallingGroups()
-        // Fetch AC options
-        , fetchACOptions()
+        fetchDataEntryUserOptions(),
+        fetchTelecallingGroups(),
+        fetchACOptions()
       ]);
 
-      // Then fetch initial telecaller data with default filter
-      await fetchTelecallers(1, true); // true = use default filter
+      // Then fetch initial data entry user data with default filter
+      await fetchDataEntryUsers(1, true); // true = use default filter
     };
 
     initializeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
   // Handle page changes (only for page > 1 to avoid duplicate calls)
   useEffect(() => {
     if (state.currentPage > 1 && !paginationFetched.current) {
       paginationFetched.current = true;
-      fetchTelecallers(state.currentPage);
+      fetchDataEntryUsers(state.currentPage);
       // Reset the flag after a short delay
       setTimeout(() => {
         paginationFetched.current = false;
       }, 1000);
     }
-  }, [state.currentPage]); // Remove fetchTelecallers from dependencies
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.currentPage]);
 
   // Optimized event handlers with useCallback
   const handleInputChange = useCallback((field: keyof SearchFilters, value: string) => {
@@ -414,12 +382,9 @@ const TeleUserInfoPage: React.FC = () => {
     e.preventDefault();
     console.log('🔍 Search triggered with filters:', searchFilters);
 
-    // Enable QC metrics only when permission filter is 'qc'
-    setShowQCMetrics(searchFilters.permission === 'qc');
-
     updateState({ currentPage: 1 });
-    fetchTelecallers(1);
-  }, [updateState, searchFilters, fetchTelecallers]);
+    fetchDataEntryUsers(1);
+  }, [updateState, searchFilters, fetchDataEntryUsers]);
 
   const handleClear = useCallback(() => {
     setSearchFilters({
@@ -429,16 +394,13 @@ const TeleUserInfoPage: React.FC = () => {
       status: '',
       telecaller: '',
       ac_code: '',
-      permission: 'fill_form', // Reset to telecallers
+      permission: 'data_entry', // Reset to Data Entry users
       telecalling_group_id: '',
     });
 
-    // Hide QC metrics
-    setShowQCMetrics(false);
-
     updateState({ currentPage: 1 });
-    fetchTelecallers(1);
-  }, [updateState, fetchTelecallers]);
+    fetchDataEntryUsers(1);
+  }, [updateState, fetchDataEntryUsers]);
 
   const handleAddData = useCallback((user: UnifiedUserData) => {
     const selectedTelecaller = {
@@ -447,20 +409,14 @@ const TeleUserInfoPage: React.FC = () => {
     };
 
     updateState({
-      selectedTelecaller,
-      isQCModalOpen: user.user_type === 'qc_user',
-      // Open the generic assignment modal for telecaller and data_entry users
-      isModalOpen: user.user_type === 'telecaller' || user.user_type === 'data_entry',
+      selectedTelecaller: { ...selectedTelecaller, type: 'data_entry' },
+      isModalOpen: true,
     });
-
-    // store user type on the selectedTelecaller for modal mode switching
-    updateState({ selectedTelecaller: { ...selectedTelecaller, type: user.user_type } });
   }, [updateState]);
 
   const handleModalClose = useCallback(() => {
     updateState({
       isModalOpen: false,
-      isQCModalOpen: false,
       selectedTelecaller: null,
     });
   }, [updateState]);
@@ -469,9 +425,9 @@ const TeleUserInfoPage: React.FC = () => {
     // Small delay to ensure backend has processed the assignment
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Refresh the telecallers data
-    fetchTelecallers();
-  }, [fetchTelecallers]);
+    // Refresh the data entry users data
+    fetchDataEntryUsers();
+  }, [fetchDataEntryUsers]);
 
   const toggleRowExpansion = useCallback((userId: number) => {
     const newExpandedRows = new Set(state.expandedRows);
@@ -500,11 +456,8 @@ const TeleUserInfoPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <Heading level={2} className="text-2xl  font-semibold text-gray-900 dark:text-white">
-              Telecaller
+              Data Entry User
             </Heading>
-            {/* <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Manage telecallers and their assignments
-            </p> */}
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {/* Additional header content if needed */}
@@ -551,18 +504,13 @@ const TeleUserInfoPage: React.FC = () => {
           }}
         />
 
-        {showQCMetrics && (
-          <QCMetrics teleformUserId={searchFilters.teleform_user_id || undefined}
-            ac_code={searchFilters.ac_code || undefined} />
-        )}
-
-        {/* Tele Caller Cards */}
+        {/* Data Entry User Cards */}
         <Card className="">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
               <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                Telecaller
+                Data Entry User
               </Heading>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:space-x-2 gap-2 lg:gap-0">
@@ -571,25 +519,9 @@ const TeleUserInfoPage: React.FC = () => {
                 onClick={() => router.push('/cati/ppm/manage-calling/create-tele-caller')}
               >
                 <Plus className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Add New Telecaller</span>
-                <span className="sm:hidden">Add New Telecaller</span>
+                <span className="hidden sm:inline">Add New Data Entry User</span>
+                <span className="sm:hidden">Add New Data Entry User</span>
               </Button>
-
-              {/* <Button variant="secondary" size="sm" className="bg-yellow-500 hover:bg-yellow-600 text-white w-full lg:w-auto">
-                <Search className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Calling User Check</span>
-                <span className="sm:hidden">User Check</span>
-              </Button> */}
-              {/* <Button variant="secondary" size="sm" className="bg-green-500 hover:bg-green-600 text-white w-full lg:w-auto">
-                <Edit className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Redistribute Pending Data</span>
-                <span className="sm:hidden">Redistribute</span>
-              </Button> */}
-              {/* <Button variant="secondary" size="sm" className="bg-blue-500 hover:bg-blue-600 text-white w-full lg:w-auto">
-                <Plus className="w-4 h-4 mr-1" />
-                <span className="hidden sm:inline">Refresh Progress Data</span>
-                <span className="sm:hidden">Refresh</span>
-              </Button> */}
             </div>
           </div>
 
@@ -616,26 +548,13 @@ const TeleUserInfoPage: React.FC = () => {
                 <Search className="w-12 h-12 text-gray-400" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No telecallers found
+                No data entry users found
               </h3>
               <p className="text-gray-500 dark:text-gray-400">
-                Try adjusting your search filters or add a new telecaller.
+                Try adjusting your search filters or add a new data entry user.
               </p>
             </div>
           )}
-
-          {/* Total Count Footer */}
-          {/* {!loading && teleUserData.length > 0 && (
-            <div className="flex justify-start mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="text-sm text-gray-700 dark:text-gray-300">
-                Total: <span className="font-semibold">{totalCount}</span> telecaller{totalCount !== 1 ? 's' : ''}
-              </div> */}
-          {/* Debug info - remove after testing */}
-          {/* <div className="ml-4 text-xs text-gray-500">
-                Debug: totalPages={totalPages}, currentPage={currentPage}, pageSize={pageSize}
-              </div>
-            </div>
-          )} */}
 
           {/* Pagination */}
           {!state.loading && state.totalPages > 1 && (
@@ -653,27 +572,19 @@ const TeleUserInfoPage: React.FC = () => {
 
         {/* AC Assignment Modal */}
         {state.selectedTelecaller && (
-          <>
-            <ACAssignmentModal
-              isOpen={state.isModalOpen}
-              onClose={handleModalClose}
-              teleformUserId={state.selectedTelecaller.id}
-              telecallerName={state.selectedTelecaller.name}
-              onSuccess={handleAssignmentSuccess}
-              mode={state.selectedTelecaller?.type === 'data_entry' ? 'data_entry' : 'telecaller'}
-            />
-            <CatiQCACAssignModal
-              isOpen={state.isQCModalOpen}
-              onClose={handleModalClose}
-              teleformUserId={state.selectedTelecaller.id}
-              telecallerName={state.selectedTelecaller.name}
-              onSuccess={handleAssignmentSuccess}
-            />
-          </>
+          <ACAssignmentModal
+            isOpen={state.isModalOpen}
+            onClose={handleModalClose}
+            teleformUserId={state.selectedTelecaller.id}
+            telecallerName={state.selectedTelecaller.name}
+            onSuccess={handleAssignmentSuccess}
+            mode="data_entry"
+          />
         )}
       </div>
     </Container>
   );
 };
 
-export default TeleUserInfoPage;
+export default DataEntryUserPage;
+

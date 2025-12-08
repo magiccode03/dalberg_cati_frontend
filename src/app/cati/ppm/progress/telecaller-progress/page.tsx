@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
@@ -183,9 +183,9 @@ const TelecallerProgressPage: React.FC = () => {
     direction: 'asc' | 'desc';
   }>({ key: null, direction: 'asc' });
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(25);
+  // Use refs to prevent multiple calls
+  const isFetchingTelecallerData = useRef(false);
+  const hasInitializedTelecallerData = useRef(false);
 
   // Dropdown options
   const acCodeOptions = [
@@ -388,7 +388,8 @@ const TelecallerProgressPage: React.FC = () => {
   // Search handler
   const handleSearch = () => {
     console.log('Searching with filters:', filters);
-    setCurrentPage(1); // Reset to first page when searching
+    // Reset to first page when searching
+    setTelecallerDataPagination(prev => ({ ...prev, page: 1 }));
     // Trigger API calls with current filters
     if (viewMode === 'overall') {
       // For overall view, trigger the TelecallerMetrics component to fetch
@@ -396,7 +397,7 @@ const TelecallerProgressPage: React.FC = () => {
     } else {
       fetchDayWiseData();
     }
-    fetchTelecallerWiseData(); // Fetch all data when filtering
+    fetchTelecallerWiseData(1); // Fetch first page when filtering
   };
 
   // Fetch performance data
@@ -678,8 +679,14 @@ const TelecallerProgressPage: React.FC = () => {
     }
   };
 
-  // Fetch telecaller-wise data - fetch all pages to get complete data
-  const fetchTelecallerWiseData = async () => {
+  // Fetch telecaller-wise data - fetch only current page
+  const fetchTelecallerWiseData = async (page: number = telecallerDataPagination.page) => {
+    // Prevent multiple simultaneous calls
+    if (isFetchingTelecallerData.current) {
+      return;
+    }
+
+    isFetchingTelecallerData.current = true;
     setTelecallerDataLoading(true);
     setTelecallerDataError(null);
 
@@ -691,87 +698,83 @@ const TelecallerProgressPage: React.FC = () => {
       }
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const limit = 20; // Set limit to 20 as requested
 
-      // Fetch all data by making multiple API calls
-      let allData: TelecallerWiseData[] = [];
-      let currentPage = 1;
-      let hasMoreData = true;
-      const limit = 100; // API maximum limit
+      // Build query parameters for current page
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
 
-      while (hasMoreData) {
-        // Build query parameters for current page
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: limit.toString(),
-        });
+      // Add status filter (default to active)
+      if (filters.telecallerStatus && filters.telecallerStatus !== '') {
+        params.append('status', filters.telecallerStatus);
+      } else {
+        params.append('status', '1'); // Default to active
+      }
 
-        // Add filters (only if they have values)
-        if (filters.acCode && filters.acCode !== '') {
-          params.append('ac_code', filters.acCode);
+      // Add filters (only if they have values)
+      if (filters.acCode && filters.acCode !== '') {
+        params.append('ac_code', filters.acCode);
+      }
+
+      if (filters.telecaller && filters.telecaller !== '') {
+        params.append('teleform_user_id', filters.telecaller);
+      }
+
+      if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
+        params.append('telecalling_group_id', filters.telecallingGroupId);
+      }
+
+      // Date filter - handle custom dates and predefined ranges
+      const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
+      Object.entries(dateRange).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
+
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const pageData = Array.isArray(result.data) ? result.data : [];
+        setTelecallerWiseData(pageData);
+
+        // Update pagination from API response
+        if (result.pagination) {
+          setTelecallerDataPagination({
+            page: result.pagination.page || page,
+            limit: result.pagination.limit || limit,
+            total: result.pagination.total || 0,
+            totalPages: result.pagination.totalPages || 1,
+          });
         }
-
-        if (filters.telecaller && filters.telecaller !== '') {
-          params.append('teleform_user_id', filters.telecaller);
-        }
-
-        if (filters.telecallerStatus && filters.telecallerStatus !== '') {
-          params.append('status', filters.telecallerStatus);
-        }
-
-        if (filters.telecallingGroupId && filters.telecallingGroupId !== '') {
-          params.append('telecalling_group_id', filters.telecallingGroupId);
-        }
-
-        // Date filter - handle custom dates and predefined ranges
-        const dateRange = getDateRangeForPerformanceAPI(filters.callingDates, filters.customDateFrom, filters.customDateTo);
-        Object.entries(dateRange).forEach(([key, value]) => {
-          if (value) params.append(key, value);
-        });
-
-        const url = `${apiUrl}/api/cati/telecaller-summary?${params.toString()}`;
-
-        // Debug log for telecaller summary API calls
-        console.log('Telecaller Summary API URL:', url);
-        console.log('Date range:', dateRange);
-
-        const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (result.success && result.data) {
-          const pageData = Array.isArray(result.data) ? result.data : [];
-          allData = [...allData, ...pageData];
-
-          // Check if there are more pages
-          const pagination = result.pagination;
-          hasMoreData = pagination && currentPage < pagination.totalPages;
-          currentPage++;
-        } else {
-          throw new Error(result.message || 'Failed to fetch telecaller summary data');
-        }
-      } // End of while loop
-
-      setTelecallerWiseData(allData);
+      } else {
+        throw new Error(result.message || 'Failed to fetch telecaller summary data');
+      }
     } catch (err) {
       console.error('Error fetching telecaller-wise data:', err);
       setTelecallerDataError(err instanceof Error ? err.message : 'Failed to fetch telecaller-wise data');
     } finally {
       setTelecallerDataLoading(false);
+      isFetchingTelecallerData.current = false;
     }
   };
 
-  // Handle page change for telecaller data (no longer needed since pagination is removed)
+  // Handle page change for telecaller data
   const handleTelecallerDataPageChange = (newPage: number) => {
-    fetchTelecallerWiseData();
+    fetchTelecallerWiseData(newPage);
   };
 
   // Handle table sorting
@@ -804,12 +807,9 @@ const TelecallerProgressPage: React.FC = () => {
     });
   };
 
-  // Get paginated data
-  const getPaginatedData = () => {
-    const sortedData = getSortedData();
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    return sortedData.slice(startIndex, endIndex);
+  // Get sorted data (no client-side pagination needed, API handles it)
+  const getDisplayData = () => {
+    return getSortedData();
   };
 
   // Download telecaller data as CSV (limit 200 records with current filters)
@@ -986,16 +986,23 @@ const TelecallerProgressPage: React.FC = () => {
 
   // Fetch initial data on mount
   useEffect(() => {
+    // Prevent multiple initializations
+    if (hasInitializedTelecallerData.current) {
+      return;
+    }
+
+    hasInitializedTelecallerData.current = true;
+
     if (viewMode === 'overall') {
       // Trigger initial metrics load once on mount
       setMetricsTrigger((t) => (t === 0 ? 1 : t));
     } else {
       fetchDayWiseData();
     }
-    // Fetch telecaller-wise data
-    fetchTelecallerWiseData();
+    // Fetch telecaller-wise data (first page only)
+    fetchTelecallerWiseData(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount - filters are applied via "View" button
+  }, []); // Only run on mount - filters are applied via "Search" button
 
   const formatDuration = (duration: string) => {
     return duration || '00:00:00';
@@ -1622,7 +1629,7 @@ const TelecallerProgressPage: React.FC = () => {
         </div>
 
         <div className="text-sm text-gray-600 dark:text-gray-400 my-2">
-          Total <strong>{telecallerWiseData.length}</strong> items.
+          Total <strong>{telecallerDataPagination.total}</strong> items.
         </div>
 
         {/* Error Alert */}
@@ -1699,10 +1706,10 @@ const TelecallerProgressPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {getPaginatedData().map((item, index) => (
+                  {getDisplayData().map((item, index) => (
                     <tr key={item.caller_id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                        {(currentPage - 1) * pageSize + index + 1}
+                        {(telecallerDataPagination.page - 1) * telecallerDataPagination.limit + index + 1}
                       </td>
                       <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                         {item.caller_id || '-'}
@@ -1812,14 +1819,14 @@ const TelecallerProgressPage: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {telecallerWiseData.length > 0 && (
+        {telecallerDataPagination.totalPages > 0 && (
           <div className="mt-4">
             <PaginationStandard
-              currentPage={currentPage}
-              totalItems={telecallerWiseData.length}
-              totalPages={Math.ceil(telecallerWiseData.length / pageSize)}
-              itemsPerPage={pageSize}
-              onPageChange={setCurrentPage}
+              currentPage={telecallerDataPagination.page}
+              totalItems={telecallerDataPagination.total}
+              totalPages={telecallerDataPagination.totalPages}
+              itemsPerPage={telecallerDataPagination.limit}
+              onPageChange={handleTelecallerDataPageChange}
             />
           </div>
         )}
