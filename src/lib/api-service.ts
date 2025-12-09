@@ -31,6 +31,7 @@ export interface User {
   lastLoginAt: string;
   createdAt: string;
   updatedAt: string;
+  group?: number;
 }
 
 export interface CreateUserRequest {
@@ -84,6 +85,7 @@ export interface LoginResponse {
     roleName: string;
     roleDisplayName: string;
     roleLevel: number;
+    group?: number;
   };
 }
 
@@ -156,6 +158,7 @@ class ApiService {
     name?: string;
     mobile?: string;
     isActive?: boolean;
+    group?: number;
   }): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
     const queryString = params ? '?' + new URLSearchParams(
       Object.entries(params)
