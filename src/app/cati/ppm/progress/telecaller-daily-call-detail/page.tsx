@@ -94,6 +94,7 @@ interface DashboardFilters {
   toDate: string;
   duration: string;
   telecallingGroupId: string;
+  audioAvailability: string;
 }
 
 const TelecallerDailyCallDetailPage = () => {
@@ -145,6 +146,7 @@ const TelecallerDailyCallDetailPage = () => {
     toDate: '',
     duration: '',
     telecallingGroupId: '',
+    audioAvailability: '',
   });
 
   // Telecaller and AC list states
@@ -281,6 +283,12 @@ const TelecallerDailyCallDetailPage = () => {
     { value: 'l15', label: 'Last 15 Days' },
     { value: 'currentmonth', label: 'Current Month' },
     { value: 'custom', label: 'Custom Date Range' },
+  ];
+
+  const audioAvailabilityOptions = [
+    { value: '', label: 'All Audio' },
+    { value: 'available', label: 'Available' },
+    { value: 'not_available', label: 'Not Available' },
   ];
 
   // Helper function to convert calling dates option to start_date and end_date
@@ -488,6 +496,11 @@ const TelecallerDailyCallDetailPage = () => {
       if (filters.callReceived && filters.callReceived !== '') {
         params.append('call_received', filters.callReceived);
       }
+
+      // Apply audio availability filter to API (server-side)
+      if (dashboardFilters.audioAvailability && dashboardFilters.audioAvailability !== '') {
+        params.append('isaudio', dashboardFilters.audioAvailability);
+      }
       
       const url = `${apiBaseUrl}/api/cati/interviews/call-details?${params.toString()}`;
       
@@ -612,6 +625,19 @@ const TelecallerDailyCallDetailPage = () => {
       }
       return 0;
     });
+  };
+
+  const getFilteredData = () => {
+    let filtered = getSortedData();
+
+    // Apply audio availability filter
+    if (dashboardFilters.audioAvailability === 'available') {
+      filtered = filtered.filter((item) => item.audio !== null && item.audio !== '');
+    } else if (dashboardFilters.audioAvailability === 'not_available') {
+      filtered = filtered.filter((item) => !item.audio || item.audio === '');
+    }
+
+    return filtered;
   };
 
   // Fetch telecallers list
@@ -829,6 +855,21 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
+           <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Audio 
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.audioAvailability}
+              onChange={(value) => handleDashboardFilterChange('audioAvailability', value)}
+              options={audioAvailabilityOptions}
+              placeholder="Select Audio Status"
+              searchable={false}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
           {/* From Date - Only show when Custom Date Range is selected */}
           {dashboardFilters.callingDates === 'custom' && (
             <div className="flex-1 min-w-[200px]">
@@ -884,7 +925,7 @@ const TelecallerDailyCallDetailPage = () => {
               disabled={metricsLoading}
             >
               <Search className="w-4 h-4 mr-2" />
-              {metricsLoading ? 'Loading...' : 'View'}
+              {metricsLoading ? 'Loading...' : 'Search'}
             </Button>
           </div>
         </div>
@@ -1092,7 +1133,7 @@ const TelecallerDailyCallDetailPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {getSortedData().map((item, index) => (
+                      {getFilteredData().map((item, index) => (
                         <tr key={item.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {(pagination.page - 1) * pagination.limit + index + 1}

@@ -1,19 +1,28 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { FluidContainer } from '@/components/ui/Container';
-import Card from '@/components/ui/Card';
-import Heading from '@/components/ui/Heading';
-import Text from '@/components/ui/Text';
-import Input from '@/components/ui/Input';
-import SelectDropdown from '@/components/ui/SelectDropdown';
-import Button from '@/components/ui/Button';
-import Checkbox from '@/components/ui/Checkbox';
-import { Table } from '@/components/ui/Table';
-import PaginationStandard from '@/components/ui/PaginationStandard';
-import Alert from '@/components/ui/Alert';
-import { Search, Users, Clock, PhoneCall, PhoneOff, CheckCircle, Play, Volume2 } from 'lucide-react';
-import TelecallerMetrics from '@/components/telecaller/TelecallerMetrics';
+import React, { useState, useEffect } from "react";
+import { FluidContainer } from "@/components/ui/Container";
+import Card from "@/components/ui/Card";
+import Heading from "@/components/ui/Heading";
+import Text from "@/components/ui/Text";
+import Input from "@/components/ui/Input";
+import SelectDropdown from "@/components/ui/SelectDropdown";
+import Button from "@/components/ui/Button";
+import Checkbox from "@/components/ui/Checkbox";
+import { Table } from "@/components/ui/Table";
+import PaginationStandard from "@/components/ui/PaginationStandard";
+import Alert from "@/components/ui/Alert";
+import {
+  Search,
+  Users,
+  Clock,
+  PhoneCall,
+  PhoneOff,
+  CheckCircle,
+  Play,
+  Volume2,
+} from "lucide-react";
+import TelecallerMetrics from "@/components/telecaller/TelecallerMetrics";
 
 // Interfaces
 interface SearchFilters {
@@ -94,57 +103,61 @@ interface DashboardFilters {
   toDate: string;
   duration: string;
   telecallingGroupId: string;
+   audioAvailability: string;
 }
 
 const TelecallerDailyCallDetailPage = () => {
   // State for search filters
   const [filters, setFilters] = useState<SearchFilters>({
-    reportDays: 'today',
-    customDate: '',
-    customDateEnd: '',
-    telecaller: '',
-    callerResponse: '',
-    apiResponse: '',
-    callReceived: '',
+    reportDays: "today",
+    customDate: "",
+    customDateEnd: "",
+    telecaller: "",
+    callerResponse: "",
+    apiResponse: "",
+    callReceived: "",
     talkDurationOver2: false,
   });
 
   // State for performance metrics
-  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
-    totalCallers: 0,
-    daysTillNow: 0,
-    numberOfDials: 0,
-    totalIvrDuration: '00:00:00',
-    callerDidNotPick: 0,
-    totalTalkDuration: '00:00:00',
-    totalFormDuration: '00:00:00',
-  });
+  const [performanceMetrics, setPerformanceMetrics] =
+    useState<PerformanceMetrics>({
+      totalCallers: 0,
+      daysTillNow: 0,
+      numberOfDials: 0,
+      totalIvrDuration: "00:00:00",
+      callerDidNotPick: 0,
+      totalTalkDuration: "00:00:00",
+      totalFormDuration: "00:00:00",
+    });
 
-  const [callOutcomeMetrics, setCallOutcomeMetrics] = useState<CallOutcomeMetrics>({
-    numberDoesNotExist: 0,
-    respondentDidNotPick: 0,
-    respondentPickedCall: 0,
-    pickedAndRefused: 0,
-    totalNumberExhausted: 0,
-    pickedAndCallContinue: 0,
-    completedInterview: 0,
-    terminatedInterview: 0,
-    incompleteInterview: 0,
-    ineligibleInterview: 0,
-  });
+  const [callOutcomeMetrics, setCallOutcomeMetrics] =
+    useState<CallOutcomeMetrics>({
+      numberDoesNotExist: 0,
+      respondentDidNotPick: 0,
+      respondentPickedCall: 0,
+      pickedAndRefused: 0,
+      totalNumberExhausted: 0,
+      pickedAndCallContinue: 0,
+      completedInterview: 0,
+      terminatedInterview: 0,
+      incompleteInterview: 0,
+      ineligibleInterview: 0,
+    });
 
   const [metricsLoading, setMetricsLoading] = useState(true);
   const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Dashboard filters state
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({
-    telecaller: '',
-    acCode: '',
-    callingDates: 'today',
-    fromDate: '',
-    toDate: '',
-    duration: '',
-    telecallingGroupId: '',
+    telecaller: "",
+    acCode: "",
+    callingDates: "today",
+    fromDate: "",
+    toDate: "",
+    duration: "",
+    telecallingGroupId: "",
+     audioAvailability: "",
   });
 
   // Telecaller and AC list states
@@ -158,7 +171,9 @@ const TelecallerDailyCallDetailPage = () => {
     id: number;
     name: string;
   }
-  const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
+  const [telecallingGroups, setTelecallingGroups] = useState<
+    TelecallingGroup[]
+  >([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
 
   // API state for call details
@@ -179,57 +194,57 @@ const TelecallerDailyCallDetailPage = () => {
   const [useIframe, setUseIframe] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     key: keyof CallDetailData | null;
-    direction: 'asc' | 'desc';
-  }>({ key: null, direction: 'asc' });
+    direction: "asc" | "desc";
+  }>({ key: null, direction: "asc" });
 
   // Options for dropdowns
   const reportDaysOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'today', label: 'Today' },
-    { value: 'yesterday', label: 'Yesterday' },
-    { value: 'dby', label: 'Day Before Yesterday' },
-    { value: 'l3', label: 'Last 3 Days' },
-    { value: 'l7', label: 'Last 7 Days' },
-    { value: 'l15', label: 'Last 15 Days' },
-    { value: 'currentmonth', label: 'Current Month' },
-    { value: 'custom', label: 'Custom Date' },
+    { value: "all", label: "All" },
+    { value: "today", label: "Today" },
+    { value: "yesterday", label: "Yesterday" },
+    { value: "dby", label: "Day Before Yesterday" },
+    { value: "l3", label: "Last 3 Days" },
+    { value: "l7", label: "Last 7 Days" },
+    { value: "l15", label: "Last 15 Days" },
+    { value: "currentmonth", label: "Current Month" },
+    { value: "custom", label: "Custom Date" },
   ];
 
   const callerResponseOptions = [
-    { value: '', label: 'Select Caller Response' },
-    { value: '1', label: 'Picked and Call Continue' },
-    { value: '2', label: 'Number does not exist' },
-    { value: '3', label: 'Respondent did not pick' },
-    { value: '4', label: 'Picked and Refused' },
-    { value: '10', label: 'Form Not Fill' },
+    { value: "", label: "Select Caller Response" },
+    { value: "1", label: "Picked and Call Continue" },
+    { value: "2", label: "Number does not exist" },
+    { value: "3", label: "Respondent did not pick" },
+    { value: "4", label: "Picked and Refused" },
+    { value: "10", label: "Form Not Fill" },
   ];
 
   const apiResponseOptions = [
-    { value: '', label: 'Select API Response' },
-    { value: '3', label: 'Both Answered (Respondent Picked the call)' },
-    { value: '4', label: 'To Ans. - From Unans. (Respondent did not pick)' },
-    { value: '7', label: 'From Unanswered (Caller did not pick)' },
+    { value: "", label: "Select API Response" },
+    { value: "3", label: "Both Answered (Respondent Picked the call)" },
+    { value: "4", label: "To Ans. - From Unans. (Respondent did not pick)" },
+    { value: "7", label: "From Unanswered (Caller did not pick)" },
   ];
 
   const callReceivedOptions = [
-    { value: '', label: 'Select Call Received' },
-    { value: '2', label: 'No' },
-    { value: '1', label: 'Yes' },
+    { value: "", label: "Select Call Received" },
+    { value: "2", label: "No" },
+    { value: "1", label: "Yes" },
   ];
 
   // Generate date options
   const generateDateOptions = () => {
-    const options = [{ value: '', label: 'Select Date' }];
+    const options = [{ value: "", label: "Select Date" }];
     const today = new Date();
-    
+
     for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateString = date.toISOString().split('T')[0];
+      const dateString = date.toISOString().split("T")[0];
       const label = dateString;
       options.push({ value: dateString, label });
     }
-    
+
     return options;
   };
 
@@ -237,7 +252,7 @@ const TelecallerDailyCallDetailPage = () => {
 
   // Dashboard filter dropdown options
   const telecallerOptions = [
-    { value: '', label: 'All Telecallers' },
+    { value: "", label: "All Telecallers" },
     ...telecallers
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((tc) => ({
@@ -247,7 +262,7 @@ const TelecallerDailyCallDetailPage = () => {
   ];
 
   const acCodeOptions = [
-    { value: '', label: 'All ACs' },
+    { value: "", label: "All ACs" },
     ...acList
       .sort((a, b) => a.ac_name.localeCompare(b.ac_name))
       .map((ac) => ({
@@ -257,7 +272,7 @@ const TelecallerDailyCallDetailPage = () => {
   ];
 
   const telecallingGroupOptions = [
-    { value: '', label: 'All Groups' },
+    { value: "", label: "All Groups" },
     ...telecallingGroups
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((group) => ({
@@ -267,87 +282,115 @@ const TelecallerDailyCallDetailPage = () => {
   ];
 
   const durationOptions = [
-    { value: '', label: 'All Duration' },
-    { value: '180', label: '180 seconds' },
+    { value: "", label: "All Duration" },
+    { value: "180", label: "180 seconds" },
   ];
 
   const callingDatesOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'today', label: 'Today' },
-    { value: 'yesterday', label: 'Yesterday' },
-    { value: 'dby', label: 'Day Before Yesterday' },
-    { value: 'l3', label: 'Last 3 Days' },
-    { value: 'l7', label: 'Last 7 Days' },
-    { value: 'l15', label: 'Last 15 Days' },
-    { value: 'currentmonth', label: 'Current Month' },
-    { value: 'custom', label: 'Custom Date Range' },
+    { value: "all", label: "All" },
+    { value: "today", label: "Today" },
+    { value: "yesterday", label: "Yesterday" },
+    { value: "dby", label: "Day Before Yesterday" },
+    { value: "l3", label: "Last 3 Days" },
+    { value: "l7", label: "Last 7 Days" },
+    { value: "l15", label: "Last 15 Days" },
+    { value: "currentmonth", label: "Current Month" },
+    { value: "custom", label: "Custom Date Range" },
+  ];
+
+    const audioAvailabilityOptions = [
+    { value: '', label: 'All Audio' },
+    { value: 'available', label: 'Available' },
+    { value: 'not_available', label: 'Not Available' },
   ];
 
   // Helper function to convert calling dates option to start_date and end_date
-  const getDateRangeForAPI = (callingDates: string, fromDate?: string, toDate?: string) => {
+  const getDateRangeForAPI = (
+    callingDates: string,
+    fromDate?: string,
+    toDate?: string
+  ) => {
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
-    
+    const todayStr = today.toISOString().split("T")[0];
+
     switch (callingDates) {
-      case 'all':
-        return { start_date: '', end_date: '' };
-      case 'today':
+      case "all":
+        return { start_date: "", end_date: "" };
+      case "today":
         return { start_date: todayStr, end_date: todayStr };
-      case 'yesterday':
+      case "yesterday":
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const yesterdayStr = yesterday.toISOString().split("T")[0];
         return { start_date: yesterdayStr, end_date: yesterdayStr };
-      case 'dby':
+      case "dby":
         const dby = new Date(today);
         dby.setDate(dby.getDate() - 2);
-        const dbyStr = dby.toISOString().split('T')[0];
+        const dbyStr = dby.toISOString().split("T")[0];
         return { start_date: dbyStr, end_date: dbyStr };
-      case 'l3':
+      case "l3":
         const l3Start = new Date(today);
         l3Start.setDate(l3Start.getDate() - 2);
-        return { start_date: l3Start.toISOString().split('T')[0], end_date: todayStr };
-      case 'l7':
+        return {
+          start_date: l3Start.toISOString().split("T")[0],
+          end_date: todayStr,
+        };
+      case "l7":
         const l7Start = new Date(today);
         l7Start.setDate(l7Start.getDate() - 6);
-        return { start_date: l7Start.toISOString().split('T')[0], end_date: todayStr };
-      case 'l15':
+        return {
+          start_date: l7Start.toISOString().split("T")[0],
+          end_date: todayStr,
+        };
+      case "l15":
         const l15Start = new Date(today);
         l15Start.setDate(l15Start.getDate() - 14);
-        return { start_date: l15Start.toISOString().split('T')[0], end_date: todayStr };
-      case 'currentmonth':
+        return {
+          start_date: l15Start.toISOString().split("T")[0],
+          end_date: todayStr,
+        };
+      case "currentmonth":
         const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        return { start_date: monthStart.toISOString().split('T')[0], end_date: todayStr };
-      case 'custom':
-        return { start_date: fromDate || '', end_date: toDate || '' };
+        return {
+          start_date: monthStart.toISOString().split("T")[0],
+          end_date: todayStr,
+        };
+      case "custom":
+        return { start_date: fromDate || "", end_date: toDate || "" };
       default:
-        return { start_date: '', end_date: '' };
+        return { start_date: "", end_date: "" };
     }
   };
 
   // Handlers
-  const handleFilterChange = (field: keyof SearchFilters, value: string | boolean) => {
-    setFilters(prev => ({
+  const handleFilterChange = (
+    field: keyof SearchFilters,
+    value: string | boolean
+  ) => {
+    setFilters((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleDashboardFilterChange = (field: keyof DashboardFilters, value: string | string[]) => {
-    const newValue = Array.isArray(value) ? value[0] || '' : value;
-    setDashboardFilters(prev => ({
+  const handleDashboardFilterChange = (
+    field: keyof DashboardFilters,
+    value: string | string[]
+  ) => {
+    const newValue = Array.isArray(value) ? value[0] || "" : value;
+    setDashboardFilters((prev) => ({
       ...prev,
       [field]: newValue,
     }));
   };
 
   const handleSearch = () => {
-    console.log('Search filters:', filters);
+    console.log("Search filters:", filters);
     fetchCallDetails(1);
   };
 
   const handleDashboardSearch = () => {
-    console.log('Dashboard filters:', dashboardFilters);
+    console.log("Dashboard filters:", dashboardFilters);
     fetchDashboardMetrics();
     fetchCallDetails(1); // Also refresh call details table with filters
     setMetricsTrigger((t) => t + 1); // trigger TelecallerMetrics fetch explicitly
@@ -358,43 +401,50 @@ const TelecallerDailyCallDetailPage = () => {
     try {
       setMetricsLoading(true);
 
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (!token) {
-        console.error('Authentication token not found');
+        console.error("Authentication token not found");
         setMetricsLoading(false);
         return;
       }
 
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+
       // Build URL with filters
       const params = new URLSearchParams();
-      
-      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== '') {
-        params.append('teleform_user_id', dashboardFilters.telecaller);
+
+      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== "") {
+        params.append("teleform_user_id", dashboardFilters.telecaller);
       }
-      
-      if (dashboardFilters.acCode && dashboardFilters.acCode !== '') {
-        params.append('ac_code', dashboardFilters.acCode);
+
+      if (dashboardFilters.acCode && dashboardFilters.acCode !== "") {
+        params.append("ac_code", dashboardFilters.acCode);
       }
-      
+
       // Convert calling dates to start_date and end_date
-      const dateRange = getDateRangeForAPI(dashboardFilters.callingDates, dashboardFilters.fromDate, dashboardFilters.toDate);
+      const dateRange = getDateRangeForAPI(
+        dashboardFilters.callingDates,
+        dashboardFilters.fromDate,
+        dashboardFilters.toDate
+      );
       if (dateRange.start_date && dateRange.end_date) {
-        params.append('start_date', dateRange.start_date);
-        params.append('end_date', dateRange.end_date);
+        params.append("start_date", dateRange.start_date);
+        params.append("end_date", dateRange.end_date);
       }
-      
-      if (dashboardFilters.duration && dashboardFilters.duration !== '') {
-        params.append('duration', dashboardFilters.duration);
+
+      if (dashboardFilters.duration && dashboardFilters.duration !== "") {
+        params.append("duration", dashboardFilters.duration);
       }
-      
-      const url = `${apiBaseUrl}/api/cati/dashboard${params.toString() ? `?${params.toString()}` : ''}`;
-      
+
+      const url = `${apiBaseUrl}/api/cati/dashboard${
+        params.toString() ? `?${params.toString()}` : ""
+      }`;
+
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       });
 
@@ -410,10 +460,10 @@ const TelecallerDailyCallDetailPage = () => {
           totalCallers: result.data.total_callers || 0,
           daysTillNow: result.data.days_till_now || 0,
           numberOfDials: result.data.number_of_dials || 0,
-          totalIvrDuration: result.data.total_ivr_duration || '00:00:00',
+          totalIvrDuration: result.data.total_ivr_duration || "00:00:00",
           callerDidNotPick: result.data.caller_did_not_pick || 0,
-          totalTalkDuration: result.data.total_talk_duration || '00:00:00',
-          totalFormDuration: result.data.total_form_duration || '00:00:00',
+          totalTalkDuration: result.data.total_talk_duration || "00:00:00",
+          totalFormDuration: result.data.total_form_duration || "00:00:00",
         });
 
         // Update call outcome metrics
@@ -430,10 +480,10 @@ const TelecallerDailyCallDetailPage = () => {
           ineligibleInterview: result.data.ineligible_interview || 0,
         });
       } else {
-        throw new Error(result.message || 'Failed to fetch dashboard metrics');
+        throw new Error(result.message || "Failed to fetch dashboard metrics");
       }
     } catch (err) {
-      console.error('Error fetching dashboard metrics:', err);
+      console.error("Error fetching dashboard metrics:", err);
     } finally {
       setMetricsLoading(false);
     }
@@ -445,56 +495,71 @@ const TelecallerDailyCallDetailPage = () => {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (!token) {
-        setError('Authentication token not found');
+        setError("Authentication token not found");
         setLoading(false);
         return;
       }
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
 
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
       // Build URL with filters
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pagination.limit.toString(),
       });
-      
+
       // Apply filters from dashboardFilters
-      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== '') {
-        params.append('teleform_user_id', dashboardFilters.telecaller);
+      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== "") {
+        params.append("teleform_user_id", dashboardFilters.telecaller);
       }
-      
-      if (dashboardFilters.acCode && dashboardFilters.acCode !== '') {
-        params.append('ac_code', dashboardFilters.acCode);
+
+      if (dashboardFilters.acCode && dashboardFilters.acCode !== "") {
+        params.append("ac_code", dashboardFilters.acCode);
       }
-      
+
       // Convert calling dates to start_date and end_date
-      const dateRange = getDateRangeForAPI(dashboardFilters.callingDates, dashboardFilters.fromDate, dashboardFilters.toDate);
+      const dateRange = getDateRangeForAPI(
+        dashboardFilters.callingDates,
+        dashboardFilters.fromDate,
+        dashboardFilters.toDate
+      );
       if (dateRange.start_date && dateRange.end_date) {
-        params.append('start_date', dateRange.start_date);
-        params.append('end_date', dateRange.end_date);
+        params.append("start_date", dateRange.start_date);
+        params.append("end_date", dateRange.end_date);
       }
-      
-      if (dashboardFilters.duration && dashboardFilters.duration !== '') {
-        params.append('duration', dashboardFilters.duration);
+
+      if (dashboardFilters.duration && dashboardFilters.duration !== "") {
+        params.append("duration", dashboardFilters.duration);
       }
-      
-      if (dashboardFilters.telecallingGroupId && dashboardFilters.telecallingGroupId !== '') {
-        params.append('telecalling_group_id', dashboardFilters.telecallingGroupId);
+
+      if (
+        dashboardFilters.telecallingGroupId &&
+        dashboardFilters.telecallingGroupId !== ""
+      ) {
+        params.append(
+          "telecalling_group_id",
+          dashboardFilters.telecallingGroupId
+        );
       }
-      
+
       // Apply additional filters from the search form (if uncommented later)
-      if (filters.callReceived && filters.callReceived !== '') {
-        params.append('call_received', filters.callReceived);
+      if (filters.callReceived && filters.callReceived !== "") {
+        params.append("call_received", filters.callReceived);
       }
-      
+
+      // Apply audio availability filter to API (server-side)
+      if (dashboardFilters.audioAvailability && dashboardFilters.audioAvailability !== '') {
+        params.append('isaudio', dashboardFilters.audioAvailability);
+      }
+
       const url = `${apiBaseUrl}/api/cati/interviews/call-details?${params.toString()}`;
-      
+
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       });
 
@@ -508,11 +573,13 @@ const TelecallerDailyCallDetailPage = () => {
         setCallDetailData(result.data.data || []);
         setPagination(result.data.pagination || pagination);
       } else {
-        throw new Error(result.message || 'Failed to fetch call details');
+        throw new Error(result.message || "Failed to fetch call details");
       }
     } catch (err) {
-      console.error('Error fetching call details:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch call details');
+      console.error("Error fetching call details:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch call details"
+      );
     } finally {
       setLoading(false);
     }
@@ -537,59 +604,59 @@ const TelecallerDailyCallDetailPage = () => {
   };
 
   const handleAudioError = () => {
-    console.error('Audio playback error, switching to iframe');
+    console.error("Audio playback error, switching to iframe");
     setAudioError(true);
     setUseIframe(true);
   };
 
   const handleIframeError = () => {
-    console.error('Iframe audio playback error');
+    console.error("Iframe audio playback error");
     setAudioError(true);
   };
 
   const formatDuration = (seconds: number | null) => {
-    if (seconds === null) return '-';
+    if (seconds === null) return "-";
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const formatDateTime = (dateTime: string | null) => {
-    if (!dateTime) return '-';
+    if (!dateTime) return "-";
     try {
       // Parse the UTC time and format it without timezone conversion
       const date = new Date(dateTime);
-      return date.toLocaleString('en-IN', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'UTC' // Force UTC timezone to prevent conversion
+      return date.toLocaleString("en-IN", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC", // Force UTC timezone to prevent conversion
       });
     } catch {
-      return '-';
+      return "-";
     }
   };
 
   const getStatusText = (status: number) => {
     const statusMap: { [key: number]: string } = {
-      0: 'Default',
-      1: 'Call Initiate',
-      2: 'Completed',
-      3: 'Incomplete',
-      4: 'Incomplete',
-      5: 'Ineligible',
-      6: 'Terminated',
-      7: 'Terminated'
+      0: "Default",
+      1: "Call Initiate",
+      2: "Completed",
+      3: "Incomplete",
+      4: "Incomplete",
+      5: "Ineligible",
+      6: "Terminated",
+      7: "Terminated",
     };
-    return statusMap[status] || 'Unknown';
+    return statusMap[status] || "Unknown";
   };
 
   const handleSort = (key: keyof CallDetailData) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
     }
     setSortConfig({ key, direction });
   };
@@ -605,40 +672,56 @@ const TelecallerDailyCallDetailPage = () => {
       if (bValue === null || bValue === undefined) return -1;
 
       if (aValue < bValue) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
+        return sortConfig.direction === "asc" ? -1 : 1;
       }
       if (aValue > bValue) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
+        return sortConfig.direction === "asc" ? 1 : -1;
       }
       return 0;
     });
+  };
+
+    const getFilteredData = () => {
+    let filtered = getSortedData();
+
+    // Apply audio availability filter
+    if (dashboardFilters.audioAvailability === 'available') {
+      filtered = filtered.filter((item) => item.audio !== null && item.audio !== '');
+    } else if (dashboardFilters.audioAvailability === 'not_available') {
+      filtered = filtered.filter((item) => !item.audio || item.audio === '');
+    }
+
+    return filtered;
   };
 
   // Fetch telecallers list
   const fetchTelecallers = async () => {
     setLoadingTelecallers(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (!token) return;
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiUrl}/api/teleform-users?status=1&limit=1000`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+      const response = await fetch(
+        `${apiUrl}/api/teleform-users?status=1&limit=1000`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
         const result = await response.json();
         if (response.ok && result.success) {
           setTelecallers(result.data || []);
         }
       }
     } catch (err) {
-      console.error('Error fetching telecallers:', err);
+      console.error("Error fetching telecallers:", err);
     } finally {
       setLoadingTelecallers(false);
     }
@@ -648,28 +731,30 @@ const TelecallerDailyCallDetailPage = () => {
   const fetchACList = async () => {
     setLoadingACs(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (!token) return;
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
       const response = await fetch(`${apiUrl}/api/cati/ac-details?limit=1000`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
         const result = await response.json();
         if (response.ok && result.success) {
-          const acData = Array.isArray(result.data?.data) ? result.data.data : [];
+          const acData = Array.isArray(result.data?.data)
+            ? result.data.data
+            : [];
           setAcList(acData);
         }
       }
     } catch (err) {
-      console.error('Error fetching AC list:', err);
+      console.error("Error fetching AC list:", err);
     } finally {
       setLoadingACs(false);
     }
@@ -679,31 +764,37 @@ const TelecallerDailyCallDetailPage = () => {
   const fetchTelecallingGroups = async () => {
     setLoadingGroups(true);
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (!token) return;
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      const response = await fetch(`${apiUrl}/api/teleform-users/telecalling-groups`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4001";
+      const response = await fetch(
+        `${apiUrl}/api/teleform-users/telecalling-groups`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
         const result = await response.json();
         if (response.ok && result.success && Array.isArray(result.data)) {
           const groups: TelecallingGroup[] = result.data.map((item: any) => ({
             id: item.telecalling_group_id || item.id,
-            name: item.telecalling_group_name || item.name || `Group ${item.telecalling_group_id || item.id}`,
+            name:
+              item.telecalling_group_name ||
+              item.name ||
+              `Group ${item.telecalling_group_id || item.id}`,
           }));
           setTelecallingGroups(groups);
         }
       }
     } catch (err) {
-      console.error('Error fetching telecalling groups:', err);
+      console.error("Error fetching telecalling groups:", err);
     } finally {
       setLoadingGroups(false);
     }
@@ -720,12 +811,12 @@ const TelecallerDailyCallDetailPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const MetricCard = ({ 
-    icon: Icon, 
-    title, 
-    value, 
-    bgColor = 'bg-blue-500',
-    iconColor = 'text-white'
+  const MetricCard = ({
+    icon: Icon,
+    title,
+    value,
+    bgColor = "bg-blue-500",
+    iconColor = "text-white",
   }: {
     icon: any;
     title: string;
@@ -735,7 +826,9 @@ const TelecallerDailyCallDetailPage = () => {
   }) => (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow">
       <div className="flex items-center">
-        <div className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}>
+        <div
+          className={`w-12 h-12 ${bgColor} rounded-full flex items-center justify-center mr-3`}
+        >
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
         <div className="flex-1">
@@ -772,7 +865,9 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={dashboardFilters.telecaller}
-              onChange={(value) => handleDashboardFilterChange('telecaller', value)}
+              onChange={(value) =>
+                handleDashboardFilterChange("telecaller", value)
+              }
               options={telecallerOptions}
               placeholder="Select Telecaller"
               searchable={true}
@@ -788,7 +883,7 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={dashboardFilters.acCode}
-              onChange={(value) => handleDashboardFilterChange('acCode', value)}
+              onChange={(value) => handleDashboardFilterChange("acCode", value)}
               options={acCodeOptions}
               placeholder="Select AC"
               searchable={true}
@@ -804,7 +899,9 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={dashboardFilters.telecallingGroupId}
-              onChange={(value) => handleDashboardFilterChange('telecallingGroupId', value)}
+              onChange={(value) =>
+                handleDashboardFilterChange("telecallingGroupId", value)
+              }
               options={telecallingGroupOptions}
               placeholder="Select Group"
               searchable={true}
@@ -820,7 +917,9 @@ const TelecallerDailyCallDetailPage = () => {
             </label>
             <SelectDropdown
               value={dashboardFilters.callingDates}
-              onChange={(value) => handleDashboardFilterChange('callingDates', value)}
+              onChange={(value) =>
+                handleDashboardFilterChange("callingDates", value)
+              }
               options={callingDatesOptions}
               placeholder="Select Date Range"
               searchable={false}
@@ -829,8 +928,25 @@ const TelecallerDailyCallDetailPage = () => {
             />
           </div>
 
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Audio
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.audioAvailability}
+              onChange={(value) =>
+                handleDashboardFilterChange("audioAvailability", value)
+              }
+              options={audioAvailabilityOptions}
+              placeholder="Select Audio Status"
+              searchable={false}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
           {/* From Date - Only show when Custom Date Range is selected */}
-          {dashboardFilters.callingDates === 'custom' && (
+          {dashboardFilters.callingDates === "custom" && (
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 From Date <span className="text-red-500">*</span>
@@ -838,14 +954,16 @@ const TelecallerDailyCallDetailPage = () => {
               <Input
                 type="date"
                 value={dashboardFilters.fromDate}
-                onChange={(e) => handleDashboardFilterChange('fromDate', e.target.value)}
+                onChange={(e) =>
+                  handleDashboardFilterChange("fromDate", e.target.value)
+                }
                 placeholder="dd/mm/yyyy"
               />
             </div>
           )}
 
           {/* To Date - Only show when Custom Date Range is selected */}
-          {dashboardFilters.callingDates === 'custom' && (
+          {dashboardFilters.callingDates === "custom" && (
             <div className="flex-1 min-w-[200px]">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 To Date <span className="text-red-500">*</span>
@@ -853,7 +971,9 @@ const TelecallerDailyCallDetailPage = () => {
               <Input
                 type="date"
                 value={dashboardFilters.toDate}
-                onChange={(e) => handleDashboardFilterChange('toDate', e.target.value)}
+                onChange={(e) =>
+                  handleDashboardFilterChange("toDate", e.target.value)
+                }
                 placeholder="dd/mm/yyyy"
               />
             </div>
@@ -877,14 +997,14 @@ const TelecallerDailyCallDetailPage = () => {
 
           {/* View Button */}
           <div className="flex-shrink-0">
-            <Button 
-              variant="primary" 
+            <Button
+              variant="primary"
               onClick={handleDashboardSearch}
               className="flex items-center"
               disabled={metricsLoading}
             >
               <Search className="w-4 h-4 mr-2" />
-              {metricsLoading ? 'Loading...' : 'View'}
+              {metricsLoading ? "Loading..." : "Search"}
             </Button>
           </div>
         </div>
@@ -1053,7 +1173,10 @@ const TelecallerDailyCallDetailPage = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-blue-600 mr-3"></div>
-            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+            <Heading
+              level={4}
+              className="text-lg font-semibold text-gray-900 dark:text-white"
+            >
               Call Detail
             </Heading>
           </div>
@@ -1067,85 +1190,109 @@ const TelecallerDailyCallDetailPage = () => {
           {loading ? (
             <div className="text-center py-12">
               <i className="fa fa-spinner fa-spin text-4xl text-blue-600 mb-4"></i>
-              <p className="text-gray-600 dark:text-gray-400">Loading call details...</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                Loading call details...
+              </p>
             </div>
           ) : callDetailData.length === 0 ? (
             <div className="text-center py-12">
               <i className="fa fa-inbox text-6xl text-gray-300 mb-4"></i>
-              <p className="text-gray-600 dark:text-gray-400">No call details found</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                No call details found
+              </p>
             </div>
           ) : (
-                <div className="table-responsive">
-                  <Table className="table table-bordered table-striped table-hover">
-                    <thead className="sticky-header bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">S.No</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-left">Caller Name</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Caller ID</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">Group</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Call Time</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">IVR Duration</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Talk Duration</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Duration</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Audio File</th>
-                        <th className="px-4 py-3 font-semibold text-gray-700 text-center">Form Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {getSortedData().map((item, index) => (
-                        <tr key={item.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {(pagination.page - 1) * pagination.limit + index + 1}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-left">
-                            {item.caller_name || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                            {item.caller_id || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
-                            {item.telecalling_group_name || '-'}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {formatDateTime(item.call_time)}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {formatDuration(item.ivr_duration)}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {formatDuration(item.talk_duration)}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {formatDuration(item.form_duration)}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {item.audio ? (
-                              <div className="relative group">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handlePlayAudio(item.audio!)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                                >
-                                  <Volume2 className="w-4 h-4" />
-                                </Button>
-                                {/* Tooltip */}
-                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                                  Play
-                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
-                                </div>
-                              </div>
-                            ) : (
-                              '-'
-                            )}
-                          </td>
-                          <td className="px-4 py-3 border-b border-gray-200 text-center">
-                            {getStatusText(item.status)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
+            <div className="table-responsive">
+              <Table className="table table-bordered table-striped table-hover">
+                <thead className="sticky-header bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      S.No
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-left">
+                      Caller Name
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      Caller ID
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center w-32 min-w-[120px]">
+                      Group
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      Call Time
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      IVR Duration
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      Talk Duration
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      Form Duration
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      Audio File
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-gray-700 text-center">
+                      Form Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getFilteredData().map((item, index) => (
+                    <tr key={item.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-left">
+                        {item.caller_name || "-"}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.caller_id || "-"}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
+                        {item.telecalling_group_name || "-"}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {formatDateTime(item.call_time)}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {formatDuration(item.ivr_duration)}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {formatDuration(item.talk_duration)}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {formatDuration(item.form_duration)}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {item.audio ? (
+                          <div className="relative group">
+                            <Button
+                              size="sm"
+                              onClick={() => handlePlayAudio(item.audio!)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Volume2 className="w-4 h-4" />
+                            </Button>
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                              Play
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-800"></div>
+                            </div>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 text-center">
+                        {getStatusText(item.status)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
           )}
         </div>
 
@@ -1187,69 +1334,82 @@ const TelecallerDailyCallDetailPage = () => {
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6">
                 <div className="mb-3 text-center">
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {useIframe ? 'Using alternative player' : 'Click play to start the audio'}
+                    {useIframe
+                      ? "Using alternative player"
+                      : "Click play to start the audio"}
                   </p>
                   {audioError && !useIframe && (
                     <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-                      Audio player had an issue. Try the alternative options below.
+                      Audio player had an issue. Try the alternative options
+                      below.
                     </p>
                   )}
                 </div>
 
                 {!useIframe ? (
                   currentAudio ? (
-                  <audio
-                    controls
-                    className="w-full"
-                    controlsList="nodownload"
+                    <audio
+                      controls
+                      className="w-full"
+                      controlsList="nodownload"
                       preload="metadata"
-                    onError={handleAudioError}
-                      onLoadStart={() => console.log('Audio loading started')}
-                      onCanPlay={() => console.log('Audio can play')}
-                  >
-                    <source src={currentAudio} type="audio/mpeg" />
-                    <source src={currentAudio} type="audio/mp3" />
-                    Your browser does not support the audio element.
-                  </audio>
+                      onError={handleAudioError}
+                      onLoadStart={() => console.log("Audio loading started")}
+                      onCanPlay={() => console.log("Audio can play")}
+                    >
+                      <source src={currentAudio} type="audio/mpeg" />
+                      <source src={currentAudio} type="audio/mp3" />
+                      Your browser does not support the audio element.
+                    </audio>
                   ) : (
                     <div className="text-center py-4 text-gray-500">
                       No audio file available for this call.
-                  </div>
+                    </div>
                   )
-                ) : (
-                  currentAudio ? (
-                    <div className="w-full">
-                  <iframe
-                    src={currentAudio}
-                        className="w-full h-16 border-0 rounded"
-                    title="Audio Player"
-                        allow="autoplay"
-                        onError={handleAudioError}
-                        onLoad={() => {
-                          // Check if iframe content is just text (not audio player)
-                          setTimeout(() => {
-                            try {
-                              const iframe = document.querySelector('iframe[title="Audio Player"]') as HTMLIFrameElement;
-                              if (iframe && iframe.contentDocument) {
-                                const bodyText = iframe.contentDocument.body?.textContent?.trim();
-                                if (bodyText && bodyText.includes('recording for v2 is working fine')) {
-                                  console.warn('Iframe returned text instead of audio player');
-                                  setAudioError(true);
-                                }
+                ) : currentAudio ? (
+                  <div className="w-full">
+                    <iframe
+                      src={currentAudio}
+                      className="w-full h-16 border-0 rounded"
+                      title="Audio Player"
+                      allow="autoplay"
+                      onError={handleAudioError}
+                      onLoad={() => {
+                        // Check if iframe content is just text (not audio player)
+                        setTimeout(() => {
+                          try {
+                            const iframe = document.querySelector(
+                              'iframe[title="Audio Player"]'
+                            ) as HTMLIFrameElement;
+                            if (iframe && iframe.contentDocument) {
+                              const bodyText =
+                                iframe.contentDocument.body?.textContent?.trim();
+                              if (
+                                bodyText &&
+                                bodyText.includes(
+                                  "recording for v2 is working fine"
+                                )
+                              ) {
+                                console.warn(
+                                  "Iframe returned text instead of audio player"
+                                );
+                                setAudioError(true);
                               }
-                            } catch (e) {
-                              // Cross-origin restrictions, can't access iframe content
-                              console.log('Cannot access iframe content due to CORS');
                             }
-                          }, 1000);
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="text-center py-4 text-gray-500">
-                      No audio file available for this call.
-                    </div>
-                  )
+                          } catch (e) {
+                            // Cross-origin restrictions, can't access iframe content
+                            console.log(
+                              "Cannot access iframe content due to CORS"
+                            );
+                          }
+                        }, 1000);
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    No audio file available for this call.
+                  </div>
                 )}
 
                 {/* Error Message for Failed Audio */}
@@ -1257,18 +1417,29 @@ const TelecallerDailyCallDetailPage = () => {
                   <div className="w-full p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
                     <div className="text-center">
                       <div className="text-red-600 dark:text-red-400 mb-2">
-                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-8 h-8 mx-auto mb-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                         <p className="font-semibold">Audio Playback Failed</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine."
+                          The audio URL is not serving playable content. The
+                          server returned: "recording for v2 is working fine."
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 {/* Alternative Options */}
                 <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center items-center">
                   {!useIframe && audioError && (
@@ -1279,16 +1450,16 @@ const TelecallerDailyCallDetailPage = () => {
                       Try Alternative Player
                     </button>
                   )}
-                    <a
-                      href={currentAudio}
-                      download
+                  <a
+                    href={currentAudio}
+                    download
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline"
-                    style={{ display: currentAudio ? 'inline' : 'none' }}
-                    >
+                    style={{ display: currentAudio ? "inline" : "none" }}
+                  >
                     Download audio
-                    </a>
-                  </div>
+                  </a>
                 </div>
+              </div>
             </div>
           </div>
         </div>
