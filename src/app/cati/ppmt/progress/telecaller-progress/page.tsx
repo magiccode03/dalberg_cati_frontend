@@ -1397,7 +1397,7 @@ const TelecallerProgressPage: React.FC = () => {
               />
             </div>
 
-            
+
 
             {/* Telecaller Status */}
             <div className="flex-1 min-w-[200px]">
@@ -1702,9 +1702,6 @@ const TelecallerProgressPage: React.FC = () => {
                       <td className="px-4 py-3 border-b border-gray-200 text-center w-32 min-w-[120px]">
                         {item.telecalling_group_name || '-'}
                       </td>
-                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
-                        {item.number_of_dials?.toLocaleString() || 0}
-                      </td>
                       <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-blue-600 dark:text-blue-400">
                         {item.number_of_calls_connected?.toLocaleString() || 0}
                       </td>
@@ -1719,6 +1716,9 @@ const TelecallerProgressPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-red-600 dark:text-red-400">
                         {item.qc_rejected?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
+                        {item.number_of_dials?.toLocaleString() || 0}
                       </td>
                       {/* <td className="px-4 py-3 border-b border-gray-200 font-medium text-center text-orange-600 dark:text-orange-400">
                             {item.short_interview?.toLocaleString() || 0}
