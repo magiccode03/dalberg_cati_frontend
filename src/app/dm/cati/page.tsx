@@ -23,47 +23,20 @@ const CatiDataPage = () => {
 
   const instanceData = [
     {
-      id: 1,
-      action: 'Download All Instance (.sav File)',
-      overallUrl: '/bh/poll202504/pmt/download/instanceall?type=all_spss',
-      yesterdayUrl: null
-    },
-    {
       id: 2,
       action: 'Download All Instance',
       overallUrl: '/bh/poll202504/pmt/download/instanceall',
-      yesterdayUrl: '/bh/poll202504/pmt/download/instance?extra=yesterday'
     },
     {
       id: 4,
       action: 'Download Valid Instance',
       overallUrl: '/bh/poll202504/pmt/download/instanceall?type=valid',
-      yesterdayUrl: '/bh/poll202504/pmt/download/instance?type=valid&extra=yesterday'
     },
     {
       id: 5,
       action: 'Download Rejected (all) Instance',
       overallUrl: '/bh/poll202504/pmt/download/instanceall?type=reject',
-      yesterdayUrl: '/bh/poll202504/pmt/download/instance?type=reject&extra=yesterday'
     },
-    {
-      id: 6,
-      action: 'Download All Instance (With Mobile Number)',
-      overallUrl: '/bh/poll202504/pmt/download/instanceall?type=all_mobile',
-      yesterdayUrl: '/bh/poll202504/pmt/download/instance?extra=yesterday'
-    },
-    {
-      id: 7,
-      action: 'Download Valid Instance (With Mobile Number)',
-      overallUrl: '/bh/poll202504/pmt/download/instanceall?type=valid_mobile',
-      yesterdayUrl: '/bh/poll202504/pmt/download/instance?type=valid&extra=yesterday'
-    },
-    {
-      id: 8,
-      action: 'Download Rejected (all) Instance (With Mobile Number)',
-      overallUrl: '/bh/poll202504/pmt/download/instanceall?type=reject_mobile',
-      yesterdayUrl: '/bh/poll202504/pmt/download/instance?type=reject&extra=yesterday'
-    }
   ];
 
   return (
@@ -97,7 +70,7 @@ const CatiDataPage = () => {
                 <tr>
                   <th className="text-left font-semibold text-gray-800 dark:text-gray-200">Action</th>
                   <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Overall</th>
-                  <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Yesterday (14-10-2025)</th>
+                  {/* <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Yesterday (14-10-2025)</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -113,7 +86,7 @@ const CatiDataPage = () => {
                         Download
                       </button>
                     </td>
-                    <td className="text-left">
+                    {/* <td className="text-left">
                       {item.yesterdayUrl ? (
                         <button
                           onClick={() => handleDownload(item.yesterdayUrl!)}
@@ -125,7 +98,7 @@ const CatiDataPage = () => {
                       ) : (
                         <span className="text-gray-500 dark:text-gray-400">-</span>
                       )}
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>

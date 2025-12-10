@@ -11,10 +11,20 @@ import { apiService } from '@/lib/api-service';
 // Dynamically import ECharts to avoid SSR issues
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false });
 
+interface ChartDataItem {
+  name: string;
+  y?: number;
+  achieved?: number;
+  count: string;
+}
+
 export default function ApprovalRatingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiData, setApiData] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [mlaData, setMlaData] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [mpData, setMpData] = useState<any>(null);
   const [selectedTab, setSelectedTab] = useState<'mla' | 'mp'>('mla');
 
   // Fetch approval ratings data
@@ -23,16 +33,26 @@ export default function ApprovalRatingsPage() {
       setLoading(true);
       setError(null);
 
-      const response = await apiService.getApprovalRatings();
+      const [mlaResponse, mpResponse] = await Promise.all([
+        apiService.getApprovalRatings(),
+        apiService.getApprovalRatingsPcWise(),
+      ]);
 
-      if (response.success && response.data) {
-        setApiData(response.data);
+      if (mlaResponse.success && mlaResponse.data) {
+        setMlaData(mlaResponse.data);
       } else {
-        setError('Failed to fetch approval ratings data');
+        throw new Error('Failed to fetch MLA approval ratings data');
       }
-    } catch (err: any) {
+
+      if (mpResponse.success && mpResponse.data) {
+        setMpData(mpResponse.data);
+      } else {
+        throw new Error('Failed to fetch MP approval ratings data');
+      }
+    } catch (err: unknown) {
       console.error('Error fetching approval ratings data:', err);
-      setError(err.message || 'An error occurred while fetching data');
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred while fetching data';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -44,14 +64,17 @@ export default function ApprovalRatingsPage() {
 
   // Pie chart options for Satisfaction with State Govt
   const getSatisfactionPieChartOptions = () => {
-    if (!apiData?.charts?.satisfaction_state_govt) return {};
+    if (!mlaData?.charts?.satisfaction_state_govt) return {};
 
-    const chartData = apiData.charts.satisfaction_state_govt;
+    const chartData = mlaData.charts.satisfaction_state_govt;
 
     return {
       tooltip: {
         trigger: 'item',
-        formatter: '{a} <br/>{b}: {c}% <br/>Achieved - <b>{d}</b>',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: (params: any) => {
+          return `${params.name}<br/>Percentage: ${params.value}%<br/>Total: ${params.data.count}`;
+        },
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         textStyle: {
           color: '#fff'
@@ -60,6 +83,7 @@ export default function ApprovalRatingsPage() {
       legend: {
         orient: 'vertical',
         left: 'left',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: chartData.data.map((item: any) => item.name)
       },
       series: [
@@ -68,8 +92,68 @@ export default function ApprovalRatingsPage() {
           type: 'pie',
           radius: '50%',
           center: ['50%', '50%'],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           data: chartData.data.map((item: any, index: number) => ({
             value: item.y,
+            name: item.name,
+            count: item.count,
+            itemStyle: {
+              color: chartData.colors[index]
+            }
+          })),
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          },
+          label: {
+            show: true,
+            formatter: '{b}: {c}%',
+            fontSize: 12
+          },
+          labelLine: {
+            show: true
+          }
+        }
+      ]
+    };
+  };
+
+  // Pie chart options for Satisfaction with BJP Govt (MP)
+  const getBjpGovtPieChartOptions = () => {
+    if (!mpData?.charts?.satisfaction_bjp_govt) return {};
+
+    const chartData = mpData.charts.satisfaction_bjp_govt;
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: (params: any) => {
+          return `${params.name}<br/>Percentage: ${params.value}%<br/>Tota: ${params.data.count}`;
+        },
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        textStyle: {
+          color: '#fff'
+        }
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        data: chartData.data.map((item: any) => item.name)
+      },
+      series: [
+        {
+          name: 'Percentage',
+          type: 'pie',
+          radius: '50%',
+          center: ['50%', '50%'],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data: chartData.data.map((item: any, index: number) => ({
+            value: item.achieved,
             name: item.name,
             count: item.count,
             itemStyle: {
@@ -124,7 +208,7 @@ export default function ApprovalRatingsPage() {
   }
 
   // No data state
-  if (!apiData) {
+  if (!mlaData && !mpData) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-6">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -141,7 +225,7 @@ export default function ApprovalRatingsPage() {
       {/* Page Title */}
       <div className="mb-8">
         <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white">
-          {apiData.page_info?.page_title || 'Approval Ratings'}
+          {mlaData?.page_info?.page_title || mpData?.page_info?.page_title || 'Approval Ratings'}
         </Heading>
       </div>
 
@@ -154,7 +238,7 @@ export default function ApprovalRatingsPage() {
               Satisfaction with State Govt. led by MB (Mamta Banerjee)
             </Heading>
             <div className="text-sm text-gray-600 dark:text-gray-400 text-right">
-              Interviews Achieved - {apiData.page_info?.total_interviews?.toLocaleString() || 0}
+              Interviews Achieved - {mlaData?.page_info?.total_interviews?.toLocaleString() || 0}
             </div>
           </div>
           <ReactECharts
@@ -170,11 +254,11 @@ export default function ApprovalRatingsPage() {
               Satisfaction with BJP Govt. with opposition
             </Heading>
             <div className="text-sm text-gray-600 dark:text-gray-400 text-right">
-              Interviews Achieved - {apiData.page_info?.total_interviews?.toLocaleString() || 0}
+              Interviews Achieved - {mpData?.page_info?.total_interviews?.toLocaleString() || 0}
             </div>
           </div>
           <ReactECharts
-            option={getSatisfactionPieChartOptions()}
+            option={getBjpGovtPieChartOptions()}
             style={{ height: '500px' }}
           />
         </Card>
@@ -196,7 +280,7 @@ export default function ApprovalRatingsPage() {
           <div className="p-4 text-center">
             <h2 className="text-white text-3xl font-bold mb-2">MLA</h2>
             <h4 className="text-white text-2xl font-semibold">
-             ACs -  {apiData.mla_satisfaction?.ac_data?.length || 0}
+             ACs -  {mlaData?.mla_satisfaction?.ac_data?.length || 0}
             </h4>
           </div>
         </div>
@@ -211,7 +295,7 @@ export default function ApprovalRatingsPage() {
           <div className="p-4 text-center">
             <h2 className="text-white text-3xl font-bold mb-2">MP</h2>
             <h4 className="text-white text-2xl font-semibold">
-             PCs -  {apiData.mp_satisfaction?.pc_data?.length || 0}
+             PCs -  {mpData?.mp_satisfaction?.pc_data?.length || 0}
             </h4>
           </div>
         </div>
@@ -222,15 +306,16 @@ export default function ApprovalRatingsPage() {
       <Card className="p-6 border border-gray-300">
         <Heading level={3} className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-6">
           {selectedTab === 'mla' 
-            ? (apiData.mla_satisfaction?.title || 'Satisfaction with current MLA')
-            : (apiData.mp_satisfaction?.title || 'Satisfaction with current MP')
+            ? (mlaData?.mla_satisfaction?.title || 'Satisfaction with current MLA')
+            : (mpData?.mp_satisfaction?.title || 'Satisfaction with current MP')
           }
         </Heading>
 
         {selectedTab === 'mla' ? (
           // MLA Table
-          apiData.mla_satisfaction?.ac_data && apiData.mla_satisfaction.ac_data.length > 0 ? (
+          mlaData?.mla_satisfaction?.ac_data && mlaData.mla_satisfaction.ac_data.length > 0 ? (
             <div className="overflow-x-auto">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
                   <tr className="bg-gray-100 dark:bg-gray-700">
@@ -244,7 +329,7 @@ export default function ApprovalRatingsPage() {
                       MLA Name
                     </th>
                     <th className="border border-gray-300 p-3 text-center font-semibold text-white" style={{ width: '12%', backgroundColor: '#61c296' }}>
-                      Highly Satisfied
+                      Fully Satisfied
                     </th>
                     <th className="border border-gray-300 p-3 text-center font-semibold text-white" style={{ width: '12%', backgroundColor: '#9bdb4a' }}>
                       Somewhat Satisfied
@@ -256,36 +341,36 @@ export default function ApprovalRatingsPage() {
                       Somewhat Dissatisfied
                     </th>
                     <th className="border border-gray-300 p-3 text-center font-semibold text-white" style={{ width: '12%', backgroundColor: '#c02453' }}>
-                      Highly Dissatisfied
+                      Fully Dissatisfied
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {apiData.mla_satisfaction.ac_data.map((item: any, index: number) => (
-                    <tr key={item.ac_code || index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  {mlaData.mla_satisfaction.ac_data.map((item: any, index: number) => (
+                    <tr key={`${(item as any).ac_code}-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="border border-gray-300 p-3 text-center font-medium text-gray-900 dark:text-white">
-                        {item.ac_code}
+                        {(item as any).ac_code}
                       </td>
                       <td className="border border-gray-300 p-3 text-gray-900 dark:text-white">
-                        {item.ac_name}
+                        {(item as any).ac_name}
                       </td>
                       <td className="border border-gray-300 p-3 text-gray-900 dark:text-white">
-                        {item.mla_name}
+                        {(item as any).mla_name}
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Highly Satisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Highly Satisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Somewhat satisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Somewhat satisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Neither satisfied nor dissatisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Neither satisfied nor dissatisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Somewhat dissatisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Somewhat dissatisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Highly Dissatisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Highly Dissatisfied'] || 0}%
                       </td>
                     </tr>
                   ))}
@@ -299,7 +384,7 @@ export default function ApprovalRatingsPage() {
           )
         ) : (
           // MP Table
-          apiData.mp_satisfaction?.pc_data && apiData.mp_satisfaction.pc_data.length > 0 ? (
+          mpData?.mp_satisfaction?.pc_data && mpData.mp_satisfaction.pc_data.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse border border-gray-300">
                 <thead>
@@ -314,7 +399,7 @@ export default function ApprovalRatingsPage() {
                       MP Name
                     </th>
                     <th className="border border-gray-300 p-3 text-center font-semibold text-white" style={{ width: '12%', backgroundColor: '#61c296' }}>
-                      Highly Satisfied
+                      Fully Satisfied
                     </th>
                     <th className="border border-gray-300 p-3 text-center font-semibold text-white" style={{ width: '12%', backgroundColor: '#9bdb4a' }}>
                       Somewhat Satisfied
@@ -331,31 +416,32 @@ export default function ApprovalRatingsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {apiData.mp_satisfaction.pc_data.map((item: any, index: number) => (
-                    <tr key={item.pc_code || index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {mpData.mp_satisfaction.pc_data.map((item: any, index: number) => (
+                    <tr key={`${(item as any).pc_code}-${index}`} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="border border-gray-300 p-3 text-center font-medium text-gray-900 dark:text-white">
-                        {item.pc_code}
+                        {(item as any).pc_code}
                       </td>
                       <td className="border border-gray-300 p-3 text-gray-900 dark:text-white">
-                        {item.pc_name}
+                        {(item as any).pc_name}
                       </td>
                       <td className="border border-gray-300 p-3 text-gray-900 dark:text-white">
-                        {item.mp_name}
+                        {(item as any).mp_name}
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Highly Satisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Fully satisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Somewhat satisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Somewhat satisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Neither satisfied nor dissatisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Neither satisfied nor dissatisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Somewhat dissatisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Somewhat dissatisfied'] || 0}%
                       </td>
                       <td className="border border-gray-300 p-3 text-center text-gray-900 dark:text-white">
-                        {item.satisfaction_breakdown?.['Highly Dissatisfied'] || 0}%
+                        {(item as any).satisfaction_breakdown?.['Fully Dissatisfied'] || 0}%
                       </td>
                     </tr>
                   ))}
