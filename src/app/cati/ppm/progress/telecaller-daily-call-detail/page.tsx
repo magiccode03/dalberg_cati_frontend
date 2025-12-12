@@ -52,29 +52,6 @@ interface PaginationInfo {
   hasPrev: boolean;
 }
 
-interface PerformanceMetrics {
-  totalCallers: number;
-  daysTillNow: number;
-  numberOfDials: number;
-  totalIvrDuration: string;
-  callerDidNotPick: number;
-  totalTalkDuration: string;
-  totalFormDuration: string;
-}
-
-interface CallOutcomeMetrics {
-  numberDoesNotExist: number;
-  respondentDidNotPick: number;
-  respondentPickedCall: number;
-  pickedAndRefused: number;
-  totalNumberExhausted: number;
-  pickedAndCallContinue: number;
-  completedInterview: number;
-  terminatedInterview: number;
-  incompleteInterview: number;
-  ineligibleInterview: number;
-}
-
 interface Telecaller {
   teleform_user_id: number;
   name: string;
@@ -110,31 +87,6 @@ const TelecallerDailyCallDetailPage = () => {
     talkDurationOver2: false,
   });
 
-  // State for performance metrics
-  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetrics>({
-    totalCallers: 0,
-    daysTillNow: 0,
-    numberOfDials: 0,
-    totalIvrDuration: '00:00:00',
-    callerDidNotPick: 0,
-    totalTalkDuration: '00:00:00',
-    totalFormDuration: '00:00:00',
-  });
-
-  const [callOutcomeMetrics, setCallOutcomeMetrics] = useState<CallOutcomeMetrics>({
-    numberDoesNotExist: 0,
-    respondentDidNotPick: 0,
-    respondentPickedCall: 0,
-    pickedAndRefused: 0,
-    totalNumberExhausted: 0,
-    pickedAndCallContinue: 0,
-    completedInterview: 0,
-    terminatedInterview: 0,
-    incompleteInterview: 0,
-    ineligibleInterview: 0,
-  });
-
-  const [metricsLoading, setMetricsLoading] = useState(true);
   const [metricsTrigger, setMetricsTrigger] = useState<number>(0);
 
   // Dashboard filters state
@@ -356,95 +308,8 @@ const TelecallerDailyCallDetailPage = () => {
 
   const handleDashboardSearch = () => {
     console.log('Dashboard filters:', dashboardFilters);
-    fetchDashboardMetrics();
-    fetchCallDetails(1); // Also refresh call details table with filters
+    fetchCallDetails(1); // Refresh call details table with filters
     setMetricsTrigger((t) => t + 1); // trigger TelecallerMetrics fetch explicitly
-  };
-
-  // Fetch dashboard metrics from API
-  const fetchDashboardMetrics = async () => {
-    try {
-      setMetricsLoading(true);
-
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        console.error('Authentication token not found');
-        setMetricsLoading(false);
-        return;
-      }
-
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-      
-      // Build URL with filters
-      const params = new URLSearchParams();
-      
-      if (dashboardFilters.telecaller && dashboardFilters.telecaller !== '') {
-        params.append('teleform_user_id', dashboardFilters.telecaller);
-      }
-      
-      if (dashboardFilters.acCode && dashboardFilters.acCode !== '') {
-        params.append('ac_code', dashboardFilters.acCode);
-      }
-      
-      // Convert calling dates to start_date and end_date
-      const dateRange = getDateRangeForAPI(dashboardFilters.callingDates, dashboardFilters.fromDate, dashboardFilters.toDate);
-      if (dateRange.start_date && dateRange.end_date) {
-        params.append('start_date', dateRange.start_date);
-        params.append('end_date', dateRange.end_date);
-      }
-      
-      if (dashboardFilters.duration && dashboardFilters.duration !== '') {
-        params.append('duration', dashboardFilters.duration);
-      }
-      
-      const url = `${apiBaseUrl}/api/cati/dashboard${params.toString() ? `?${params.toString()}` : ''}`;
-      
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        // Update performance metrics
-        setPerformanceMetrics({
-          totalCallers: result.data.total_callers || 0,
-          daysTillNow: result.data.days_till_now || 0,
-          numberOfDials: result.data.number_of_dials || 0,
-          totalIvrDuration: result.data.total_ivr_duration || '00:00:00',
-          callerDidNotPick: result.data.caller_did_not_pick || 0,
-          totalTalkDuration: result.data.total_talk_duration || '00:00:00',
-          totalFormDuration: result.data.total_form_duration || '00:00:00',
-        });
-
-        // Update call outcome metrics
-        setCallOutcomeMetrics({
-          numberDoesNotExist: result.data.number_does_not_exist || 0,
-          respondentDidNotPick: result.data.respondent_did_not_pick || 0,
-          respondentPickedCall: result.data.respondent_picked_call || 0,
-          pickedAndRefused: result.data.picked_and_refused || 0,
-          totalNumberExhausted: result.data.total_number_exhausted || 0,
-          pickedAndCallContinue: result.data.picked_and_call_continue || 0,
-          completedInterview: result.data.completed_interview || 0,
-          terminatedInterview: result.data.terminated_interview || 0,
-          incompleteInterview: result.data.incomplete_interview || 0,
-          ineligibleInterview: result.data.ineligible_interview || 0,
-        });
-      } else {
-        throw new Error(result.message || 'Failed to fetch dashboard metrics');
-      }
-    } catch (err) {
-      console.error('Error fetching dashboard metrics:', err);
-    } finally {
-      setMetricsLoading(false);
-    }
   };
 
   // Fetch call details from API
@@ -739,7 +604,6 @@ const TelecallerDailyCallDetailPage = () => {
     fetchTelecallers();
     fetchACList();
     fetchTelecallingGroups();
-    fetchDashboardMetrics();
     fetchCallDetails(1);
     // Trigger initial metrics load for "today" on first mount
     setMetricsTrigger((t) => (t === 0 ? 1 : t));
@@ -922,10 +786,9 @@ const TelecallerDailyCallDetailPage = () => {
               variant="primary" 
               onClick={handleDashboardSearch}
               className="flex items-center"
-              disabled={metricsLoading}
             >
               <Search className="w-4 h-4 mr-2" />
-              {metricsLoading ? 'Loading...' : 'Search'}
+              Search
             </Button>
           </div>
         </div>

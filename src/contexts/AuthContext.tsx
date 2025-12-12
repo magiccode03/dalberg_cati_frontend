@@ -237,34 +237,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await apiService.login({ uniqueId, password });
       
       if (response.success && response.data) {
-        const { user: apiUser, token, refreshToken } = response.data;
+        const { user: apiUser, accessToken, refreshToken } = response.data;
         
         // Store authentication tokens
-        if (token && refreshToken) {
-          localStorage.setItem('accessToken', token);
+        if (accessToken && refreshToken) {
+          localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', refreshToken);
         }
         
         // Transform API user to our User interface
-        const roleName = apiUser.roleName || apiUser.role?.name || 'super_admin';
+        // Handle both flat structure (roleName) and nested structure (role.name)
+        const roleName = (apiUser as any).roleName || (apiUser as any).role?.name || 'super_admin';
+        const roleDisplayName = (apiUser as any).roleDisplayName || (apiUser as any).role?.displayName;
         
-        // Determine system based on API response or default to 'capi' for system-specific roles
-        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc','group'];
-        const userSystem = apiUser.system || (systemRoles.includes(roleName) ? 'capi' : undefined);
+        // Determine system based on API response or default for system-specific roles
+        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc'];
+        const catiSystemRoles = ['group', 'ss', 'data_entry']; // Roles that default to 'cati'
+        let userSystem = (apiUser as any).system;
+        if (!userSystem) {
+          if (catiSystemRoles.includes(roleName)) {
+            userSystem = 'cati';
+          } else if (systemRoles.includes(roleName)) {
+            userSystem = 'capi';
+          }
+        }
         
         const userData: User = {
           id: apiUser.id.toString(),
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          mobile: apiUser.mobile,
+          mobile: (apiUser as any).mobile,
           role: roleName,
-          roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
+          roleDisplayName: roleDisplayName,
           avatar: '/logo.png',
           permissions: getDefaultPermissions(roleName),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
-          designation: apiUser.roleDisplayName || apiUser.role?.displayName,
+          designation: roleDisplayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
@@ -348,22 +358,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await apiService.register(userData);
       
       if (response.success && response.data) {
-        const { user: apiUser, token, refreshToken } = response.data;
+        const { user: apiUser, accessToken, refreshToken } = response.data;
         
         // Transform API user to our User interface
+        // Handle both flat structure (roleName) and nested structure (role.name)
+        const roleName = (apiUser as any).roleName || (apiUser as any).role?.name || 'super_admin';
+        const roleDisplayName = (apiUser as any).roleDisplayName || (apiUser as any).role?.displayName;
+        
         const userData: User = {
           id: apiUser.id.toString(),
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
-          mobile: apiUser.mobile,
-          role: apiUser.roleName || apiUser.role?.name || 'super_admin',
-          roleDisplayName: apiUser.roleDisplayName || apiUser.role?.displayName,
+          mobile: (apiUser as any).mobile,
+          role: roleName,
+          roleDisplayName: roleDisplayName,
           avatar: '/logo.png',
-          permissions: getDefaultPermissions(apiUser.roleName || apiUser.role?.name || 'super_admin'),
+          permissions: getDefaultPermissions(roleName),
           lastLogin: apiUser.lastLoginAt,
           department: 'Administration', // Default value
-          designation: apiUser.roleDisplayName || apiUser.role?.displayName,
+          designation: roleDisplayName,
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,

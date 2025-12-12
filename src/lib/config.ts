@@ -8,7 +8,7 @@ export const config = {
   api: {
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001',
     version: '/api',
-    timeout: 30000, // 30 seconds
+    timeout: 30000, // 30 seconds timeout for large data requests
   },
 
   // Application Configuration

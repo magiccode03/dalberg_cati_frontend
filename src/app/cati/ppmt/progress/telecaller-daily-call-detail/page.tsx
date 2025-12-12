@@ -61,29 +61,6 @@ interface PaginationInfo {
   hasPrev: boolean;
 }
 
-interface PerformanceMetrics {
-  totalCallers: number;
-  daysTillNow: number;
-  numberOfDials: number;
-  totalIvrDuration: string;
-  callerDidNotPick: number;
-  totalTalkDuration: string;
-  totalFormDuration: string;
-}
-
-interface CallOutcomeMetrics {
-  numberDoesNotExist: number;
-  respondentDidNotPick: number;
-  respondentPickedCall: number;
-  pickedAndRefused: number;
-  totalNumberExhausted: number;
-  pickedAndCallContinue: number;
-  completedInterview: number;
-  terminatedInterview: number;
-  incompleteInterview: number;
-  ineligibleInterview: number;
-}
-
 interface Telecaller {
   teleform_user_id: number;
   name: string;
@@ -804,7 +781,6 @@ const TelecallerDailyCallDetailPage = () => {
     fetchTelecallers();
     fetchACList();
     fetchTelecallingGroups();
-    fetchDashboardMetrics();
     fetchCallDetails(1);
     // Trigger initial metrics load for "today" on first mount
     setMetricsTrigger((t) => (t === 0 ? 1 : t));
@@ -1001,7 +977,6 @@ const TelecallerDailyCallDetailPage = () => {
               variant="primary"
               onClick={handleDashboardSearch}
               className="flex items-center"
-              disabled={metricsLoading}
             >
               <Search className="w-4 h-4 mr-2" />
               {metricsLoading ? "Loading..." : "Search"}

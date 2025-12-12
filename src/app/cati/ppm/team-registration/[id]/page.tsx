@@ -10,112 +10,83 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
 import { Key, Eye, EyeOff, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useUpdateTeamRegistration, useGetTeamRegistrationById, useGetTeamRegistrationDropdownOptions, useGetQCAgencies } from '@/hooks/useApi';
+import { useUpdateGroupTeamRegistration, useGetGroupTeamRegistrationById } from '@/hooks/useApi';
 import { useToast } from '@/components/ui/Toast';
 import SuccessBanner from '@/components/ui/SuccessBanner';
 
-const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }) => {
+const TeamUpdatePage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const resolvedParams = use(params);
-  const agencyId = resolvedParams.agency_id;
-  
+  const Id = resolvedParams.id;
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [formData, setFormData] = useState({
-    agency_name: '',
-    qc_agency_id: '',
-    show_second_level_column: '',
-    status: '1',
-    qa_id: '',
+    name: '',
     username: '',
-    password: ''
+    password: '',
+    is_active: '',
   });
-  
-  const { updateTeamRegistration, loading: updateLoading, error: updateError } = useUpdateTeamRegistration();
-  const { getTeamRegistrationById, loading: fetchLoading, error: fetchError } = useGetTeamRegistrationById();
-  const { getDropdownOptions, data: dropdownData, loading: dropdownLoading, error: dropdownError } = useGetTeamRegistrationDropdownOptions();
-  const { getQCAgencies, data: qcAgenciesData, loading: qcAgenciesLoading, error: qcAgenciesError } = useGetQCAgencies();
+
+  const { updateGroupTeamRegistration, loading: updateLoading, error: updateError } = useUpdateGroupTeamRegistration();
+  const { getGroupTeamRegistrationById, loading: fetchLoading, error: fetchError } = useGetGroupTeamRegistrationById();
   const { success, error: showError } = useToast();
 
-  // Dynamic QC agency options from API
-  const qcAgencyOptions = qcAgenciesData ? [
-    { value: '', label: 'Select QC Team' },
-    ...qcAgenciesData.map(agency => ({
-      value: agency.id.toString(),
-      label: `${agency.agency_name} (${agency.username})`
-    }))
-  ] : [
-    { value: '', label: 'Select QC Team' },
-    { value: '1', label: 'Internal (bhr2internalqc)' },
-    { value: '2', label: 'Kadence (bhr2kadenceqc)' }
-  ];
 
   // Dynamic dropdown options from API
-  const showSecondLevelOptions = dropdownData?.show_second_level_column?.map(option => ({
-    value: option.value.toString(),
-    label: option.label
-  })) || [
-    { value: '', label: 'Show 2nd Level Column(s)' },
-    { value: '1', label: 'Yes' },
-    { value: '0', label: 'No' }
-  ];
 
-  const statusOptions = dropdownData?.status?.map(option => ({
-    value: option.value.toString(),
-    label: option.label
-  })) || [
-    { value: '', label: 'Status Status' },
+
+  const statusOptions = [
+    { value: '', label: 'Select Status' },
     { value: '1', label: 'Active' },
     { value: '0', label: 'Inactive' }
   ];
 
   // Fetch agency data on component mount
   useEffect(() => {
-    if (agencyId) {
-      fetchAgencyData();
+    if (Id) {
+      fetchGroupTeamData();
     } else {
-      showError('No agency ID provided');
-      router.push('/capi/ppm/master/team-registration');
+      showError('No Group Team ID provided');
+      router.push('/cati/ppm/team-registration');
     }
-  }, [agencyId]);
+  }, [Id]);
 
-  // Fetch dropdown options on component mount
-  useEffect(() => {
-    getDropdownOptions();
-    getQCAgencies();
-  }, [getDropdownOptions, getQCAgencies]);
+  // Note: Group selection is managed by backend; removed client-side group dropdown.
 
-  const fetchAgencyData = async () => {
-    if (!agencyId) {
+  const fetchGroupTeamData = async () => {
+    if (!Id) {
       showError('No agency ID provided');
-      router.push('/capi/ppm/master/team-registration');
+      router.push('/cati/ppm/team-registration');
       return;
     }
 
     try {
-      console.log('🔍 Fetching agency data for ID:', agencyId);
-      const agencyData = await getTeamRegistrationById(parseInt(agencyId));
-      console.log('📊 Raw API response:', agencyData);
-      
-      if (agencyData) {
+      console.log('🔍 Fetching agency data for ID:', Id);
+      const teamData = await getGroupTeamRegistrationById(parseInt(Id));
+      console.log('Raw API response:', teamData);
+
+      if (teamData) {
+        const isActiveRaw = teamData.is_active !== undefined && teamData.is_active !== null
+          ? teamData.is_active
+          : (teamData.isActive !== undefined && teamData.isActive !== null ? teamData.isActive : undefined);
+
         const mappedData = {
-          agency_name: agencyData.agency_name || '',
-          qc_agency_id: agencyData.qc_agency_id?.toString() || '',
-          show_second_level_column: agencyData.show_second_level_column?.toString() || '',
-          status: agencyData.status?.toString() || '1',
-          qa_id: agencyData.qa_id?.toString() || '',
-          username: agencyData.username || '',
-          password: '' // Always blank for update form
+          name: teamData.name || '',
+          username: teamData.username || '',
+          password: '', // Always blank for update form
+          is_active: isActiveRaw !== undefined ? String(isActiveRaw) : '',
         };
-        console.log('✅ Mapped form data:', mappedData);
+        console.log(' Mapped form data:', mappedData);
+        console.log('raw is_active:', isActiveRaw, 'mapped:', mappedData.is_active);
         setFormData(mappedData);
       } else {
-        console.error('❌ No agency data received from API');
+        console.error('No agency data received from API');
         showError('Failed to fetch agency data - no data returned');
       }
     } catch (err) {
-      console.error('❌ Error fetching agency data:', err);
+      console.error('Error fetching agency data:', err);
       showError(`Failed to fetch agency data: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -127,58 +98,44 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
     }));
   };
 
-  const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setFormData(prev => ({
-      ...prev,
-      password: password
-    }));
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!agencyId) {
+
+    if (!Id) {
       showError('No agency ID provided');
       return;
     }
-    
-    console.log('Updating agency:', agencyId, 'with data:', formData);
-    
+
+    console.log('Updating agency:', Id, 'with data:', formData);
+
     // Validate required fields (password is optional for updates)
-    if (!formData.agency_name || !formData.username) {
+    if (!formData.name || !formData.username) {
       showError('Please fill in all required fields');
       return;
     }
 
-    // If password is blank, we'll skip updating it
-    if (!formData.password.trim()) {
-      console.log('Password is blank, will not update password');
-    }
-
     try {
-      const result = await updateTeamRegistration(parseInt(agencyId), {
-        agency_name: formData.agency_name,
-        qc_agency_id: parseInt(formData.qc_agency_id || '1'),
-        show_second_level_column: parseInt(formData.show_second_level_column || '1'),
-        status: parseInt(formData.status),
-        qa_id: parseInt(formData.qa_id || '1'), // Default value since field is hidden
-        unique_id: formData.username,
-        first_name: formData.username,
-        last_name: formData.username,
-        email: `${formData.username}@example.com`,
-        password: formData.password
-      });
+      // Build update data - only send password if it's not empty
+      const updateData: any = {
+        name: formData.name,
+        username: formData.username,
+        is_active: formData.is_active ? parseInt(formData.is_active) : null,
+        // backend will handle group assignment; do not send `group` from client
+      };
+
+      // Only include password if it's not empty
+      if (formData.password && formData.password.trim()) {
+        updateData.password = formData.password;
+      }
+
+      const result = await updateGroupTeamRegistration(parseInt(Id), updateData);
 
       if (result) {
         setShowSuccessBanner(true);
-        // Navigate back to team registration list after showing success message
         setTimeout(() => {
-          router.push('/capi/ppm/master/team-registration');
+          router.push('/cati/ppm/team-registration');
         }, 2000); // Show banner for 2 seconds before navigating
       }
     } catch (err) {
@@ -188,7 +145,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
   };
 
   const handleBack = () => {
-    router.push('/capi/ppm/master/team-registration');
+    router.push('/cati/ppm/team-registration');
   };
 
   if (fetchLoading) {
@@ -215,14 +172,14 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
             <Heading level={3} className="text-red-600 mb-2">Error Loading Agency Data</Heading>
             <Text className="text-gray-600 mb-4">{fetchError}</Text>
             <div className="flex space-x-3 justify-center">
-              <Button 
-                onClick={() => fetchAgencyData()} 
+              <Button
+                onClick={() => fetchGroupTeamData()}
                 variant="primary"
               >
                 Retry
               </Button>
-              <Button 
-                onClick={handleBack} 
+              <Button
+                onClick={handleBack}
                 variant="destructive"
               >
                 Back to List
@@ -245,7 +202,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
 
       {/* Page Title */}
       <Heading level={3} className="mb-6 text-gray-800">
-        Update Agency: {formData.agency_name}
+        Update Team: {formData.name}
       </Heading>
 
       {/* Main Content Card */}
@@ -267,7 +224,7 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
             <Heading level={5} className="text-gray-800 mb-4">
               Team Details
             </Heading>
-            
+
             {/* Row 1 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
@@ -276,79 +233,13 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                 </Text>
                 <Input
                   type="text"
-                  value={formData.agency_name}
-                  onChange={(e) => handleInputChange('agency_name', e.target.value)}
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   placeholder="Enter Team Name"
                   maxLength={500}
                   required
                 />
               </div>
-
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  QC Team
-                </Text>
-                <SelectDropdown
-                  value={formData.qc_agency_id}
-                  onChange={(value) => handleInputChange('qc_agency_id', Array.isArray(value) ? value[0] : value)}
-                  options={qcAgencyOptions}
-                  disabled={qcAgenciesLoading}
-                  placeholder={qcAgenciesLoading ? "Loading QC teams..." : "Select QC Team"}
-                />
-                {qcAgenciesLoading && (
-                  <Text className="text-sm text-gray-500 mt-1">Loading QC teams...</Text>
-                )}
-                {qcAgenciesError && (
-                  <Text className="text-sm text-red-500 mt-1">Failed to load QC teams</Text>
-                )}
-              </div>
-            </div>
-
-            {/* Row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Show Second Level Column <span className="text-red-500">*</span>
-                </Text>
-                <SelectDropdown
-                  value={formData.show_second_level_column}
-                  onChange={(value) => handleInputChange('show_second_level_column', Array.isArray(value) ? value[0] : value)}
-                  options={showSecondLevelOptions}
-                  disabled={dropdownLoading}
-                />
-                {dropdownLoading && (
-                  <Text className="text-sm text-gray-500 mt-1">Loading options...</Text>
-                )}
-              </div>
-
-              <div>
-                <Text className="block text-sm font-medium text-gray-700 mb-2">
-                  Status <span className="text-red-500">*</span>
-                </Text>
-                <SelectDropdown
-                  value={formData.status}
-                  onChange={(value) => handleInputChange('status', Array.isArray(value) ? value[0] : value)}
-                  options={statusOptions}
-                  disabled={dropdownLoading}
-                />
-                {dropdownLoading && (
-                  <Text className="text-sm text-gray-500 mt-1">Loading options...</Text>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <hr className="my-6 border-gray-200" />
-
-          {/* Team Supervisor User Details Section */}
-          <div>
-            <Heading level={5} className="text-gray-800 mb-4">
-              Zonal Manager User Details
-            </Heading>
-            
-            {/* Row 1 - Username and Password */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
                   Username <span className="text-red-500">*</span>
@@ -361,7 +252,10 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                   required
                 />
               </div>
+            </div>
 
+            {/* Row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Text className="block text-sm font-medium text-gray-700 mb-2">
                   Password <span className="text-gray-500">(Optional - leave blank to keep current)</span>
@@ -376,15 +270,6 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                   />
                   <Button
                     type="button"
-                    onClick={generatePassword}
-                    variant="primary"
-                    className="rounded-none border-l-0 bg-green-600 hover:bg-green-700"
-                    title="Generate Password"
-                  >
-                    <Key className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     variant="secondary"
                     className="rounded-l-none bg-blue-600 hover:bg-blue-700 text-white"
@@ -393,6 +278,18 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </Button>
                 </div>
+              </div>
+
+
+              <div>
+                <Text className="block text-sm font-medium text-gray-700 mb-2">
+                  Status <span className="text-red-500">*</span>
+                </Text>
+                <SelectDropdown
+                  value={formData.is_active}
+                  onChange={(value) => handleInputChange('is_active', Array.isArray(value) ? String(value[0]) : String(value))}
+                  options={statusOptions}
+                />
               </div>
             </div>
           </div>
@@ -433,34 +330,10 @@ const AgencyUpdatePage = ({ params }: { params: Promise<{ agency_id: string }> }
               </div>
             </div>
           )}
-
-          {/* Dropdown Options Error Display */}
-          {dropdownError && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div className="flex items-center">
-                <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
-                <Text className="text-yellow-700">
-                  Warning: Could not load dropdown options. Using default values. ({dropdownError})
-                </Text>
-              </div>
-            </div>
-          )}
-
-          {/* QC Agencies Error Display */}
-          {qcAgenciesError && (
-            <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div className="flex items-center">
-                <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
-                <Text className="text-yellow-700">
-                  Warning: Could not load QC teams. Using default values. ({qcAgenciesError})
-                </Text>
-              </div>
-            </div>
-          )}
         </div>
       </Card>
     </Container>
   );
 };
 
-export default AgencyUpdatePage;
+export default TeamUpdatePage;

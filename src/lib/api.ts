@@ -1177,6 +1177,8 @@ class ApiService {
     return this.request(`/cati/teams${queryString}`);
   }
 
+  
+
   async createTeamRegistration(data: {
     agency_name: string;
     qc_agency_id: number;
@@ -1198,6 +1200,84 @@ class ApiService {
     return this.request(API_ENDPOINTS.DASHBOARD.TEAM_REGISTRATION_CREATE, {
       method: 'POST',
       body: JSON.stringify(data)
+    });
+  }
+
+  // Create Group Team Registration (CATI) - maps to POST /api/cati/create/teams
+  async createGroupTeamRegistration(data: {
+    name: string;
+    username: string;
+    password: string;
+    group?: number;
+    is_active?: number;
+  }): Promise<ApiResponse<{
+    id: number;
+    username: string;
+    email?: string;
+    name?: string;
+    lastName?: string;
+    portalSlug?: string;
+    roleId?: number;
+    group?: number;
+    isActive?: number;
+    createdAt?: string;
+    updatedAt?: string;
+  }>> {
+    return this.request('/cati/create/teams', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+
+  // Get Group Team Registration by ID (CATI) - maps to GET /api/cati/create/teams/{id}
+  async getGroupTeamRegistrationById(id: number): Promise<ApiResponse<{
+    id: number;
+    username: string;
+    email?: string;
+    name?: string;
+    lastName?: string;
+    portalSlug?: string;
+    roleId?: number;
+    group?: number;
+    isActive?: number;
+    is_active?: number;
+    createdAt?: string;
+    updatedAt?: string;
+  }>> {
+    return this.request(`/cati/create/teams/${id}`, {
+      method: 'GET'
+    });
+  }
+
+  // Update Group Team Registration (CATI) - maps to PUT /api/cati/update/teams/{id}
+  async updateGroupTeamRegistration(id: number, data: {
+    name: string;
+    username: string;
+    password?: string;
+    group?: number | string | null;
+    is_active?: number | string;
+  }): Promise<ApiResponse<{
+    id: number;
+    username: string;
+    email?: string;
+    name?: string;
+    lastName?: string;
+    portalSlug?: string;
+    roleId?: number;
+    group?: number;
+    isActive?: number;
+    createdAt?: string;
+    updatedAt?: string;
+  }>> {
+    return this.request(`/cati/update/teams/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
   }
 
