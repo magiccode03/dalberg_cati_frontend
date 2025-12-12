@@ -61,6 +61,30 @@ interface PaginationInfo {
   hasPrev: boolean;
 }
 
+// Metrics interfaces
+interface PerformanceMetrics {
+  totalCallers: number;
+  daysTillNow: number;
+  numberOfDials: number;
+  totalIvrDuration: string;
+  callerDidNotPick: number;
+  totalTalkDuration: string;
+  totalFormDuration: string;
+}
+
+interface CallOutcomeMetrics {
+  numberDoesNotExist: number;
+  respondentDidNotPick: number;
+  respondentPickedCall: number;
+  pickedAndRefused: number;
+  totalNumberExhausted: number;
+  pickedAndCallContinue: number;
+  completedInterview: number;
+  terminatedInterview: number;
+  incompleteInterview: number;
+  ineligibleInterview: number;
+}
+
 interface Telecaller {
   teleform_user_id: number;
   name: string;
@@ -630,7 +654,7 @@ const TelecallerDailyCallDetailPage = () => {
     return statusMap[status] || "Unknown";
   };
 
-  const handleSort = (key: keyof CallDetailData) => {
+  const handleSort = (key: keyof CallDetailData) => {R
     let direction: "asc" | "desc" = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
       direction = "desc";
@@ -1407,8 +1431,7 @@ const TelecallerDailyCallDetailPage = () => {
                         </svg>
                         <p className="font-semibold">Audio Playback Failed</p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          The audio URL is not serving playable content. The
-                          server returned: "recording for v2 is working fine."
+                          The audio URL is not serving playable content. The server returned: "recording for v2 is working fine".
                         </p>
                       </div>
                     </div>
