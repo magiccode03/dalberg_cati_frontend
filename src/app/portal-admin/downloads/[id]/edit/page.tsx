@@ -23,7 +23,7 @@ interface DownloadItemFormData {
     params?: string;
   };
   type: 'CSV' | 'EXCEL' | 'ZIP' | 'JSON' | 'PDF' | 'OTHER';
-  survey_type: 'CAPI' | 'CATI' | 'CAVI' | 'OTHER';
+  survey_type: 'CAPI' | 'CATI' | 'CAVI' | 'CAPI_QC' | 'OTHER'
   status: number;
   sortOrder: number;
 }
@@ -189,6 +189,7 @@ export default function EditDownloadItemPage() {
     { value: 'CAPI', label: 'CAPI' },
     { value: 'CATI', label: 'CATI' },
     { value: 'CAVI', label: 'CAVI' },
+    { value: 'CAPI_QC', label: 'CAPI QC' },
     { value: 'OTHER', label: 'Other' },
   ];
 

@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Heading from '@/components/ui/Heading';
 import Alert from '@/components/ui/Alert';
 import { Table } from '@/components/ui/Table';
 import { Download } from 'lucide-react';
+
 
 interface DownloadItem {
   id: number;
@@ -20,14 +21,16 @@ interface DownloadItem {
   type: string;
   status: number;
   sortOrder: number;
+  survey_type?: string;
 }
 
 const CatiDataPage = () => {
-  const [instanceData, setInstanceData] = useState<DownloadItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState<string | null>(null);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
   const [, setDownloadError] = useState<{ [key: number]: string }>({});
+  const [apiItems, setApiItems] = useState<DownloadItem[]>([]);
+  const [qcApiItems, setQcApiItems] = useState<DownloadItem[]>([]);
+  const [isLoadingApiItems, setIsLoadingApiItems] = useState(false);
+  const [isLoadingQcItems, setIsLoadingQcItems] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Auto-clear status messages after 5s
@@ -37,138 +40,113 @@ const CatiDataPage = () => {
     return () => clearTimeout(timer);
   }, [statusMessage]);
 
-  // Fetch download items on mount
+  // Load download-items to get actual download URLs for CATI ZIPs
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchDownloadItems = async () => {
+    const fetchItems = async () => {
       try {
-        setIsLoading(true);
-        setHasError(null);
-
+        setIsLoadingApiItems(true);
         const token = localStorage.getItem('accessToken');
-        if (!token) {
-          setHasError('Authentication token not found');
-          return;
-        }
-
+        if (!token) return;
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-
-        const response = await fetch(`${apiBaseUrl}/api/download-items?page=1&limit=20`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          },
+        const res = await fetch(`${apiBaseUrl}/api/download-items?page=1&limit=50&survey_type=CATI`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         });
-
-        if (!response.ok) {
-          setHasError(`Failed to fetch download items (${response.status})`);
-          return;
-        }
-
-        const result = await response.json();
-
-        if (!result.success || !result.data?.data) {
-          setHasError('Failed to fetch download items');
-          return;
-        }
-
-        // Filter only CATI interview ZIP files with status = 1 (active)
-        const priorityTitles = [
-          'CATI All Interview Data',
-          'CATI All Valid Interview Data',
-          'CATI All Rejected Interview Data',
-        ];
-
-        const catiItems = result.data.data
-          .filter((item: DownloadItem) =>
-            item.type === 'ZIP' &&
-            item.title.includes('CATI') && 
-            item.status === 1 &&
-            item.title.includes('Interview')
-          )
-          .sort((a: DownloadItem, b: DownloadItem) => {
-            const aIdx = priorityTitles.indexOf(a.title);
-            const bIdx = priorityTitles.indexOf(b.title);
-            const aPriority = aIdx === -1 ? Number.MAX_SAFE_INTEGER : aIdx;
-            const bPriority = bIdx === -1 ? Number.MAX_SAFE_INTEGER : bIdx;
-            if (aPriority !== bPriority) return aPriority - bPriority;
-            return a.sortOrder - b.sortOrder;
-          });
-
-        if (isMounted) setInstanceData(catiItems);
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json?.data?.data) setApiItems(json.data.data);
       } catch (err) {
-        console.error('Error fetching download items:', err);
-        if (isMounted) setHasError('Failed to load download items');
+        console.error('Failed to fetch apiItems', err);
       } finally {
-        if (isMounted) setIsLoading(false);
+        setIsLoadingApiItems(false);
       }
     };
-
-    fetchDownloadItems();
-    return () => {
-      isMounted = false;
-    };
+    fetchItems();
   }, []);
 
-  const handleDownload = async (item: DownloadItem) => {
+
+  // Filter CATI items from the fetched API list
+  const capiItems = useMemo(() => apiItems.filter(item => String(item.survey_type).toUpperCase().startsWith('CATI') && !String(item.title).toLowerCase().includes('qc')), [apiItems]);
+  const qcItems = useMemo(() => {
+    const fromApi = apiItems.filter(item => String(item.title).toLowerCase().includes('qc') || String(item.survey_type).toUpperCase().includes('QC'));
+    const combined = [...(qcApiItems || []), ...fromApi];
+    const map = new Map<number, DownloadItem>();
+    combined.forEach(it => map.set(it.id, it));
+    return Array.from(map.values());
+  }, [apiItems, qcApiItems]);
+
+
+  // API-driven download using URL from /api/download-items (with fallback)
+  const apiDownload = async (id: number, apiPath: string | null, method: string = 'GET', params: any = null) => {
     try {
-      setDownloadingId(item.id);
+      setDownloadingId(id);
       setStatusMessage(null);
       setDownloadError(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[item.id];
-        return newErrors;
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
       });
 
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        setDownloadError(prev => ({ ...prev, [item.id]: 'Authentication token not found' }));
+        setDownloadError(prev => ({ ...prev, [id]: 'Authentication token not found' }));
         return;
       }
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+      // Diagnostics: log available apiItems and incoming apiPath
+      console.log('CATI apiItems count:', apiItems.length);
+      console.log('apiPath provided to apiDownload:', apiPath);
 
-      // Use the actual file URL from the API response
-      const downloadUrl = `${apiBaseUrl}${item.api.url}`;
-
-      console.log('API Base URL:', apiBaseUrl);
-      console.log('Download URL:', downloadUrl);
-      console.log('Download Item:', item);
-
-      // Call the download API endpoint
-      const downloadResponse = await fetch(downloadUrl, {
-        method: item.api.method || 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': '*/*',
-        },
-      });
-
-      if (!downloadResponse.ok) {
-        const errorText = await downloadResponse.text();
-        console.error('Download response error:', errorText);
-        setDownloadError(prev => ({ ...prev, [item.id]: 'File not found' }));
+      // Use apiPath if available; otherwise fail gracefully
+      if (!apiPath) {
+        console.warn('CATI download: no apiPath. Cannot proceed.');
+        setDownloadError(prev => ({ ...prev, [id]: 'Download URL not available' }));
         setStatusMessage({ type: 'error', message: 'File not found' });
         return;
       }
 
-      // Get the file from response
-      const blob = await downloadResponse.blob();
-      
-      // Determine file extension from type
-      const fileExtensionMap: { [key: string]: string } = {
-        'ZIP': 'zip',
-        'CSV': 'csv',
-        'EXCEL': 'xlsx',
-        'PDF': 'pdf',
-        'JSON': 'json',
-      };
+      let downloadUrl = apiPath && apiPath.startsWith('http') ? apiPath : `${apiBaseUrl}${apiPath}`;
+      // If GET method and params provided as object, append as query string
+      if (method === 'GET' && params && typeof params === 'object') {
+        const paramsObj = params as Record<string, string | number>;
+        const searchParams = new URLSearchParams();
+        Object.keys(paramsObj).forEach(key => searchParams.append(key, String(paramsObj[key])));
+        const queryStr = searchParams.toString();
+        downloadUrl += queryStr ? (downloadUrl.includes('?') ? '&' : '?') + queryStr : '';
+      }
+      console.log('CATI Download URL:', downloadUrl);
+      const headers: Record<string, string> = { Authorization: `Bearer ${token}`, Accept: '*/*' };
+      const options: RequestInit = { method, headers };
+      if (method !== 'GET' && params) {
+        headers['Content-Type'] = 'application/json';
+        options.body = JSON.stringify(params);
+      }
+      const res = await fetch(downloadUrl, options);
 
-      const fileExtension = fileExtensionMap[item.type] || 'bin';
-      const fileName = `${item.title.replace(/\s+/g, '_')}.${fileExtension}`;
+      if (!res.ok) {
+        // backend returns JSON error when file missing
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          // Just show 'File not found' instead of full message
+          setDownloadError(prev => ({ ...prev, [id]: 'File not found' }));
+          setStatusMessage({ type: 'error', message: 'File not found' });
+        } else {
+          setDownloadError(prev => ({ ...prev, [id]: `Download failed: ${res.status}` }));
+          setStatusMessage({ type: 'error', message: 'File not found' });
+        }
+        return;
+      }
 
-      // Trigger download
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        // Just show 'File not found' instead of full message
+        setDownloadError(prev => ({ ...prev, [id]: 'File not found' }));
+        setStatusMessage({ type: 'error', message: 'File not found' });
+        return;
+      }
+
+      const blob = await res.blob();
+      const fileName = (apiPath || '').split('/').pop() || `download_${id}.zip`;
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = fileName;
@@ -177,21 +155,26 @@ const CatiDataPage = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
 
-      // Clear error message after successful download
+      // clear any error
       setDownloadError(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[item.id];
-        return newErrors;
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
       });
       setStatusMessage({ type: 'success', message: 'Download data successfully' });
-    } catch (error) {
-      console.error('Download error:', error);
-      setDownloadError(prev => ({ ...prev, [item.id]: 'File not found' }));
+    } catch (err) {
+      console.error('API download error', err);
+      setDownloadError(prev => ({ ...prev, [id]: 'File not found' }));
       setStatusMessage({ type: 'error', message: 'File not found' });
     } finally {
       setDownloadingId(null);
     }
   };
+
+  // Instance data is now driven by API response: `capiItems` (filtered by survey_type === 'CATI')
+
+
+  // QC items are derived from API response (filtered as `qcItems`).
 
   return (
     <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
@@ -217,56 +200,55 @@ const CatiDataPage = () => {
       <Card className="mb-6">
         <div className="card-header pb-0">
           <div className="flex items-center mb-4">
-            <div className="w-1 h-6 bg-blue-500 mr-3"></div>   
+            <div className="w-1 h-6 bg-blue-500 mr-3"></div>
             <Heading level={4} className="card-title mg-b-0 text-lg font-semibold text-gray-900 dark:text-white">
               INSTANCE DATA DOWNLOAD (CATI)
             </Heading>
           </div>
         </div>
         <div className="card-body">
-          {isLoading ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 dark:text-gray-400">Loading download items...</p>
-            </div>
-          ) : hasError ? (
-            <div className="text-center py-8 bg-red-50 dark:bg-red-900/20 rounded p-4">
-              <p className="text-red-600 dark:text-red-400">{hasError}</p>
-            </div>
-          ) : instanceData.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 dark:text-gray-400">No download items available</p>
-            </div>
-          ) : (
-            <div className="table-responsive">
+          <div className="table-responsive">
+            {isLoadingApiItems ? (
+              <div className="py-6 text-center">
+                <div className="text-sm text-gray-500">Loading CATI items...</div>
+              </div>
+            ) : capiItems.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-sm text-gray-500">No download items found for CATI</div>
+              </div>
+            ) : (
               <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top">
                 <thead>
                   <tr>
-                    <th className="text-left font-semibold text-gray-800 dark:text-gray-200">Action</th>
-                    <th className="text-left font-semibold text-gray-800 dark:text-gray-200" style={{width: '15%'}}>Overall</th>
+                    <th className="text-center font-semibold text-gray-800 dark:text-gray-200 w-1/2">Action</th>
+                    <th className="text-center font-semibold text-gray-800 dark:text-gray-200 w-1/2" >Overall</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {instanceData.map((item) => (
+                  {capiItems.map((item) => (
                     <tr key={item.id}>
-                      <td className="text-gray-900 dark:text-gray-100 text-left font-medium">{item.title}</td>
-                      <td className="text-left relative">
-                        <div>
-                          <button
-                            onClick={() => handleDownload(item)}
-                            disabled={downloadingId === item.id}
-                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <Download className="w-4 h-4" />
-                            {downloadingId === item.id ? 'Downloading...' : 'Download'}
-                          </button>
+                      <td className="text-gray-900 dark:text-gray-100 text-left font-medium">{item.title}
+                      </td>
+                      <td className="text-center relative">
+                        <div className="flex items-center justify-center">
+                          <div>
+                            <button
+                              onClick={() => apiDownload(item.id, item.api.url, item.api.method, item.api.params)}
+                              disabled={downloadingId === item.id || item.status !== 1}
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              <Download className="w-4 h-4" />
+                              {downloadingId === item.id ? 'Downloading...' : 'Download'}
+                            </button>
+                          </div>
                         </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </Table>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Card>
 
