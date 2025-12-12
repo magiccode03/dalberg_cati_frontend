@@ -1061,15 +1061,15 @@ export default function TeleFormV2Page() {
         sections.callStatus.push(field);
       } else if (field.tag === 'consent') {
         sections.consent.push(field);
-      } else if (['resp_registered_voter', 'resp_gender', 'resp_age'].includes(field.tag)) {
+      } else if (['resp_age','resp_registered_voter', 'resp_gender'].includes(field.tag)) {
         sections.demographics.push(field);
-      } else if (['q13', 'q13_oth', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
+      } else if (['q13', 'q13_oth', 'q14', 'q15', 'q16_a', 'q16_b', 'q5', 'q5_oth', 'q5_ind', 'q6', 'q6_oth', 'q6_ind', 'q7', 'q7_oth', 'q7_ind', 'q8', 'q8_oth', 'q8_ind', 'q9', 'q9_oth', 'q9_ind', 'q10', 'q10_oth', 'q11', 'q11_oth', 'q12', 'q12_oth'].includes(field.tag)) {
         sections.partyPreferences.push(field);
-      } else if (['q14', 'q15', 'q17', 'q17_oth', 'q19', 'q19_oth'].includes(field.tag)) {
+      } else if (['q17', 'q17_oth', 'q19', 'q19_oth', 'resp_religion', 'resp_religion_oth', 'resp_social_cat', 'resp_caste_jati', 'resp_caste_jati_oth', ].includes(field.tag)) {
         sections.satisfaction.push(field);
-      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation'].includes(field.tag)) {
+      } else if (['resp_female_edu', 'resp_male_edu', 'resp_occupation', 'resp_name', 'thanks_future'].includes(field.tag)) {
         sections.finalDemographics.push(field);
-      }
+      } 
     });
 
     return sections;

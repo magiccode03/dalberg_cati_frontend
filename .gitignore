@@ -192,7 +192,7 @@ playwright-report/
 test-results.xml
 
 # Documentation build
-docs/build/
+docs/
 
 # Local configuration files
 config/local.json

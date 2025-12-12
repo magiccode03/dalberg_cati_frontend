@@ -33,7 +33,14 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     };
   }
 
-  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> | null {
+    // Ignore NEXT_REDIRECT errors - these are internal Next.js redirects and should not be caught
+    if (error.message === 'NEXT_REDIRECT' || error.name === 'NEXT_REDIRECT' || 
+        (error as any).digest?.includes('NEXT_REDIRECT')) {
+      // Re-throw to let Next.js handle it
+      throw error;
+    }
+    
     return {
       hasError: true,
       error,
@@ -42,6 +49,13 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Ignore NEXT_REDIRECT errors - these are internal Next.js redirects
+    if (error.message === 'NEXT_REDIRECT' || error.name === 'NEXT_REDIRECT' || 
+        (error as any).digest?.includes('NEXT_REDIRECT')) {
+      // Don't log or handle NEXT_REDIRECT errors
+      return;
+    }
+
     this.setState({
       error,
       errorInfo,
