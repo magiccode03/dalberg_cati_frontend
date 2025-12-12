@@ -125,7 +125,7 @@ export default function TeleFormV2Page() {
     }
 
     const determineSet = async () => {
-      const getRandomSet = () => Math.floor(Math.random() * 3) + 1;
+      const getRandomSet = () => Math.floor(Math.random() * 2) + 1;
 
       const assignSet = (setValue: number | null) => {
         if (!setValue) {
@@ -174,7 +174,7 @@ export default function TeleFormV2Page() {
         const data = await response.json();
         if (data.success && data.data) {
           const rawSet = parseInt(data.data.web_form_set ?? '', 10);
-          if ([1, 2, 3].includes(rawSet)) {
+          if ([1, 2].includes(rawSet)) {
             assignSet(rawSet);
             return;
           }
