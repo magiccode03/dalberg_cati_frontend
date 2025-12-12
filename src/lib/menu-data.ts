@@ -1284,7 +1284,7 @@ export const menuData: MenuItem[] = [
   // Data Manager Menu
   {
     id: 'data-manager-capi',
-    label: 'CAPI Data',
+    label: 'F2F Data',
     href: '/dm/capi',
     icon: 'Database',
     roles: ['data_manager'],
@@ -1296,13 +1296,13 @@ export const menuData: MenuItem[] = [
     icon: 'Phone',
     roles: ['data_manager'],
   },
-  {
-    id: 'data-manager-combine',
-    label: 'Combine Data',
-    href: '/dm/combine',
-    icon: 'GitCompare',
-    roles: ['data_manager'],
-  },
+  // {
+  //   id: 'data-manager-combine',
+  //   label: 'Combine Data',
+  //   href: '/dm/combine',
+  //   icon: 'GitCompare',
+  //   roles: ['data_manager'],
+  // },
 
   // ============================================
   // CATI SYSTEM MENUS

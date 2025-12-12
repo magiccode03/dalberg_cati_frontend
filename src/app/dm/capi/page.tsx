@@ -205,7 +205,7 @@ const CapiDataPage = () => {
       <div className="breadcrumb-header justify-content-between mb-6">
         <div className="left-content">
           <Heading level={2} className="text-2xl font-semibold text-gray-900 dark:text-white mb-0">
-            Raw Data Download (CAPI)
+            Raw Data Download (F2F)
           </Heading>
         </div>
         <div className="right-content">
@@ -225,7 +225,7 @@ const CapiDataPage = () => {
           <div className="flex items-center mb-4">
             <div className="w-1 h-6 bg-blue-500 mr-3"></div>
             <Heading level={4} className="card-title mg-b-0 text-lg font-semibold text-gray-900 dark:text-white">
-              INSTANCE DATA DOWNLOAD (CAPI)
+              INSTANCE DATA DOWNLOAD (F2F)
             </Heading>
           </div>
         </div>
@@ -233,11 +233,11 @@ const CapiDataPage = () => {
           <div className="table-responsive">
             {isLoadingApiItems ? (
               <div className="py-6 text-center">
-                <div className="text-sm text-gray-500">Loading CAPI items...</div>
+                <div className="text-sm text-gray-500">Loading F2F items...</div>
               </div>
             ) : capiItems.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-sm text-gray-500">No download items found for CAPI</div>
+                <div className="text-sm text-gray-500">No download items found for F2F</div>
               </div>
             ) : (
               <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top">
@@ -292,7 +292,7 @@ const CapiDataPage = () => {
               </div>
             ) : qcItems.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-sm text-gray-500">No QC items found for CAPI</div>
+                <div className="text-sm text-gray-500">No QC items found for F2F</div>
               </div>
             ) : (
               <Table className="table table-striped table-bordered table-hover no-margin-bottom no-border-top">
