@@ -23,7 +23,7 @@ interface DownloadItemFormData {
     params?: string;
   };
   type: 'CSV' | 'EXCEL' | 'ZIP' | 'JSON' | 'PDF' | 'OTHER';
-  survey_type: 'CAPI' | 'CATI' | 'CAVI' | 'CAPI_QC' | 'OTHER'
+  survey_type: 'F2F' | 'CATI' | 'CAWI' | 'F2F_QC' | 'OTHER'
   status: number;
   sortOrder: number;
 }
@@ -42,7 +42,7 @@ export default function EditDownloadItemPage() {
       params: '',
     },
     type: 'CSV',
-    survey_type: 'CAPI',
+    survey_type: 'F2F',
     status: 1,
     sortOrder: 0,
   });
@@ -186,10 +186,10 @@ export default function EditDownloadItemPage() {
   ];
 
   const surveytypeOptions = [
-    { value: 'CAPI', label: 'CAPI' },
+    { value: 'F2F', label: 'F2F' },
     { value: 'CATI', label: 'CATI' },
-    { value: 'CAVI', label: 'CAVI' },
-    { value: 'CAPI_QC', label: 'CAPI QC' },
+    { value: 'CAWI', label: 'CAWI' },
+    { value: 'F2F_QC', label: 'F2F QC' },
     { value: 'OTHER', label: 'Other' },
   ];
 
@@ -267,7 +267,7 @@ export default function EditDownloadItemPage() {
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="e.g., CAPI Interview Data"
+                      placeholder="e.g., F2F Interview Data"
                       className={validationErrors.title ? 'border-red-500' : ''}
                       required
                     />

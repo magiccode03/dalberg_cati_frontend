@@ -48,7 +48,7 @@ const CapiDataPage = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-        const res = await fetch(`${apiBaseUrl}/api/download-items?page=1&limit=50&survey_type=CAPI`, {
+        const res = await fetch(`${apiBaseUrl}/api/download-items?page=1&limit=50&survey_type=F2F`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         });
         if (!res.ok) return;
@@ -63,7 +63,7 @@ const CapiDataPage = () => {
     fetchItems();
   }, []);
 
-  // Fetch QC download items (CAPI QC) separately
+  // Fetch QC download items (F2F QC) separately
   useEffect(() => {
     const fetchQcItems = async () => {
       try {
@@ -71,7 +71,7 @@ const CapiDataPage = () => {
         const token = localStorage.getItem('accessToken');
         if (!token) return;
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
-        const res = await fetch(`${apiBaseUrl}/api/download-items?page=1&limit=50&survey_type=CAPI_QC`, {
+        const res = await fetch(`${apiBaseUrl}/api/download-items?page=1&limit=50&survey_type=F2F_QC`, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
         });
         if (!res.ok) return;
@@ -86,8 +86,8 @@ const CapiDataPage = () => {
     fetchQcItems();
   }, []);
 
-  // Filter CAPI items from the fetched API list
-  const capiItems = useMemo(() => apiItems.filter(item => String(item.survey_type).toUpperCase().startsWith('CAPI') && !String(item.title).toLowerCase().includes('qc')), [apiItems]);
+  // Filter F2F items from the fetched API list
+  const capiItems = useMemo(() => apiItems.filter(item => String(item.survey_type).toUpperCase().startsWith('F2F') && !String(item.title).toLowerCase().includes('qc')), [apiItems]);
   const qcItems = useMemo(() => {
     const fromApi = apiItems.filter(item => String(item.title).toLowerCase().includes('qc') || String(item.survey_type).toUpperCase().includes('QC'));
     const combined = [...(qcApiItems || []), ...fromApi];
@@ -117,12 +117,12 @@ const CapiDataPage = () => {
 
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
       // Diagnostics: log available apiItems and incoming apiPath
-      console.log('CAPI apiItems count:', apiItems.length);
+      console.log('F2F apiItems count:', apiItems.length);
       console.log('apiPath provided to apiDownload:', apiPath);
 
       // Use apiPath if available; otherwise fail gracefully
       if (!apiPath) {
-        console.warn('CAPI download: no apiPath. Cannot proceed.');
+        console.warn('F2F download: no apiPath. Cannot proceed.');
         setDownloadError(prev => ({ ...prev, [id]: 'Download URL not available' }));
         setStatusMessage({ type: 'error', message: 'File not found' });
         return;
@@ -137,7 +137,7 @@ const CapiDataPage = () => {
         const queryStr = searchParams.toString();
         downloadUrl += queryStr ? (downloadUrl.includes('?') ? '&' : '?') + queryStr : '';
       }
-      console.log('CAPI Download URL:', downloadUrl);
+      console.log('F2F Download URL:', downloadUrl);
       const headers: Record<string, string> = { Authorization: `Bearer ${token}`, Accept: '*/*' };
       const options: RequestInit = { method, headers };
       if (method !== 'GET' && params) {
