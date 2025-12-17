@@ -129,12 +129,12 @@ const UpdatedRowsDetailsModal: React.FC<UpdatedRowsDetailsModalProps> = ({
                                                         {col}
                                                     </div>
                                                     <div>
-                                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-800 text-gray-900 dark:text-white text-sm break-words max-h-20 overflow-y-auto">
+                                                        <div className="dark:bg-blue-900/20 p-3 rounded dark:border-blue-800 text-gray-900 dark:text-white text-sm break-words max-h-20 overflow-y-auto">
                                                             {formatValue(currentVal)}
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded border border-orange-200 dark:border-orange-800 text-gray-900 dark:text-white text-sm break-words max-h-20 overflow-y-auto">
+                                                        <div className="dark:bg-orange-900/20 p-3 rounded  text-gray-900 dark:text-white text-sm break-words max-h-20 overflow-y-auto">
                                                             {formatValue(previousVal)}
                                                         </div>
                                                     </div>

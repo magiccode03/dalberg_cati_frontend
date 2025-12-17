@@ -124,14 +124,14 @@ const UploadLogDetailsModal: React.FC<UploadLogDetailsModalProps> = ({
                                         {log.logger?.total_rows?.toLocaleString() || 0}
                                     </Text>
                                 </div>
-                                <div    
+                                <div
                                     className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800"
                                 >
                                     <Text className="text-lg font-medium text-gray-900 dark:text-gray-400">Total Rows Inserted</Text>
                                     <Text className="text-2xl font-bold text-green-600 dark:text-green-400">
                                         {log.logger?.inserted?.toLocaleString() || 0}
                                     </Text>
-                                </div   >
+                                </div>
                                 <button
                                     onClick={() => setIsUpdatedRowsModalOpen(true)}
                                     disabled={!updatedRows.length}
