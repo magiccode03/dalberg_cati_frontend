@@ -12,8 +12,9 @@ import { Table } from '@/components/ui/Table';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Alert from '@/components/ui/Alert';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import { Upload, Download, Eye } from 'lucide-react';
+import { Upload, Download, Eye, X } from 'lucide-react';
 import { apiService } from '@/lib/api';
+import UploadLogDetailsModal from '@/components/modals/UploadLogDetailsModal';
 
 
 interface UploadLog {
@@ -71,6 +72,9 @@ export default function UploadPollingStationPage() {
     const [totalPages, setTotalPages] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [downloadError, setDownloadError] = useState<string | null>(null);
+    const [selectedLog, setSelectedLog] = useState<UploadLog | null>(null);
+    const [showLogModal, setShowLogModal] = useState(false);
 
     useEffect(() => {
         fetchPreviousRequests();
@@ -156,8 +160,65 @@ export default function UploadPollingStationPage() {
         }
     };
 
-    const handleUploadDownloadPS = async () => {
-        
+    const handleUploadDownloadPS = async (logId: number) => {
+        try {
+            setLoading(true);
+            setDownloadError(null);
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+            const token = localStorage.getItem('accessToken');
+
+            if (!token) {
+                setDownloadError('Authentication required');
+                return;
+            }
+
+            const response = await fetch(
+                `${apiUrl}/api/dashboard/master-polling-station-dynamic/upload-file/${logId}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/csv',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                let errorMessage = 'Failed to download file';
+                try {
+                    const responseData = await response.json();
+                    if (responseData.message) {
+                        errorMessage = responseData.message;
+                    }
+                } catch (parseErr) {
+                    // If response is not JSON, use status text
+                    errorMessage = response.statusText || 'Failed to download file';
+                }
+                throw new Error(errorMessage);
+            }
+
+            const blob = await response.blob();
+
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Polling-Station-Upload-${new Date().toISOString().split('T')[0]}.csv`;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up the URL object
+            URL.revokeObjectURL(url);
+
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : 'Failed to download uploaded file. Please try again.';
+            setDownloadError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleUpload = async (e: React.FormEvent) => {
@@ -228,8 +289,9 @@ export default function UploadPollingStationPage() {
         }
     };
 
-    const handleViewLog = (logId: number) => {
-        // Navigate to log details page
+    const handleViewLog = (log: UploadLog) => {
+        setSelectedLog(log);
+        setShowLogModal(true);
     };
 
 
@@ -284,6 +346,20 @@ export default function UploadPollingStationPage() {
             clearTimeout(timer);
         };
     }, [uploadSuccess]);
+
+    useEffect(() => {
+        let timer: number;
+
+        if (downloadError) {
+            timer = window.setTimeout(() => {
+                setDownloadError(null);
+            }, 7000);
+        }
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [downloadError]);
 
 
     return (
@@ -397,6 +473,12 @@ export default function UploadPollingStationPage() {
                     </Alert>
                 )}
 
+                {downloadError && (
+                    <Alert type="error" className="mb-4">
+                        {downloadError}
+                    </Alert>
+                )}
+
                 {loadingRequests ? (
                     <div className="text-center py-12">
                         <LoadingSpinner size="lg" />
@@ -431,7 +513,7 @@ export default function UploadPollingStationPage() {
                                                 <th className="text-center whitespace-nowrap">Start Time</th>
                                                 <th className="text-center whitespace-nowrap">End Time</th>
                                                 <th className="text-center whitespace-nowrap">Uploaded File</th>
-                                                <th className="text-center whitespace-nowrap">Actions</th>
+                                                <th className="text-center whitespace-nowrap">View</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -455,17 +537,17 @@ export default function UploadPollingStationPage() {
                                                         <Button
                                                             variant="primary"
                                                             size="sm"
-                                                            onClick={handleUploadDownloadPS}
-                                                            title="View Log Details"
+                                                            onClick={() => handleUploadDownloadPS(log.id)}
+                                                            title="Download Uploaded File"
                                                         >
-                                                             <Download className="w-4 h-4 mr-2" />
+                                                            <Download className="w-4 h-4 mr-2" />
                                                         </Button>
                                                     </td>
                                                     <td className="text-center">
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
-                                                            onClick={() => handleViewLog(log.id)}
+                                                            onClick={() => handleViewLog(log)}
                                                             title="View Log Details"
                                                         >
                                                             <Eye className="w-4 h-4" />
@@ -474,7 +556,7 @@ export default function UploadPollingStationPage() {
                                                 </tr>
                                             ))}
                                         </tbody>
-                                    </Table>    
+                                    </Table>
                                 </div>
 
                                 {totalPages > 1 && (
@@ -493,6 +575,19 @@ export default function UploadPollingStationPage() {
                     </div>
                 )}
             </Card>
+
+            {/* Log Details Modal */}
+            <UploadLogDetailsModal
+                isOpen={showLogModal}
+                log={selectedLog}
+                onClose={() => setShowLogModal(false)}
+                onDownload={(logId) => {
+                    handleUploadDownloadPS(logId);
+                    setShowLogModal(false);
+                }}
+                formatDate={formatDate}
+                getStatusBadge={getStatusBadge}
+            />
         </Container>
     );
 }
