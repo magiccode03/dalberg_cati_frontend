@@ -268,7 +268,7 @@ export default function QCUserProgressPage() {
       if (data.success && data.data && Array.isArray(data.data)) {
         console.log('Success! Data received:', data.data.length, 'items');
         setQcUserProgressData(data.data);
-        setSummary(data.summary || null); // Set the summary in the state
+        setSummary(data.summary || null); 
 
         // Handle pagination info
         if (data.pagination) {
