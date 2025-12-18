@@ -245,7 +245,7 @@ export default function QCUserProgressPage() {
         
       // Add timeout to prevent hanging
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+          setTimeout(() => reject(new Error('Request timeout after 50 seconds')), 50000);
         });
         
         const response = await Promise.race([
