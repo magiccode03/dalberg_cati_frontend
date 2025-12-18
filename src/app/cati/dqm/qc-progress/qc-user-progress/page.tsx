@@ -25,6 +25,7 @@ interface QCUserProgressData {
   total_qc_pass: number;
   total_qc_fail: number;
   total_qc_pending: number;
+  total_qc_completed: number;
   ac_wise_statistics: ACWiseStatistics[];
 }
 
@@ -244,7 +245,7 @@ export default function QCUserProgressPage() {
         
       // Add timeout to prevent hanging
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+          setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000);
         });
         
         const response = await Promise.race([
@@ -462,6 +463,7 @@ export default function QCUserProgressPage() {
         'User Name',
         'Mobile Number',
         'Total Assigned',
+        'Total Completed',
         'QC Pass',
         'QC Fail',
         'QC Pending'
@@ -476,6 +478,7 @@ export default function QCUserProgressPage() {
           `"${user.user_name}"`,
           `"${user.mobile_number}"`,
           user.total_qc_assigned,
+          user.total_qc_completed,
           user.total_qc_pass,
           user.total_qc_fail,
           user.total_qc_pending
@@ -722,6 +725,9 @@ export default function QCUserProgressPage() {
                     Total Assigned
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Total Completed
+                  </th>
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                    QC Pass
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
@@ -742,6 +748,7 @@ export default function QCUserProgressPage() {
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{user.user_name || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobile_number || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_assigned.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_completed.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pass.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_fail.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pending.toLocaleString()}</td>
