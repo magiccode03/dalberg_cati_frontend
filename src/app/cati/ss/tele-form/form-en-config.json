@@ -347,77 +347,197 @@
     "tag": "resp_registered_voter"
   },
   {
-    "type": "radio",
-    "label": "Please note the respondent's gender",
+    "type": "checkbox",
+    "label": "13. According to you, what are the three most pressing issues of your assembly constituency?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
+    "maxSelections": 3,
     "options": [
       {
-        "label": "Male",
-        "value": "1",
-        "tag": "opt_male"
+        "label": "Price rise / inflation",
+        "value": "2",
+        "tag": "opt_price_rise"
       },
       {
-        "label": "Female",
-        "value": "2",
-        "tag": "opt_female"
+        "label": "Unemployment / lack of jobs",
+        "value": "3",
+        "tag": "opt_unemployment"
+      },
+      {
+        "label": "Electricity/power problems",
+        "value": "4",
+        "tag": "opt_electricity"
+      },
+      {
+        "label": "Healthcare not good",
+        "value": "5",
+        "tag": "opt_healthcare"
+      },
+      {
+        "label": "Education system issues",
+        "value": "6",
+        "tag": "opt_education"
+      },
+      {
+        "label": "Voter list issues / fear of losing citizenship",
+        "value": "7",
+        "tag": "opt_voter_list"
+      },
+      {
+        "label": "Safety for migrant workers",
+        "value": "8",
+        "tag": "opt_migrant_safety"
+      },
+      {
+        "label": "Teacher protests & job insecurity",
+        "value": "9",
+        "tag": "opt_teacher_protests"
+      },
+      {
+        "label": "Floods and natural disasters",
+        "value": "10",
+        "tag": "opt_floods"
+      },
+      {
+        "label": "Communal tensions / law-and-order concerns",
+        "value": "11",
+        "tag": "opt_communal_tensions"
+      },
+      {
+        "label": "Safety of women (crime / security)",
+        "value": "12",
+        "tag": "opt_women_safety"
+      },
+      {
+        "label": "Infrastructure (roads, connectivity)",
+        "value": "13",
+        "tag": "opt_infrastructure"
+      },
+      {
+        "label": "Others(Specify)",
+        "value": "44",
+        "tag": "opt_others"
       }
     ],
     "rules": {
       "showFields": {
-        "opt_male": [
-          "q13",
-          "q16_a",
-          "q16_b",
-          "q5",
-          "q6",
-          "q7",
-          "q8",
-          "q9",
-          "q10",
-          "resp_religion",
-          "resp_social_cat",
-          "resp_caste_jati",
-          "q11",
-          "q12",
-          "q14",
-          "q15",
-          "q17",
-          "q19",
-          "resp_female_edu",
-          "resp_male_edu",
-          "resp_occupation",
-          "resp_name",
-          "thanks_future"
-        ],
-        "opt_female": [
-          "q13",
-          "q16_a",
-          "q16_b",
-          "q5",
-          "q6",
-          "q7",
-          "q8",
-          "q9",
-          "q10",
-          "resp_religion",
-          "resp_social_cat",
-          "resp_caste_jati",
-          "q11",
-          "q12",
-          "q14",
-          "q15",
-          "q17",
-          "q19",
-          "resp_female_edu",
-          "resp_male_edu",
-          "resp_occupation",
-          "resp_name",
-          "thanks_future"
+        "opt_others": [
+          "q13_oth"
         ]
       }
     },
-    "tag": "resp_gender"
+    "tag": "q13"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q13.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q13_oth"
+  },
+  {
+    "type": "radio",
+    "label": "14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don't know/Can't say",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q14"
+  },
+  {
+    "type": "radio",
+    "label": "16 A. How satisfied or dissatisfied are you with the work done by Lok Sabha MP {{mp_name}} from your parliament constituency?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don't know/Can't say",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_a"
+  },
+  {
+    "type": "radio",
+    "label": "16 B. How satisfied or dissatisfied are you with the work done by your current MLA {{mla_name}}?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don't know/Can't say",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -751,7 +871,7 @@
   {
     "type": "radio",
     "label": "9. Let us assume that the above party of your choice doesn't contest elections in your assembly constituency, which party would you choose?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -907,7 +1027,7 @@
   {
     "type": "checkbox",
     "label": "11. In your opinion what are the top 3 reasons for voting for AITC?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1011,7 +1131,7 @@
   {
     "type": "checkbox",
     "label": "12. In your opinion what are the top 3 reasons for voting for BJP?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1103,236 +1223,9 @@
     "tag": "q12_oth"
   },
   {
-    "type": "checkbox",
-    "label": "13. According to you, what are the three most pressing issues of your assembly constituency?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "maxSelections": 3,
-    "options": [
-      {
-        "label": "Price rise / inflation",
-        "value": "2",
-        "tag": "opt_price_rise"
-      },
-      {
-        "label": "Unemployment / lack of jobs",
-        "value": "3",
-        "tag": "opt_unemployment"
-      },
-      {
-        "label": "Electricity/power problems",
-        "value": "4",
-        "tag": "opt_electricity"
-      },
-      {
-        "label": "Healthcare not good",
-        "value": "5",
-        "tag": "opt_healthcare"
-      },
-      {
-        "label": "Education system issues",
-        "value": "6",
-        "tag": "opt_education"
-      },
-      {
-        "label": "Voter list issues / fear of losing citizenship",
-        "value": "7",
-        "tag": "opt_voter_list"
-      },
-      {
-        "label": "Safety for migrant workers",
-        "value": "8",
-        "tag": "opt_migrant_safety"
-      },
-      {
-        "label": "Teacher protests & job insecurity",
-        "value": "9",
-        "tag": "opt_teacher_protests"
-      },
-      {
-        "label": "Floods and natural disasters",
-        "value": "10",
-        "tag": "opt_floods"
-      },
-      {
-        "label": "Communal tensions / law-and-order concerns",
-        "value": "11",
-        "tag": "opt_communal_tensions"
-      },
-      {
-        "label": "Safety of women (crime / security)",
-        "value": "12",
-        "tag": "opt_women_safety"
-      },
-      {
-        "label": "Infrastructure (roads, connectivity)",
-        "value": "13",
-        "tag": "opt_infrastructure"
-      },
-      {
-        "label": "Others(Specify)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "q13_oth"
-        ]
-      }
-    },
-    "tag": "q13"
-  },
-  {
-    "type": "text",
-    "label": "Others (specify)",
-    "conditional": "q13.includes('44')",
-    "required": true,
-    "placeholder": "Please specify",
-    "maxLength": 150,
-    "tag": "q13_oth"
-  },
-  {
-    "type": "radio",
-    "label": "14. How satisfied or dissatisfied are you with the performance of the state govt led by Mamata Banerjee?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don't know/Can't say",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q14"
-  },
-  {
-    "type": "radio",
-    "label": "15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don't know/Can't say",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q15"
-  },
-  {
-    "type": "radio",
-    "label": "16 A. How satisfied or dissatisfied are you with the work done by Lok Sabha MP {{mp_name}} from your parliament constituency?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don't know/Can't say",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_a"
-  },
-  {
-    "type": "radio",
-    "label": "16 B. How satisfied or dissatisfied are you with the work done by your current MLA {{mla_name}}?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don't know/Can't say",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_b"
-  },
-  {
     "type": "radio",
     "label": "17. Who do you think is the best leader to be the Chief Minister of West Bengal?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1599,8 +1492,108 @@
   },
   {
     "type": "radio",
+    "label": "Please note the respondent's gender",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Male",
+        "value": "1",
+        "tag": "opt_male"
+      },
+      {
+        "label": "Female",
+        "value": "2",
+        "tag": "opt_female"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_male": [
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ],
+        "opt_female": [
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ]
+      }
+    },
+    "tag": "resp_gender"
+  },
+  {
+    "type": "text",
+    "label": "27. Would You like to share your name with us? We assure you we shall keep it confidential",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "placeholder": "Enter name",
+    "tag": "resp_name"
+  },
+  {
+    "type": "radio",
+    "label": "26. Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "tag": "thanks_future"
+  },
+  {
+    "type": "radio",
     "label": "23. Could you please tell me the highest educational level of the most educated female of the household?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1644,7 +1637,7 @@
   {
     "type": "radio",
     "label": "24. Could you please tell me the highest educational level of the most educated male of the household?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1685,10 +1678,11 @@
     ],
     "tag": "resp_male_edu"
   },
+
   {
     "type": "radio",
     "label": "25. What work does the main earner in your household do?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1725,30 +1719,37 @@
     "tag": "resp_occupation"
   },
   {
-    "type": "text",
-    "label": "27. Would You like to share your name with us? We assure you we shall keep it confidential",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "placeholder": "Enter name",
-    "tag": "resp_name"
-  },
-  {
     "type": "radio",
-    "label": "26. Thank you for your excellent responses, can we contact you in future for similar surveys and get your valuable opinions?",
-    "conditional": "resp_registered_voter === '1'",
+    "label": "15. How satisfied or dissatisfied are you with the performance of BJP as the opposition in the state?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
-        "label": "Yes",
+        "label": "Fully satisfied",
         "value": "1",
-        "tag": "opt_yes"
+        "tag": "opt_fully_satisfied"
       },
       {
-        "label": "No",
+        "label": "Somewhat satisfied",
         "value": "2",
-        "tag": "opt_no"
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don't know/Can't say",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
       }
     ],
-    "tag": "thanks_future"
+    "tag": "q15"
   }
 ]

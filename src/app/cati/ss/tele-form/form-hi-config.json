@@ -346,79 +346,198 @@
       }
     },
     "tag": "resp_registered_voter"
-  },
-  {
-    "type": "radio",
-    "label": "जवाब देने वाला महिला है या पुरुष, ये नोट कर लीजिए।",
+  },{
+    "type": "checkbox",
+    "label": "13. आपको क्या लगता है, आपके इलाके की सबसे बड़ी 3 दिक़्क़तें कौन-सी हैं?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
+    "maxSelections": 3,
     "options": [
       {
-        "label": "पुरुष",
-        "value": "1",
-        "tag": "opt_male"
+        "label": "Price rise / inflation",
+        "value": "2",
+        "tag": "opt_price_rise"
       },
       {
-        "label": "महिला",
-        "value": "2",
-        "tag": "opt_female"
+        "label": "Unemployment / lack of jobs",
+        "value": "3",
+        "tag": "opt_unemployment"
+      },
+      {
+        "label": "Electricity/power problems",
+        "value": "4",
+        "tag": "opt_electricity"
+      },
+      {
+        "label": "Healthcare not good",
+        "value": "5",
+        "tag": "opt_healthcare"
+      },
+      {
+        "label": "Education system issues",
+        "value": "6",
+        "tag": "opt_education"
+      },
+      {
+        "label": "Voter list issues / fear of losing citizenship",
+        "value": "7",
+        "tag": "opt_voter_list"
+      },
+      {
+        "label": "Safety for migrant workers",
+        "value": "8",
+        "tag": "opt_migrant_safety"
+      },
+      {
+        "label": "Teacher protests & job insecurity",
+        "value": "9",
+        "tag": "opt_teacher_protests"
+      },
+      {
+        "label": "Floods and natural disasters",
+        "value": "10",
+        "tag": "opt_floods"
+      },
+      {
+        "label": "Communal tensions / law-and-order concerns",
+        "value": "11",
+        "tag": "opt_communal_tensions"
+      },
+      {
+        "label": "Safety of women (crime / security)",
+        "value": "12",
+        "tag": "opt_women_safety"
+      },
+      {
+        "label": "Infrastructure (roads, connectivity)",
+        "value": "13",
+        "tag": "opt_infrastructure"
+      },
+      {
+        "label": "Others(Specify)",
+        "value": "44",
+        "tag": "opt_others"
       }
     ],
     "rules": {
       "showFields": {
-        "opt_male": [
-          "q13",
-          "q16_a",
-          "q16_b",
-          "q5",
-          "q6",
-          "q7",
-          "q8",
-          "q9",
-          "q10",
-          "resp_religion",
-          "resp_social_cat",
-          "resp_caste_jati",
-          "q11",
-          "q12",
-          "q14",
-          "q15",
-          "q17",
-          "q19",
-          "resp_female_edu",
-          "resp_male_edu",
-          "resp_occupation",
-          "resp_name",
-          "thanks_future"
-        ],
-        "opt_female": [
-          "q13",
-          "q16_a",
-          "q16_b",
-          "q5",
-          "q6",
-          "q7",
-          "q8",
-          "q9",
-          "q10",
-          "resp_religion",
-          "resp_social_cat",
-          "resp_caste_jati",
-          "q11",
-          "q12",
-          "q14",
-          "q15",
-          "q17",
-          "q19",
-          "resp_female_edu",
-          "resp_male_edu",
-          "resp_occupation",
-          "resp_name",
-          "thanks_future"
+        "opt_others": [
+          "q13_oth"
         ]
       }
     },
-    "tag": "resp_gender"
+    "tag": "q13"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q13.includes('44')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q13_oth"
+  },
+  {
+    "type": "radio",
+    "label": "14. ममता बनर्जी की सरकार के काम से आप कितने खुश या नाखुश हैं?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q14"
+  },
+  {
+    "type": "radio",
+    "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद {{mp_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_a"
+  },
+  {
+    "type": "radio",
+    "label": "16 B. आपके वर्तमान विधायक (MLA) {{mla_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully satisfied",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "Somewhat satisfied",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "Neutral/Don’t know/Can’t say ",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "Somewhat dissatisfied",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "Fully dissatisfied",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -752,7 +871,7 @@
   {
     "type": "radio",
     "label": "9. मान लीजिए कि आपकी पसंदीदा पार्टी आपके विधानसभा क्षेत्र से चुनाव नहीं लड़ती है, तो आप किस पार्टी को चुनेंगे?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -908,7 +1027,7 @@
   {
     "type": "checkbox",
     "label": "11. आपकी राय में तृणमूल कांग्रेस (AITC) को वोट देने के शीर्ष 3 कारण क्या हैं?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1104,134 +1223,9 @@
     "tag": "q12_oth"
   },
   {
-    "type": "checkbox",
-    "label": "13. आपको क्या लगता है, आपके इलाके की सबसे बड़ी 3 दिक़्क़तें कौन-सी हैं?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "maxSelections": 3,
-    "options": [
-      {
-        "label": "Price rise / inflation",
-        "value": "2",
-        "tag": "opt_price_rise"
-      },
-      {
-        "label": "Unemployment / lack of jobs",
-        "value": "3",
-        "tag": "opt_unemployment"
-      },
-      {
-        "label": "Electricity/power problems",
-        "value": "4",
-        "tag": "opt_electricity"
-      },
-      {
-        "label": "Healthcare not good",
-        "value": "5",
-        "tag": "opt_healthcare"
-      },
-      {
-        "label": "Education system issues",
-        "value": "6",
-        "tag": "opt_education"
-      },
-      {
-        "label": "Voter list issues / fear of losing citizenship",
-        "value": "7",
-        "tag": "opt_voter_list"
-      },
-      {
-        "label": "Safety for migrant workers",
-        "value": "8",
-        "tag": "opt_migrant_safety"
-      },
-      {
-        "label": "Teacher protests & job insecurity",
-        "value": "9",
-        "tag": "opt_teacher_protests"
-      },
-      {
-        "label": "Floods and natural disasters",
-        "value": "10",
-        "tag": "opt_floods"
-      },
-      {
-        "label": "Communal tensions / law-and-order concerns",
-        "value": "11",
-        "tag": "opt_communal_tensions"
-      },
-      {
-        "label": "Safety of women (crime / security)",
-        "value": "12",
-        "tag": "opt_women_safety"
-      },
-      {
-        "label": "Infrastructure (roads, connectivity)",
-        "value": "13",
-        "tag": "opt_infrastructure"
-      },
-      {
-        "label": "Others(Specify)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "q13_oth"
-        ]
-      }
-    },
-    "tag": "q13"
-  },
-  {
-    "type": "text",
-    "label": "Others (specify)",
-    "conditional": "q13.includes('44')",
-    "required": true,
-    "placeholder": "Please specify",
-    "maxLength": 150,
-    "tag": "q13_oth"
-  },
-  {
-    "type": "radio",
-    "label": "14. ममता बनर्जी की सरकार के काम से आप कितने खुश या नाखुश हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don’t know/Can’t say ",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q14"
-  },
-  {
     "type": "radio",
     "label": "15. भाजपा ने राज्य में विपक्ष का जो काम किया है, उससे आप कितने खुश या नाखुश हैं?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1261,74 +1255,6 @@
       }
     ],
     "tag": "q15"
-  },
-  {
-    "type": "radio",
-    "label": "16 A. आपके संसदीय क्षेत्र (लोकसभा) के सांसद {{mp_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don’t know/Can’t say ",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_a"
-  },
-  {
-    "type": "radio",
-    "label": "16 B. आपके वर्तमान विधायक (MLA) {{mla_name}} के कार्य से आप कितने संतुष्ट या असंतुष्ट हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "Fully satisfied",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "Somewhat satisfied",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "Neutral/Don’t know/Can’t say ",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "Somewhat dissatisfied",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "Fully dissatisfied",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -1601,7 +1527,7 @@
   {
     "type": "radio",
     "label": "23. आपके घर की सबसे पढ़ी-लिखी महिला ने कितनी पढ़ाई की है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1645,7 +1571,7 @@
   {
     "type": "radio",
     "label": "24. आपके घर के सबसे पढ़े-लिखे पुरुष की पढ़ाई कितनी हुई है?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1689,7 +1615,7 @@
   {
     "type": "radio",
     "label": "25. आपके घर में जो मुख्य कमाने वाले हैं, वे क्या काम करते हैं?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1732,6 +1658,79 @@
     "required": true,
     "placeholder": "Enter name",
     "tag": "resp_name"
+  },
+  {
+    "type": "radio",
+    "label": "जवाब देने वाला महिला है या पुरुष, ये नोट कर लीजिए।",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "पुरुष",
+        "value": "1",
+        "tag": "opt_male"
+      },
+      {
+        "label": "महिला",
+        "value": "2",
+        "tag": "opt_female"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_male": [
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ],
+        "opt_female": [
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ]
+      }
+    },
+    "tag": "resp_gender"
   },
   {
     "type": "radio",

@@ -347,77 +347,197 @@
     "tag": "resp_registered_voter"
   },
   {
-    "type": "radio",
-    "label": "উত্তরদাতা পুরুষ/ মহিলা সেটা লিখুন",
+    "type": "checkbox",
+    "label": "১৩. আপনার মতে, আপনার বিধানসভা কেন্দ্রের তিনটে সবচেয়ে গুরুত্বপূর্ণ সমস্যা কোনগুলো?",
     "conditional": "resp_registered_voter === '1'",
     "required": true,
+    "maxSelections": 3,
     "options": [
       {
-        "label": "পুরুষ",
-        "value": "1",
-        "tag": "opt_male"
+        "label": "দাম বেড়ে যাওয়া/ মুদ্রাস্ফীতি",
+        "value": "2",
+        "tag": "opt_price_rise"
       },
       {
-        "label": "মহিলা",
-        "value": "2",
-        "tag": "opt_female"
+        "label": "বেকারত্ব/ কাজের অভাব",
+        "value": "3",
+        "tag": "opt_unemployment"
+      },
+      {
+        "label": "বিদ্যুৎ/ পাওয়ার সমস্যা",
+        "value": "4",
+        "tag": "opt_electricity"
+      },
+      {
+        "label": "স্বাস্থ্য পরিসেবা ভাল নয়",
+        "value": "5",
+        "tag": "opt_healthcare"
+      },
+      {
+        "label": "শিক্ষা ব্যবস্থার সমস্যা",
+        "value": "6",
+        "tag": "opt_education"
+      },
+      {
+        "label": "ভোটার লিস্টের সমস্যা/ নাগরিকত্ব হারানোর ভয়",
+        "value": "7",
+        "tag": "opt_voter_list"
+      },
+      {
+        "label": "পরিযায়ী শ্রমিকদের জন্য সুরক্ষা",
+        "value": "8",
+        "tag": "opt_migrant_safety"
+      },
+      {
+        "label": "শিক্ষকদের প্রতিবাদ এবং চাকরির নিরাপত্তাহীনতা",
+        "value": "9",
+        "tag": "opt_teacher_protests"
+      },
+      {
+        "label": "বন্যা এবং প্রাকৃতিক দুর্যোগ",
+        "value": "10",
+        "tag": "opt_floods"
+      },
+      {
+        "label": "সাম্প্রদায়িক উত্তেজনা/ আইন-শৃংখলা নিয়ে উদ্বেগ",
+        "value": "11",
+        "tag": "opt_communal_tensions"
+      },
+      {
+        "label": "মহিলাদের সুরক্ষা (অপরাধ/ নিরাপত্তা)",
+        "value": "12",
+        "tag": "opt_women_safety"
+      },
+      {
+        "label": "পরিকাঠামো (রাস্তা, যোগাযোগ)",
+        "value": "13",
+        "tag": "opt_infrastructure"
+      },
+      {
+        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+        "value": "44",
+        "tag": "opt_others"
       }
     ],
     "rules": {
       "showFields": {
-        "opt_male": [
-          "q13",
-          "q16_a",
-          "q16_b",
-          "q5",
-          "q6",
-          "q7",
-          "q8",
-          "q9",
-          "q10",
-          "resp_religion",
-          "resp_social_cat",
-          "resp_caste_jati",
-          "q11",
-          "q12",
-          "q14",
-          "q15",
-          "q17",
-          "q19",
-          "resp_female_edu",
-          "resp_male_edu",
-          "resp_occupation",
-          "resp_name",
-          "thanks_future"
-        ],
-        "opt_female": [
-          "q13",
-          "q16_a",
-          "q16_b",
-          "q5",
-          "q6",
-          "q7",
-          "q8",
-          "q9",
-          "q10",
-          "resp_religion",
-          "resp_social_cat",
-          "resp_caste_jati",
-          "q11",
-          "q12",
-          "q14",
-          "q15",
-          "q17",
-          "q19",
-          "resp_female_edu",
-          "resp_male_edu",
-          "resp_occupation",
-          "resp_name",
-          "thanks_future"
+        "opt_others": [
+          "q13_oth"
         ]
       }
     },
-    "tag": "resp_gender"
+    "tag": "q13"
+  },
+  {
+    "type": "text",
+    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
+    "conditional": "q13.includes('44')",
+    "required": true,
+    "placeholder": "দয়া করে উল্লেখ করুন",
+    "maxLength": 150,
+    "tag": "q13_oth"
+  },
+  {
+    "type": "radio",
+    "label": "১৪. মমতা ব্যানার্জির নেতৃত্বাধীন রাজ্য সরকারের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরোপুরি সন্তুষ্ট",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "কিছুটা সন্তুষ্ট",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "কিছুটা অসন্তুষ্ট",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "পুরোপুরি অসন্তুষ্ট",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q14"
+  },
+  {
+    "type": "radio",
+    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরোপুরি সন্তুষ্ট",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "কিছুটা সন্তুষ্ট",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "কিছুটা অসন্তুষ্ট",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "পুরোপুরি অসন্তুষ্ট",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_a"
+  },
+  {
+    "type": "radio",
+    "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরোপুরি সন্তুষ্ট",
+        "value": "1",
+        "tag": "opt_fully_satisfied"
+      },
+      {
+        "label": "কিছুটা সন্তুষ্ট",
+        "value": "2",
+        "tag": "opt_somewhat_satisfied"
+      },
+      {
+        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
+        "value": "3",
+        "tag": "opt_neutral"
+      },
+      {
+        "label": "কিছুটা অসন্তুষ্ট",
+        "value": "4",
+        "tag": "opt_somewhat_dissatisfied"
+      },
+      {
+        "label": "পুরোপুরি অসন্তুষ্ট",
+        "value": "5",
+        "tag": "opt_fully_dissatisfied"
+      }
+    ],
+    "tag": "q16_b"
   },
   {
     "type": "radio",
@@ -751,7 +871,7 @@
   {
     "type": "radio",
     "label": "৯. মনে করুন যে, আপনার পছন্দের দলটা আপনার বিধানসভা কেন্দ্রের নির্বাচনে লড়ছে না, তাহলে আপনি কোন দলকে বেছে নেবেন?",
-    "conditional": "resp_registered_voter === '1' && q8 <= 44 && web_form_set === '1'",
+    "conditional": "resp_registered_voter === '1' && q8 <= 44",
     "required": true,
     "options": [
       {
@@ -907,7 +1027,7 @@
   {
     "type": "checkbox",
     "label": "১১. আপনার মতে, সর্বভারতীয় তৃণমূল কংগ্রেস-কে ভোট দেওয়ার সর্বোচ্চ 3টে কারন কি?",
-    "conditional": "resp_registered_voter === '1'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -1103,131 +1223,6 @@
     "tag": "q12_oth"
   },
   {
-    "type": "checkbox",
-    "label": "১৩. আপনার মতে, আপনার বিধানসভা কেন্দ্রের তিনটে সবচেয়ে গুরুত্বপূর্ণ সমস্যা কোনগুলো?",
-    "conditional": "resp_registered_voter === '1'",
-    "required": true,
-    "maxSelections": 3,
-    "options": [
-      {
-        "label": "দাম বেড়ে যাওয়া/ মুদ্রাস্ফীতি",
-        "value": "2",
-        "tag": "opt_price_rise"
-      },
-      {
-        "label": "বেকারত্ব/ কাজের অভাব",
-        "value": "3",
-        "tag": "opt_unemployment"
-      },
-      {
-        "label": "বিদ্যুৎ/ পাওয়ার সমস্যা",
-        "value": "4",
-        "tag": "opt_electricity"
-      },
-      {
-        "label": "স্বাস্থ্য পরিসেবা ভাল নয়",
-        "value": "5",
-        "tag": "opt_healthcare"
-      },
-      {
-        "label": "শিক্ষা ব্যবস্থার সমস্যা",
-        "value": "6",
-        "tag": "opt_education"
-      },
-      {
-        "label": "ভোটার লিস্টের সমস্যা/ নাগরিকত্ব হারানোর ভয়",
-        "value": "7",
-        "tag": "opt_voter_list"
-      },
-      {
-        "label": "পরিযায়ী শ্রমিকদের জন্য সুরক্ষা",
-        "value": "8",
-        "tag": "opt_migrant_safety"
-      },
-      {
-        "label": "শিক্ষকদের প্রতিবাদ এবং চাকরির নিরাপত্তাহীনতা",
-        "value": "9",
-        "tag": "opt_teacher_protests"
-      },
-      {
-        "label": "বন্যা এবং প্রাকৃতিক দুর্যোগ",
-        "value": "10",
-        "tag": "opt_floods"
-      },
-      {
-        "label": "সাম্প্রদায়িক উত্তেজনা/ আইন-শৃংখলা নিয়ে উদ্বেগ",
-        "value": "11",
-        "tag": "opt_communal_tensions"
-      },
-      {
-        "label": "মহিলাদের সুরক্ষা (অপরাধ/ নিরাপত্তা)",
-        "value": "12",
-        "tag": "opt_women_safety"
-      },
-      {
-        "label": "পরিকাঠামো (রাস্তা, যোগাযোগ)",
-        "value": "13",
-        "tag": "opt_infrastructure"
-      },
-      {
-        "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-        "value": "44",
-        "tag": "opt_others"
-      }
-    ],
-    "rules": {
-      "showFields": {
-        "opt_others": [
-          "q13_oth"
-        ]
-      }
-    },
-    "tag": "q13"
-  },
-  {
-    "type": "text",
-    "label": "অন্যান্য (নির্দিষ্ট করে বলুন)",
-    "conditional": "q13.includes('44')",
-    "required": true,
-    "placeholder": "দয়া করে উল্লেখ করুন",
-    "maxLength": 150,
-    "tag": "q13_oth"
-  },
-  {
-    "type": "radio",
-    "label": "১৪. মমতা ব্যানার্জির নেতৃত্বাধীন রাজ্য সরকারের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "পুরোপুরি সন্তুষ্ট",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "কিছুটা সন্তুষ্ট",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "কিছুটা অসন্তুষ্ট",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "পুরোপুরি অসন্তুষ্ট",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q14"
-  },
-  {
     "type": "radio",
     "label": "১৫. রাজ্যে বিরোধী দল হিসাবে বিজেপি-র কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
     "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
@@ -1263,76 +1258,8 @@
   },
   {
     "type": "radio",
-    "label": "১৬-ক. নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট - আপনার লোকসভা কেন্দ্রের সাংসদ {{mp_name}}?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "পুরোপুরি সন্তুষ্ট",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "কিছুটা সন্তুষ্ট",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "কিছুটা অসন্তুষ্ট",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "পুরোপুরি অসন্তুষ্ট",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_a"
-  },
-  {
-    "type": "radio",
-    "label": "১৬-খ. আপনার বর্তমান বিধায়ক {{mla_name}} - নীচে দেওয়া ব্যক্তিদের কাজে আপনি কতটা সন্তুষ্ট বা অসন্তুষ্ট?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '1'",
-    "required": true,
-    "options": [
-      {
-        "label": "পুরোপুরি সন্তুষ্ট",
-        "value": "1",
-        "tag": "opt_fully_satisfied"
-      },
-      {
-        "label": "কিছুটা সন্তুষ্ট",
-        "value": "2",
-        "tag": "opt_somewhat_satisfied"
-      },
-      {
-        "label": "সন্তুষ্ট নই আবার অসন্তুষ্ট ও নই/ জানিনা/ বলতে পারছি না",
-        "value": "3",
-        "tag": "opt_neutral"
-      },
-      {
-        "label": "কিছুটা অসন্তুষ্ট",
-        "value": "4",
-        "tag": "opt_somewhat_dissatisfied"
-      },
-      {
-        "label": "পুরোপুরি অসন্তুষ্ট",
-        "value": "5",
-        "tag": "opt_fully_dissatisfied"
-      }
-    ],
-    "tag": "q16_b"
-  },
-  {
-    "type": "radio",
     "label": "১৭. পশ্চিমবঙ্গের মুখ্যমন্ত্রী হওয়ার জন্য কাকে আপনি সবচেয়ে ভাল নেতা/নেত্রী হিসাবে মনে করেন?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1'",
     "required": true,
     "options": [
       {
@@ -1600,7 +1527,7 @@
   {
     "type": "radio",
     "label": "২৩. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত মহিলা কতদূর পর্যন্ত পড়াশুনো করেছেন?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1644,7 +1571,7 @@
   {
     "type": "radio",
     "label": "২৪. আমাকে একটু বলুন, পরিবারের সবচেয়ে বেশি শিক্ষিত পুরুষ কতদূর পর্যন্ত পড়াশুনো করেছেন?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1688,7 +1615,7 @@
   {
     "type": "radio",
     "label": "২৫. আপনার পরিবারের প্রধান উপার্জনকারী কী কাজ করেন?",
-    "conditional": "resp_registered_voter === '1' && web_form_set === '2'",
+    "conditional": "resp_registered_voter === '1' && web_form_set === '4'",
     "required": true,
     "options": [
       {
@@ -1731,6 +1658,79 @@
     "required": true,
     "placeholder": "Enter name",
     "tag": "resp_name"
+  },
+  {
+    "type": "radio",
+    "label": "উত্তরদাতা পুরুষ/ মহিলা সেটা লিখুন",
+    "conditional": "resp_registered_voter === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "পুরুষ",
+        "value": "1",
+        "tag": "opt_male"
+      },
+      {
+        "label": "মহিলা",
+        "value": "2",
+        "tag": "opt_female"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_male": [
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ],
+        "opt_female": [
+          "q13",
+          "q16_a",
+          "q16_b",
+          "q5",
+          "q6",
+          "q7",
+          "q8",
+          "q9",
+          "q10",
+          "resp_religion",
+          "resp_social_cat",
+          "resp_caste_jati",
+          "q11",
+          "q12",
+          "q14",
+          "q15",
+          "q17",
+          "q19",
+          "resp_female_edu",
+          "resp_male_edu",
+          "resp_occupation",
+          "resp_name",
+          "thanks_future"
+        ]
+      }
+    },
+    "tag": "resp_gender"
   },
   {
     "type": "radio",
