@@ -23,6 +23,7 @@ interface DownloadItemFormData {
     params?: string;
   };
   type: 'CSV' | 'EXCEL' | 'ZIP' | 'JSON' | 'PDF' | 'OTHER';
+  survey_type: 'F2F' | 'CATI' | 'CAWI' | 'F2F_QC' | 'OTHER'
   status: number;
   sortOrder: number;
 }
@@ -31,7 +32,7 @@ export default function EditDownloadItemPage() {
   const router = useRouter();
   const params = useParams();
   const itemId = params.id as string;
-  
+
   const [formData, setFormData] = useState<DownloadItemFormData>({
     title: '',
     description: '',
@@ -41,10 +42,11 @@ export default function EditDownloadItemPage() {
       params: '',
     },
     type: 'CSV',
+    survey_type: 'F2F',
     status: 1,
     sortOrder: 0,
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export default function EditDownloadItemPage() {
       const response = await apiClient.get(`/download-items/${itemId}`);
       if (response.data.success && response.data.data) {
         const item = response.data.data;
-        
+
         // Convert params to string for editing
         let paramsStr = '';
         if (item.api?.params) {
@@ -73,7 +75,7 @@ export default function EditDownloadItemPage() {
             paramsStr = JSON.stringify(item.api.params, null, 2);
           }
         }
-        
+
         setFormData({
           title: item.title || '',
           description: item.description || '',
@@ -83,6 +85,7 @@ export default function EditDownloadItemPage() {
             params: paramsStr,
           },
           type: item.type || 'CSV',
+          survey_type: item.survey_type || 'CSV',
           status: item.status !== undefined ? item.status : 1,
           sortOrder: item.sortOrder !== undefined ? item.sortOrder : 0,
         });
@@ -101,27 +104,27 @@ export default function EditDownloadItemPage() {
     e.preventDefault();
     setError(null);
     setValidationErrors({});
-    
+
     // Basic validation
     if (!formData.title.trim()) {
       setValidationErrors({ title: 'Title is required' });
       return;
     }
-    
+
     if (!formData.api.url.trim()) {
       setValidationErrors({ 'api.url': 'API URL is required' });
       return;
     }
-    
+
     // Validate URL format
     const url = formData.api.url.trim();
     if (!url.startsWith('/') && !url.startsWith('http://') && !url.startsWith('https://')) {
       setValidationErrors({ 'api.url': 'API URL must be relative (starting with /) or absolute (http:// or https://)' });
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Prepare request body
       const requestBody: any = {
@@ -132,10 +135,11 @@ export default function EditDownloadItemPage() {
           method: formData.api.method,
         },
         type: formData.type,
+        survey_type: formData.survey_type,
         status: formData.status,
         sortOrder: formData.sortOrder,
       };
-      
+
       // Handle params - can be JSON object or string
       if (formData.api.params && formData.api.params.trim()) {
         const paramsStr = formData.api.params.trim();
@@ -150,9 +154,9 @@ export default function EditDownloadItemPage() {
       } else {
         requestBody.api.params = null;
       }
-      
+
       const response = await apiClient.put(`/download-items/${itemId}`, requestBody);
-      
+
       if (response.data.success) {
         router.push('/portal-admin/downloads');
       } else {
@@ -178,6 +182,14 @@ export default function EditDownloadItemPage() {
     { value: 'ZIP', label: 'ZIP' },
     { value: 'JSON', label: 'JSON' },
     { value: 'PDF', label: 'PDF' },
+    { value: 'OTHER', label: 'Other' },
+  ];
+
+  const surveytypeOptions = [
+    { value: 'F2F', label: 'F2F' },
+    { value: 'CATI', label: 'CATI' },
+    { value: 'CAWI', label: 'CAWI' },
+    { value: 'F2F_QC', label: 'F2F QC' },
     { value: 'OTHER', label: 'Other' },
   ];
 
@@ -245,7 +257,7 @@ export default function EditDownloadItemPage() {
                     Item Details
                   </Heading>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -255,7 +267,7 @@ export default function EditDownloadItemPage() {
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="e.g., CAPI Interview Data"
+                      placeholder="e.g., F2F Interview Data"
                       className={validationErrors.title ? 'border-red-500' : ''}
                       required
                     />
@@ -288,6 +300,22 @@ export default function EditDownloadItemPage() {
                     />
                     {validationErrors.type && (
                       <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.type}</p>
+                    )}
+                  </div>
+
+                  {/* survey type option  */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Survey Type <span className="text-red-500">*</span>
+                    </label>
+                    <SelectDropdown
+                      value={formData.survey_type}
+                      onChange={(value) => setFormData({ ...formData, survey_type: value as DownloadItemFormData['survey_type'] })}
+                      options={surveytypeOptions}
+                      className={validationErrors.survey_type ? 'border-red-500' : ''}
+                    />
+                    {validationErrors.survey_type && (
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.survey_type}</p>
                     )}
                   </div>
 
@@ -329,7 +357,7 @@ export default function EditDownloadItemPage() {
                     API Configuration
                   </Heading>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

@@ -9,6 +9,7 @@ export interface User {
   uniqueId: string; // Alphanumeric/numeric unique ID
   name: string;
   email?: string; // Optional email for notifications
+  group?: number; // User group ID
   mobile?: string; // Mobile phone number
   role: string;
   roleDisplayName?: string; // Display name for the role
@@ -267,6 +268,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           uniqueId: apiUser.uniqueId,
           name: `${apiUser.firstName} ${apiUser.lastName}`,
           email: apiUser.email,
+          group: (apiUser as any).group,
           mobile: (apiUser as any).mobile,
           role: roleName,
           roleDisplayName: roleDisplayName,
@@ -381,6 +383,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           createdBy: 'system',
           createdAt: apiUser.createdAt,
           isActive: apiUser.isActive,
+          group: (apiUser as any).group,
         };
 
         setUser(userData);

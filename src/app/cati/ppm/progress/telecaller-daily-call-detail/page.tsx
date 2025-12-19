@@ -71,6 +71,7 @@ interface DashboardFilters {
   toDate: string;
   duration: string;
   telecallingGroupId: string;
+  audioAvailability: string;
 }
 
 const TelecallerDailyCallDetailPage = () => {
@@ -97,6 +98,7 @@ const TelecallerDailyCallDetailPage = () => {
     toDate: '',
     duration: '',
     telecallingGroupId: '',
+    audioAvailability: '',
   });
 
   // Telecaller and AC list states
@@ -235,6 +237,12 @@ const TelecallerDailyCallDetailPage = () => {
     { value: 'custom', label: 'Custom Date Range' },
   ];
 
+  const audioAvailabilityOptions = [
+    { value: '', label: 'All Audio' },
+    { value: 'available', label: 'Available' },
+    { value: 'not_available', label: 'Not Available' },
+  ];
+
   // Helper function to convert calling dates option to start_date and end_date
   const getDateRangeForAPI = (callingDates: string, fromDate?: string, toDate?: string) => {
     const today = new Date();
@@ -352,6 +360,11 @@ const TelecallerDailyCallDetailPage = () => {
       // Apply additional filters from the search form (if uncommented later)
       if (filters.callReceived && filters.callReceived !== '') {
         params.append('call_received', filters.callReceived);
+      }
+
+      // Apply audio availability filter to API (server-side)
+      if (dashboardFilters.audioAvailability && dashboardFilters.audioAvailability !== '') {
+        params.append('isaudio', dashboardFilters.audioAvailability);
       }
       
       const url = `${apiBaseUrl}/api/cati/interviews/call-details?${params.toString()}`;
@@ -477,6 +490,19 @@ const TelecallerDailyCallDetailPage = () => {
       }
       return 0;
     });
+  };
+
+  const getFilteredData = () => {
+    let filtered = getSortedData();
+
+    // Apply audio availability filter
+    if (dashboardFilters.audioAvailability === 'available') {
+      filtered = filtered.filter((item) => item.audio !== null && item.audio !== '');
+    } else if (dashboardFilters.audioAvailability === 'not_available') {
+      filtered = filtered.filter((item) => !item.audio || item.audio === '');
+    }
+
+    return filtered;
   };
 
   // Fetch telecallers list
@@ -687,6 +713,21 @@ const TelecallerDailyCallDetailPage = () => {
               onChange={(value) => handleDashboardFilterChange('callingDates', value)}
               options={callingDatesOptions}
               placeholder="Select Date Range"
+              searchable={false}
+              clearable={true}
+              maxHeight={300}
+            />
+          </div>
+
+           <div className="flex-1 min-w-[200px]">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Audio 
+            </label>
+            <SelectDropdown
+              value={dashboardFilters.audioAvailability}
+              onChange={(value) => handleDashboardFilterChange('audioAvailability', value)}
+              options={audioAvailabilityOptions}
+              placeholder="Select Audio Status"
               searchable={false}
               clearable={true}
               maxHeight={300}
@@ -955,7 +996,7 @@ const TelecallerDailyCallDetailPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {getSortedData().map((item, index) => (
+                      {getFilteredData().map((item, index) => (
                         <tr key={item.id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 border-b border-gray-200 font-medium text-center">
                             {(pagination.page - 1) * pagination.limit + index + 1}

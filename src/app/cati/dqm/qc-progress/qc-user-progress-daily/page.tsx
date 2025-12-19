@@ -52,6 +52,7 @@ interface QCUserProgressData {
   total_qc_pass: number;
   total_qc_fail: number;
   total_qc_pending: number;
+  total_qc_completed: number;
   ac_wise_statistics: ACWiseStatistics[];
 }
 
@@ -498,6 +499,7 @@ export default function QCUserProgressPage() {
         'Start time',
         'End time',
         'Total Assigned',
+        'Total Completed',
         'QC Pass',
         'QC Fail',
         'QC Pending'
@@ -514,6 +516,7 @@ export default function QCUserProgressPage() {
           `"${formatIsoTo12hCsv(user.start_time)}"`,
           `"${formatIsoTo12hCsv(user.end_time)}"`,
           user.total_qc_assigned,
+          user.total_qc_completed,
           user.total_qc_pass,
           user.total_qc_fail,
           user.total_qc_pending
@@ -730,7 +733,7 @@ export default function QCUserProgressPage() {
             <div className="flex items-center">
               <div className="w-1 h-6 bg-blue-600 mr-3"></div>
               <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
-                QC User Progress Summary
+                QC User Daily Progress
               </Heading>
             </div>
             <div className="flex items-center">
@@ -764,18 +767,15 @@ export default function QCUserProgressPage() {
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Mobile Number</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">Start time</th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">End time</th>
-                  {/* <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                    Total Assigned
-                  </th> */}
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     QC Pass
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
                     QC Fail
                   </th>
-                  {/* <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
-                    QC Pending
-                  </th> */}
+                  <th className="px-4 py-3 text-center text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Total Completed
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -795,10 +795,9 @@ export default function QCUserProgressPage() {
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.mobile_number || '-'}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{formatIsoTo12h(user.start_time)}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{formatIsoTo12h(user.end_time)}</td>
-                    {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_assigned.toLocaleString()}</td> */}
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pass.toLocaleString()}</td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_fail.toLocaleString()}</td>
-                    {/* <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_pending.toLocaleString()}</td> */}
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{user.total_qc_completed.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>

@@ -24,6 +24,7 @@ interface DownloadItem {
   };
   status: number; // 1 = active, 0 = inactive
   type: 'CSV' | 'EXCEL' | 'ZIP' | 'JSON' | 'PDF' | 'OTHER';
+  survey_type: 'CAPI' | 'CATI' | 'CAVI' | 'CAPI QC' | 'OTHER';
   sortOrder?: number;
   createdAt?: string;
   updatedAt?: string;

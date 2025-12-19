@@ -186,7 +186,8 @@ export default function PSForFormPage() {
   };
 
   const handleUploadPS = () => {
-    // Handle upload PS list logic here
+    // Handle upload PS list logic 
+    window.location.href = '/capi/ppm/ps-form/upload';
     console.log('Upload PS List');
   };
 

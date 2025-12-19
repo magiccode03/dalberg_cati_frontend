@@ -31,6 +31,7 @@ export interface User {
   lastLoginAt: string;
   createdAt: string;
   updatedAt: string;
+  group?: number;
 }
 
 export interface CreateUserRequest {
@@ -84,6 +85,7 @@ export interface LoginResponse {
     roleName: string;
     roleDisplayName: string;
     roleLevel: number;
+    group?: number;
   };
 }
 
@@ -156,6 +158,7 @@ class ApiService {
     name?: string;
     mobile?: string;
     isActive?: boolean;
+    group?: number;
   }): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
     const queryString = params ? '?' + new URLSearchParams(
       Object.entries(params)
@@ -547,6 +550,66 @@ class ApiService {
     return this.request('GET', '/dashboard/findings/approval-ratings');
   }
 
+  // Approval Ratings PC-wise (MP)
+  async getApprovalRatingsPcWise(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      satisfaction_bjp_govt: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          achieved: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    mp_satisfaction: {
+      title: string;
+      pc_data: Array<{
+        pc_code: number;
+        pc_name: string;
+        mp_name: string;
+        satisfaction_breakdown: {
+          'Fully satisfied': number;
+          'Somewhat satisfied': number;
+          'Neither satisfied nor dissatisfied': number;
+          'Somewhat dissatisfied': number;
+          'Fully Dissatisfied': number;
+        };
+      }>;
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/approval-ratings-pc-wise');
+  }
+
+  // Preferred CM API
+  async getPreferredCM(): Promise<ApiResponse<{
+    charts: {
+      preferred_cm: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/preferred-cm');
+  }
+
   // Basic Demographics API
   async getBasicDemographics(progressType?: number, filters?: {
     psu_code?: string;
@@ -751,6 +814,36 @@ class ApiService {
       ...(filters || {})
     });
   }
+
+  // Top Reasons for Choosing Party API
+  async getTopReasonsForParty(questionId: string, chartId: string, acCode?: string): Promise<ApiResponse<{
+    chart_type: string;
+    chart_id: string;
+    question_id: string;
+    total_sample: number;
+    data: Array<{
+      name: string;
+      percentage: number;
+      count: string;
+    }>;
+    colors: string[];
+  }>> {
+    const params: Record<string, string> = {
+      question_id: questionId,
+      chart_id: chartId,
+    };
+    if (acCode) {
+      params.ac_code = acCode;
+    }
+    return this.request('GET', '/dashboard/findings/party/top-reasons-for-choosing-party', params);
+  }
+
+  // Get AC List API
+  async getAcList(): Promise<ApiResponse<Record<string, string>>> {
+    return this.request('GET', '/dropdown/ac-list');
+  }
+
+  
 }
 
 // Export singleton instance
