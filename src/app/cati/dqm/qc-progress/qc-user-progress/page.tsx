@@ -289,7 +289,6 @@ export default function QCUserProgressPage() {
         const summary = data.summary || {};  // Safely access summary data, defaulting to an empty object if not available
         if (summary) {
           console.log('Summary:', summary);
-          // Optionally, you can display the summary in the UI or add it to your state.
         }
 
       } else {

@@ -75,6 +75,13 @@ interface PaginationInfo {
 
 interface APIResponse {
   success: boolean;
+  summary: {
+    overall_total_qc_assigned: number;
+    overall_total_qc_completed: number;
+    overall_total_qc_pass: number;
+    overall_total_qc_fail: number;
+    overall_total_qc_pending: number;
+  }
   data?: QCUserProgressData[];
   pagination?: PaginationInfo;
   message?: string;
@@ -112,6 +119,7 @@ export default function QCUserProgressPage() {
   });
 
   const [qcUserProgressData, setQcUserProgressData] = useState<QCUserProgressData[]>([]);
+  const [summary, setSummary] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [qcUserOptions, setQcUserOptions] = useState<QCUserOption[]>([]);
@@ -272,7 +280,7 @@ export default function QCUserProgressPage() {
 
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 30000);
       });
 
       const response = await Promise.race([
@@ -287,6 +295,7 @@ export default function QCUserProgressPage() {
       if (data.success && data.data && Array.isArray(data.data)) {
         console.log('Success! Data received:', data.data.length, 'items');
         setQcUserProgressData(data.data);
+        setSummary(data.summary || null);
 
         // Handle pagination info
         if (data.pagination) {
@@ -302,6 +311,10 @@ export default function QCUserProgressPage() {
           setHasNext(false);
           setHasPrevious(false);
           setCurrentPage(1);
+        }
+        const summary = data.summary || {};
+        if (summary) {
+          console.log('Summary:', summary);
         }
       } else {
         console.log('No data or unsuccessful response');
@@ -489,6 +502,7 @@ export default function QCUserProgressPage() {
       }
 
       const downloadData = data.data;
+      const summary = data.summary || {};
 
       // Create CSV headers
       const headers = [
@@ -498,16 +512,27 @@ export default function QCUserProgressPage() {
         'Mobile Number',
         'Start time',
         'End time',
-        'Total Assigned',
-        'Total Completed',
         'QC Pass',
         'QC Fail',
-        'QC Pending'
+        'Total Completed'
       ];
+
+      const summaryRow = [
+        '',
+        'Summary',
+        '',
+        '',
+        '',
+        '',
+        summary.overall_total_qc_pass,
+        summary.overall_total_qc_fail,
+        summary.overall_total_qc_completed
+      ].join(',');
 
       // Create CSV rows
       const csvRows = [
         headers.join(','),
+        summaryRow,
         ...downloadData.map((user, index) => [
           index + 1,
           user.user_id,
@@ -515,11 +540,9 @@ export default function QCUserProgressPage() {
           `"${user.mobile_number}"`,
           `"${formatIsoTo12hCsv(user.start_time)}"`,
           `"${formatIsoTo12hCsv(user.end_time)}"`,
-          user.total_qc_assigned,
-          user.total_qc_completed,
           user.total_qc_pass,
           user.total_qc_fail,
-          user.total_qc_pending
+          user.total_qc_completed
         ].join(','))
       ];
 
@@ -779,6 +802,21 @@ export default function QCUserProgressPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
+
+                {summary && (
+                  <tr className="bg-gray-100">
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 text-center"></td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">Summary</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_pass.toLocaleString()}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_fail.toLocaleString()}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_completed.toLocaleString()}</td>
+                  </tr>
+                )}
+
                 {qcUserProgressData.map((user, index) => (
                   <tr key={`${user.user_id}-${index}`} className="hover:bg-gray-50">
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{index + 1}</td>
