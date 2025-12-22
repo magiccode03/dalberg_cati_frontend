@@ -806,14 +806,14 @@ export default function QCUserProgressPage() {
                 {summary && (
                   <tr className="bg-gray-100">
                     <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 text-center"></td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">Summary</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_pass.toLocaleString()}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_fail.toLocaleString()}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_completed.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">Summary</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">-</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">-</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_pass.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_fail.toLocaleString()}</td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-900 text-center">{summary.overall_total_qc_completed.toLocaleString()}</td>
                   </tr>
                 )}
 
@@ -842,22 +842,15 @@ export default function QCUserProgressPage() {
             </Table>
           </div>
 
-          {/* Table Footer with Pagination */}
-          <div className="flex justify-between items-center mt-4 px-4 pb-4">
-            <div className="text-sm text-gray-700">
-              Showing <span className="font-semibold">{((currentPage - 1) * pageSize) + 1}</span> - <span className="font-semibold">{Math.min(currentPage * pageSize, totalCount)}</span> of <span className="font-semibold">{totalCount}</span> results.
-            </div>
-            {totalPages > 1 && (
-              <div>
-                <PaginationStandard
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalItems={totalCount}
-                  itemsPerPage={pageSize}
-                  onPageChange={handlePageChange}
-                />
-              </div>
-            )}
+          {/* Pagination */}
+          <div className="mt-6">
+            <PaginationStandard
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalCount}
+              itemsPerPage={pageSize}
+              onPageChange={handlePageChange}
+            />
           </div>
         </Card>
       </Container>
