@@ -555,7 +555,7 @@ export default function QCUserProgressPage() {
       const url = URL.createObjectURL(blob);
 
       link.setAttribute('href', url);
-      link.setAttribute('download', `qc_user_progress_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `qc_user_progress_daily_${new Date().toISOString().split('T')[0]}.csv`);
       link.style.visibility = 'hidden';
 
       document.body.appendChild(link);
