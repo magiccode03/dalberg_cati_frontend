@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -96,7 +96,7 @@ export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Determine current system based on pathname for FD role, or force 'cati' for group role
-  const getCurrentSystem = (): 'capi' | 'cati' | undefined => {
+  const currentSystem = useMemo((): 'capi' | 'cati' | undefined => {
     if (user?.role === 'fd') {
       if (pathname.startsWith('/cati/fd')) return 'cati';
       if (pathname.startsWith('/capi/fd')) return 'capi';
@@ -104,10 +104,43 @@ export default function Sidebar() {
     // Force 'cati' system for group role to ensure menu items are loaded
     if (user?.role === 'group') return 'cati';
     return user?.system;
-  };
+  }, [pathname, user?.role, user?.system]);
 
-  const currentSystem = getCurrentSystem();
-  const menuItems = user ? getMenuByRole(user.role, currentSystem) : [];
+  const menuItems = useMemo(() => {
+    return user ? getMenuByRole(user.role, currentSystem) : [];
+  }, [user?.role, currentSystem]);
+
+  // Automatically expand menus when a child page is active
+  useEffect(() => {
+    const newOpenMenus: Record<string, boolean> = {};
+    
+    menuItems.forEach((item) => {
+      if (item.children) {
+        // Check if any child's href matches the current pathname
+        const hasActiveChild = item.children.some(child => {
+          // Check exact match or if pathname starts with child href
+          return pathname === child.href || pathname.startsWith(child.href + '/');
+        });
+        
+        if (hasActiveChild) {
+          newOpenMenus[item.id] = true;
+        }
+      }
+    });
+    
+    // Only update if there are changes to prevent infinite loops
+    setOpenMenus(prev => {
+      // Check if any new menus need to be opened that aren't already open
+      const hasChanges = Object.keys(newOpenMenus).some(key => !prev[key]);
+      if (!hasChanges) {
+        // No changes needed, return previous state to prevent re-render
+        return prev;
+      }
+      
+      // Merge with existing open menus (preserve user's manual toggles)
+      return { ...prev, ...newOpenMenus };
+    });
+  }, [pathname, menuItems]);
 
   const toggleMenu = (id: string) => {
     setOpenMenus(prev => ({ ...prev, [id]: !prev[id] }));
@@ -185,14 +218,20 @@ export default function Sidebar() {
                 </li>
               )
             ) : (
-              menuItems.map((item) => (
-              <li key={item.id} className="mb-1 md:mb-2">
+              menuItems.map((item) => {
+                // Check if any child is active
+                const hasActiveChild = item.children?.some(child => {
+                  return pathname === child.href || pathname.startsWith(child.href + '/');
+                });
+                
+                return (
+                  <li key={item.id} className="mb-1 md:mb-2">
                 {item.children ? (
                   <div className="space-y-1">
                     <button
                       onClick={() => toggleMenu(item.id)}
                       className={`flex items-center w-full p-3 rounded-lg transition-colors touch-manipulation ${
-                        openMenus[item.id] 
+                        openMenus[item.id] || hasActiveChild
                           ? 'bg-blue-600 text-white' 
                           : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                       } ${isCollapsed ? 'justify-center' : ''}`}
@@ -202,7 +241,7 @@ export default function Sidebar() {
                       {(!isCollapsed || window.innerWidth < 768) && (
                         <>
                           <span className="ml-3 flex-grow text-left font-medium">{item.label}</span>
-                          {openMenus[item.id] ? (
+                          {openMenus[item.id] || hasActiveChild ? (
                             <ChevronDown className="h-4 w-4" />
                           ) : (
                             <ChevronRight className="h-4 w-4" />
@@ -212,7 +251,7 @@ export default function Sidebar() {
                     </button>
                     {(!isCollapsed || window.innerWidth < 768) && (
                       <div className={`ml-6 mt-2 space-y-1 border-l border-gray-300 dark:border-gray-600 pl-4 transition-all duration-300 ease-in-out ${
-                        openMenus[item.id] ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'
+                        openMenus[item.id] || hasActiveChild ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'
                       }`}>
                           {item.children.map((child) => (
                             <Link
@@ -257,8 +296,10 @@ export default function Sidebar() {
                     {(!isCollapsed || window.innerWidth < 768) && <span className="ml-3 font-medium">{item.label}</span>}
                   </Link>
                 )}
-              </li>
-            )))}
+                  </li>
+                );
+              })
+            )}
           </ul>
         </nav>
       </aside>
