@@ -49,6 +49,13 @@ export default function PCProgressPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiData, setApiData] = useState<FieldworkProgressData | null>(null);
+  const [summaryTiles, setSummaryTiles] = useState<{
+    target_sample: string;
+    interviews_attempted: string;
+    interviews_attempted_percentage: number;
+    interviews_achieved: string;
+    interviews_achieved_percentage: number;
+  } | null>(null);
 
   useEffect(() => {
     if (progressSubType) {
@@ -61,12 +68,20 @@ export default function PCProgressPage() {
       setLoading(true);
       setError(null);
       
-      const response = await apiService.getFDFieldworkProgress(1, progressSubType);
+      // Fetch detail data and main dashboard data in parallel
+      const [detailResponse, summaryResponse] = await Promise.all([
+        apiService.getFDFieldworkProgress(1, progressSubType),
+        apiService.getFDFieldworkProgress() // Main dashboard data for summary tiles
+      ]);
       
-      if (response.success && response.data) {
-        setApiData(response.data);
+      if (detailResponse.success && detailResponse.data) {
+        setApiData(detailResponse.data);
       } else {
         setError('Failed to fetch PC progress data');
+      }
+      
+      if (summaryResponse.success && summaryResponse.data?.summary_tiles) {
+        setSummaryTiles(summaryResponse.data.summary_tiles);
       }
     } catch (err: any) {
       console.error('Error fetching PC progress data:', err);
@@ -147,11 +162,11 @@ export default function PCProgressPage() {
 
       {/* Statistics Cards */}
       <SummaryTiles
-        targetSample={parseInt(apiData.summary_tiles?.target_sample || '0')}
-        interviewsAttempted={parseInt(apiData.summary_tiles?.interviews_attempted || '0')}
-        interviewsAttemptedPercentage={apiData.summary_tiles?.interviews_attempted_percentage || 0}
-        interviewsAchieved={parseInt(apiData.summary_tiles?.interviews_achieved || '0')}
-        interviewsAchievedPercentage={apiData.summary_tiles?.interviews_achieved_percentage || 0}
+        targetSample={parseInt(summaryTiles?.target_sample || '0')}
+        interviewsAttempted={parseInt(summaryTiles?.interviews_attempted || '0')}
+        interviewsAttemptedPercentage={summaryTiles?.interviews_attempted_percentage || 0}
+        interviewsAchieved={parseInt(summaryTiles?.interviews_achieved || '0')}
+        interviewsAchievedPercentage={summaryTiles?.interviews_achieved_percentage || 0}
       />
 
       {/* Chart Section */}
