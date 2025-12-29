@@ -40,10 +40,29 @@ export default function ACDrillDownPage() {
   const params = useParams();
   const progressSubType = parseInt(params.progress_sub_type as string);
   const acCode = params.ac_code as string;
+  
+  // Get district_code and zone_code from query parameters if coming from district drill-down
+  const [districtCode, setDistrictCode] = useState<string | null>(null);
+  const [zoneCode, setZoneCode] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiData, setApiData] = useState<FieldworkProgressData | null>(null);
+
+  useEffect(() => {
+    // Get query parameters from URL
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const districtCodeParam = searchParams.get('district_code');
+      const zoneCodeParam = searchParams.get('zone_code');
+      if (districtCodeParam) {
+        setDistrictCode(districtCodeParam);
+      }
+      if (zoneCodeParam) {
+        setZoneCode(zoneCodeParam);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (progressSubType && acCode) {
@@ -114,11 +133,23 @@ export default function ACDrillDownPage() {
       <div className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"
-          onClick={() => router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}`)}
+          onClick={() => {
+            // If we came from district drill-down, go back to that page
+            if (districtCode) {
+              const queryParams = new URLSearchParams();
+              if (zoneCode) {
+                queryParams.append('zone_code', zoneCode);
+              }
+              router.push(`/capi/fd/fieldwork-progress2/district/${progressSubType}/${districtCode}${queryParams.toString() ? '?' + queryParams.toString() : ''}`);
+            } else {
+              // Otherwise go to AC list page
+              router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}`);
+            }
+          }}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to AC Progress
+          {districtCode ? 'Back to District Progress' : 'Back to AC Progress'}
         </Button>
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
           {apiData.sub_model?.ac_name || 'AC Drill Down'}
@@ -143,8 +174,8 @@ export default function ACDrillDownPage() {
           data={apiData.subdata_provider}
           progressType={4}
           progressSubType={progressSubType}
-          backUrl={`/capi/fd/fieldwork-progress2/ac/${progressSubType}`}
-          backLabel={`Back to ${apiData.sub_model?.ac_name || 'AC Progress'}`}
+          backUrl={districtCode ? `/capi/fd/fieldwork-progress2/district/${progressSubType}/${districtCode}${zoneCode ? `?zone_code=${zoneCode}` : ''}` : `/capi/fd/fieldwork-progress2/ac/${progressSubType}`}
+          backLabel={districtCode ? 'Back to District Progress' : `Back to ${apiData.sub_model?.ac_name || 'AC Progress'}`}
           columns={{
             code: { label: 'PS Code', field: 'polling_station_no' },
             name: { label: 'PS Name', field: 'polling_station_name' },

@@ -71,10 +71,9 @@ export default function ZoneDrillDownPage() {
   };
 
   const handleRowClick = (districtCode: string) => {
-    // From Zone Drill Down, clicking District Name goes to AC Progress page
-    // Note: The document says clicking District Name should open AC Progress page
-    // We'll navigate to AC Progress with the district code as a filter
-    router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}?district_code=${districtCode}`);
+    // From Zone Drill Down, clicking District Name goes to District Drill Down page
+    // Pass zone_code as query parameter so we can navigate back correctly
+    router.push(`/capi/fd/fieldwork-progress2/district/${progressSubType}/${districtCode}?zone_code=${zoneCode}`);
   };
 
   if (loading) {

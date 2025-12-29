@@ -40,10 +40,24 @@ export default function DistrictDrillDownPage() {
   const params = useParams();
   const progressSubType = parseInt(params.progress_sub_type as string);
   const districtCode = params.district_code as string;
+  
+  // Get zone_code from query parameter if coming from zone drill-down
+  const [zoneCode, setZoneCode] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiData, setApiData] = useState<FieldworkProgressData | null>(null);
+  
+  useEffect(() => {
+    // Get zone_code from URL search params
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const zoneCodeParam = searchParams.get('zone_code');
+      if (zoneCodeParam) {
+        setZoneCode(zoneCodeParam);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (progressSubType && districtCode) {
@@ -72,7 +86,15 @@ export default function DistrictDrillDownPage() {
   };
 
   const handleRowClick = (acCode: string) => {
-    router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}/${acCode}`);
+    // Pass district_code and zone_code as query parameters so we can navigate back correctly
+    const queryParams = new URLSearchParams();
+    // Read zone_code from URL or state
+    const currentZoneCode = zoneCode || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('zone_code') : null);
+    if (currentZoneCode) {
+      queryParams.append('zone_code', currentZoneCode);
+    }
+    queryParams.append('district_code', districtCode);
+    router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}/${acCode}?${queryParams.toString()}`);
   };
 
   if (loading) {
@@ -118,11 +140,21 @@ export default function DistrictDrillDownPage() {
       <div className="flex items-center gap-4 mb-8">
         <Button
           variant="outline"
-          onClick={() => router.push(`/capi/fd/fieldwork-progress2/district/${progressSubType}`)}
+          onClick={() => {
+            // Read zone_code from URL or state
+            const currentZoneCode = zoneCode || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('zone_code') : null);
+            // If we came from zone drill-down, go back to that page
+            if (currentZoneCode) {
+              router.push(`/capi/fd/fieldwork-progress2/zone/${progressSubType}/${currentZoneCode}`);
+            } else {
+              // Otherwise go to district list page
+              router.push(`/capi/fd/fieldwork-progress2/district/${progressSubType}`);
+            }
+          }}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to District Progress
+          {zoneCode || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('zone_code') : null) ? 'Back to Zone Progress' : 'Back to District Progress'}
         </Button>
         <Heading level={2} className="text-2xl font-semibold text-gray-900">
           {apiData.sub_model?.district || 'District Drill Down'}
@@ -147,8 +179,8 @@ export default function DistrictDrillDownPage() {
           data={apiData.subdata_provider}
           progressType={2}
           progressSubType={progressSubType}
-          backUrl={`/capi/fd/fieldwork-progress2/district/${progressSubType}`}
-          backLabel={`Back to ${apiData.sub_model?.district || 'District Progress'}`}
+          backUrl={zoneCode ? `/capi/fd/fieldwork-progress2/zone/${progressSubType}/${zoneCode}` : `/capi/fd/fieldwork-progress2/district/${progressSubType}`}
+          backLabel={zoneCode ? 'Back to Zone Progress' : `Back to ${apiData.sub_model?.district || 'District Progress'}`}
           onRowClick={handleRowClick}
           columns={{
             code: { label: 'AC Code', field: 'ac_code' },
