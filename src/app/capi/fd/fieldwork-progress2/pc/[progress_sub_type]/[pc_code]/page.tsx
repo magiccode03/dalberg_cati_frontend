@@ -72,7 +72,8 @@ export default function PCDrillDownPage() {
   };
 
   const handleRowClick = (acCode: string) => {
-    router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}/${acCode}`);
+    // Pass pc_code as query parameter so we can navigate back correctly
+    router.push(`/capi/fd/fieldwork-progress2/ac/${progressSubType}/${acCode}?pc_code=${pcCode}`);
   };
 
   if (loading) {
