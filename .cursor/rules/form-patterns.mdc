@@ -1,0 +1,99 @@
+---
+globs: src/components/forms/**/*.tsx,src/app/**/*form*.tsx
+description: Form development patterns and validation
+---
+
+# Form Development Patterns
+
+## Form Libraries
+- **React Hook Form**: Primary form library
+- **Zod**: Schema validation
+- **@hookform/resolvers**: Zod integration
+
+## Form Setup Pattern
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const formSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email'),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+const MyForm = () => {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit = async (data: FormData) => {
+    // Handle submission
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      {/* Form fields */}
+    </form>
+  );
+};
+```
+
+## Validation Schemas
+- Define schemas in [src/lib/validation-schemas.ts](mdc:src/lib/validation-schemas.ts)
+- Use Zod for type-safe validation
+- Provide clear error messages
+- Support both English and Hindi labels when needed
+
+## Form Field Patterns
+- Use consistent field styling
+- Display validation errors inline
+- Show required field indicators
+- Support disabled states
+
+## Form Submission
+- Show loading state during submission
+- Disable submit button while submitting
+- Handle success and error states
+- Reset form on successful submission
+
+## Dynamic Forms
+- Use [src/components/forms/DynamicForm.tsx](mdc:src/components/forms/DynamicForm.tsx) for dynamic forms
+- Support conditional fields
+- Handle nested form structures
+- Validate dynamically
+
+## Multi-Step Forms
+- Use [src/components/forms/MultiStepForm.tsx](mdc:src/components/forms/MultiStepForm.tsx)
+- Track current step
+- Validate per step
+- Save progress between steps
+
+## Form State Management
+- Use React Hook Form for form state
+- Use local state for UI state (loading, errors)
+- Use Redux for global form data when needed
+- Persist form data when appropriate
+
+## Common Form Components
+- Input fields with validation
+- Select dropdowns
+- Date pickers
+- File uploads
+- Checkboxes and radio buttons
+
+## Error Display
+```typescript
+{errors.fieldName && (
+  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+    {errors.fieldName.message}
+  </p>
+)}
+```
+
+## Form Accessibility
+- Use proper labels
+- Associate errors with fields
+- Support keyboard navigation
+- Include ARIA attributes

@@ -1,0 +1,243 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Audio Player Styles */
+.slider {
+  background: transparent;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 12px;
+  width: 12px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-webkit-slider-track {
+  background: #e5e7eb;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.slider::-moz-range-track {
+  background: #e5e7eb;
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}
+
+/* Bootstrap-like table styles for PMT Dashboard */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+  border-collapse: collapse;
+}
+
+.table-bordered {
+  border: 1px solid #dee2e6;
+}
+
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #dee2e6;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.bg-primary {
+  background-color: #0d6efd !important;
+}
+
+.text-white {
+  color: #fff !important;
+}
+
+.text-end {
+  text-align: right !important;
+}
+
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Dark mode table styles */
+.dark .table {
+  color: #e5e7eb;
+}
+
+.dark .table-bordered {
+  border-color: #374151;
+}
+
+.dark .table-bordered th,
+.dark .table-bordered td {
+  border-color: #374151;
+}
+
+.dark .table th,
+.dark .table td {
+  border-top-color: #374151;
+}
+
+.dark .table thead th {
+  border-bottom-color: #374151;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+/* Ensure dark mode works properly */
+html.dark {
+  color-scheme: dark;
+}
+
+html:not(.dark) {
+  color-scheme: light;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Leaflet Custom Styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.leaflet-popup-tip {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .leaflet-popup-tip {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.6);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(75, 85, 99, 0.4) transparent;
+}
+
+/* Sidebar specific scrollbar */
+.sidebar-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.2);
+  border-radius: 2px;
+}
+
+.sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.4);
+}
+
+.dark .sidebar-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.3);
+}
+
+.dark .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(75, 85, 99, 0.5);
+}
+
+/* Hide horizontal navbar for specific pages */
+body.hide-horizontal-nav nav {
+  display: none !important;
+}
+
+/* Scrollbar hide utility for mobile-friendly tabs */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}

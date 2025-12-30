@@ -1,0 +1,43 @@
+---
+description: Socket communication and real-time patterns
+---
+
+# Socket Communication Patterns
+
+## Socket Service Usage
+- **CRITICAL**: Messages should ONLY be sent through the socket service
+- Backend socket layer already saves messages in the database
+- **NEVER** use API calls for sending or saving messages
+- Use socket service for all real-time communication
+
+## Socket Patterns
+- Use socket service for message sending
+- Backend handles message persistence
+- Don't duplicate message saving via API
+- Handle socket connection states
+
+## Message Flow
+1. User sends message via socket
+2. Socket service handles transmission
+3. Backend socket layer saves to database
+4. No additional API call needed
+
+## Common Mistakes
+- ❌ DON'T: Use API calls to send messages
+- ❌ DON'T: Save messages via API after socket send
+- ❌ DON'T: Duplicate message persistence logic
+- ✅ DO: Use socket service for all messages
+- ✅ DO: Trust backend socket layer for persistence
+- ✅ DO: Handle socket connection errors
+
+## Socket State Management
+- Track connection status
+- Handle reconnection
+- Manage message queues
+- Display connection status to users
+
+## Error Handling
+- Handle socket disconnections
+- Retry failed messages
+- Show connection status
+- Handle network errors

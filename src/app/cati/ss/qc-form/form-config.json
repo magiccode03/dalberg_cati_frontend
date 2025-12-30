@@ -1,0 +1,659 @@
+[
+  {
+    "key": 1,
+    "type": "radio",
+    "label": {
+      "en": "Audio status",
+      "hi": "ऑडियो स्थिति",
+      "bn": "অডিও স্ট্যাটাস"
+    },
+    "required": true,
+    "options": [
+      {
+        "label": {
+          "en": "Survey Conversation can be heard",
+          "hi": "सर्वेक्षण वार्तालाप सुना जा सकता है",
+          "bn": "জরিপের কথোপকথন শোনা যাচ্ছে"
+        },
+        "value": "1",
+        "tag": "opt_survey_conver_heard"
+      },
+      {
+        "label": {
+          "en": "No Conversation",
+          "hi": "कोई बातचीत नहीं",
+          "bn": "কোনো কথোপকথন নেই"
+        },
+        "value": "2",
+        "tag": "opt_no_conversation"
+      },
+      {
+        "label": {
+          "en": "Irrelevant Conversation",
+          "hi": "अप्रासंगिक बातचीत",
+          "bn": "অপ্রাসঙ্গিক কথোপকথন"
+        },
+        "value": "3",
+        "tag": "opt_irrelevant_conversation"
+      },
+      {
+        "label": {
+          "en": "Can hear the interviewer more than the respondent",
+          "hi": "उत्तरदाता की तुलना में साक्षात्कारकर्ता को अधिक सुन सकते हैं",
+          "bn": "সাক্ষাৎকারগ্রহণকারীর কণ্ঠস্বর উত্তরদাতার তুলনায় বেশি শোনা যাচ্ছে"
+        },
+        "value": "4",
+        "tag": "opt_hear_inter_more_than_resp"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से सुनाई नहीं दे रही है",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "7",
+        "tag": "opt_cannot_hear_response"
+      },
+      {
+        "label": {
+          "en": "Duplicate Audio",
+          "hi": "दोहराया गया ऑडियो",
+          "bn": "ডুপ্লিকেট অডিও"
+        },
+        "value": "8",
+        "tag": "opt_duplicate_audio"
+      },
+      {
+        "label": {
+          "en": "Interviewer acting as  respondent ",
+          "hi": "Interviewer acting as  respondent ",
+          "bn": "Interviewer acting as  respondent "
+        },
+        "value": "9",
+        "tag": "opt_int_act_as_resp"
+      },
+      {
+        "label": {
+          "en": "Same respondent as before",
+          "hi": "Same respondent as before",
+          "bn": "Same respondent as before"
+        },
+        "value": "10",
+        "tag": "opt_same_resp_as_before"
+      }
+    ],
+    "tag": "qc_audio_status"
+  },
+  {
+    "key": 2,
+    "type": "radio",
+    "label": {
+      "en": "2. Gender of the Respondent Matching?",
+      "hi": "2. उत्तरदाता का लिंग मेल खाता है?",
+      "bn": "2. উত্তরদাতার লিঙ্গ কি মেলানো হয়েছে?"
+    },
+    "survey_q_tag": {
+      "tag": "resp_gender",
+    "options": [
+      {
+          "value": 1,
+          "lable": {
+            "en": "Male",
+            "hi": "पुरुष",
+            "bn": "পুরুষ"
+          }
+        },
+        {
+          "value": 2,
+          "lable": {
+            "en": "Female",
+            "hi": "महिला",
+            "bn": "মহিলা"
+          }
+        }
+      ]
+    },
+    "hint": {
+      "en": "Checker Instruction: Please verify if the Respondent's Gender was mentioned as per the audio",
+      "hi": "जाँचकर्ता निर्देश: कृपया सत्यापित करें कि क्या प्रतिवादी का लिंग ऑडियो के अनुसार उल्लिखित था",
+      "bn": "পরীক্ষকের নির্দেশনা: অডিও অনুসারে উত্তরদাতার লিঙ্গ উল্লেখ করা হয়েছে কিনা তা যাচাই করুন।"
+    },
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
+    "required": true,
+    "options": [
+      {
+        "label": {
+          "en": "Matched",
+          "hi": "मिलान हुआ",
+          "bn": "মিলে গেছে"
+        },
+        "value": "1",
+        "tag": "opt_matched"
+      },
+      {
+        "label": {
+          "en": "Not Matched",
+          "hi": "मिलान नहीं हुआ",
+          "bn": "মেলেনি"
+        },
+        "value": "2",
+        "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Male answering on behalf of female",
+          "hi": "पुरुष महिला की ओर से उत्तर दे रहा है",
+          "bn": "মহিলার পক্ষ থেকে পুরুষ উত্তর দিচ্ছেন।"
+        },
+        "value": "3",
+        "tag": "opt_male_answer_behalf_female"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "Cannot hear the response clearly",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "4",
+        "tag": "opt_cannot_hear_response"
+      }
+    ],
+    "tag": "qc_q2"
+  },
+  {
+    "key": 3,
+    "type": "radio",
+    "label": {
+      "en": "3. Is the Response Matching for the Upcoming Elections preference?",
+      "hi": "3. क्या प्रतिक्रिया आगामी चुनाव की प्राथमिकता से मेल खाती है?",
+      "bn": "3. উত্তরটি কি আসন্ন নির্বাচনের পছন্দ (প্রশ্ন ৮) এর সাথে মিলে যাচ্ছে?"
+    },
+    "survey_q_tag": {
+      "tag": "q8",
+    "options": [
+      {
+          "value": 1,
+          "lable": {
+            "en": "AITC (Trinamool Congress)",
+            "hi": "एआईटीसी (तृणमूल कांग्रेस)",
+            "bn": "এ আই টি সি (তৃণমূল কংগ্রেস)"
+          }
+        },
+        {
+          "value": 2,
+          "lable": {
+            "en": "BJP",
+            "hi": "भाजपा",
+            "bn": "বি জে পি"
+          }
+        },
+        {
+          "value": 3,
+          "lable": {
+            "en": "INC (Congress)",
+            "hi": "आई एन सी (कांग्रेस)",
+            "bn": "আই এন সি (কংগ্রেস)"
+          }
+        },
+        {
+          "value": 4,
+          "lable": {
+            "en": "Left Front",
+            "hi": "वाम मोर्चा",
+            "bn": "বামফ্রন্ট"
+          }
+        },
+        {
+          "value": 12,
+          "lable": {
+            "en": "Independent",
+            "hi": "स्वतंत्र",
+            "bn": "নির্দল"
+          }
+        },
+        {
+          "value": 44,
+          "survey_q_tag": "q8_oth",
+          "lable": {
+            "en": "Others (specify)",
+            "hi": "अन्य (निर्दिष्ट करें)",
+            "bn": "অন্যান্য (নির্দিষ্ট করে বলুন)"
+          }
+        },
+        {
+          "value": 55,
+          "lable": {
+            "en": "NOTA",
+            "hi": "नोटा",
+            "bn": "নোটা"
+          }
+        },
+        {
+          "value": 66,
+          "lable": {
+            "en": "Will not vote",
+            "hi": "Will not vote",
+            "bn": "ভোট দেবেন না"
+          }
+        },
+        {
+          "value": 77,
+          "lable": {
+            "en": "Not yet decided",
+            "hi": "Not yet decided",
+            "bn": "এখনো সিদ্ধান্ত নেননি"
+          }
+        },
+        {
+          "value": 88,
+          "lable": {
+            "en": "Refused to answer",
+            "hi": "उत्तर देने से इनकार",
+            "bn": "উত্তর দিতে চাননি"
+          }
+        }
+      ]
+    },
+    "hint": {
+      "en": "Instruction: Please verify if the Answer is matching as per the audio",
+      "hi": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं",
+      "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
+    },
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
+    "required": true,
+    "options": [
+      {
+        "label": {
+          "en": "Matched",
+          "hi": "मिलान हुआ",
+          "bn": "মিলে গেছে"
+        },
+        "value": "1",
+        "tag": "opt_matched"
+      },
+      {
+        "label": {
+          "en": "Not Matched",
+          "hi": "मिलान नहीं हुआ",
+          "bn": "মেলেনি"
+        },
+        "value": "2",
+        "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "3",
+        "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
+      }
+    ],
+    "tag": "qc_q3"
+  },
+  {
+    "key": 4,
+    "type": "radio",
+    "label": {
+      "en": "4. Is the Response Matching for the Previous 2021 Assembly Election?",
+      "hi": "4. क्या प्रतिक्रिया पिछले 2021 विधानसभा चुनाव से मेल खा रही है?",
+      "bn": "4. উত্তরটি কি ২০২১ সালের পূর্ববর্তী বিধানসভা নির্বাচনের (প্রশ্ন ৫) সাথে মিলে যাচ্ছে?"
+    },
+    "survey_q_tag": {
+      "tag": "q5",
+    "options": [
+      {
+          "value": 1,
+          "lable": {
+            "en": "AITC (Trinamool Congress)",
+            "hi": "एआईटीसी (तृणमूल कांग्रेस)",
+            "bn": "এ আই টি সি (তৃণমূল কংগ্রেস)"
+          }
+        },
+        {
+          "value": 2,
+          "lable": {
+            "en": "BJP",
+            "hi": "भाजपा",
+            "bn": "বি জে পি"
+          }
+        },
+        {
+          "value": 3,
+          "lable": {
+            "en": "INC (Congress)",
+            "hi": "आई एन सी (कांग्रेस)",
+            "bn": "আই এন সি (কংগ্রেস)"
+          }
+        },
+        {
+          "value": 4,
+          "lable": {
+            "en": "Left Front",
+            "hi": "वाम मोर्चा",
+            "bn": "বামফ্রন্ট"
+          }
+        },
+        {
+          "value": 12,
+          "lable": {
+            "en": "Independent",
+            "hi": "स्वतंत्र",
+            "bn": "নির্দল"
+          }
+        },
+        {
+          "value": 15,
+          "lable": {
+            "en": "AJSU",
+            "hi": "AJSU",
+            "bn": "AJSU"
+          }
+        },
+        {
+          "value": 44,
+          "survey_q_tag": "q5_oth",
+          "lable": {
+            "en": "Others (specify)",
+            "hi": "अन्य (निर्दिष्ट करें)",
+            "bn": "অন্যান্য (নির্দিষ্ট করে বলুন)"
+          }
+        },
+        {
+          "value": 55,
+          "lable": {
+            "en": "NOTA",
+            "hi": "नोटा",
+            "bn": "নোটা"
+          }
+        },
+        {
+          "value": 66,
+          "lable": {
+            "en": "Did not vote",
+            "hi": "वोट नहीं दिया",
+            "bn": "ভোট দেননি"
+          }
+        },
+        {
+          "value": 77,
+          "lable": {
+            "en": "Not eligible for voting",
+            "hi": "मतदान के लिए पात्र नहीं",
+            "bn": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি"
+          }
+        },
+        {
+          "value": 88,
+          "lable": {
+            "en": "No response/Refused to answer",
+            "hi": "कोई प्रतिक्रिया नहीं/उत्तर देने से इनकार",
+            "bn": "কোনো উত্তর নেই/ উত্তর দিতে চাননি"
+          }
+        }
+      ]
+    },
+    "hint": {
+      "en": "Instruction: Please verify if the Answer is matching as per the audio",
+      "hi": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं",
+      "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
+    },
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
+    "enable_condition": "resp_age>=22",
+    "required": true,
+    "options": [
+      {
+        "label": {
+          "en": "Matched",
+          "hi": "मिलान हुआ",
+          "bn": "মিলে গেছে"
+        },
+        "value": "1",
+        "tag": "opt_matched"
+      },
+      {
+        "label": {
+          "en": "Not Matched",
+          "hi": "मिलान नहीं हुआ",
+          "bn": "মেলেনি"
+        },
+        "value": "2",
+        "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "3",
+        "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
+      }
+    ],
+    "tag": "qc_q4"
+  },
+  {
+    "key": 5,
+    "type": "radio",
+    "label": {
+      "en": "5. Is the Response Matching for the Previous 2024 Loksabha Election?",
+      "hi": "5. क्या प्रतिक्रिया पिछले 2024 के लोकसभा चुनाव के अनुरूप है?",
+      "bn": "5. উত্তরটি কি ২০২৪ সালের পূর্ববর্তী লোকসভা নির্বাচনের সাথে মিলে যাচ্ছে?"
+    },
+    "survey_q_tag": {
+      "tag": "q6",
+    "options": [
+      {
+          "value": 1,
+          "lable": {
+            "en": "AITC (Trinamool Congress)",
+            "hi": "एआईटीसी (तृणमूल कांग्रेस)",
+            "bn": "এ আই টি সি (তৃণমূল কংগ্রেস)"
+          }
+        },
+        {
+          "value": 2,
+          "lable": {
+            "en": "BJP",
+            "hi": "भाजपा",
+            "bn": "বি জে পি"
+          }
+        },
+        {
+          "value": 3,
+          "lable": {
+            "en": "INC (Congress)",
+            "hi": "आई एन सी (कांग्रेस)",
+            "bn": "আই এন সি (কংগ্রেস)"
+          }
+        },
+        {
+          "value": 4,
+          "lable": {
+            "en": "Left Front",
+            "hi": "वाम मोर्चा",
+            "bn": "বামফ্রন্ট"
+          }
+        },
+        {
+          "value": 12,
+          "lable": {
+            "en": "Independent",
+            "hi": "स्वतंत्र",
+            "bn": "নির্দল"
+          }
+        },
+        {
+          "value": 44,
+          "survey_q_tag": "q6_oth",
+          "lable": {
+            "en": "Others (specify)",
+            "hi": "अन्य (निर्दिष्ट करें)",
+            "bn": "অন্যান্য (নির্দিষ্ট করে বলুন)"
+          }
+        },
+        {
+          "value": 55,
+          "lable": {
+            "en": "NOTA",
+            "hi": "नोटा",
+            "bn": "নোটা"
+          }
+        },
+        {
+          "value": 66,
+          "lable": {
+            "en": "Did not vote",
+            "hi": "वोट नहीं दिया",
+            "bn": "ভোট দেননি"
+          }
+        },
+        {
+          "value": 77,
+          "lable": {
+            "en": "Not eligible for voting",
+            "hi": "मतदान के लिए पात्र नहीं",
+            "bn": "ভোট দেওয়ার জন্য যোগ্যতা অর্জন করেননি"
+          }
+        },
+        {
+          "value": 88,
+          "lable": {
+            "en": "Refused to answer",
+            "hi": "उत्तर देने से इनकार",
+            "bn": "উত্তর দিতে চাননি"
+          }
+        }
+      ]
+    },
+    "hint": {
+      "en": "Instruction: Please verify if the Answer is matching as per the audio",
+      "hi": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं",
+      "bn": "निर्देश: कृपया सत्यापित करें कि उत्तर ऑडियो के अनुसार मेल खाता है या नहीं"
+    },
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
+    "enable_condition": "resp_age>=19",
+    "required": true,
+    "options": [
+      {
+        "label": {
+          "en": "Matched",
+          "hi": "मिलान हुआ",
+          "bn": "মিলে গেছে"
+        },
+        "value": "1",
+        "tag": "opt_matched"
+      },
+      {
+        "label": {
+          "en": "Not Matched",
+          "hi": "मिलान नहीं हुआ",
+          "bn": "মেলেনি"
+        },
+        "value": "2",
+        "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "3",
+        "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
+      }
+    ],
+    "tag": "qc_q5"
+  },
+  {
+    "key": 7,
+    "type": "radio",
+    "label": {
+      "en": "7. Is the Age matching?",
+      "hi": "7. क्या आयु मेल खा रही है?",
+      "bn": "7. বয়স কি মিলে গেছে?"
+    },
+    "survey_q_tag": "resp_age",
+    "conditional": "qc_audio_status === '1' || qc_audio_status === '4' || qc_audio_status === '7'",
+    "required": true,
+    "options": [
+      {
+        "label": {
+          "en": "Matched",
+          "hi": "मिलान हुआ",
+          "bn": "মিলে গেছে"
+        },
+        "value": "1",
+        "tag": "opt_matched"
+      },
+      {
+        "label": {
+          "en": "Not Matched",
+          "hi": "मिलान नहीं हुआ",
+          "bn": "মেলেনি"
+        },
+        "value": "2",
+        "tag": "opt_not_matched"
+      },
+      {
+        "label": {
+          "en": "Cannot hear the response clearly",
+          "hi": "प्रतिक्रिया स्पष्ट रूप से नहीं सुनी जा सकती",
+          "bn": "উত্তর স্পষ্টভাবে শোনা যাচ্ছে না"
+        },
+        "value": "3",
+        "tag": "opt_not_hear_clearly"
+      },
+      {
+        "label": {
+          "en": "Did not ask",
+          "hi": "नहीं पूछा",
+          "bn": "জিজ্ঞাসা করা হয়নি"
+        },
+        "value": "4",
+        "tag": "opt_did_not_ask"
+      }
+    ],
+    "tag": "qc_q7"
+  },
+  {
+    "key": 9,
+    "type": "text",
+    "label": {
+      "en": "9. Remark",
+      "hi": "9. Remark",
+      "bn": "9. Remark"
+    },
+    "tag": "qc_q9",
+    "required": false,
+    "maxLength": 500
+  }
+]

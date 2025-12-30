@@ -1,0 +1,71 @@
+---
+description: Authentication system guidelines and patterns
+---
+
+# Authentication System Guidelines
+
+## Core Authentication
+- **Login Method**: Users login with unique alphanumeric/numeric IDs (NOT email)
+- **SUPER ADMIN**: Role with full system access and user management capabilities
+- **Protected Routes**: Use ProtectedRoute component for authentication checks
+- **Context**: Authentication state managed in [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx)
+- **API Integration**: Uses [src/lib/api.ts](mdc:src/lib/api.ts) for authentication API calls
+- **Token Management**: Tokens stored in localStorage, managed by token-manager
+
+## User Management (SUPER ADMIN only)
+- **Create Users**: SUPER ADMIN can create new users with auto-generated unique IDs
+- **Edit Users**: Update user information, roles, and reset passwords
+- **Delete Users**: Remove users (cannot delete self)
+- **User Management Page**: [src/app/dashboard/user-management/page.tsx](mdc:src/app/dashboard/user-management/page.tsx)
+
+## Unique ID System
+- **Format**: `ROLE###` (e.g., SUPER001, ADMIN001, PMT001, QC001, QA001)
+- **Auto-Generation**: Automatically generates next available ID for each role
+- **Role Prefixes**: SUPER, ADMIN, PMT, QC, QA, SQC, DQ, CA
+
+## Role-Based Access Control
+- **SUPER_ADMIN**: Full system access + user management
+- **ADMIN**: Administrative access
+- **PMT**: PMT module access
+- **QC_MANAGER**: QC module access
+- **QUALITY_ANALYST**: Analysis module access
+- **START_QC**: Start QC access
+- **DATA_QUALITY**: Data quality access
+- **CONVERGENT_ANALYSIS**: Convergent analysis access
+
+## Authentication Patterns
+- Use `useAuth()` hook for authentication state
+- Check `isAuthenticated` before rendering protected content
+- Use `hasRole()` and `hasPermission()` for access control
+- Redirect to `/login` for unauthenticated users
+- Redirect to `/unauthorized` for insufficient permissions
+
+## Demo Accounts
+- SUPER001 / super123 (Super Admin)
+- ADMIN001 / admin123 (Admin)
+- PMT001 / pmt123 (PMT Manager)
+- QC001 / qc123 (QC Manager)
+- QA001 / analyst123 (Quality Analyst)
+
+## Security Considerations
+- **Token Storage**: Access and refresh tokens stored in localStorage
+- **Token Refresh**: Automatic token refresh on 401 responses
+- **Session Persistence**: Remember me option for extended sessions
+- **Automatic Logout**: Logout on token expiration or refresh failure
+- **Role-Based Access**: Menu filtering based on user roles in [src/lib/menu-data.ts](mdc:src/lib/menu-data.ts)
+- **Protected Routes**: Automatic redirect to `/login` for unauthenticated users
+- **Permission Checks**: Use `hasPermission()` and `hasRole()` for fine-grained access control
+
+## Authentication Flow
+1. User enters uniqueId and password
+2. `apiService.login()` called with credentials
+3. Backend validates and returns tokens + user data
+4. Tokens stored in localStorage
+5. User data stored in AuthContext
+6. Redirect to role-specific dashboard
+
+## Token Management
+- Access tokens included automatically in API requests
+- Refresh tokens used for token renewal
+- Token expiration handled automatically
+- Logout clears all tokens and user data

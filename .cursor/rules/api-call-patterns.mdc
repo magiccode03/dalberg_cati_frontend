@@ -1,0 +1,211 @@
+---
+description: Patterns for preventing multiple API calls and optimizing data fetching
+---
+
+# API Call Patterns - Preventing Multiple Calls
+
+## Critical Rule: Always Prevent Multiple Simultaneous API Calls
+
+When implementing API calls in React components, **ALWAYS** follow these patterns to prevent multiple simultaneous calls that waste resources and cause performance issues.
+
+## Required Patterns
+
+### 1. Memoize API Functions with `useCallback`
+
+**ALWAYS** wrap API fetch functions in `useCallback` with proper dependencies:
+
+```typescript
+const fetchData = useCallback(async () => {
+  // API call logic
+}, [dependency1, dependency2]); // Include all dependencies
+```
+
+**Why**: Prevents function recreation on every render, which can trigger unnecessary `useEffect` re-runs.
+
+### 2. Use Refs to Prevent Simultaneous Calls
+
+**ALWAYS** use refs to prevent multiple simultaneous API calls:
+
+```typescript
+const fetchingRef = useRef(false);
+
+const fetchData = useCallback(async () => {
+  // Prevent multiple simultaneous calls
+  if (fetchingRef.current) {
+    return;
+  }
+  
+  fetchingRef.current = true;
+  try {
+    // API call logic
+  } finally {
+    fetchingRef.current = false;
+  }
+}, [dependencies]);
+```
+
+**Why**: Prevents race conditions and duplicate API calls when component re-renders or user actions trigger multiple calls.
+
+### 3. Memoize Computed Values with `useMemo`
+
+**ALWAYS** memoize computed values (like dropdown options) that depend on API data:
+
+```typescript
+const options = useMemo(() => {
+  return data.map(item => ({ value: item.id, label: item.name }));
+}, [data]);
+```
+
+**Why**: Prevents unnecessary re-renders of child components (like SelectDropdown) when parent re-renders.
+
+### 4. Control Initial Fetch with Refs
+
+**ALWAYS** use a ref to ensure initial fetch only happens once:
+
+```typescript
+const hasInitialFetchRef = useRef(false);
+
+useEffect(() => {
+  if (!hasInitialFetchRef.current) {
+    hasInitialFetchRef.current = true;
+    fetchData();
+  }
+}, []); // Empty deps - only run on mount
+```
+
+**Why**: Prevents multiple initial fetches when component mounts or re-mounts.
+
+### 5. Proper useEffect Dependencies
+
+**ALWAYS** include memoized functions in `useEffect` dependencies:
+
+```typescript
+useEffect(() => {
+  fetchData();
+}, [fetchData]); // Include memoized function
+```
+
+**OR** use empty deps with ref guard for initial fetch only:
+
+```typescript
+useEffect(() => {
+  if (!hasInitialFetchRef.current) {
+    hasInitialFetchRef.current = true;
+    fetchData();
+  }
+}, []); // Empty deps for initial fetch only
+```
+
+## Complete Example Pattern
+
+```typescript
+'use client';
+
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+
+export default function DataPage() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Refs to prevent multiple simultaneous API calls
+  const fetchingRef = useRef(false);
+  const hasInitialFetchRef = useRef(false);
+
+  const fetchData = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (fetchingRef.current) {
+      return;
+    }
+    
+    fetchingRef.current = true;
+    setLoading(true);
+    
+    try {
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setLoading(false);
+        fetchingRef.current = false;
+        return;
+      }
+      
+      const response = await fetch('/api/data', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await response.json();
+      setData(result.data);
+    } catch (err) {
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+      fetchingRef.current = false;
+    }
+  }, []); // Add dependencies if function uses state/props
+
+  // Initial fetch only once
+  useEffect(() => {
+    if (!hasInitialFetchRef.current) {
+      hasInitialFetchRef.current = true;
+      fetchData();
+    }
+  }, []); // Empty deps - only run on mount
+
+  // Memoize computed values
+  const options = useMemo(() => {
+    return data.map(item => ({ value: item.id, label: item.name }));
+  }, [data]);
+
+  return (
+    // Component JSX
+  );
+}
+```
+
+## Common Mistakes to Avoid
+
+### ❌ DON'T: Create functions without memoization
+```typescript
+const fetchData = async () => { /* ... */ }; // Recreated on every render
+useEffect(() => { fetchData(); }, []); // May cause issues
+```
+
+### ❌ DON'T: Forget ref guards
+```typescript
+const fetchData = async () => {
+  // No ref check - allows multiple simultaneous calls
+  setLoading(true);
+  // ...
+};
+```
+
+### ❌ DON'T: Recreate computed values on every render
+```typescript
+const options = data.map(item => ({ value: item.id, label: item.name }));
+// Recreated on every render, causes unnecessary re-renders
+```
+
+### ❌ DON'T: Use functions in useEffect without proper deps
+```typescript
+useEffect(() => {
+  fetchData(); // Function not memoized, missing from deps
+}, []); // Missing fetchData dependency
+```
+
+## When to Apply These Patterns
+
+- **ALWAYS** when making API calls in React components
+- **ALWAYS** when using `useEffect` with API calls
+- **ALWAYS** when creating dropdown options from API data
+- **ALWAYS** when functions are used in multiple places (handlers, effects)
+
+## Performance Impact
+
+Following these patterns:
+- ✅ Prevents duplicate API calls (saves bandwidth and server resources)
+- ✅ Reduces unnecessary re-renders (improves performance)
+- ✅ Prevents race conditions (ensures data consistency)
+- ✅ Improves user experience (faster page loads, no flickering)
+
+## Related Files
+
+- Example implementation: [src/app/cati/ppm/ac-progress/ac-progress/page.tsx](mdc:src/app/cati/ppm/ac-progress/ac-progress/page.tsx)
+- State management: [.cursor/rules/state-management.mdc](mdc:.cursor/rules/state-management.mdc)

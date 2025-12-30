@@ -1,0 +1,14 @@
+Section,Type,Label/Column Name,Attribute/Field Name
+,,,
+,,,
+AC Wise Pending Data,Table Column,Sr. No,ac_pending.sr_no
+AC Wise Pending Data,Table Column,AC Code,ac_pending.ac_code
+AC Wise Pending Data,Table Column,AC Name,ac_pending.ac_name
+AC Wise Pending Data,Table Column,Pending Interview,ac_pending.pending_interview
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalCount
+Pagination,Data Field,Total Pages,totalPages
+Pagination,Data Field,Items Per Page,pageSize

@@ -1,0 +1,46 @@
+Section,Type,Label/Column Name,API Field/Attribute
+,,,
+,,,
+Page Info,Metadata,Page Name,page_info.page_name
+Page Info,Metadata,Page Title,page_info.page_title
+Page Info,Metadata,Total Interviews,page_info.total_interviews
+,,,
+State Level Data,Table Column,Party Name,state_level.data.2020_party
+State Level Data,Table Column,2020 Vote Share,state_level.data.2020_vote_share
+State Level Data,Table Column,BJP Vote Share,state_level.data.2025_preference.BJP
+State Level Data,Table Column,JDU Vote Share,state_level.data.2025_preference.JDU
+State Level Data,Table Column,HAMS Vote Share,state_level.data.2025_preference.HAMS
+State Level Data,Table Column,VSIP Vote Share,state_level.data.2025_preference.VSIP
+State Level Data,Table Column,LJP(RV) Vote Share,state_level.data.2025_preference.LJP(RV)
+State Level Data,Table Column,INC Vote Share,state_level.data.2025_preference.INC
+State Level Data,Table Column,RJD Vote Share,state_level.data.2025_preference.RJD
+State Level Data,Table Column,CPI(M) Vote Share,state_level.data.2025_preference.CPI(M)
+State Level Data,Table Column,JSP Vote Share,state_level.data.2025_preference.JSP
+State Level Data,Table Column,Others Vote Share,state_level.data.2025_preference.Others
+State Level Data,Table Column,NWR Vote Share,state_level.data.2025_preference.NWR
+,,,
+Zone Level Data,Table Column,Zone Code,zone_breakdown.zone_code
+Zone Level Data,Table Column,Zone Name,zone_breakdown.zone_name
+Zone Level Data,Table Column,Party Name,zone_breakdown.data.2020_party
+Zone Level Data,Table Column,2020 Vote Share,zone_breakdown.data.2020_vote_share
+Zone Level Data,Table Column,BJP Vote Share,zone_breakdown.data.2025_preference.BJP
+Zone Level Data,Table Column,JDU Vote Share,zone_breakdown.data.2025_preference.JDU
+Zone Level Data,Table Column,HAMS Vote Share,zone_breakdown.data.2025_preference.HAMS
+Zone Level Data,Table Column,VSIP Vote Share,zone_breakdown.data.2025_preference.VSIP
+Zone Level Data,Table Column,LJP(RV) Vote Share,zone_breakdown.data.2025_preference.LJP(RV)
+Zone Level Data,Table Column,INC Vote Share,zone_breakdown.data.2025_preference.INC
+Zone Level Data,Table Column,RJD Vote Share,zone_breakdown.data.2025_preference.RJD
+Zone Level Data,Table Column,CPI(M) Vote Share,zone_breakdown.data.2025_preference.CPI(M)
+Zone Level Data,Table Column,JSP Vote Share,zone_breakdown.data.2025_preference.JSP
+Zone Level Data,Table Column,Others Vote Share,zone_breakdown.data.2025_preference.Others
+Zone Level Data,Table Column,NWR Vote Share,zone_breakdown.data.2025_preference.NWR
+,,,
+Zone Pagination,Metadata,Current Page,zone_pagination.current_page
+Zone Pagination,Metadata,Per Page,zone_pagination.per_page
+Zone Pagination,Metadata,Total Count,zone_pagination.total_count
+Zone Pagination,Metadata,Total Pages,zone_pagination.total_pages
+,,,
+Actions,Action Button,Download,download
+Actions,Action Button,Export,export
+Actions,Action Button,Print,print
+Actions,Action Button,Refresh,refresh

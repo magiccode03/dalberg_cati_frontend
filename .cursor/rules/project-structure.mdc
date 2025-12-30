@@ -1,0 +1,87 @@
+---
+alwaysApply: true
+description: Project structure and architecture guidelines
+---
+
+# Bihar Election Analysis Dashboard - Project Structure
+
+## Project Overview
+This is a Next.js 15+ application for Bihar Election 2025 Analysis Dashboard System with TypeScript, Tailwind CSS, and Redux Toolkit.
+
+## Key Architecture Components
+
+### Authentication System
+- **Login**: Users authenticate with unique alphanumeric/numeric IDs (not email)
+- **SUPER ADMIN**: Can create and manage all system users
+- **Role-Based Access**: Different roles with specific permissions
+- **Protected Routes**: Automatic redirect to login for unauthenticated users
+
+### Main Entry Points
+- [src/app/layout.tsx](mdc:src/app/layout.tsx) - Root layout with providers
+- [src/app/page.tsx](mdc:src/app/page.tsx) - Home page with auth redirect
+- [src/app/login/page.tsx](mdc:src/app/login/page.tsx) - Public login page
+- [src/app/dashboard/layout.tsx](mdc:src/app/dashboard/layout.tsx) - Protected dashboard layout
+
+### Core Context & State
+- [src/contexts/AuthContext.tsx](mdc:src/contexts/AuthContext.tsx) - Authentication context with user management
+- [src/stores/app-store.ts](mdc:src/stores/app-store.ts) - Redux app state
+- [src/stores/analysis-store.ts](mdc:src/stores/analysis-store.ts) - Redux analysis state
+
+### Layout Components
+- [src/components/layout/Header.tsx](mdc:src/components/layout/Header.tsx) - Main header with user menu
+- [src/components/layout/HorizontalNav.tsx](mdc:src/components/layout/HorizontalNav.tsx) - Horizontal navigation
+- [src/components/layout/ConditionalLayout.tsx](mdc:src/components/layout/ConditionalLayout.tsx) - Conditional layout wrapper
+
+### Navigation & Menu
+- [src/lib/menu-data.ts](mdc:src/lib/menu-data.ts) - Menu structure with role-based access
+- [src/types/index.ts](mdc:src/types/index.ts) - TypeScript type definitions
+
+### User Management (SUPER ADMIN only)
+- [src/app/dashboard/user-management/page.tsx](mdc:src/app/dashboard/user-management/page.tsx) - User CRUD interface
+
+## File Organization
+- `/src/app/` - Next.js App Router pages
+  - `/src/app/capi/` - CAPI (Computer Assisted Personal Interview) system pages
+  - `/src/app/cati/` - CATI (Computer Assisted Telephone Interview) system pages
+  - `/src/app/dashboard/` - Main dashboard pages
+  - `/src/app/super-admin/` - Super admin pages
+  - `/src/app/portal-admin/` - Portal admin pages
+  - `/src/app/pmt/` - PMT (Project Management Team) pages
+- `/src/components/` - Reusable React components
+  - `/src/components/charts/` - Chart components (ECharts)
+  - `/src/components/forms/` - Form components
+  - `/src/components/layout/` - Layout components
+  - `/src/components/modals/` - Modal components
+  - `/src/components/tables/` - Table components
+  - `/src/components/ui/` - UI primitives (Radix UI)
+- `/src/contexts/` - React Context providers
+- `/src/stores/` - Redux store slices
+- `/src/lib/` - Utility functions and configurations
+  - `/src/lib/api.ts` - Centralized API service
+  - `/src/lib/menu-data.ts` - Menu structure with role-based access
+- `/src/types/` - TypeScript type definitions
+- `/src/hooks/` - Custom React hooks
+- `/public/` - Static assets (logo.png, etc.)
+
+## System Architecture
+- **CAPI System**: Computer Assisted Personal Interview system for field data collection
+  - QC (Quality Control) modules
+  - GPS tracking and validation
+  - Audio QC and validation
+  - Field data management
+- **CATI System**: Computer Assisted Telephone Interview system for telephonic surveys
+  - Telecaller management
+  - Call progress tracking
+  - Audio interview management
+  - Supervisor dashboard
+
+## Key Features
+- **Unique ID Authentication**: Alphanumeric/numeric user IDs
+- **Role-Based Access Control**: SUPER_ADMIN, ADMIN, PMT, QC, PPM, PPMT, DQM, DQMT, FD, SS, etc.
+- **User Management**: SUPER ADMIN can create/edit/delete users
+- **Dual System Support**: CAPI and CATI systems with role-based access
+- **Responsive Design**: Mobile-first with Tailwind CSS
+- **Dark Mode**: Theme switching support
+- **Protected Routes**: Automatic authentication checks
+- **Real-time Data**: Socket-based real-time communication
+- **Data Visualization**: ECharts for charts and analytics

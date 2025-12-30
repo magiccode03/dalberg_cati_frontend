@@ -1,0 +1,71 @@
+---
+globs: src/app/**/*.tsx,src/app/**/*.ts
+description: Next.js App Router patterns and conventions
+---
+
+# Next.js App Router Patterns
+
+## App Router Structure
+- **Pages**: Use `page.tsx` for route components
+- **Layouts**: Use `layout.tsx` for shared layouts
+- **Loading**: Use `loading.tsx` for loading states
+- **Error**: Use `error.tsx` for error boundaries
+- **Not Found**: Use `not-found.tsx` for 404 pages
+
+## Route Organization
+- **Public Routes**: `/login`, `/unauthorized`
+- **Protected Routes**: `/dashboard/*` (requires authentication)
+- **Dynamic Routes**: Use `[id]` for dynamic segments
+- **Nested Routes**: Use folder structure for nested layouts
+
+## Layout Patterns
+- **Root Layout**: [src/app/layout.tsx](mdc:src/app/layout.tsx) - Global providers and structure
+- **Dashboard Layout**: [src/app/dashboard/layout.tsx](mdc:src/app/dashboard/layout.tsx) - Protected route wrapper
+- **Conditional Layout**: [src/components/layout/ConditionalLayout.tsx](mdc:src/components/layout/ConditionalLayout.tsx) - Auth-based layout
+
+## Client vs Server Components
+- **Client Components**: Use `'use client'` directive
+- **Server Components**: Default for pages and layouts
+- **Hybrid Approach**: Use server components for data fetching, client for interactivity
+
+## Data Fetching
+- Use server components for initial data loading
+- Use client components for user interactions
+- Implement proper loading states
+- Handle errors gracefully
+
+## Metadata and SEO
+- Use `metadata` export for page metadata
+- Set proper titles and descriptions
+- Use Open Graph tags for social sharing
+- Implement proper canonical URLs
+
+## Performance Optimization
+- Use Next.js Image component for images
+- Implement proper caching strategies
+- Use dynamic imports for code splitting
+- Optimize bundle size
+
+## Authentication Integration
+- Use middleware for route protection
+- Implement proper redirects
+- Handle authentication state
+- Use protected route patterns
+
+## Error Handling
+- Use error boundaries for component errors
+- Implement proper error pages
+- Handle authentication errors
+- Provide user-friendly error messages
+
+## Styling in App Router
+- Use global CSS in [src/app/globals.css](mdc:src/app/globals.css)
+- Use Tailwind CSS for component styling
+- Implement proper CSS loading
+- Use CSS modules when needed
+
+## API Routes (Future)
+- Use `route.ts` for API endpoints
+- Implement proper request/response handling
+- Use proper HTTP methods
+- Handle errors and validation

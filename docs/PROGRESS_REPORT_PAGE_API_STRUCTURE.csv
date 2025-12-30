@@ -1,0 +1,36 @@
+Section,Type,Label/Column Name,
+,,,
+Search Filters,Filter Field,Report Days,reportDays
+Search Filters,Filter Field,Type of Report,typeOfReport
+Search Filters,Filter Field,Level,level
+,,,
+Progress Report Data,Table Column,Sr.No.,sr_no
+Progress Report Data,Table Column,AC Code,ac_code
+Progress Report Data,Table Column,AC Name,ac_name
+Progress Report Data,Table Column,Pc Name,pc_name
+Progress Report Data,Table Column,Target Sample,target_sample
+Progress Report Data,Table Column,No Of Interviewers Worked,interviewers_worked
+Progress Report Data,Table Column,PS Covered,ps_covered
+Progress Report Data,Table Column,Completed Interviews,completed_interviews
+Progress Report Data,Table Column,Terminated Interviews,terminated_interviews
+Progress Report Data,Table Column,System Rejections,system_rejections
+Progress Report Data,Table Column,Counts After Terminated And System Rejection,counts_after_terminated
+Progress Report Data,Table Column,GPS Pending,gps_pending
+Progress Report Data,Table Column,GPS Fail,gps_fail
+Progress Report Data,Table Column,Passed,passed
+Progress Report Data,Table Column,Failed,failed
+Progress Report Data,Table Column,Under QC,under_qc
+Progress Report Data,Table Column,% Of Female Interviews,female_interviews_percent
+Progress Report Data,Table Column,% Of Interviews Without Phone Number,without_phone_percent
+Progress Report Data,Table Column,Actual % Of SC,actual_sc_percent
+Progress Report Data,Table Column,% Of Interviews Mentioned As SC,mentioned_sc_percent
+Progress Report Data,Table Column,Actual % Of Muslims,actual_muslim_percent
+Progress Report Data,Table Column,% Of Interviews Mentioned As Muslims,mentioned_muslim_percent
+Progress Report Data,Table Column,% Of Interviews Under The Age Of (18-24),age_18_24_percent
+Progress Report Data,Table Column,% Of Interviews Under The Age Of (50+),age_50_plus_percent
+,,,
+,,,
+Pagination,Data Field,Current Page,currentPage
+Pagination,Data Field,Page Size,pageSize
+Pagination,Data Field,Total Items,totalItems
+Pagination,Data Field,Total Pages,totalPages

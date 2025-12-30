@@ -1,0 +1,33 @@
+Section,Type,Label/Column Name,Field Name
+,,,
+,,,
+Summary Cards,Card Data,ACs Tab Count,data.total_records
+Summary Cards,Card Data,PCs Tab Count,data.total_records
+Summary Cards,Card Data,Districts Tab Count,data.total_records
+Summary Cards,Card Data,Zones Tab Count,data.total_records
+,,,
+,,,
+,,1-Valmiki Nagar,data_list.ac_code-ac_name
+,,311/300,data_list.valid_underqc_achived/sample_target
+Caste Data Table,Table Column,Tharu,castes.caste_name
+Caste Data Table,Table Column,Muslim,castes.caste_name
+Caste Data Table,Table Column,Yadav/Raut,castes.caste_name
+Caste Data Table,Table Column,Others,castes.caste_name
+Caste Data Table,Table Column,Tharu Population %,castes.caste
+Caste Data Table,Table Column,Muslim Population %,castes.caste
+Caste Data Table,Table Column,Yadav/Raut Population %,castes.caste
+Caste Data Table,Table Column,Others Population %,castes.caste
+Caste Data Table,Table Column,Tharu Achievement %,castes.achievement
+Caste Data Table,Table Column,Muslim Achievement %,castes.achievement
+Caste Data Table,Table Column,Yadav/Raut Achievement %,castes.achievement
+Caste Data Table,Table Column,Others Achievement %,castes.achievement
+Caste Data Table,Table Column,Tharu Difference,castes.difference
+Caste Data Table,Table Column,Muslim Difference,castes.difference
+Caste Data Table,Table Column,Yadav/Raut Difference,castes.difference
+Caste Data Table,Table Column,Others Difference,castes.difference
+,,,
+,,,
+Color Coding,Status Indicator,Positive Difference,bg-green-600
+Color Coding,Status Indicator,Negative Difference,bg-red-600
+Color Coding,Status Indicator,Active Tab,opacity-100
+Color Coding,Status Indicator,Inactive Tab,opacity-50

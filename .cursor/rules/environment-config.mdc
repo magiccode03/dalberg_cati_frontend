@@ -1,0 +1,70 @@
+---
+description: Environment configuration and variable management
+---
+
+# Environment Configuration
+
+## Environment Variables
+- **API URL**: `NEXT_PUBLIC_API_URL` - Backend API base URL
+- **Never hardcode**: IP addresses or localhost values
+- **All config**: Managed via environment files (.env.local, .env.production)
+
+## Environment Files
+- `.env.local` - Local development
+- `.env.production` - Production
+- `.env.example` - Template (if exists)
+
+## Configuration Pattern
+```typescript
+// ✅ CORRECT: Use environment variables
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+
+// ❌ WRONG: Hardcoded values
+const API_BASE_URL = 'http://localhost:4001';
+const API_BASE_URL = 'http://192.168.1.100:4001';
+```
+
+## API Configuration
+- Base URL from `NEXT_PUBLIC_API_URL`
+- API version: `/api`
+- Full URL: `${API_BASE_URL}${API_VERSION}`
+- Defined in [src/lib/api.ts](mdc:src/lib/api.ts)
+
+## Client-Side Variables
+- Use `NEXT_PUBLIC_` prefix for client-side variables
+- Access via `process.env.NEXT_PUBLIC_*`
+- Available at build time
+- Don't expose sensitive data
+
+## Server-Side Variables
+- No `NEXT_PUBLIC_` prefix
+- Access in API routes only
+- Not exposed to client
+- Use for sensitive data
+
+## Configuration Management
+- Store in `.env.local` for development
+- Use Vercel environment variables for production
+- Never commit `.env.local` to git
+- Document required variables in README
+
+## Common Variables
+```bash
+# API Configuration
+NEXT_PUBLIC_API_URL=http://localhost:4001
+
+# Feature Flags (if needed)
+NEXT_PUBLIC_ENABLE_FEATURE_X=true
+
+# Analytics (if needed)
+NEXT_PUBLIC_ANALYTICS_ID=xxx
+```
+
+## Best Practices
+- ✅ Use environment variables for all configuration
+- ✅ Provide sensible defaults
+- ✅ Document required variables
+- ✅ Use different values per environment
+- ❌ Never hardcode URLs or IPs
+- ❌ Never commit secrets
+- ❌ Never expose server-side variables to client

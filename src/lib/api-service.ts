@@ -1,0 +1,851 @@
+/**
+ * Modern API Service using Axios with Interceptors
+ * Centralized API management with automatic token handling
+ */
+
+import apiClient from './api-client';
+
+// API Response Interface
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  timestamp?: string;
+}
+
+// User Management Interfaces
+export interface User {
+  id: number;
+  uniqueId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roleId: number;
+  roleName: string;
+  roleDisplayName: string;
+  roleLevel: number;
+  portalSlug: string;
+  mobile?: string;
+  agency?: number;
+  isActive: number | boolean;
+  lastLoginAt: string;
+  createdAt: string;
+  updatedAt: string;
+  group?: number;
+}
+
+export interface CreateUserRequest {
+  uniqueId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+  roleId: number;
+  portalSlug: string;
+  isActive?: boolean;
+}
+
+export interface UpdateUserRequest {
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  password?: string;
+  roleId?: number;
+  portalSlug?: string;
+  isActive?: boolean;
+}
+
+export interface Role {
+  id: number;
+  name: string;
+  displayName: string;
+  level: number;
+}
+
+export interface LoginRequest {
+  uniqueId: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: number;
+    uniqueId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    portalSlug: string;
+    roleId: number;
+    isActive: number;
+    lastLoginAt: string;
+    createdAt: string;
+    updatedAt: string;
+    roleName: string;
+    roleDisplayName: string;
+    roleLevel: number;
+    group?: number;
+  };
+}
+
+class ApiService {
+  // Generic request method using axios
+  private async request<T>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+    endpoint: string,
+    data?: any,
+    config?: any
+  ): Promise<ApiResponse<T>> {
+    try {
+      const requestConfig: any = {
+        method,
+        url: endpoint,
+        ...config,
+      };
+
+      // For GET requests, use params instead of data
+      if (method === 'GET' && data) {
+        requestConfig.params = data;
+      } else if (data) {
+        requestConfig.data = data;
+      }
+
+      const response = await apiClient.request(requestConfig);
+
+      return {
+        success: response.data.success || true,
+        data: response.data.data || response.data,
+        message: response.data.message,
+        timestamp: response.data.timestamp || new Date().toISOString(),
+      };
+    } catch (error: any) {
+      console.error('API Request failed:', error);
+      
+      // Handle axios errors
+      if (error.response) {
+        const { status, data } = error.response;
+        throw new Error(data?.message || `HTTP error! status: ${status}`);
+      } else if (error.request) {
+        throw new Error('Network error - please check your connection');
+      } else {
+        throw new Error(error.message || 'An unexpected error occurred');
+      }
+    }
+  }
+
+  // Authentication Methods
+  async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
+    return this.request<LoginResponse>('POST', '/auth/login', credentials);
+  }
+
+  async logout(): Promise<ApiResponse> {
+    return this.request('POST', '/auth/logout');
+  }
+
+  async refreshToken(): Promise<ApiResponse<{ accessToken: string; refreshToken: string }>> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    return this.request<{ accessToken: string; refreshToken: string }>('POST', '/auth/refresh', { refreshToken });
+  }
+
+  // User Management Methods
+  async getUsers(params?: {
+    role_id?: number;
+    agency?: number;
+    page?: number;
+    limit?: number;
+    uniqueId?: string;
+    name?: string;
+    mobile?: string;
+    isActive?: boolean;
+    group?: number;
+  }): Promise<ApiResponse<{ users: User[]; pagination: any }>> {
+    const queryString = params ? '?' + new URLSearchParams(
+      Object.entries(params)
+        .filter(([_, value]) => value !== undefined && value !== null && value !== '')
+        .map(([key, value]) => [key, String(value)])
+    ).toString() : '';
+    return this.request<{ users: User[]; pagination: any }>('GET', `/users${queryString}`);
+  }
+
+  async getUser(id: string): Promise<ApiResponse<User>> {
+    return this.request<User>('GET', `/users/${id}`);
+  }
+
+  async createUser(userData: CreateUserRequest): Promise<ApiResponse<User>> {
+    return this.request<User>('POST', '/users', userData);
+  }
+
+  async updateUser(id: string, userData: UpdateUserRequest): Promise<ApiResponse<User>> {
+    return this.request<User>('PUT', `/users/${id}`, userData);
+  }
+
+  async deleteUser(id: string): Promise<ApiResponse> {
+    return this.request('DELETE', `/users/${id}`);
+  }
+
+  // Role Management Methods
+  async getRoles(): Promise<ApiResponse<Role[]>> {
+    return this.request<Role[]>('GET', '/roles?isActive=true');
+  }
+
+  async getRole(id: string): Promise<ApiResponse<Role>> {
+    return this.request<Role>('GET', `/roles/${id}`);
+  }
+
+  async createRole(roleData: any): Promise<ApiResponse<Role>> {
+    return this.request<Role>('POST', '/roles', roleData);
+  }
+
+  async updateRole(id: string, roleData: any): Promise<ApiResponse<Role>> {
+    return this.request<Role>('PUT', `/roles/${id}`, roleData);
+  }
+
+  async deleteRole(id: string): Promise<ApiResponse> {
+    return this.request('DELETE', `/roles/${id}`);
+  }
+
+  // Dashboard Methods
+  async getDashboardOverview(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/overview');
+  }
+
+  async getStatusBreakdown(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/status-breakdown');
+  }
+
+  async getACProgress(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/ac-progress');
+  }
+
+  async getPollingStations(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/polling-stations');
+  }
+
+  async getSurveyDates(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/survey-dates');
+  }
+
+  async getSampleStatistics(): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', '/dashboard/sample-statistics');
+  }
+
+  // Vote Share Estimates Methods
+  async getVoteShareEstimates(progressType?: string): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+      progress_type?: string;
+    };
+    charts?: {
+      '2025_preference': {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2021_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      '2020_ae'?: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    demographic_breakdown?: {
+      gender: Record<string, Record<string, number>>;
+      locality: Record<string, Record<string, number>>;
+      social_category: Record<string, Record<string, number>>;
+      age_group: Record<string, Record<string, number>>;
+      religion: Record<string, Record<string, number>>;
+    };
+    ac_data?: Array<{
+      ac_code: number;
+      ac_name: string;
+      sample: string;
+      years: {
+        '2021_ae': Record<string, number>;
+        '2025_preference': Record<string, number>;
+      };
+    }>;
+  }>> {
+    const queryString = progressType ? `?progress_type=${progressType}` : '';
+    return this.request<any>('GET', `/dashboard/findings/vote-share-estimates${queryString}`);
+  }
+
+  // PMT Methods
+  async getQCFailReport(page: number = 1): Promise<ApiResponse<any>> {
+    return this.request<any>('GET', `/pmt/qc-fail-report?page=${page}`);
+  }
+
+  async getMasterPollingStation(page: number = 1, limit: number = 10, filters: any = {}): Promise<ApiResponse<any>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      ...filters,
+    });
+    return this.request<any>('GET', `/pmt/master-polling-station?${params}`);
+  }
+
+  // Team Registration Methods
+  async getTeamRegistration(page: number = 1, limit: number = 20): Promise<ApiResponse<{
+    team_registrations: Array<{
+      agency_id: number;
+      agency_name: string;
+      username: string;
+      qc_agency: string;
+      total_ac: number;
+      total_interviews_conducted: number;
+      valid: number;
+      rejected: number;
+      under_qc: number;
+      show_second_level_column: boolean;
+      status: string;
+    }>;
+    total_count: number;
+    current_page: number;
+    total_pages: number;
+    has_next: boolean;
+    has_previous: boolean;
+    totals: {
+      total_interview: number;
+      valid_interview: string;
+      reject_interview: string;
+      interview_under_qc: string;
+    };
+  }>> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    return this.request<any>('GET', `/dashboard/team-registration?${params}`);
+  }
+
+  // Gain and Losses API
+  async getGainAndLosses(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        '2021_party': string;
+        '2021_vote_share': number;
+        upcoming: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/gain-and-losses');
+  }
+
+  // Second Choice API
+  async getSecondChoiceData(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    state_level: {
+      title: string;
+      data: Array<{
+        upcoming: string;
+        second_choice: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    };
+    zone_breakdown: Array<{
+      zone_code: number;
+      zone_name: string;
+      data: Array<{
+        upcoming: string;
+        second_choice: {
+          AITC: number;
+          BJP: number;
+          INC: number;
+          'Left Front': number;
+          Independent: number;
+          AJSU: number;
+          Others: number;
+          NOTA: number;
+        };
+      }>;
+    }>;
+  }>> {
+    return this.request<any>('GET', '/dashboard/findings/second-choice');
+  }
+
+  // Fieldwork Progress API (FD - Field Data)
+  async getFDFieldworkProgress(progressType?: number, progressSubType?: number, progressSubTypeCode?: string): Promise<ApiResponse<any>> {
+    let url = '/fd/fieldwork-progress';
+    const params = new URLSearchParams();
+    
+    if (progressType) params.append('progress_type', progressType.toString());
+    if (progressSubType) params.append('progress_sub_type', progressSubType.toString());
+    if (progressSubTypeCode) params.append('progress_sub_type_code', progressSubTypeCode);
+    
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    
+    return this.request<any>('GET', url);
+  }
+
+  // Wisdom of Crowds API
+  async getWisdomOfCrowds(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      party_likely_to_win: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+        title: string;
+      };
+    };
+  }>> {
+    return this.request<{
+      page_info: {
+        page_name: string;
+        page_title: string;
+        total_interviews: number;
+      };
+      charts: {
+        party_likely_to_win: {
+          chart_type: string;
+          chart_id: string;
+          question_id: string;
+          total_sample: number;
+          data: Array<{
+            name: string;
+            y: number;
+            count: string;
+          }>;
+          colors: string[];
+          title: string;
+        };
+      };
+    }>('GET', '/dashboard/findings/wisdom-of-crowds');
+  }
+
+  // Approval Ratings API
+  async getApprovalRatings(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      satisfaction_state_govt: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+      preferred_cm: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    mla_satisfaction: {
+      title: string;
+      ac_data: Array<{
+        ac_code: number;
+        ac_name: string;
+        mla_name: string;
+        satisfaction_breakdown: {
+          'Highly Satisfied': number;
+          'Somewhat satisfied': number;
+          'Neither satisfied nor dissatisfied': number;
+          'Somewhat dissatisfied': number;
+          'Highly Dissatisfied': number;
+        };
+      }>;
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/approval-ratings');
+  }
+
+  // Approval Ratings PC-wise (MP)
+  async getApprovalRatingsPcWise(): Promise<ApiResponse<{
+    page_info: {
+      page_name: string;
+      page_title: string;
+      total_interviews: number;
+    };
+    charts: {
+      satisfaction_bjp_govt: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          achieved: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+    mp_satisfaction: {
+      title: string;
+      pc_data: Array<{
+        pc_code: number;
+        pc_name: string;
+        mp_name: string;
+        satisfaction_breakdown: {
+          'Fully satisfied': number;
+          'Somewhat satisfied': number;
+          'Neither satisfied nor dissatisfied': number;
+          'Somewhat dissatisfied': number;
+          'Fully Dissatisfied': number;
+        };
+      }>;
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/approval-ratings-pc-wise');
+  }
+
+  // Preferred CM API
+  async getPreferredCM(): Promise<ApiResponse<{
+    charts: {
+      preferred_cm: {
+        chart_type: string;
+        chart_id: string;
+        question_id: string;
+        total_sample: number;
+        data: Array<{
+          name: string;
+          y: number;
+          count: string;
+        }>;
+        colors: string[];
+      };
+    };
+  }>> {
+    return this.request('GET', '/dashboard/findings/preferred-cm');
+  }
+
+  // Basic Demographics API
+  async getBasicDemographics(progressType?: number, filters?: {
+    psu_code?: string;
+    gender_met?: string;
+    locality_met?: string;
+    religion_met?: string;
+    social_category_met?: string;
+    age_met?: string;
+    progress_sub_type?: number;
+  }): Promise<ApiResponse<{
+    view_type: string;
+    progress_type?: number;
+    progress_page?: string;
+    filter_applied?: string;
+    filter_description?: string;
+    demographic_charts: {
+      gender_coverage: {
+        male: string;
+        female: string;
+        male_achievement: string;
+        female_achievement: string;
+        male_difference: string;
+        female_difference: string;
+      };
+      locality_coverage: {
+        urban: string;
+        rural: string;
+        urban_achievement: string;
+        rural_achievement: string;
+        urban_difference: string;
+        rural_difference: string;
+      };
+      social_category_coverage: {
+        general: string;
+        obc: string;
+        sc: string;
+        st: string;
+        general_achievement: number;
+        obc_achievement: number;
+        sc_achievement: string;
+        st_achievement: string;
+        general_obc_achievement: string;
+      };
+      age_coverage: {
+        age_18_24: string;
+        age_25_34: string;
+        age_35_50: string;
+        age_50_above: string;
+        age_18_24_achievement: string;
+        age_25_34_achievement: string;
+        age_35_50_achievement: string;
+        age_50_above_achievement: string;
+      };
+      religion_coverage: {
+        hindu: string;
+        muslim: string;
+        sikh: string;
+        christian: string;
+        other: string;
+        hindu_achievement: string;
+        muslim_achievement: string;
+        sikh_achievement: number;
+        christian_achievement: number;
+        other_achievement: string;
+      };
+    };
+    navigation_tiles: {
+      total_ac_count: number;
+      total_pc_count: number;
+      total_district_count: number;
+      total_zone_count: number;
+    };
+  }>> {
+    return this.request<{
+      view_type: string;
+      demographic_charts: {
+        gender_coverage: {
+          male: string;
+          female: string;
+          male_achievement: string;
+          female_achievement: string;
+          male_difference: string;
+          female_difference: string;
+        };
+        locality_coverage: {
+          urban: string;
+          rural: string;
+          urban_achievement: string;
+          rural_achievement: string;
+          urban_difference: string;
+          rural_difference: string;
+        };
+        social_category_coverage: {
+          general: string;
+          obc: string;
+          sc: string;
+          st: string;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: string;
+          st_achievement: string;
+          general_obc_achievement: string;
+        };
+        age_coverage: {
+          age_18_24: string;
+          age_25_34: string;
+          age_35_50: string;
+          age_50_above: string;
+          age_18_24_achievement: string;
+          age_25_34_achievement: string;
+          age_35_50_achievement: string;
+          age_50_above_achievement: string;
+        };
+        religion_coverage: {
+          hindu: string;
+          muslim: string;
+          sikh: string;
+          christian: string;
+          other: string;
+          hindu_achievement: string;
+          muslim_achievement: string;
+          sikh_achievement: number;
+          christian_achievement: number;
+          other_achievement: string;
+        };
+      };
+      navigation_tiles: {
+        total_ac_count: number;
+        total_pc_count: number;
+        total_district_count: number;
+        total_zone_count: number;
+      };
+      data_provider?: Array<{
+        ac_code: number;
+        ac_name: string;
+        pc_code: number;
+        pc_name: string;
+        district_code: number;
+        district_name: string;
+        region_code: number | null;
+        region_name: string | null;
+        sample_target: number;
+        valid_underqc_achived: number;
+        demographics: {
+          male: number;
+          female: number;
+          male_achievement: number;
+          female_achievement: number;
+          male_difference: number;
+          female_difference: number;
+          age_18_24: number;
+          age_25_34: number;
+          age_35_50: number;
+          age_50_above: number;
+          age_18_24_achievement: number;
+          age_25_34_achievement: number;
+          age_35_50_achievement: number;
+          age_50_above_achievement: number;
+          age_18_24_difference: number;
+          age_25_34_difference: number;
+          age_35_50_difference: number;
+          age_50_above_difference: number;
+          urban: number;
+          rural: number;
+          urban_achievement: number;
+          rural_achievement: number;
+          urban_difference: number;
+          rural_difference: number;
+          hindu: number;
+          muslim: number;
+          sikh: number;
+          christian: number;
+          religion_others: number;
+          hindu_achievement: number;
+          muslim_achievement: number;
+          sikh_achievement: number;
+          christian_achievement: number;
+          religion_others_achievement: number;
+          hindu_difference: number;
+          muslim_difference: number;
+          sikh_difference: number;
+          christian_difference: number;
+          religion_others_difference: number;
+          general: number;
+          obc: number;
+          sc: number;
+          st: number;
+          general_achievement: number;
+          obc_achievement: number;
+          sc_achievement: number;
+          st_achievement: number;
+          general_difference: number;
+          obc_difference: number;
+          sc_difference: number;
+          st_difference: number;
+          general_obc_difference: number;
+        };
+      }>;
+      sub_model?: any;
+    }>('GET', '/demographics/basic-demographics', {
+      ...(progressType ? { progress_type: progressType } : {}),
+      ...(filters || {})
+    });
+  }
+
+  // Top Reasons for Choosing Party API
+  async getTopReasonsForParty(questionId: string, chartId: string, acCode?: string): Promise<ApiResponse<{
+    chart_type: string;
+    chart_id: string;
+    question_id: string;
+    total_sample: number;
+    data: Array<{
+      name: string;
+      percentage: number;
+      count: string;
+    }>;
+    colors: string[];
+  }>> {
+    const params: Record<string, string> = {
+      question_id: questionId,
+      chart_id: chartId,
+    };
+    if (acCode) {
+      params.ac_code = acCode;
+    }
+    return this.request('GET', '/dashboard/findings/party/top-reasons-for-choosing-party', params);
+  }
+
+  // Get AC List API
+  async getAcList(): Promise<ApiResponse<Record<string, string>>> {
+    return this.request('GET', '/dropdown/ac-list');
+  }
+
+  
+}
+
+// Export singleton instance
+export const apiService = new ApiService();
+export default apiService;

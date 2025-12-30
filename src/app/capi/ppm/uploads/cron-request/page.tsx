@@ -1,0 +1,286 @@
+'use client';
+
+import React, { useState } from 'react';
+import Container from '@/components/ui/Container';
+import Card from '@/components/ui/Card';
+import Heading from '@/components/ui/Heading';
+import Text from '@/components/ui/Text';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import SelectDropdown from '@/components/ui/SelectDropdown';
+import { Table } from '@/components/ui/Table';
+import PaginationStandard from '@/components/ui/PaginationStandard';
+import { Eye } from 'lucide-react';
+
+interface CronRequest {
+  id: number;
+  cronId: number;
+  actionRoute: string;
+  plannedAt: string;
+  executedAt: string;
+  execution: number;
+  errors: string;
+  status: string;
+  params: string;
+  cronInfo: string;
+}
+
+export default function CronRequestPage() {
+  const [actionRoute, setActionRoute] = useState('');
+  const [params, setParams] = useState('');
+  const [plannedDate, setPlannedDate] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(25);
+
+  // Action/Route options
+  const actionOptions = [
+    { value: '', label: 'Select Action\\Route' },
+    { value: '63', label: 'bhpoll202504 : Master Update' },
+    { value: '64', label: 'Bihar Round 2 Daily cron' },
+    { value: '65', label: 'bhpoll202504 : Change Status' },
+    { value: '66', label: 'Bihar Round 2 PS Generate' },
+    { value: '67', label: 'bhpoll202504 : Sent to QC' },
+    { value: '68', label: 'Bihar Baseline : Upload for Client Review Check' },
+    { value: '70', label: 'Re qc distribute bihar' },
+    { value: '72', label: 'Bihar Baseline - Client Data File' },
+    { value: '75', label: '/bh/poll202504/process/sendtoreqc' }
+  ];
+
+  // Sample data for dynamic recoding requests (20 items as shown in HTML)
+  const cronRequests: CronRequest[] = [
+    { id: 1, cronId: 1045, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-09 10:49:00', executedAt: '3 months ago', execution: 5496, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 2, cronId: 1043, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-07 18:08:00', executedAt: '3 months ago', execution: 5510, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 3, cronId: 1040, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-05 11:54:00', executedAt: '3 months ago', execution: 5506, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 4, cronId: 1031, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-04 15:11:00', executedAt: '3 months ago', execution: 5499, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 5, cronId: 1023, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-03 16:46:00', executedAt: '3 months ago', execution: 5464, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 6, cronId: 1017, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-02 10:25:00', executedAt: '3 months ago', execution: 5476, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 7, cronId: 1015, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-01 10:29:00', executedAt: '3 months ago', execution: 5506, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 8, cronId: 1013, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-06-01 10:19:00', executedAt: '3 months ago', execution: 5506, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 9, cronId: 1007, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-30 09:58:00', executedAt: '3 months ago', execution: 5540, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 10, cronId: 1003, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-29 10:32:00', executedAt: '3 months ago', execution: 5545, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 11, cronId: 1001, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-29 10:19:00', executedAt: '3 months ago', execution: 5545, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 12, cronId: 999, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-28 17:03:00', executedAt: '3 months ago', execution: 5540, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 13, cronId: 997, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-28 13:13:00', executedAt: '3 months ago', execution: 5533, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 14, cronId: 993, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-27 11:59:00', executedAt: '3 months ago', execution: 5519, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 15, cronId: 987, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-26 13:04:00', executedAt: '4 months ago', execution: 5556, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 16, cronId: 984, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-26 11:50:00', executedAt: '4 months ago', execution: 5547, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 17, cronId: 982, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-25 12:23:00', executedAt: '4 months ago', execution: 5561, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 18, cronId: 977, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-24 14:10:00', executedAt: '4 months ago', execution: 5577, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 19, cronId: 973, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-23 14:49:00', executedAt: '4 months ago', execution: 5605, errors: 'No', status: 'Completed', params: '', cronInfo: '' },
+    { id: 20, cronId: 971, actionRoute: '/bh/poll202504/parsedata/generatepolingstation', plannedAt: '2025-05-23 13:54:00', executedAt: '4 months ago', execution: 5603, errors: 'No', status: 'Completed', params: '', cronInfo: '' }
+  ];
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission logic here
+    console.log('Action Route:', actionRoute);
+    console.log('Params:', params);
+    console.log('Planned Date:', plannedDate);
+    console.log('Additional Info:', additionalInfo);
+  };
+
+  const handleViewRequest = (cronId: number) => {
+    // Handle view request logic here
+    console.log('View request for cron ID:', cronId);
+  };
+
+  const getStatusBadge = (status: string) => {
+    if (status === 'Completed') {
+      return <span className="badge bg-success text-white">{status}</span>;
+    } else if (status === 'Failed') {
+      return <span className="badge bg-danger text-white">{status}</span>;
+    }
+    return <span className="badge bg-secondary text-white">{status}</span>;
+  };
+
+  // Pagination calculations
+  const totalItems = 95; // Total items as shown in HTML (1-20 of 95)
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+  const currentData = cronRequests.slice(0, Math.min(pageSize, cronRequests.length));
+
+  return (
+    <Container maxWidth="7xl" className="w-full max-w-9xl mx-auto main-container">
+      {/* Breadcrumb Header */}
+      <div className="breadcrumb-header justify-content-between mb-6">
+        <div className="left-content">
+          <Heading level={2} className="text-2xl font-semibold mb-0">
+            Cron Requests
+          </Heading>
+        </div>
+        <div className="right-content">
+          <span className="main-content-title mg-b-0 mg-b-lg-1"></span>
+        </div>
+      </div>
+
+      {/* Cron Request Form Card */}
+      <Card className="mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              Cron Requests
+            </Heading>
+          </div>
+        </div>
+        
+        <div className="card-body">
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-6 mb-6">
+              {/* First Row */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                <div className="md:col-span-8">
+                  <Text className="block text-sm font-medium text-gray-700 mb-2">
+                    Action/Route
+                  </Text>
+                  <SelectDropdown
+                    value={actionRoute}
+                    onChange={(value) => setActionRoute(value as string)}
+                    options={actionOptions}
+                    placeholder="Select Action\\Route"
+                    className="w-full"
+                  />
+                </div>
+                
+                <div className="md:col-span-4">
+                  <Text className="block text-sm font-medium text-gray-700 mb-2">
+                    Params (Delimeter for multiple params is !#)
+                  </Text>
+                  <textarea
+                    value={params}
+                    onChange={(e) => setParams(e.target.value)}
+                    rows={3}
+                    placeholder="Enter Params (Note : Delimeter for multiple params is !#)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Second Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <Text className="block text-sm font-medium text-gray-700 mb-2">
+                    Cron Execution Planning Time
+                  </Text>
+                  <Input
+                    type="datetime-local"
+                    value={plannedDate}
+                    onChange={(e) => setPlannedDate(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                
+                <div>
+                  <Text className="block text-sm font-medium text-gray-700 mb-2">
+                    Additional Info
+                  </Text>
+                  <Input
+                    type="text"
+                    value={additionalInfo}
+                    onChange={(e) => setAdditionalInfo(e.target.value)}
+                    placeholder="Additional Info for this Cron"
+                    className="w-full"
+                  />
+                </div>
+
+                <div className="flex items-end">
+                  <Button type="submit" variant="primary" className="w-full bg-blue-500 hover:bg-blue-600">
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </Card>
+
+      {/* Dynamic Recoding Requests Card */}
+      <Card>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center">
+            <div className="w-1 h-6 bg-blue-500 mr-3 flex-shrink-0"></div>
+            <Heading level={4} className="text-lg font-semibold text-gray-900 dark:text-white">
+              List of Dynamic Recoding Requests
+            </Heading>
+          </div>
+        </div>
+
+        <div className="bg-white">
+          <div className="mb-4">
+            <Text className="text-sm text-gray-600">
+              Total <strong>{totalItems.toLocaleString()}</strong> items.
+            </Text>
+          </div>
+
+          <div className="table-responsive">
+            <Table className="table table-centered table-bordered table-striped dt-responsive nowrap w-100 border border-gray-300">
+              <thead className="table-light bg-gray-50">
+                <tr>
+                  <th className="text-center">S.No</th>
+                  <th className="text-center">Cron ID</th>
+                  <th className="text-center">Action/Route</th>
+                  <th className="text-center">Planned At</th>
+                  <th className="text-center">Executed At</th>
+                  <th className="text-center">Execution</th>
+                  <th className="text-center">Errors</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Actions</th>
+                  <th className="text-center">UploadedFile</th>
+                  <th className="text-center">Params</th>
+                  <th className="text-center">CRON Info</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentData.map((request, index) => (
+                  <tr key={request.id}>
+                    <td className="text-center">{startIndex + index + 1}</td>
+                    <td className="text-center">{request.cronId}</td>
+                    <td className="text-left">{request.actionRoute}</td>
+                    <td className="text-center">{request.plannedAt}</td>
+                    <td className="text-center">{request.executedAt}</td>
+                    <td className="text-center">{request.execution}</td>
+                    <td className="text-center">{request.errors}</td>
+                    <td className="text-center">
+                      {getStatusBadge(request.status)}
+                    </td>
+                    <td className="text-center">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleViewRequest(request.cronId)}
+                        className="bg-blue-500 hover:bg-blue-600"
+                        title="View Request"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </td>
+                    <td className="text-center">
+                      {/* Empty cell as shown in HTML */}
+                    </td>
+                    <td className="text-center">{request.params}</td>
+                    <td className="text-center">{request.cronInfo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {totalItems > 0 && (
+            <div className="mt-6">
+              <PaginationStandard
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+        </div>
+      </Card>
+    </Container>
+  );
+}

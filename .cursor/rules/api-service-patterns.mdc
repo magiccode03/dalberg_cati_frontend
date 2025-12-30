@@ -1,0 +1,95 @@
+---
+globs: src/lib/api*.ts,src/hooks/useApi.ts
+description: API service patterns and best practices
+---
+
+# API Service Patterns
+
+## Centralized API Service
+- **Main Service**: [src/lib/api.ts](mdc:src/lib/api.ts) - Centralized API service with all endpoints
+- **API Client**: [src/lib/api-client.ts](mdc:src/lib/api-client.ts) - HTTP client configuration
+- **Token Manager**: [src/lib/token-manager.ts](mdc:src/lib/token-manager.ts) - Token management
+- **Error Handler**: [src/lib/error-handler.ts](mdc:src/lib/error-handler.ts) - Error handling utilities
+
+## API Service Usage
+- **ALWAYS** use `apiService` from [src/lib/api.ts](mdc:src/lib/api.ts) for all API calls
+- **NEVER** use `fetch` directly in components
+- **NEVER** create duplicate API service instances
+- Use the singleton pattern: `import { apiService } from '@/lib/api'`
+
+## API Response Format
+All API responses follow this structure:
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message: string;
+  timestamp: string;
+}
+```
+
+## Authentication
+- Tokens are automatically managed by the API service
+- Access tokens are stored in localStorage
+- Token refresh is handled automatically on 401 responses
+- Use `apiService.login()` for authentication
+- Use `apiService.logout()` to clear tokens
+
+## Error Handling
+- API errors are automatically handled by the error handler
+- Use try-catch blocks for custom error handling
+- Check `response.success` before accessing `response.data`
+- Display user-friendly error messages
+
+## API Endpoints
+- All endpoints are defined in `API_ENDPOINTS` constant
+- Use endpoint constants instead of hardcoded strings
+- Endpoints are versioned with `/api` prefix
+- Base URL comes from `NEXT_PUBLIC_API_URL` environment variable
+
+## Request Patterns
+```typescript
+// Correct pattern
+const response = await apiService.getUsers();
+if (response.success) {
+  setUsers(response.data);
+}
+
+// With error handling
+try {
+  const response = await apiService.getUsers();
+  if (response.success) {
+    setUsers(response.data);
+  } else {
+    console.error('Failed to fetch users:', response.message);
+  }
+} catch (error) {
+  console.error('API error:', error);
+}
+```
+
+## Query Parameters
+- Use URLSearchParams for query strings
+- Filter out undefined/null/empty values
+- Convert all values to strings
+
+## File Downloads
+- Use `apiService.downloadRejectionReport()` pattern for file downloads
+- Set proper Accept headers (e.g., 'text/csv')
+- Return Blob objects for downloads
+
+## Token Management
+- Tokens are automatically included in request headers
+- Token refresh happens automatically
+- Logout clears all tokens
+- Never manually manipulate tokens in components
+
+## Common Mistakes
+- ❌ DON'T: Use fetch directly
+- ❌ DON'T: Create new API service instances
+- ❌ DON'T: Hardcode API endpoints
+- ❌ DON'T: Manually manage tokens
+- ✅ DO: Use apiService singleton
+- ✅ DO: Use API_ENDPOINTS constants
+- ✅ DO: Handle errors properly
+- ✅ DO: Check response.success before using data

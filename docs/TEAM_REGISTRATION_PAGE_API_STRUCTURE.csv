@@ -1,0 +1,18 @@
+Section,Type,Label/Column Name,API Field Name
+Team Registration Statistics,Card,Total Interview,total_interview
+Team Registration Statistics,Card,Valid Interview,valid_interview
+Team Registration Statistics,Card,Reject Interview,reject_interview
+Team Registration Statistics,Card,Interview Under QC,interview_under_qc
+Agency List,Table Column,Agency ID,agency_id
+Agency List,Table Column,Agency Name,agency_name
+Agency List,Table Column,Supervisor Username,username
+Agency List,Table Column,QC Agency,qc_agency
+Agency List,Table Column,Total AC,total_ac
+Agency List,Table Column,Total Interviews Conducted,total_interviews_conducted
+Agency List,Table Column,Valid,valid
+Agency List,Table Column,Rejected,rejected
+Agency List,Table Column,Under QC,under_qc
+Agency List,Table Column,Show Second Level Column,show_second_level_column
+Agency List,Table Column,Status,status
+Agency List,Table Column,Action,
+Agency List,Table Column,Re-QC Status,
