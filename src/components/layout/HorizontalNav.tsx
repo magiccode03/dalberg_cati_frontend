@@ -157,8 +157,20 @@ export default function HorizontalNav() {
   const getFilteredMenuItems = () => {
     if (!user) return [];
     
+    // Determine system based on pathname for PPM role (similar to FD role)
+    let systemToUse = user.system;
+    if (user.role === 'ppm') {
+      if (pathname.startsWith('/cati/ppm')) {
+        systemToUse = 'cati';
+      } else if (pathname.startsWith('/capi/ppm')) {
+        systemToUse = 'capi';
+      }
+    }
+    
     // For SS, Data Entry, and Group roles, force system to 'cati' to ensure menu items are loaded
-    const systemToUse = (user.role === 'ss' || user.role === 'data_entry' || user.role === 'group') ? 'cati' : user.system;
+    if (user.role === 'ss' || user.role === 'data_entry' || user.role === 'group') {
+      systemToUse = 'cati';
+    }
     let baseMenuItems = getMenuByRole(user.role, systemToUse);
     
     // Debug logging (removed to prevent console spam during re-renders)

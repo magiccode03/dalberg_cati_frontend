@@ -95,11 +95,15 @@ export default function Sidebar() {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Determine current system based on pathname for FD role, or force 'cati' for group role
+  // Determine current system based on pathname for FD and PPM roles, or force 'cati' for group role
   const currentSystem = useMemo((): 'capi' | 'cati' | undefined => {
     if (user?.role === 'fd') {
       if (pathname.startsWith('/cati/fd')) return 'cati';
       if (pathname.startsWith('/capi/fd')) return 'capi';
+    }
+    if (user?.role === 'ppm') {
+      if (pathname.startsWith('/cati/ppm')) return 'cati';
+      if (pathname.startsWith('/capi/ppm')) return 'capi';
     }
     // Force 'cati' system for group role to ensure menu items are loaded
     if (user?.role === 'group') return 'cati';

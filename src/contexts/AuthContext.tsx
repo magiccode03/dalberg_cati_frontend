@@ -252,8 +252,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const roleDisplayName = (apiUser as any).roleDisplayName || (apiUser as any).role?.displayName;
         
         // Determine system based on API response or default for system-specific roles
-        const systemRoles = ['ppm', 'ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc'];
-        const catiSystemRoles = ['group', 'ss', 'data_entry']; // Roles that default to 'cati'
+        const systemRoles = ['ppmt', 'dqm', 'dqmt', 'fd', 'start_qc', 'capi_qc'];
+        const catiSystemRoles = ['group', 'ss', 'data_entry', 'ppm']; // Roles that default to 'cati'
         let userSystem = (apiUser as any).system;
         if (!userSystem) {
           if (catiSystemRoles.includes(roleName)) {
