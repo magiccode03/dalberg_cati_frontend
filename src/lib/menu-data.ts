@@ -1333,14 +1333,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
-      {
-        id: 'cati-ppm-data-entry-user',
-        label: 'Data Entry Users',
-        href: '/cati/ppm/manage-calling/data-entry-user',
-        icon: 'Edit',
-        roles: ['ppm'],
-        system: 'cati',
-      },
+      // {
+      //   id: 'cati-ppm-data-entry-user',
+      //   label: 'Data Entry Users',
+      //   href: '/cati/ppm/manage-calling/data-entry-user',
+      //   icon: 'Edit',
+      //   roles: ['ppm'],
+      //   system: 'cati',
+      // },
     ],
   },
   {
