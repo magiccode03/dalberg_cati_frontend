@@ -8,8 +8,12 @@ import { FileText, Phone, Database } from 'lucide-react';
 
 // Role-based route mapping
 const roleRouteMap: Record<string, { capi: string; cati: string }> = {
+  // ppm: {
+  //   capi: '/capi/ppm/overview/fieldwork-progress',
+  //   cati: '/cati/ppm/manage-calling/tele-caller',
+  // },
   ppm: {
-    capi: '/capi/ppm/overview/fieldwork-progress',
+    capi: '/cati/ppm/manage-calling/tele-caller',
     cati: '/cati/ppm/manage-calling/tele-caller',
   },
   ppmt: {

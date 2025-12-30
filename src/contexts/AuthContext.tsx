@@ -590,6 +590,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Data Entry role goes to custom data entry dashboard
     if (role === 'data_entry') return '/cati/data-entry';
     
+    // PPM role goes directly to PPM tele-caller management page
+    if (role === 'ppm') return '/cati/ppm/manage-calling/tele-caller';
+
     // PPMT role goes directly to fieldwork progress page
     if (role === 'ppmt') return '/capi/ppmt/overview/fieldwork-progress';
     
