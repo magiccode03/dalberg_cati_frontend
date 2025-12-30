@@ -26,7 +26,7 @@ export default function Header() {
     // For FD role users, prioritize pathname-based detection for dynamic switching
     if (user?.role === 'fd') {
       if (pathname.startsWith('/cati/fd')) {
-        return 'West Bengal Opinion Poll 2025 (CATI)';
+        return 'Dalbarg Survey (CATI)';
       } else if (pathname.startsWith('/capi/fd')) {
         return 'West Bengal Opinion Poll 2025 (F2F)';
       }
@@ -36,12 +36,12 @@ export default function Header() {
     if (user?.system === 'capi') {
       return 'West Bengal Opinion Poll 2025 (F2F)';
     } else if (user?.system === 'cati') {
-      return 'West Bengal Opinion Poll 2025 (CATI)';
+      return 'Dalbarg Survey (CATI)';
     }
     
     // Fallback to pathname-based detection for other roles
     if (pathname.startsWith('/cati/')) {
-      return 'West Bengal Opinion Poll 2025 (CATI)';
+      return 'Dalbarg Survey (CATI)';
     } else if (pathname.startsWith('/capi/')) {
       return 'West Bengal Opinion Poll 2025 (F2F)';
     }

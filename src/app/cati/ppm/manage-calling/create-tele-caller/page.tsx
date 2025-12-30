@@ -27,6 +27,7 @@ const teleCallerSchema = z.object({
     .regex(/^[0-9]+$/, 'Mobile number must contain only digits'),
   status: z.string().min(1, 'Status is required'),
   telecalling_group_id: z.string().min(1, 'Telecalling Group is required'),
+  state_id: z.string().min(1, 'State is required'),
   fill_form: z.boolean(),
   qc: z.boolean(),
   data_entry: z.boolean(),
@@ -40,12 +41,20 @@ interface TelecallingGroup {
   group_name?: string;
 }
 
+interface State {
+  id: number;
+  state_name: string;
+  status: number;
+}
+
 export default function CreateTeleCallerPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [telecallingGroups, setTelecallingGroups] = useState<TelecallingGroup[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+  const [states, setStates] = useState<State[]>([]);
+  const [loadingStates, setLoadingStates] = useState(false);
 
   const {
     register,
@@ -62,6 +71,7 @@ export default function CreateTeleCallerPage() {
       mobile_number: '',
       status: '1', // Default to Active
       telecalling_group_id: '', // User must select from dropdown
+      state_id: '', // User must select from dropdown
       fill_form: false,
       qc: false,
       data_entry: false,
@@ -130,6 +140,70 @@ export default function CreateTeleCallerPage() {
     fetchTelecallingGroups();
   }, []);
 
+  // Fetch states
+  useEffect(() => {
+    const fetchStates = async () => {
+      setLoadingStates(true);
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
+        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        
+        if (!token) {
+          console.warn('No auth token, using default states');
+          setStates([{ id: 1, state_name: 'Default State', status: 1 }]);
+          return;
+        }
+
+        // Fetch states from the API
+        const endpoint = `${apiUrl}/api/teleform-users/states`;
+        console.log('Fetching states from:', endpoint);
+        
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        console.log('States response status:', response.status, response.statusText);
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('States API Response:', result);
+          
+          if (result.success && Array.isArray(result.data)) {
+            console.log('States data array:', result.data);
+            const statesData: State[] = result.data
+              .filter((item: any) => item.status === 1) // Only active states
+              .map((item: any) => ({
+                id: item.id,
+                state_name: item.state_name,
+                status: item.status,
+              }));
+            console.log('Mapped states:', statesData);
+            setStates(statesData);
+          } else {
+            console.warn('Invalid states API response format:', result);
+            setStates([{ id: 1, state_name: 'Default State', status: 1 }]);
+          }
+        } else {
+          const errorText = await response.text();
+          console.warn('Failed to fetch states. Status:', response.status, 'Response:', errorText);
+          setStates([{ id: 1, state_name: 'Default State', status: 1 }]);
+        }
+      } catch (err) {
+        console.error('Error fetching states:', err);
+        // Fallback to default
+        setStates([{ id: 1, state_name: 'Default State', status: 1 }]);
+      } finally {
+        setLoadingStates(false);
+      }
+    };
+
+    fetchStates();
+  }, []);
+
   const onSubmit = async (data: TeleCallerFormData): Promise<void> => {
     setError(null);
     setSuccess(null);
@@ -158,6 +232,7 @@ export default function CreateTeleCallerPage() {
       supervisor_id: 1,
       agency_id: 1,
       telecalling_group_id: parseInt(data.telecalling_group_id),
+      state_id: parseInt(data.state_id),
       under_training: 0,
       status: parseInt(data.status),
     };
@@ -311,6 +386,29 @@ export default function CreateTeleCallerPage() {
                     Select the telecalling group for this user
                   </p>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    State *
+                  </label>
+                  <SelectDropdown
+                    value={watch('state_id')}
+                    onChange={(value) => setValue('state_id', value as string)}
+                    options={states.map(state => ({
+                      value: String(state.id),
+                      label: state.state_name,
+                    }))}
+                    placeholder={loadingStates ? "Loading states..." : "Select State"}
+                    disabled={loadingStates}
+                  />
+                  {errors.state_id && (
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {errors.state_id.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Select the state for this user
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -362,16 +460,6 @@ export default function CreateTeleCallerPage() {
                       />
                       <label htmlFor="qc" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         QC User
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="data_entry"
-                        checked={watch('data_entry')}
-                        onCheckedChange={(checked) => setValue('data_entry', checked === true)}
-                      />
-                      <label htmlFor="data_entry" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Data Entry User
                       </label>
                     </div>
                   </div>
