@@ -29,8 +29,8 @@ const roleRouteMap: Record<string, { capi: string; cati: string }> = {
     cati: '/cati/dqmt/fieldwork-progress',
   },
   fd: {
-    capi: '/capi/fd/fieldwork-progress',
-    cati: '/cati/fd/telecaller-progress',
+    capi: '/cati/fd/performance',
+    cati: '/cati/fd/performance',
   },
   start_qc: {
     capi: '/capi/start_qc/start-gps-qc',

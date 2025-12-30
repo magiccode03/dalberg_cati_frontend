@@ -607,6 +607,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // ppmt role goes directly to cati ppmt  page
     if (role === 'group') return '/cati/ppmt/progress/telecaller-progress';
+
+    // FD role goes directly to FD telecaller progress page
+    if (role === 'fd') return '/cati/fd/performance';
     
     // All other roles (including research, ppm,dqm fd, etc.) go to /home
     return '/home';
