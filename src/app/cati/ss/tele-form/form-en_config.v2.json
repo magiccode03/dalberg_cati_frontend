@@ -218,10 +218,10 @@
     "rules": {
       "showFields": {
         "opt_accepted_borrower": [
-          "consent"
+          "consent_accepted"
         ],
         "opt_rejected_borrower": [
-          "consent"
+          "consent_rejected"
         ]
       }
     },
@@ -230,7 +230,7 @@
   {
     "type": "radio",
     "label": "Do you consent to this interview?",
-    "conditional": "borrower_type === '1' || borrower_type === '2'",
+    "conditional": "borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -247,9 +247,14 @@
     "rules": {
       "clearFields": {
         "opt_no": [
-          "resp_name",
-          "resp_age",
-          "resp_gender",
+          "q0_01",
+          "q0_02",
+          "q0_03",
+          "q0_04",
+          "q0_05",
+          "q0_06",
+          "q0_07",
+          "q1_01",
           "q1_02",
           "q1_03",
           "q1_04a",
@@ -262,7 +267,6 @@
           "q2_02",
           "q2_03",
           "q2_03a",
-          "q2_03b",
           "q2_04",
           "q2_05",
           "q2_06",
@@ -271,86 +275,6 @@
           "q2_08",
           "q2_08a",
           "q2_08b",
-          "q2_09",
-          "q2_10",
-          "q2_11",
-          "q2_11a",
-          "q2_12",
-          "q2_12a",
-          "q2_13",
-          "q2_13a_i",
-          "q2_13a_ii",
-          "q2_13a_iii",
-          "q2_13a_iv",
-          "q2_13a_v",
-          "q2_13a_vi",
-          "q2_13a_vii",
-          "q2_13a_viii",
-          "q2_13a_ix",
-          "q2_13a_x",
-          "q2_13b_i",
-          "q2_13b_ii",
-          "q2_13b_iii",
-          "q2_13b_iv",
-          "q2_13b_v",
-          "q2_13b_vi",
-          "q2_13b_vii",
-          "q2_13b_viii",
-          "q2_13b_ix",
-          "q2_13b_x",
-          "q2_13c_i",
-          "q2_13c_ii",
-          "q2_13c_iii",
-          "q2_13c_iv",
-          "q2_13c_v",
-          "q2_13c_vi",
-          "q2_13c_vii",
-          "q2_13c_viii",
-          "q2_13c_ix",
-          "q2_13c_x",
-          "q2_13d_i",
-          "q2_13d_ii",
-          "q2_13d_iii",
-          "q2_13d_iv",
-          "q2_13d_v",
-          "q2_13d_vi",
-          "q2_13d_vii",
-          "q2_13d_viii",
-          "q2_13d_ix",
-          "q2_13d_x",
-          "q2_13e_i",
-          "q2_13e_ii",
-          "q2_13e_iii",
-          "q2_13e_iv",
-          "q2_13e_v",
-          "q2_13e_vi",
-          "q2_13e_vii",
-          "q2_13e_viii",
-          "q2_13e_ix",
-          "q2_13e_x",
-          "q2_13f_i",
-          "q2_13f_ii",
-          "q2_13f_iii",
-          "q2_13f_iv",
-          "q2_13f_v",
-          "q2_13f_vi",
-          "q2_13f_vii",
-          "q2_13f_viii",
-          "q2_13f_ix",
-          "q2_13f_x",
-          "q2_14",
-          "q2_15",
-          "q2_16a",
-          "q2_16b",
-          "q2_17",
-          "q2_17a",
-          "q2_17b",
-          "q2_17c",
-          "q2_18",
-          "q2_19",
-          "q2_19a",
-          "q2_19b",
-          "q2_20",
           "q3_01",
           "q3_02",
           "q3_02a",
@@ -453,7 +377,140 @@
           "q8_01g_i",
           "q8_01g_ii",
           "q8_01g_iii",
-          "q8_01g_iv",
+          "q8_01g_iv"
+        ]
+      },
+      "showFields": {
+        "opt_yes": [
+          "q0_01"
+        ]
+      }
+    },
+    "tag": "consent_accepted"
+  },
+  {
+    "type": "radio",
+    "label": "Do you consent to this interview?",
+    "conditional": "borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "3",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No [Terminate interview]",
+        "value": "4",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "clearFields": {
+        "opt_no": [
+          "q0_01",
+          "q0_02",
+          "q0_03",
+          "q0_04",
+          "q0_05",
+          "q0_06",
+          "q0_07",
+          "q1_01",
+          "q1_02",
+          "q1_03",
+          "q1_04a",
+          "q1_04b",
+          "q1_05",
+          "q1_06",
+          "q1_07",
+          "q1_08",
+          "q2_01",
+          "q2_02",
+          "q2_03",
+          "q2_03b",
+          "q2_04",
+          "q2_05",
+          "q2_06",
+          "q2_09",
+          "q2_10",
+          "q2_11",
+          "q2_11a",
+          "q2_12",
+          "q2_12a",
+          "q2_13",
+          "q2_13a_i",
+          "q2_13a_ii",
+          "q2_13a_iii",
+          "q2_13a_iv",
+          "q2_13a_v",
+          "q2_13a_vi",
+          "q2_13a_vii",
+          "q2_13a_viii",
+          "q2_13a_ix",
+          "q2_13a_x",
+          "q2_13b_i",
+          "q2_13b_ii",
+          "q2_13b_iii",
+          "q2_13b_iv",
+          "q2_13b_v",
+          "q2_13b_vi",
+          "q2_13b_vii",
+          "q2_13b_viii",
+          "q2_13b_ix",
+          "q2_13b_x",
+          "q2_13c_i",
+          "q2_13c_ii",
+          "q2_13c_iii",
+          "q2_13c_iv",
+          "q2_13c_v",
+          "q2_13c_vi",
+          "q2_13c_vii",
+          "q2_13c_viii",
+          "q2_13c_ix",
+          "q2_13c_x",
+          "q2_13d_i",
+          "q2_13d_ii",
+          "q2_13d_iii",
+          "q2_13d_iv",
+          "q2_13d_v",
+          "q2_13d_vi",
+          "q2_13d_vii",
+          "q2_13d_viii",
+          "q2_13d_ix",
+          "q2_13d_x",
+          "q2_13e_i",
+          "q2_13e_ii",
+          "q2_13e_iii",
+          "q2_13e_iv",
+          "q2_13e_v",
+          "q2_13e_vi",
+          "q2_13e_vii",
+          "q2_13e_viii",
+          "q2_13e_ix",
+          "q2_13e_x",
+          "q2_13f_i",
+          "q2_13f_ii",
+          "q2_13f_iii",
+          "q2_13f_iv",
+          "q2_13f_v",
+          "q2_13f_vi",
+          "q2_13f_vii",
+          "q2_13f_viii",
+          "q2_13f_ix",
+          "q2_13f_x",
+          "q2_14",
+          "q2_15",
+          "q2_16a",
+          "q2_16b",
+          "q2_17",
+          "q2_17a",
+          "q2_17b",
+          "q2_17c",
+          "q2_18",
+          "q2_19",
+          "q2_19a",
+          "q2_19b",
+          "q2_20",
           "q9_01",
           "q9_02",
           "q9_03",
@@ -463,16 +520,69 @@
       },
       "showFields": {
         "opt_yes": [
-          "resp_name"
+          "q0_01"
         ]
       }
     },
-    "tag": "consent"
+    "tag": "consent_rejected"
+  },
+  {
+    "type": "text",
+    "label": "Q 0.01. Interviewer name",
+    "conditional": "(consent_accepted === '1' || consent_rejected === '3')",
+    "required": true,
+    "placeholder": "Enter interviewer name",
+    "tag": "q0_01"
+  },
+  {
+    "type": "date",
+    "label": "Q 0.02. Date of the interview",
+    "conditional": "q0_01",
+    "required": true,
+    "tag": "q0_02"
+  },
+  {
+    "type": "time",
+    "label": "Q 0.03. Time of Interview",
+    "conditional": "q0_02",
+    "required": true,
+    "tag": "q0_03"
+  },
+  {
+    "type": "text",
+    "label": "Q 0.04. Online lender/App interviewee Borrowed from/applied to",
+    "conditional": "q0_03",
+    "required": true,
+    "placeholder": "Enter lender/app name",
+    "tag": "q0_04"
+  },
+  {
+    "type": "number",
+    "label": "Q 0.05. Loan amount",
+    "conditional": "q0_04",
+    "required": true,
+    "placeholder": "Enter loan amount in rupees",
+    "min": 0,
+    "tag": "q0_05"
+  },
+  {
+    "type": "text",
+    "label": "Q 0.06. Time to approve loan",
+    "conditional": "q0_05",
+    "placeholder": "Enter time to approve",
+    "tag": "q0_06"
+  },
+  {
+    "type": "text",
+    "label": "Q 0.07. Time to disburse loan",
+    "conditional": "q0_06 && borrower_type === '1'",
+    "placeholder": "Enter time to disburse",
+    "tag": "q0_07"
   },
   {
     "type": "text",
     "label": "Q 1.01. What is your name?",
-    "conditional": "consent === '1'",
+    "conditional": "q0_07 || (q0_06 && borrower_type === '2')",
     "required": true,
     "placeholder": "Please specify",
     "tag": "resp_name"
@@ -480,7 +590,7 @@
   {
     "type": "number",
     "label": "Q 1.02. What is your age in years?",
-    "conditional": "consent === '1'",
+    "conditional": "q1_01",
     "required": true,
     "placeholder": "Please specify (years complete)",
     "min": 1,
@@ -490,7 +600,7 @@
   {
     "type": "radio",
     "label": "Q 1.03. What is your gender?",
-    "conditional": "consent === '1'",
+    "conditional": "q1_02",
     "required": true,
     "options": [
       {
@@ -519,7 +629,7 @@
   {
     "type": "select",
     "label": "Q 1.04 a. In which state do you live currently?",
-    "conditional": "consent === '1'",
+    "conditional": "q1_03",
     "required": true,
     "options": "globals.states",
     "tag": "q1_04a"
@@ -527,7 +637,7 @@
   {
     "type": "text",
     "label": "Q1.04 b. In which location do you live currently?",
-    "conditional": "consent === '1'",
+    "conditional": "q1_04a",
     "required": true,
     "placeholder": "Enter location",
     "tag": "q1_04b"
@@ -535,7 +645,7 @@
   {
     "type": "radio",
     "label": "Q 1.05. What type of work do you do?",
-    "conditional": "consent === '1'",
+    "conditional": "q1_04b",
     "required": true,
     "options": [
       {
