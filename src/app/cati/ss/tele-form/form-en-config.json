@@ -3959,9 +3959,12 @@
     ],
     "rules": {
       "showFields": {
+        "opt_always_on_time": ["q6_05"],
         "opt_missed_few_times": ["q6_01_times", "q6_02"],
         "opt_missed_once": ["q6_02"],
-        "opt_defaulted": ["q6_02"]
+        "opt_defaulted": ["q6_02"],
+        "opt_dont_know": ["q6_02"],
+        "opt_prefer_not_to_say": ["q6_02"]
       }
     },
     "tag": "q6_01"
@@ -4056,7 +4059,7 @@
   {
     "type": "radio",
     "label": "Q 6.03. What happened when you missed an instalment or couldn't pay it on time?",
-    "conditional": "consent === '1' && borrower_type === '1'",
+    "conditional": "(q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4129,7 +4132,7 @@
   {
     "type": "radio",
     "label": "Q 6.03a. How many times did the lender give you this flexibility?",
-    "conditional": "(q6_03 === '1' || q6_03 === '2') && borrower_type === '1'",
+    "conditional": "(q6_03 === '1' || q6_03 === '2') && (q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4179,7 +4182,7 @@
   {
     "type": "radio",
     "label": "Q 6.03b. Did the lender charge you a penalty and if so, then was the penalty fixed or did it depend on the number of days the payment was delayed?",
-    "conditional": "(q6_03 === '3' || q6_03 === '4' || q6_03 === '5' || q6_03a === '3' || q6_03a === '99' || q6_03a === '98' || q6_03 === '98' || q6_03 === '99') && borrower_type === '1'",
+    "conditional": "(q6_03 === '3' || q6_03 === '4' || q6_03 === '5' || q6_03a === '3' || q6_03a === '99' || q6_03a === '98' || q6_03 === '98' || q6_03 === '99') && (q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4261,7 +4264,7 @@
   {
     "type": "text",
     "label": "Q 6.04. What impact did being charged this penalty have on you?",
-    "conditional": "(q6_03b || q6_03a === '1' || q6_03a === '2') && borrower_type === '1' && consent === '1'",
+    "conditional": "(q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && borrower_type === '1' && consent === '1'",
     "required": true,
     "placeholder": "Please describe",
     "maxLength": 500,
@@ -4270,7 +4273,7 @@
   {
     "type": "radio",
     "label": "Q 6.04a. After this experience, did your trust in the lender increase, decrease, or stay the same?",
-    "conditional": "consent === '1' && borrower_type === '1'",
+    "conditional": "(q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4304,7 +4307,7 @@
   {
     "type": "radio",
     "label": "Q 6.04b. After this experience, did your confidence in taking loans in general increase, decrease, or stay the same?",
-    "conditional": "consent === '1' && borrower_type === '1'",
+    "conditional": "(q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -6414,7 +6417,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Q 8.01g.ii.a. Why did you take a loan from this other channel?",
+    "label": "Q 8.01g.ii.a. Why did you take a loan from {{other_channel_a}}?",
     "conditional": "q8_01g_i_a && borrower_type === '1'",
     "required": true,
     "options": [
@@ -6472,7 +6475,7 @@
   },
   {
     "type": "radio",
-    "label": "Q 8.01g.iii.a. Do you currently have a loan from this other channel?",
+    "label": "Q 8.01g.iii.a. Do you currently have a loan from {{other_channel_a}}?",
     "conditional": "q8_01g_i_a && borrower_type === '1'",
     "required": true,
     "options": [
@@ -6506,7 +6509,7 @@
   },
   {
     "type": "number",
-    "label": "Q 8.01g.iv.a. How many loans do you currently have from this other channel?",
+    "label": "Q 8.01g.iv.a. How many loans do you currently have from {{other_channel_a}}?",
     "conditional": "q8_01g_iii_a === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Enter number",
@@ -6515,7 +6518,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Q 8.01g.ii.b. Why did you take a loan from this other channel?",
+    "label": "Q 8.01g.ii.b. Why did you take a loan from {{other_channel_b}}?",
     "conditional": "q8_01g_i_b && borrower_type === '1'",
     "required": true,
     "options": [
@@ -6573,7 +6576,7 @@
   },
   {
     "type": "radio",
-    "label": "Q 8.01g.iii.b. Do you currently have a loan from this other channel?",
+    "label": "Q 8.01g.iii.b. Do you currently have a loan from {{other_channel_b}}?",
     "conditional": "q8_01g_i_b && borrower_type === '1'",
     "required": true,
     "options": [
@@ -6607,7 +6610,7 @@
   },
   {
     "type": "number",
-    "label": "Q 8.01g.iv.b. How many loans do you currently have from this other channel?",
+    "label": "Q 8.01g.iv.b. How many loans do you currently have from {{other_channel_b}}?",
     "conditional": "q8_01g_iii_b === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Enter number",
