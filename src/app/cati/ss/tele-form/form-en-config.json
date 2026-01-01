@@ -6357,17 +6357,26 @@
   },
   {
     "type": "text",
-    "label": "Q 8.01g.i. Which other lenders have you taken a loan from?",
+    "label": "Q 8.01g.i.a. Which other lenders have you taken a loan from?",
     "conditional": "q8_01f === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Please specify",
     "maxLength": 150,
-    "tag": "q8_01g_i"
+    "tag": "q8_01g_i_a"
+  },
+  {
+    "type": "text",
+    "label": "Q 8.01g.i.b. Which other lenders have you taken a loan from?",
+    "conditional": "q8_01f === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q8_01g_i_b"
   },
   {
     "type": "checkbox",
-    "label": "Q 8.01g.ii. Why did you take a loan from this other channel?",
-    "conditional": "q8_01g_i && borrower_type === '1'",
+    "label": "Q 8.01g.ii.a. Why did you take a loan from this other channel?",
+    "conditional": "q8_01g_i_a && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -6408,24 +6417,24 @@
     ],
     "rules": {
       "showFields": {
-        "opt_others": ["q8_01g_ii_oth"]
+        "opt_others": ["q8_01g_ii_oth_a"]
       }
     },
-    "tag": "q8_01g_ii"
+    "tag": "q8_01g_ii_a"
   },
   {
     "type": "text",
     "label": "Others (specify)",
-    "conditional": "q8_01g_ii.includes('7')",
+    "conditional": "q8_01g_ii_a.includes('7')",
     "required": true,
     "placeholder": "Please specify",
     "maxLength": 150,
-    "tag": "q8_01g_ii_oth"
+    "tag": "q8_01g_ii_oth_a"
   },
   {
     "type": "radio",
-    "label": "Q 8.01g.iii. Do you currently have a loan from this other channel?",
-    "conditional": "q8_01g_i && borrower_type === '1'",
+    "label": "Q 8.01g.iii.a. Do you currently have a loan from this other channel?",
+    "conditional": "q8_01g_i_a && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -6451,19 +6460,120 @@
     ],
     "rules": {
       "showFields": {
-        "opt_yes": ["q8_01g_iv"]
+        "opt_yes": ["q8_01g_iv_a"]
       }
     },
-    "tag": "q8_01g_iii"
+    "tag": "q8_01g_iii_a"
   },
   {
     "type": "number",
-    "label": "Q 8.01g.iv. How many loans do you currently have from this other channel?",
-    "conditional": "q8_01g_iii === '1' && borrower_type === '1'",
+    "label": "Q 8.01g.iv.a. How many loans do you currently have from this other channel?",
+    "conditional": "q8_01g_iii_a === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Enter number",
     "min": 0,
-    "tag": "q8_01g_iv"
+    "tag": "q8_01g_iv_a"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 8.01g.ii.b. Why did you take a loan from this other channel?",
+    "conditional": "q8_01g_i_b && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Could give more money",
+        "value": "6",
+        "tag": "opt_more_money"
+      },
+      {
+        "label": "Other",
+        "value": "7",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q8_01g_ii_oth_b"]
+      }
+    },
+    "tag": "q8_01g_ii_b"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q8_01g_ii_b.includes('7')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q8_01g_ii_oth_b"
+  },
+  {
+    "type": "radio",
+    "label": "Q 8.01g.iii.b. Do you currently have a loan from this other channel?",
+    "conditional": "q8_01g_i_b && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "I don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q8_01g_iv_b"]
+      }
+    },
+    "tag": "q8_01g_iii_b"
+  },
+  {
+    "type": "number",
+    "label": "Q 8.01g.iv.b. How many loans do you currently have from this other channel?",
+    "conditional": "q8_01g_iii_b === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Enter number",
+    "min": 0,
+    "tag": "q8_01g_iv_b"
   }
   ]
 }
