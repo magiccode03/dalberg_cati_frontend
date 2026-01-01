@@ -68,6 +68,36 @@
       "sub_title": "In this section, we will aim to understand if you have taken loans from other channels and what your experience has been with those channels."
     },
     {
+      "id": "info_8",
+      "title": "Other Online Lending App",
+      "sub_title": "Now let’s talk about the loan you tried to get from another online lending app. "
+    },
+    {
+      "id": "info_9",
+      "title": "Commercial Bank",
+      "sub_title": "Now let's talk about the loan you tried to get from Commercial Bank"
+    },
+    {
+      "id": "info_10",
+      "title": "Local Money Lender",
+      "sub_title": "Now let's talk about the loan you tried to get from Local Money Lender"
+    },
+    {
+      "id": "info_11",
+      "title": "Micro Finance Institutions",
+      "sub_title": "Now let's talk about the loan you tried to get from Micro Finance Institutions"
+    },
+    {
+      "id": "info_12",
+      "title": "Friends and Family",
+      "sub_title": "Now let's talk about the loan you tried to get from Friends and Family"
+    },
+    {
+      "id": "info_13",
+      "title": "F) Other Sources (I, ii, iii --------- n)",
+      "sub_title": "Now let’s talk about the loan you tried to get from {Other sources}"
+    },
+    {
       "id": "question_heading",
       "heading_1": "Q 4.01a. Understanding of processing fees",
       "heading_2": "Q 4.01b. Understanding of late fees",
@@ -1633,7 +1663,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_09_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "100",
+        "101"
+      ]
     },
     "tag": "q2_09"
   },
@@ -1691,7 +1725,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_10_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_10"
   },
@@ -1741,7 +1779,7 @@
   {
     "type": "radio",
     "label": "Q 2.11a. What do you think the real reason is?",
-    "conditional": "consent === '1' && borrower_type === '2'",
+    "conditional": "(q2_11 === '2' || q2_11 === '98' || q2_11 === '99') && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -1867,7 +1905,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_12a_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_12a"
   },
@@ -1883,7 +1925,7 @@
   {
     "type": "checkbox",
     "label": "Q 2.13. After your loan application was rejected, did you try to get money from any of these sources?",
-    "conditional": "q2_12 === '1' && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -1934,8 +1976,17 @@
     ],
     "rules": {
       "showFields": {
-        "opt_others": ["q2_13_oth"]
-      }
+        "opt_online_app": ["q2_13a_i"],
+        "opt_commercial_bank": ["q2_13b_i"],
+        "opt_moneylender": ["q2_13c_i"],
+        "opt_microfinance": ["q2_13d_i"],
+        "opt_friends_family": ["q2_13e_i"],
+        "opt_others": ["q2_13_oth", "q2_13f_i"]
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_13"
   },
@@ -1947,6 +1998,1920 @@
     "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q2_13_oth"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 2.13a.i. Why did you go there?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('1') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Other",
+        "value": "6",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q2_13a_i_oth"]
+      }
+    },
+    "tag": "q2_13a_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q2_13a_i.includes('6')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q2_13a_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13a.ii. Did you get the money?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('1') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q2_13a_iii"]
+      }
+    },
+    "tag": "q2_13a_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 2.13a.iii. In which year did you take this loan?",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q2_13a_iii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13a.iv. What is/was the loan amount?",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13a_iv"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13a.v. What is/was the total amount to be paid to the lender",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13a_v"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13a.vi. What is/was the duration of the loan",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q2_13a_vi_days"],
+        "opt_weeks": ["q2_13a_vi_weeks"],
+        "opt_months": ["q2_13a_vi_months"]
+      }
+    },
+    "tag": "q2_13a_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q2_13a_vi === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q2_13a_vi_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q2_13a_vi === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q2_13a_vi_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q2_13a_vi === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q2_13a_vi_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13a.vii. What is/was the instalment frequency",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13a_vii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13a.viii. What is/was the instalment value",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13a_viii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13a.ix. What is/was the interest rate",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13a_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13a.x. What is/was the processing fee",
+    "conditional": "q2_13a_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13a_x"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 2.13b.i. Why did you go there?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('2') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Other",
+        "value": "6",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q2_13b_i_oth"]
+      }
+    },
+    "tag": "q2_13b_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q2_13b_i.includes('6')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q2_13b_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13b.ii. Did you get the money?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('2') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q2_13b_iii"]
+      }
+    },
+    "tag": "q2_13b_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 2.13b.iii. In which year did you take this loan?",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q2_13b_iii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13b.iv. What is/was the loan amount?",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13b_iv"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13b.v. What is/was the total amount to be paid to the lender",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13b_v"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13b.vi. What is/was the duration of the loan",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q2_13b_vi_days"],
+        "opt_weeks": ["q2_13b_vi_weeks"],
+        "opt_months": ["q2_13b_vi_months"]
+      }
+    },
+    "tag": "q2_13b_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q2_13b_vi === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q2_13b_vi_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q2_13b_vi === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q2_13b_vi_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q2_13b_vi === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q2_13b_vi_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13b.vii. What is/was the instalment frequency",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13b_vii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13b.viii. What is/was the instalment value",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13b_viii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13b.ix. What is/was the interest rate",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13b_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13b.x. What is/was the processing fee",
+    "conditional": "q2_13b_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13b_x"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 2.13c.i. Why did you go there?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('3') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Other",
+        "value": "6",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q2_13c_i_oth"]
+      }
+    },
+    "tag": "q2_13c_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q2_13c_i.includes('6')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q2_13c_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13c.ii. Did you get the money?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('3') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q2_13c_iii"]
+      }
+    },
+    "tag": "q2_13c_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 2.13c.iii. In which year did you take this loan?",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q2_13c_iii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13c.iv. What is/was the loan amount?",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13c_iv"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13c.v. What is/was the total amount to be paid to the lender",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13c_v"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13c.vi. What is/was the duration of the loan",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q2_13c_vi_days"],
+        "opt_weeks": ["q2_13c_vi_weeks"],
+        "opt_months": ["q2_13c_vi_months"]
+      }
+    },
+    "tag": "q2_13c_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q2_13c_vi === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q2_13c_vi_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q2_13c_vi === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q2_13c_vi_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q2_13c_vi === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q2_13c_vi_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13c.vii. What is/was the instalment frequency",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13c_vii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13c.viii. What is/was the instalment value",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13c_viii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13c.ix. What is/was the interest rate",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13c_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13c.x. What is/was the processing fee",
+    "conditional": "q2_13c_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13c_x"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 2.13d.i. Why did you go there?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('4') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Other",
+        "value": "6",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q2_13d_i_oth"]
+      }
+    },
+    "tag": "q2_13d_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q2_13d_i.includes('6')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q2_13d_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13d.ii. Did you get the money?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('4') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q2_13d_iii"]
+      }
+    },
+    "tag": "q2_13d_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 2.13d.iii. In which year did you take this loan?",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q2_13d_iii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13d.iv. What is/was the loan amount?",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13d_iv"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13d.v. What is/was the total amount to be paid to the lender",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13d_v"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13d.vi. What is/was the duration of the loan",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q2_13d_vi_days"],
+        "opt_weeks": ["q2_13d_vi_weeks"],
+        "opt_months": ["q2_13d_vi_months"]
+      }
+    },
+    "tag": "q2_13d_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q2_13d_vi === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q2_13d_vi_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q2_13d_vi === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q2_13d_vi_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q2_13d_vi === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q2_13d_vi_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13d.vii. What is/was the instalment frequency",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13d_vii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13d.viii. What is/was the instalment value",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13d_viii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13d.ix. What is/was the interest rate",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13d_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13d.x. What is/was the processing fee",
+    "conditional": "q2_13d_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13d_x"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 2.13e.i. Why did you go there?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('5') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Other",
+        "value": "6",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q2_13e_i_oth"]
+      }
+    },
+    "tag": "q2_13e_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q2_13e_i.includes('6')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q2_13e_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13e.ii. Did you get the money?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('5') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q2_13e_iii"]
+      }
+    },
+    "tag": "q2_13e_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 2.13e.iii. In which year did you take this loan?",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q2_13e_iii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13e.iv. What is/was the loan amount?",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13e_iv"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13e.v. What is/was the total amount to be paid to the lender",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13e_v"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13e.vi. What is/was the duration of the loan",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q2_13e_vi_days"],
+        "opt_weeks": ["q2_13e_vi_weeks"],
+        "opt_months": ["q2_13e_vi_months"]
+      }
+    },
+    "tag": "q2_13e_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q2_13e_vi === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q2_13e_vi_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q2_13e_vi === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q2_13e_vi_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q2_13e_vi === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q2_13e_vi_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13e.vii. What is/was the instalment frequency",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13e_vii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13e.viii. What is/was the instalment value",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13e_viii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13e.ix. What is/was the interest rate",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13e_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13e.x. What is/was the processing fee",
+    "conditional": "q2_13e_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13e_x"
+  },
+  {
+    "type": "checkbox",
+    "label": "Q 2.13f.i. Why did you go there?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('7') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Other",
+        "value": "6",
+        "tag": "opt_others"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q2_13f_i_oth"]
+      }
+    },
+    "tag": "q2_13f_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q2_13f_i.includes('6')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q2_13f_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13f.ii. Did you get the money?",
+    "hint": "Do not read out options",
+    "conditional": "q2_13.includes('7') && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q2_13f_iii"]
+      }
+    },
+    "tag": "q2_13f_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 2.13f.iii. In which year did you take this loan?",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q2_13f_iii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13f.iv. What is/was the loan amount?",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13f_iv"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13f.v. What is/was the total amount to be paid to the lender",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13f_v"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13f.vi. What is/was the duration of the loan",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q2_13f_vi_days"],
+        "opt_weeks": ["q2_13f_vi_weeks"],
+        "opt_months": ["q2_13f_vi_months"]
+      }
+    },
+    "tag": "q2_13f_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q2_13f_vi === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q2_13f_vi_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q2_13f_vi === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q2_13f_vi_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q2_13f_vi === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q2_13f_vi_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 2.13f.vii. What is/was the instalment frequency",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13f_vii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13f.viii. What is/was the instalment value",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13f_viii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13f.ix. What is/was the interest rate",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13f_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 2.13f.x. What is/was the processing fee",
+    "conditional": "q2_13f_ii === '1' && borrower_type === '2'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q2_13f_x"
   },
   {
     "type": "radio",
@@ -3009,7 +4974,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_18_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_18"
   },
