@@ -3821,7 +3821,7 @@
   {
     "type": "radio",
     "label": "Q 5.01. Did you receive the loan in the time that you expected?",
-    "conditional": "q4_02 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3850,7 +3850,7 @@
   {
     "type": "radio",
     "label": "Q 5.02. The speed of disbursement made me feel that the lender was:",
-    "conditional": "q5_01 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3884,7 +3884,7 @@
   {
     "type": "radio",
     "label": "Q 6.01. For the loan that you received (the one we are talking about), how often have you missed an instalment or not been able to pay an instalment on the day it was due, if at all?",
-    "conditional": "q5_02 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3937,9 +3937,9 @@
     "tag": "q6_01_times"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 6.02. How did the lender contact you after the missed payment?",
-    "conditional": "(q6_01 === '2' || q6_01 === '3' || q6_01 === '4') && borrower_type === '1'",
+    "conditional": "(q6_01 === '2' || q6_01 === '3' || q6_01 === '4' || q6_01 === '98' || q6_01 === '99') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4008,7 +4008,7 @@
   {
     "type": "text",
     "label": "Others (specify)",
-    "conditional": "q6_02.includes('9')",
+    "conditional": "q6_02 === '9'",
     "required": true,
     "placeholder": "Please specify",
     "maxLength": 150,
@@ -4017,7 +4017,7 @@
   {
     "type": "radio",
     "label": "Q 6.03. What happened when you missed an instalment or couldn't pay it on time?",
-    "conditional": "q6_02 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4061,7 +4061,11 @@
         "opt_grace_period": ["q6_03_duration", "q6_03a"],
         "opt_combined": ["q6_03a"],
         "opt_others": ["q6_03_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q6_03"
   },
@@ -4136,7 +4140,7 @@
   {
     "type": "radio",
     "label": "Q 6.03b. Did the lender charge you a penalty and if so, then was the penalty fixed or did it depend on the number of days the payment was delayed?",
-    "conditional": "(q6_03 === '3' || q6_03 === '4' || q6_03a === '2' || q6_03a === '3') && borrower_type === '1'",
+    "conditional": "(q6_03 === '3' || q6_03 === '4' || q6_03 === '5' || q6_03a === '3' || q6_03a === '99' || q6_03a === '98' || q6_03 === '98' || q6_03 === '99') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4218,7 +4222,7 @@
   {
     "type": "text",
     "label": "Q 6.04. What impact did being charged this penalty have on you?",
-    "conditional": "(q6_03b || q6_03a === '1') && borrower_type === '1'",
+    "conditional": "(q6_03b || q6_03a === '1' || q6_03a === '2') && borrower_type === '1' && consent === '1'",
     "required": true,
     "placeholder": "Please describe",
     "maxLength": 500,
@@ -4227,7 +4231,7 @@
   {
     "type": "radio",
     "label": "Q 6.04a. After this experience, did your trust in the lender increase, decrease, or stay the same?",
-    "conditional": "q6_04 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4261,7 +4265,7 @@
   {
     "type": "radio",
     "label": "Q 6.04b. After this experience, did your confidence in taking loans in general increase, decrease, or stay the same?",
-    "conditional": "q6_04a && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4295,7 +4299,7 @@
   {
     "type": "radio",
     "label": "Q 6.05. Did you ever have to take another loan or borrow from friends or family to make a loan payment?",
-    "conditional": "(q6_04b || q6_01 === '1' || q6_01 === '98' || q6_01 === '99') && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4324,7 +4328,7 @@
   {
     "type": "radio",
     "label": "Q 6.06. Did you ever have to sell assets (like gold or silver) to make a loan payment?",
-    "conditional": "q6_05 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4353,7 +4357,7 @@
   {
     "type": "radio",
     "label": "Q 6.07. Did you ever have to sacrifice on nutrition/food expenditure to make a loan payment?",
-    "conditional": "q6_06 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4382,7 +4386,7 @@
   {
     "type": "checkbox",
     "label": "Q 7.01. Which of the following loan features are most important to you?",
-    "conditional": "q6_07 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "maxSelections": 3,
     "options": [
@@ -4420,9 +4424,9 @@
     "tag": "q7_01"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 8.01. Have you ever taken a loan from any of these channels?",
-    "conditional": "q7_01 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4528,7 +4532,7 @@
   {
     "type": "radio",
     "label": "Q 8.01a.ii. Do you currently have a loan from \"Friends and Family\"?",
-    "conditional": "q8_01a_i && borrower_type === '1'",
+    "conditional": "q8_01.includes('1') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4571,7 +4575,7 @@
   {
     "type": "radio",
     "label": "Q 8.01a.iv. Are you ok to share the terms of the loans you just mentioned?",
-    "conditional": "q8_01a_iii && borrower_type === '1'",
+    "conditional": "q8_01a_ii === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4605,7 +4609,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01a.vi. What was the loan amount?",
-    "conditional": "q8_01a_v && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -4626,7 +4630,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01a.vii. What is/was the total amount to be paid to the lender",
-    "conditional": "q8_01a_vi && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "placeholder": "Rupees",
     "min": 0,
     "options": [
@@ -4646,7 +4650,7 @@
   {
     "type": "radio",
     "label": "Q 8.01a.ix. What is/was the duration of the loan",
-    "conditional": "q8_01a_vii && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4691,18 +4695,6 @@
     "required": true,
     "placeholder": "Enter days",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q8_01a_ix_days"
   },
   {
@@ -4712,18 +4704,6 @@
     "required": true,
     "placeholder": "Enter weeks",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q8_01a_ix_weeks"
   },
   {
@@ -4733,24 +4713,12 @@
     "required": true,
     "placeholder": "Enter months",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q8_01a_ix_months"
   },
   {
     "type": "radio",
     "label": "Q 8.01a.x. What is/was the instalment frequency",
-    "conditional": "q8_01a_ix && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4794,7 +4762,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01a.xi. What is/was the instalment value",
-    "conditional": "q8_01a_x && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -4815,7 +4783,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01a.xii. What is/was the interest rate",
-    "conditional": "q8_01a_xi && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "placeholder": "Percentage",
     "min": 0,
     "max": 100,
@@ -4836,7 +4804,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01a.xiii. What is/was the processing fee",
-    "conditional": "q8_01a_xii && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "placeholder": "Rupees",
     "min": 0,
     "options": [
@@ -4856,7 +4824,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01a.xiv. What was the late fee",
-    "conditional": "q8_01a_xiii && borrower_type === '1'",
+    "conditional": "q8_01a_iv === '1' && borrower_type === '1'",
     "placeholder": "Rupees",
     "min": 0,
     "options": [
@@ -4934,7 +4902,7 @@
   {
     "type": "radio",
     "label": "Q 8.01b.ii. Do you currently have a loan from \"Moneylenders\"?",
-    "conditional": "q8_01b_i && borrower_type === '1'",
+    "conditional": "q8_01.includes('2') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -4977,7 +4945,7 @@
   {
     "type": "radio",
     "label": "Q 8.01b.iv. Are you ok to share the terms of the loans you just mentioned?",
-    "conditional": "q8_01b_iii && borrower_type === '1'",
+    "conditional": "q8_01b_ii === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -5011,7 +4979,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01b.vi. What was the loan amount?",
-    "conditional": "q8_01b_v && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -5032,7 +5000,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01b.vii. What is/was the total amount to be paid to the lender",
-    "conditional": "q8_01b_vi && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "placeholder": "Rupees",
     "min": 0,
     "options": [
@@ -5052,7 +5020,7 @@
   {
     "type": "radio",
     "label": "Q 8.01b.ix. What is/was the duration of the loan",
-    "conditional": "q8_01b_vii && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -5097,18 +5065,6 @@
     "required": true,
     "placeholder": "Enter days",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q8_01b_ix_days"
   },
   {
@@ -5118,18 +5074,6 @@
     "required": true,
     "placeholder": "Enter weeks",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q8_01b_ix_weeks"
   },
   {
@@ -5139,24 +5083,12 @@
     "required": true,
     "placeholder": "Enter months",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q8_01b_ix_months"
   },
   {
     "type": "radio",
     "label": "Q 8.01b.x. What is/was the instalment frequency",
-    "conditional": "q8_01b_ix && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -5200,7 +5132,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01b.xi. What is/was the instalment value",
-    "conditional": "q8_01b_x && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -5221,7 +5153,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01b.xii. What is/was the interest rate",
-    "conditional": "q8_01b_xi && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "placeholder": "Percentage",
     "min": 0,
     "max": 100,
@@ -5242,7 +5174,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01b.xiii. What is/was the processing fee",
-    "conditional": "q8_01b_xii && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "placeholder": "Rupees",
     "min": 0,
     "options": [
@@ -5262,7 +5194,7 @@
   {
     "type": "number-radio",
     "label": "Q 8.01b.xiv. What was the late fee",
-    "conditional": "q8_01b_xiii && borrower_type === '1'",
+    "conditional": "q8_01b_iv === '1' && borrower_type === '1'",
     "placeholder": "Rupees",
     "min": 0,
     "options": [
