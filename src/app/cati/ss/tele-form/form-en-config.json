@@ -38,64 +38,59 @@
       "sub_title": "In this section, we will aim to understand your experience with the loan, from applying for the loan to paying it back"
     },
     {
-      "id": "info_1",
-      "title": "Q 4.01d. Understanding of other applicable fees"
+      "id": "section_9",
+      "title": "Section 9: Perception of Online/app Lenders",
+      "sub_title": "In this section, we would like to know what you think about lenders after this experience with trying to get a loan."
     },
     {
-      "id": "info_2",
-      "title": "3: Assistance "
-    },
-    {
-      "id": "info_3",
-      "title": "4: Transparency ",
-      "sub_title": "Understanding of rates and fees"
-    },
-    {
-      "id": "info_4",
-      "title": "5: Disbursal"
-    },
-    {
-      "id": "info_5",
-      "title": "6: Flexibility "
-    },
-    {
-      "id": "info_6",
-      "title": "7: Loan feature prioritisation"
-    },
-    {
-      "id": "info_7",
-      "title": "Section 8: Loans from other channels",
-      "sub_title": "In this section, we will aim to understand if you have taken loans from other channels and what your experience has been with those channels."
-    },
-    {
-      "id": "info_8",
-      "title": "Other Online Lending App",
-      "sub_title": "Now let’s talk about the loan you tried to get from another online lending app. "
-    },
-    {
-      "id": "info_9",
-      "title": "Commercial Bank",
-      "sub_title": "Now let's talk about the loan you tried to get from Commercial Bank"
-    },
-    {
-      "id": "info_10",
-      "title": "Local Money Lender",
-      "sub_title": "Now let's talk about the loan you tried to get from Local Money Lender"
-    },
-    {
-      "id": "info_11",
-      "title": "Micro Finance Institutions",
-      "sub_title": "Now let's talk about the loan you tried to get from Micro Finance Institutions"
-    },
-    {
-      "id": "info_12",
-      "title": "Friends and Family",
-      "sub_title": "Now let's talk about the loan you tried to get from Friends and Family"
-    },
-    {
-      "id": "info_13",
-      "title": "F) Other Sources (I, ii, iii --------- n)",
-      "sub_title": "Now let’s talk about the loan you tried to get from {Other sources}"
+      "id": "info_sections",
+      "info_1": {
+        "title": "Q 4.01d. Understanding of other applicable fees"
+      },
+      "info_2": {
+        "title": "3: Assistance "
+      },
+      "info_3": {
+        "title": "4: Transparency ",
+        "sub_title": "Understanding of rates and fees"
+      },
+      "info_4": {
+        "title": "5: Disbursal"
+      },
+      "info_5": {
+        "title": "6: Flexibility "
+      },
+      "info_6": {
+        "title": "7: Loan feature prioritisation"
+      },
+      "info_7": {
+        "title": "Section 8: Loans from other channels",
+        "sub_title": "In this section, we will aim to understand if you have taken loans from other channels and what your experience has been with those channels."
+      },
+      "info_8": {
+        "title": "Other Online Lending App",
+        "sub_title": "Now let's talk about the loan you tried to get from another online lending app."
+      },
+      "info_9": {
+        "title": "Commercial Bank",
+        "sub_title": "Now let's talk about the loan you tried to get from Commercial Bank"
+      },
+      "info_10": {
+        "title": "Local Money Lender",
+        "sub_title": "Now let's talk about the loan you tried to get from Local Money Lender"
+      },
+      "info_11": {
+        "title": "Micro Finance Institutions",
+        "sub_title": "Now let's talk about the loan you tried to get from Micro Finance Institutions"
+      },
+      "info_12": {
+        "title": "Friends and Family",
+        "sub_title": "Now let's talk about the loan you tried to get from Friends and Family"
+      },
+      "info_13": {
+        "title": "Other Sources",
+        "sub_title": "Now let's talk about the loan you tried to get from {Other sources}"
+      }
     },
     {
       "id": "question_heading",
@@ -2000,7 +1995,7 @@
     "tag": "q2_13_oth"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.13a.i. Why did you go there?",
     "hint": "Do not read out options",
     "conditional": "q2_13.includes('1') && borrower_type === '2'",
@@ -2045,7 +2040,10 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_13a_i_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "99"
+      ]
     },
     "tag": "q2_13a_i"
   },
@@ -2319,7 +2317,7 @@
     "tag": "q2_13a_x"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.13b.i. Why did you go there?",
     "hint": "Do not read out options",
     "conditional": "q2_13.includes('2') && borrower_type === '2'",
@@ -2638,7 +2636,7 @@
     "tag": "q2_13b_x"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.13c.i. Why did you go there?",
     "hint": "Do not read out options",
     "conditional": "q2_13.includes('3') && borrower_type === '2'",
@@ -2957,7 +2955,7 @@
     "tag": "q2_13c_x"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.13d.i. Why did you go there?",
     "hint": "Do not read out options",
     "conditional": "q2_13.includes('4') && borrower_type === '2'",
@@ -3276,7 +3274,7 @@
     "tag": "q2_13d_x"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.13e.i. Why did you go there?",
     "hint": "Do not read out options",
     "conditional": "q2_13.includes('5') && borrower_type === '2'",
@@ -3595,7 +3593,7 @@
     "tag": "q2_13e_x"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.13f.i. Why did you go there?",
     "hint": "Do not read out options",
     "conditional": "q2_13.includes('7') && borrower_type === '2'",
@@ -4249,7 +4247,7 @@
     "tag": "q9_02"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 9.03. What would make you try again?",
     "conditional": "(q9_02 === '2' || q9_02 === '3' || q9_02 === '98') && borrower_type === '2'",
     "required": true,
@@ -4309,7 +4307,7 @@
   {
     "type": "radio",
     "label": "Q 9.04. How did your experience with trying to get a loan make you feel about trusting online/app lenders? Did your trust increase, decrease or stay the same?",
-    "conditional": "(q9_01 === '1' || q9_01 === '2' || q9_02 === '1' || q9_02 === '99' || q9_03) && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4343,7 +4341,7 @@
   {
     "type": "checkbox",
     "label": "Q 9.05. What do your friends say about online/app lenders?",
-    "conditional": "q9_04 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4410,7 +4408,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q9_05_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q9_05"
   },
@@ -4425,8 +4427,8 @@
   },
   {
     "type": "radio",
-    "label": "Q 2.14. Before you agreed to take the loan, did you feel that you understood the Interest Rate fully, partially or not at all?",
-    "conditional": "q2_13 && borrower_type === '2'",
+    "label": "Q 2.14.A. Before you agreed to take the loan, did you feel that you understood the Interest Rate fully, partially or not at all?",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4459,8 +4461,8 @@
   },
   {
     "type": "radio",
-    "label": "Q 2.14. Before you agreed to take the loan, did you feel that you understood the Processing fees fully, partially or not at all?",
-    "conditional": "q2_14_interest && borrower_type === '2'",
+    "label": "Q 2.14.B. Before you agreed to take the loan, did you feel that you understood the Processing fees fully, partially or not at all?",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4493,8 +4495,8 @@
   },
   {
     "type": "radio",
-    "label": "Q 2.14. Before you agreed to take the loan, did you feel that you understood the Late fees fully, partially or not at all?",
-    "conditional": "q2_14_processing && borrower_type === '2'",
+    "label": "Q 2.14.C. Before you agreed to take the loan, did you feel that you understood the Late fees fully, partially or not at all?",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4527,8 +4529,8 @@
   },
   {
     "type": "radio",
-    "label": "Q 2.14. Before you agreed to take the loan, did you feel that you understood the Total cost fully, partially or not at all?",
-    "conditional": "q2_14_late && borrower_type === '2'",
+    "label": "Q 2.14.D. Before you agreed to take the loan, did you feel that you understood the Total cost fully, partially or not at all?",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4562,7 +4564,7 @@
   {
     "type": "radio",
     "label": "Q 2.15. For the loan you got, how often have you missed an instalment or not been able to pay an instalment on the day it was due, if at all?",
-    "conditional": "q2_14 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4687,7 +4689,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_16a_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_16a"
   },
@@ -4765,7 +4771,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_16b_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_16b"
   },
@@ -4781,7 +4791,7 @@
   {
     "type": "radio",
     "label": "Q 2.17. Were you able to achieve the purpose for which you were seeking the loan after getting the loan?",
-    "conditional": "(q2_16a || q2_16b || q2_15 === '1' || q2_15 === '98' || q2_15 === '99') && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4819,7 +4829,7 @@
     "tag": "q2_17"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.17a. Why were you not able to achieve the purpose after getting the loan?",
     "conditional": "(q2_17 === '2' || q2_17 === '3') && borrower_type === '2'",
     "required": true,
@@ -4908,7 +4918,7 @@
   {
     "type": "radio",
     "label": "Q 2.17c. Did getting the loan make your income more stable or less stable, or did it stay the same?",
-    "conditional": "q2_17b && borrower_type === '2'",
+    "conditional": "q2_17 && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4940,9 +4950,9 @@
     "tag": "q2_17c"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 2.18. Why would you not try elsewhere?",
-    "conditional": "q2_12a && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -4994,7 +5004,7 @@
   {
     "type": "radio",
     "label": "Q 2.19. Were you able to achieve the purpose for which you were seeking the loan without taking a loan?",
-    "conditional": "q2_18 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -5028,7 +5038,7 @@
   {
     "type": "radio",
     "label": "Q 2.19a. Did not getting a loan make your income increase or decrease, or did it stay the same?",
-    "conditional": "q2_19 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -5062,7 +5072,7 @@
   {
     "type": "radio",
     "label": "Q 2.19b. Did not getting a loan make your income more stable or less stable, or did it stay the same?",
-    "conditional": "q2_19a && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -5096,7 +5106,7 @@
   {
     "type": "checkbox",
     "label": "Q 2.20. Since you did not get a loan, what did you do instead?",
-    "conditional": "q2_19b && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -5138,7 +5148,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_20_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_20"
   },
