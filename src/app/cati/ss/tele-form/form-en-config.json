@@ -36,6 +36,10 @@
       "id": "section_3",
       "title": "Section 3-7: Impact of loan features",
       "sub_title": "In this section, we will aim to understand your experience with the loan, from applying for the loan to paying it back"
+    },
+    {
+      "id": "info_1",
+      "title": "Q 4.01d. Understanding of other applicable fees"
     }
   ],
   "questions": [
@@ -521,6 +525,7 @@
     "label": "Q 1.04 a. In which state do you live currently?",
     "conditional": "consent === '1'",
     "required": true,
+    "placeholder": "Select State",
     "options": "globals.states",
     "tag": "q1_04a"
   },
@@ -596,7 +601,9 @@
         "opt_daily_wage": ["q1_06"],
         "opt_gig_economy": ["q1_06"],
         "opt_salaried": ["q1_06"],
-        "opt_other": ["q1_06"]
+        "opt_other": ["q1_06"],
+        "opt_dont_know": ["q1_06"],
+        "opt_prefer_not_to_say": ["q1_06"]
       }
     },
     "tag": "q1_05"
@@ -613,7 +620,7 @@
   {
     "type": "radio",
     "label": "Q 1.06. What industry do you work in?",
-    "conditional": "(q1_05 === '1' || q1_05 === '2' || q1_05 === '3' || q1_05 === '4' || q1_05 === '5' || q1_05 === '8')",
+    "conditional": "(q1_05 === '1' || q1_05 === '2' || q1_05 === '3' || q1_05 === '4' || q1_05 === '5' || q1_05 === '8' || q1_05 === '98' || q1_05 === '99')",
     "required": true,
     "options": [
       {
@@ -811,7 +818,7 @@
   {
     "type": "checkbox",
     "label": "Q 2.01. Why did you try and take a loan from an online lender/app as opposed to a bank?",
-    "conditional": "q1_08 || (q1_05 === '6' || q1_05 === '7')",
+    "conditional": "consent === '1'",
     "required": true,
     "options": [
       {
@@ -873,7 +880,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_01_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_01"
   },
@@ -889,7 +900,7 @@
   {
     "type": "checkbox",
     "label": "Q 2.02. Why did you choose to take a loan from this particular online lender/app?",
-    "conditional": "q2_01",
+    "conditional": "consent === '1'",
     "required": true,
     "options": [
       {
@@ -956,7 +967,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_02_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_02"
   },
@@ -972,7 +987,7 @@
   {
     "type": "number-radio",
     "label": "Q 2.03. How much money did you apply for?",
-    "conditional": "q2_02",
+    "conditional": "consent === '1'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -993,7 +1008,7 @@
   {
     "type": "number-radio",
     "label": "Q 2.03.a How much money did you receive a loan for?",
-    "conditional": "q2_03 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -1014,7 +1029,7 @@
   {
     "type": "number-radio",
     "label": "Q 2.03.b How much money did you apply for?",
-    "conditional": "q2_03 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "placeholder": "Rupees",
     "min": 0,
@@ -1035,7 +1050,7 @@
   {
     "type": "radio",
     "label": "Q 2.04. What was the total repayable amount of the loan you applied for?",
-    "conditional": "q2_03a || q2_03b",
+    "conditional": "consent === '1'",
     "required": true,
     "options": [
       {
@@ -1078,24 +1093,12 @@
     "required": true,
     "placeholder": "Enter amount",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q2_04_amount"
   },
   {
     "type": "radio",
     "label": "Q 2.05. What was the duration of the loan you applied for?",
-    "conditional": "q2_04",
+    "conditional": "consent === '1'",
     "required": true,
     "options": [
       {
@@ -1150,18 +1153,6 @@
     "required": true,
     "placeholder": "Enter days",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q2_05_days"
   },
   {
@@ -1171,18 +1162,6 @@
     "required": true,
     "placeholder": "Enter weeks",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q2_05_weeks"
   },
   {
@@ -1192,24 +1171,12 @@
     "required": true,
     "placeholder": "Enter months",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q2_05_months"
   },
   {
     "type": "checkbox",
     "label": "Q 2.06. What were you planning to use the money for?",
-    "conditional": "q2_05",
+    "conditional": "consent === '1'",
     "required": true,
     "options": [
       {
@@ -1278,7 +1245,11 @@
         "opt_others": ["q2_06_oth"],
         "opt_education": ["q2_08a"],
         "opt_wedding": ["q2_08b"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_06"
   },
@@ -1292,9 +1263,9 @@
     "tag": "q2_06_oth"
   },
   {
-    "type": "radio",
+    "type": "checkbox",
     "label": "Q 2.07. Were you able to achieve the purpose for which you took the money?",
-    "conditional": "q2_06 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -1327,14 +1298,19 @@
       "showFields": {
         "opt_no": ["q2_07a"],
         "opt_partially": ["q2_07a"]
-      }
+      },
+      "exclusiveOptions": [
+        "3",
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_07"
   },
   {
     "type": "checkbox",
     "label": "Q 2.07a. Why were you not able to do so?",
-    "conditional": "(q2_07 === '2' || q2_07 === '3') && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -1371,7 +1347,11 @@
     "rules": {
       "showFields": {
         "opt_others": ["q2_07a_oth"]
-      }
+      },
+      "exclusiveOptions": [
+        "98",
+        "99"
+      ]
     },
     "tag": "q2_07a"
   },
@@ -1387,7 +1367,7 @@
   {
     "type": "radio",
     "label": "Q 2.08. Did getting the loan make your income increase or decrease, or did it stay the same?",
-    "conditional": "q2_07 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -1431,7 +1411,7 @@
   {
     "type": "radio",
     "label": "Q 2.08a. How did this loan impact your/your child's education?",
-    "conditional": "q2_08 && q2_06.includes('4') && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1' && q2_06.includes('4')",
     "required": true,
     "options": [
       {
@@ -1489,7 +1469,7 @@
   {
     "type": "radio",
     "label": "Q 2.08b. How did this loan impact your/your child's wedding?",
-    "conditional": "q2_08 && q2_06.includes('8') && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1' && q2_06.includes('8')",
     "required": true,
     "options": [
       {
@@ -1547,7 +1527,7 @@
   {
     "type": "checkbox",
     "label": "Q 2.09. What were you planning to use the money for?",
-    "conditional": "q2_06 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -1630,7 +1610,7 @@
   {
     "type": "checkbox",
     "label": "Q 2.10. When the lender rejected your loan application, what reason did they give you?",
-    "conditional": "q2_09 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -1688,7 +1668,7 @@
   {
     "type": "radio",
     "label": "Q 2.11. Do you believe the reason provided by the lender for rejection was appropriate?",
-    "conditional": "q2_10 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -1722,7 +1702,7 @@
   {
     "type": "radio",
     "label": "Q 2.11a. What do you think the real reason is?",
-    "conditional": "q2_11 === '2' && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -1780,7 +1760,7 @@
   {
     "type": "radio",
     "label": "Q 2.12. Did you try to get the money from elsewhere?",
-    "conditional": "q2_11 && borrower_type === '2'",
+    "conditional": "consent === '1' && borrower_type === '2'",
     "required": true,
     "options": [
       {
@@ -2121,7 +2101,7 @@
   {
     "type": "radio",
     "label": "Q 3.03. Based on the application experience, how did your trust in the lender change – did you trust them more, less or the same as before?",
-    "conditional": "(q3_02 === '2' || q3_02b) && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3166,7 +3146,7 @@
   {
     "type": "radio",
     "label": "Q 4.01a.i. Was processing fees applicable to the loan you took?",
-    "conditional": "q3_03 && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3192,7 +3172,9 @@
     ],
     "rules": {
       "showFields": {
-        "opt_yes": ["q4_01a_ii"]
+        "opt_yes": ["q4_01a_ii"],
+        "opt_dont_know": ["q4_01b_i"],
+        "opt_prefer_not_to_answer": ["q4_01b_i"]
       }
     },
     "tag": "q4_01a_i"
@@ -3200,28 +3182,16 @@
   {
     "type": "number-radio",
     "label": "Q 4.01a.ii. What was the amount applicable for processing fees (regardless of whether you paid or not)?",
-    "conditional": "q4_01a_i === '1' && borrower_type === '1'",
+    "conditional": "q4_01a_i === '1' && consent === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Enter amount in rupees",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q4_01a_ii"
   },
   {
     "type": "radio",
     "label": "Q 4.01a.iii. Before you agreed to take the loan, did you feel you understood the processing fee fully, partially or not at all?",
-    "conditional": "q4_01a_ii && borrower_type === '1'",
+    "conditional": "q4_01a_i === '1' && consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3314,7 +3284,7 @@
   {
     "type": "radio",
     "label": "Q 4.01b.i. Was late fees applicable to the loan you took?",
-    "conditional": "(q4_01a_i === '2' || q4_01a_iv || q4_01a_iii === '3' || q4_01a_iii === '98' || q4_01a_iii === '99') && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3352,24 +3322,12 @@
     "required": true,
     "placeholder": "Enter amount in rupees",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
     "tag": "q4_01b_ii"
   },
   {
     "type": "radio",
     "label": "Q 4.01b.iii. Before you agreed to take the loan, did you feel you understood the late fee fully, partially or not at all?",
-    "conditional": "q4_01b_ii && borrower_type === '1'",
+    "conditional": "q4_01b_i === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3462,7 +3420,7 @@
   {
     "type": "radio",
     "label": "Q 4.01c. Were any other fees applicable to the loan you took?",
-    "conditional": "(q4_01b_i === '2' || q4_01b_iv || q4_01b_iii === '3' || q4_01b_iii === '98' || q4_01b_iii === '99') && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3494,30 +3452,45 @@
     "tag": "q4_01c"
   },
   {
-    "type": "number-radio",
-    "label": "Q 4.01d.i. What was the amount applicable for other fees (regardless of whether you paid or not)?",
+    "type": "text",
+    "label": "Q 4.01d.01. Type of fees 1?",
     "conditional": "q4_01c === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Please specify",
+    "min": 0,
+    "tag": "q4_01d_01"
+  },
+  {
+    "type": "text",
+    "label": "Q 4.01d.02. Type of fees 2?",
+    "conditional": "q4_01c === '1' && borrower_type === '1'",
+    "required": false,
+    "placeholder": "Please specify",
+    "min": 0,
+    "tag": "q4_01d_02"
+  },
+  {
+    "type": "text",
+    "label": "Q 4.01d.03. Type of fees 3?",
+    "conditional": "q4_01c === '1' && borrower_type === '1'",
+    "required": false,
+    "placeholder": "Please specify",
+    "min": 0,
+    "tag": "q4_01d_03"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 4.01d.i.f1. What was the amount applicable for {{fee_type_f1}} fees (regardless of whether you paid or not)?",
+    "conditional": "q4_01d_01 && borrower_type === '1'",
     "required": true,
     "placeholder": "Enter amount in rupees",
     "min": 0,
-    "options": [
-      {
-        "label": "Don't know",
-        "value": "98",
-        "tag": "opt_dont_know"
-      },
-      {
-        "label": "Prefer not to say",
-        "value": "99",
-        "tag": "opt_prefer_not_to_say"
-      }
-    ],
-    "tag": "q4_01d_i"
+    "tag": "q4_01d_i_f1"
   },
   {
     "type": "radio",
-    "label": "Q 4.01d.ii. Before you agreed to take the loan, did you feel you understood the other fees fully, partially or not at all?",
-    "conditional": "q4_01d_i && borrower_type === '1'",
+    "label": "Q 4.01d.ii.f1. Before you agreed to take the loan, did you feel you understood the {{fee_type_f1}} fees fully, partially or not at all?",
+    "conditional": "q4_01d_01 && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3548,16 +3521,16 @@
     ],
     "rules": {
       "showFields": {
-        "opt_fully": ["q4_01d_iii"],
-        "opt_partially": ["q4_01d_iii"]
+        "opt_fully": ["q4_01d_iii_f1"],
+        "opt_partially": ["q4_01d_iii_f1"]
       }
     },
-    "tag": "q4_01d_ii"
+    "tag": "q4_01d_ii_f1"
   },
   {
     "type": "radio",
-    "label": "Q 4.01d.iii. How did you get to know about other fees?",
-    "conditional": "(q4_01d_ii === '1' || q4_01d_ii === '2') && borrower_type === '1'",
+    "label": "Q 4.01d.iii.f1. How did you get to know about {{fee_type_f1}} fees?",
+    "conditional": "(q4_01d_ii_f1 === '1' || q4_01d_ii_f1 === '2') && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -3593,24 +3566,228 @@
     ],
     "rules": {
       "showFields": {
-        "opt_others": ["q4_01d_iii_oth"]
+        "opt_others": ["q4_01d_iii_oth_f1"]
       }
     },
-    "tag": "q4_01d_iii"
+    "tag": "q4_01d_iii_f1"
   },
   {
     "type": "text",
     "label": "Others (specify)",
-    "conditional": "q4_01d_iii === '4'",
+    "conditional": "q4_01d_iii_f1 === '4'",
     "required": true,
     "placeholder": "Please specify",
     "maxLength": 150,
-    "tag": "q4_01d_iii_oth"
+    "tag": "q4_01d_iii_oth_f1"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 4.01d.i.f2. What was the amount applicable for {{fee_type_f2}} fees (regardless of whether you paid or not)?",
+    "conditional": "q4_01d_02 && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Enter amount in rupees",
+    "min": 0,
+    "tag": "q4_01d_i_f2"
+  },
+  {
+    "type": "radio",
+    "label": "Q 4.01d.ii.f2. Before you agreed to take the loan, did you feel you understood the {{fee_type_f2}} fees fully, partially or not at all?",
+    "conditional": "q4_01d_02 && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully",
+        "value": "1",
+        "tag": "opt_fully"
+      },
+      {
+        "label": "Partially, a bit",
+        "value": "2",
+        "tag": "opt_partially"
+      },
+      {
+        "label": "Not at all",
+        "value": "3",
+        "tag": "opt_not_at_all"
+      },
+      {
+        "label": "I don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to answer",
+        "value": "99",
+        "tag": "opt_prefer_not_to_answer"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_fully": ["q4_01d_iii_f2"],
+        "opt_partially": ["q4_01d_iii_f2"]
+      }
+    },
+    "tag": "q4_01d_ii_f2"
+  },
+  {
+    "type": "radio",
+    "label": "Q 4.01d.iii.f2. How did you get to know about {{fee_type_f2}} fees?",
+    "conditional": "(q4_01d_ii_f2 === '1' || q4_01d_ii_f2 === '2') && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Lender told me up front",
+        "value": "1",
+        "tag": "opt_lender_told"
+      },
+      {
+        "label": "Someone else explained it to me",
+        "value": "2",
+        "tag": "opt_someone_explained"
+      },
+      {
+        "label": "Found out after I was charged for it",
+        "value": "3",
+        "tag": "opt_found_after"
+      },
+      {
+        "label": "Other",
+        "value": "4",
+        "tag": "opt_others"
+      },
+      {
+        "label": "I don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to answer",
+        "value": "99",
+        "tag": "opt_prefer_not_to_answer"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q4_01d_iii_oth_f2"]
+      }
+    },
+    "tag": "q4_01d_iii_f2"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q4_01d_iii_f2 === '4'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q4_01d_iii_oth_f2"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 4.01d.i.f3. What was the amount applicable for {{fee_type_f3}} fees (regardless of whether you paid or not)?",
+    "conditional": "q4_01d_03 && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Enter amount in rupees",
+    "min": 0,
+    "tag": "q4_01d_i_f3"
+  },
+  {
+    "type": "radio",
+    "label": "Q 4.01d.ii.f3. Before you agreed to take the loan, did you feel you understood the {{fee_type_f3}} fees fully, partially or not at all?",
+    "conditional": "q4_01d_03 && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Fully",
+        "value": "1",
+        "tag": "opt_fully"
+      },
+      {
+        "label": "Partially, a bit",
+        "value": "2",
+        "tag": "opt_partially"
+      },
+      {
+        "label": "Not at all",
+        "value": "3",
+        "tag": "opt_not_at_all"
+      },
+      {
+        "label": "I don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to answer",
+        "value": "99",
+        "tag": "opt_prefer_not_to_answer"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_fully": ["q4_01d_iii_f3"],
+        "opt_partially": ["q4_01d_iii_f3"]
+      }
+    },
+    "tag": "q4_01d_ii_f3"
+  },
+  {
+    "type": "radio",
+    "label": "Q 4.01d.iii.f3. How did you get to know about {{fee_type_f3}} fees?",
+    "conditional": "(q4_01d_ii_f3 === '1' || q4_01d_ii_f3 === '2') && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Lender told me up front",
+        "value": "1",
+        "tag": "opt_lender_told"
+      },
+      {
+        "label": "Someone else explained it to me",
+        "value": "2",
+        "tag": "opt_someone_explained"
+      },
+      {
+        "label": "Found out after I was charged for it",
+        "value": "3",
+        "tag": "opt_found_after"
+      },
+      {
+        "label": "Other",
+        "value": "4",
+        "tag": "opt_others"
+      },
+      {
+        "label": "I don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to answer",
+        "value": "99",
+        "tag": "opt_prefer_not_to_answer"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q4_01d_iii_oth_f3"]
+      }
+    },
+    "tag": "q4_01d_iii_f3"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q4_01d_iii_f3 === '4'",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q4_01d_iii_oth_f3"
   },
   {
     "type": "radio",
     "label": "Q 4.02. How did your knowledge of cost of credit and fees affect your confidence in borrowing from online/app lenders?",
-    "conditional": "(q4_01c === '2' || q4_01d_iii) && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {

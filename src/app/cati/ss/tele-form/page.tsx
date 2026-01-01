@@ -152,8 +152,25 @@ export default function TeleFormPage() {
   const questions = formConfig.questions || [];
 
   // Replace placeholders in labels
-  const replaceLabelPlaceholders = (label: string): string => {
-    return label.replace(/\{\{telecaller_name\}\}/g, teleformUserName || '[enumerator name]');
+  const replaceLabelPlaceholders = (label: string, formDataForPlaceholders?: Record<string, any>): string => {
+    let processedLabel = label.replace(/\{\{telecaller_name\}\}/g, teleformUserName || '[enumerator name]');
+    
+    // Replace fee type placeholders with actual values from form data
+    if (formDataForPlaceholders) {
+      // Replace {{fee_type_f1}} with value from q4_01d_01
+      const feeType1 = formDataForPlaceholders.q4_01d_01 || 'other';
+      processedLabel = processedLabel.replace(/\{\{fee_type_f1\}\}/g, feeType1);
+      
+      // Replace {{fee_type_f2}} with value from q4_01d_02
+      const feeType2 = formDataForPlaceholders.q4_01d_02 || 'other';
+      processedLabel = processedLabel.replace(/\{\{fee_type_f2\}\}/g, feeType2);
+      
+      // Replace {{fee_type_f3}} with value from q4_01d_03
+      const feeType3 = formDataForPlaceholders.q4_01d_03 || 'other';
+      processedLabel = processedLabel.replace(/\{\{fee_type_f3\}\}/g, feeType3);
+    }
+    
+    return processedLabel;
   };
 
   // Process form configuration to replace placeholders
@@ -516,6 +533,9 @@ export default function TeleFormPage() {
       : fieldValue === undefined || fieldValue === null || fieldValue === '';
     
     const hasError = validationErrors.has(field.tag) || (field.required && isEmpty && touchedFields.has(field.tag));
+    
+    // Get dynamically processed label with fee type replacements
+    const dynamicLabel = replaceLabelPlaceholders(field.label, formData);
 
     switch (field.type) {
       case 'radio':
@@ -526,7 +546,7 @@ export default function TeleFormPage() {
             className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
             <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
-              {field.label}
+              {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
             {hasError && (
@@ -569,7 +589,7 @@ export default function TeleFormPage() {
             className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
             <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
-              {field.label}
+              {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
             {hasError && (
@@ -608,7 +628,7 @@ export default function TeleFormPage() {
           >
             <Input
               type={field.type}
-              label={field.label}
+              label={dynamicLabel}
               value={fieldValue as string}
               onChange={(e) => {
                 handleInputChange(field.tag, e.target.value, field);
@@ -652,7 +672,7 @@ export default function TeleFormPage() {
             className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
             <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
-              {field.label}
+              {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
             {hasError && (
@@ -669,7 +689,7 @@ export default function TeleFormPage() {
                 }))}
                 value={fieldValue as string}
                 onChange={(value) => handleInputChange(field.tag, value, field)}
-                placeholder={field.placeholder || `Select ${field.label}`}
+                placeholder={field.placeholder || `Select ${dynamicLabel}`}
               />
             </div>
           </div>
@@ -687,7 +707,7 @@ export default function TeleFormPage() {
             className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
             <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
-              {field.label}
+              {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
             {hasError && (
@@ -712,8 +732,7 @@ export default function TeleFormPage() {
                 className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
               />
               {field.options && field.options.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <Text className="text-sm text-gray-600 dark:text-gray-400 mb-2">Or select:</Text>
+                <div className="mt-3 pt-3">
                   <div className="space-y-2">
                     {field.options.map(option => (
                       <Radio
@@ -1063,7 +1082,25 @@ export default function TeleFormPage() {
                         )}
                       </>
                     )}
-                    {questionSections.section3.map((field, index) => renderField(field, index))}
+                    {questionSections.section3.map((field, index) => {
+                      // Show info_1 heading before q4_01d_01 when it becomes visible
+                      if (field.tag === 'q4_01d_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_1');
+                        return (
+                          <React.Fragment key={`info_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      return renderField(field, index);
+                    })}
                   </Card>
                 );
               })()}
