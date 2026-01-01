@@ -32,6 +32,7 @@ interface FormField {
   conditional?: string;
   options?: FormOption[];
   placeholder?: string;
+  hint?: string;
   min?: number;
   max?: number;
   maxLength?: number;
@@ -60,8 +61,9 @@ export default function TeleFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [rangeErrors, setRangeErrors] = useState<Record<string, string>>({});
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const showToast = (message: string, type: 'warning' | 'error' | 'success' | 'info' = 'warning') => {
     const id = `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const newToast = {
@@ -73,7 +75,7 @@ export default function TeleFormPage() {
     };
     setToasts(prev => [...prev, newToast]);
   };
-  
+
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
@@ -96,7 +98,7 @@ export default function TeleFormPage() {
     const interval = setInterval(() => {
       setTimer(prev => prev + 1);
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -119,7 +121,7 @@ export default function TeleFormPage() {
       if (field.conditional) {
         const wasVisible = previousVisibilityRef.current[field.tag] ?? false;
         const isVisible = currentVisibility[field.tag] ?? false;
-        
+
         if (wasVisible && !isVisible) {
           // Field became hidden, clear its value
           fieldsToClear.push(field.tag);
@@ -154,22 +156,22 @@ export default function TeleFormPage() {
   // Replace placeholders in labels
   const replaceLabelPlaceholders = (label: string, formDataForPlaceholders?: Record<string, any>): string => {
     let processedLabel = label.replace(/\{\{telecaller_name\}\}/g, teleformUserName || '[enumerator name]');
-    
+
     // Replace fee type placeholders with actual values from form data
     if (formDataForPlaceholders) {
       // Replace {{fee_type_f1}} with value from q4_01d_01
       const feeType1 = formDataForPlaceholders.q4_01d_01 || 'other';
       processedLabel = processedLabel.replace(/\{\{fee_type_f1\}\}/g, feeType1);
-      
+
       // Replace {{fee_type_f2}} with value from q4_01d_02
       const feeType2 = formDataForPlaceholders.q4_01d_02 || 'other';
       processedLabel = processedLabel.replace(/\{\{fee_type_f2\}\}/g, feeType2);
-      
+
       // Replace {{fee_type_f3}} with value from q4_01d_03
       const feeType3 = formDataForPlaceholders.q4_01d_03 || 'other';
       processedLabel = processedLabel.replace(/\{\{fee_type_f3\}\}/g, feeType3);
     }
-    
+
     return processedLabel;
   };
 
@@ -184,10 +186,10 @@ export default function TeleFormPage() {
   // Evaluate conditional expressions
   const evaluateCondition = (condition: string): boolean => {
     if (!condition) return true;
-    
+
     try {
       let expr = condition.trim();
-      
+
       // Handle simple field name checks (e.g., "q0_02" means "if q0_02 has a value")
       // Check if it's just a field name with no operators
       const simpleFieldPattern = /^([a-zA-Z_][a-zA-Z0-9_]*)$/;
@@ -199,7 +201,7 @@ export default function TeleFormPage() {
         const hasValue = !(fieldValue === undefined || fieldValue === null || fieldValue === '' || (Array.isArray(fieldValue) && fieldValue.length === 0));
         return hasValue;
       }
-      
+
       // Handle numeric comparisons (>=, <=, >, <)
       const numericPattern = /(\w+)\s*(>=|<=|>|<)\s*(\d+)/g;
       expr = expr.replace(numericPattern, (match, field, operator, value) => {
@@ -210,7 +212,7 @@ export default function TeleFormPage() {
         const numValue = parseInt(fieldValue);
         const compareValue = parseInt(value);
         if (isNaN(numValue)) return 'false';
-        
+
         switch (operator) {
           case '>=': return (numValue >= compareValue).toString();
           case '<=': return (numValue <= compareValue).toString();
@@ -219,7 +221,7 @@ export default function TeleFormPage() {
           default: return 'false';
         }
       });
-      
+
       // Handle string comparisons (===, !==)
       const stringPattern = /(\w+)\s*(===|!==)\s*'(\d+)'/g;
       expr = expr.replace(stringPattern, (match, field, operator, value) => {
@@ -230,7 +232,7 @@ export default function TeleFormPage() {
           return operator === '!==' ? 'true' : 'false';
         }
         const stringValue = String(fieldValue);
-        
+
         if (operator === '===') {
           return (stringValue === value).toString();
         } else {
@@ -249,7 +251,7 @@ export default function TeleFormPage() {
         }
         return (String(fieldValue) === String(value)).toString();
       });
-      
+
       // Handle == operator without quotes
       const looseEqualityPatternNoQuotes = /(\w+)\s*==\s*(\d+)/g;
       expr = expr.replace(looseEqualityPatternNoQuotes, (match, field, value) => {
@@ -261,7 +263,7 @@ export default function TeleFormPage() {
         }
         return (String(fieldValue) === String(value)).toString();
       });
-      
+
       // Handle array includes - both with and without quotes
       const includesPattern = /(\w+)\.includes\(['"]?(\d+)['"]?\)/g;
       expr = expr.replace(includesPattern, (match, field, value) => {
@@ -275,61 +277,61 @@ export default function TeleFormPage() {
         }
         return fieldValue.includes(value).toString();
       });
-      
+
       // Handle field name checks in complex expressions (e.g., "q0_02 && q0_03")
       // Process from right to left to avoid index issues
       const processedFields = new Set<string>();
       const fieldNamePattern = /\b([a-zA-Z_][a-zA-Z0-9_]*)\b/g;
-      const replacements: Array<{start: number, end: number, replacement: string}> = [];
-      
+      const replacements: Array<{ start: number, end: number, replacement: string }> = [];
+
       let match;
       while ((match = fieldNamePattern.exec(expr)) !== null) {
         const field = match[1];
         const start = match.index;
         const end = start + field.length;
-        
+
         // Skip if already processed
         if (processedFields.has(field)) continue;
         processedFields.add(field);
-        
+
         // Get context before and after
         const beforeMatch = expr.substring(0, start);
         const afterMatch = expr.substring(end);
-        
+
         // Check if this is part of a comparison or method call
-        const isInComparison = /(===|!==|==|>=|<=|>|<)\s*$/.test(beforeMatch) || 
-                               /^\s*(===|!==|==|>=|<=|>|<)/.test(afterMatch) ||
-                               /['"]\s*$/.test(beforeMatch) ||
-                               /^\s*['"]/.test(afterMatch) ||
-                               /\.includes\(/.test(beforeMatch) ||
-                               /\.\w+/.test(beforeMatch);
-        
+        const isInComparison = /(===|!==|==|>=|<=|>|<)\s*$/.test(beforeMatch) ||
+          /^\s*(===|!==|==|>=|<=|>|<)/.test(afterMatch) ||
+          /['"]\s*$/.test(beforeMatch) ||
+          /^\s*['"]/.test(afterMatch) ||
+          /\.includes\(/.test(beforeMatch) ||
+          /\.\w+/.test(beforeMatch);
+
         // Skip keywords, operators, numbers, and comparisons
-        if (['true', 'false', '&&', '||', 'and', 'or'].includes(field.toLowerCase()) || 
-            /^\d+$/.test(field) ||
-            isInComparison) {
+        if (['true', 'false', '&&', '||', 'and', 'or'].includes(field.toLowerCase()) ||
+          /^\d+$/.test(field) ||
+          isInComparison) {
           continue;
         }
-        
+
         // Map call_status to q_call_status (field name mismatch in JSON)
         const actualField = field === 'call_status' ? 'q_call_status' : field;
-        
+
         // Check if this field has a value
         const fieldValue = formData[actualField];
         const hasValue = !(fieldValue === undefined || fieldValue === null || fieldValue === '' || (Array.isArray(fieldValue) && fieldValue.length === 0));
-        
-        replacements.push({start, end, replacement: hasValue.toString()});
+
+        replacements.push({ start, end, replacement: hasValue.toString() });
       }
-      
+
       // Apply replacements from right to left to maintain indices
       replacements.sort((a, b) => b.start - a.start);
       for (const rep of replacements) {
         expr = expr.substring(0, rep.start) + rep.replacement + expr.substring(rep.end);
       }
-      
+
       // Handle && and || operators
       expr = expr.replace(/&&/g, ' && ').replace(/\|\|/g, ' || ');
-      
+
       // Safely evaluate
       return eval(expr);
     } catch (err) {
@@ -362,7 +364,7 @@ export default function TeleFormPage() {
     // First check if field is shown by showFields rule
     // showFields can make a field visible, but it still needs to satisfy its conditional
     const isShownByRule = isFieldShownByRule(field.tag);
-    
+
     // If field has a conditional, it must be satisfied
     if (field.conditional) {
       const conditionalResult = evaluateCondition(field.conditional);
@@ -379,13 +381,13 @@ export default function TeleFormPage() {
       // Conditional satisfied but no showFields rule - field is visible
       return true;
     }
-    
+
     // No conditional - field is always visible (unless hidden by other logic)
     // If showFields rule exists, respect it
     if (isShownByRule) {
       return true;
     }
-    
+
     // No conditional and no showFields rule - field is visible
     return true;
   };
@@ -396,11 +398,28 @@ export default function TeleFormPage() {
     return evaluateCondition(section.conditional);
   };
 
+  // Validate min/max for number fields
+  const validateRange = (field: FormField, value: any): string | null => {
+    if (field.type !== 'number' && field.type !== 'number-radio') return null;
+    if (value === '' || value === undefined || value === null) return null;
+
+    const numValue = Number(value);
+    if (isNaN(numValue)) return null;
+
+    if (field.min !== undefined && numValue < field.min) {
+      return `Value must be greater than or equal to ${field.min}`;
+    }
+    if (field.max !== undefined && numValue > field.max) {
+      return `Value must be less than or equal to ${field.max}`;
+    }
+    return null;
+  };
+
   // Handle input change
   const handleInputChange = (fieldTag: string, value: any, field: FormField) => {
     setFormData(prev => {
       const newData = { ...prev, [fieldTag]: value };
-      
+
       // Clear validation error for this field when user starts typing
       if (value && value !== '') {
         setValidationErrors(prev => {
@@ -410,11 +429,23 @@ export default function TeleFormPage() {
         });
         setTouchedFields(prev => new Set(prev).add(fieldTag));
       }
-      
+
+      // Validate min/max range
+      const rangeError = validateRange(field, value);
+      if (rangeError) {
+        setRangeErrors(prev => ({ ...prev, [fieldTag]: rangeError }));
+      } else {
+        setRangeErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldTag];
+          return newErrors;
+        });
+      }
+
       // Apply clearing rules
       if (field.rules?.clearFields) {
         const clearRules = field.rules.clearFields;
-        
+
         // For radio/select fields
         if (field.type === 'radio') {
           const selectedOption = field.options?.find(opt => opt.value === value);
@@ -425,7 +456,7 @@ export default function TeleFormPage() {
           }
         }
       }
-      
+
       // Handle showFields logic - clear fields that should be hidden
       if (field.rules?.showFields) {
         const showRules = field.rules.showFields;
@@ -451,7 +482,7 @@ export default function TeleFormPage() {
           });
         }
       }
-      
+
       return newData;
     });
   };
@@ -463,30 +494,30 @@ export default function TeleFormPage() {
       const exclusiveOptions = field.rules?.exclusiveOptions || [];
       const isExclusive = exclusiveOptions.includes(optionValue);
       const maxSelections = field.maxSelections || 999;
-      
+
       let newValues: string[];
-      
+
       if (isExclusive && checked) {
         // Selecting exclusive option - clear all others
         newValues = [optionValue];
       } else if (checked) {
         // Selecting regular option - remove exclusive options
         const filteredValues = currentValues.filter(v => !exclusiveOptions.includes(v));
-        
+
         // Check max selection limit
         if (filteredValues.length >= maxSelections) {
           showToast(`You can select a maximum of ${maxSelections} options.`, 'warning');
           return prev;
         }
-        
+
         newValues = [...filteredValues, optionValue];
       } else {
         // Unchecking
         newValues = currentValues.filter(v => v !== optionValue);
       }
-      
+
       const newData = { ...prev, [fieldTag]: newValues };
-      
+
       // Clear validation error for this field when user selects an option
       if (newValues.length > 0) {
         setValidationErrors(prev => {
@@ -495,7 +526,7 @@ export default function TeleFormPage() {
           return newErrors;
         });
       }
-      
+
       // Handle clearing of "Others" text fields
       if (field.rules?.showFields) {
         Object.entries(field.rules.showFields).forEach(([optTag, fieldsToShow]) => {
@@ -507,7 +538,7 @@ export default function TeleFormPage() {
           }
         });
       }
-      
+
       return newData;
     });
   };
@@ -526,29 +557,35 @@ export default function TeleFormPage() {
     } else {
       fieldValue = formData[field.tag] || '';
     }
-    
+
     // Check if field is empty
-    const isEmpty = field.type === 'checkbox' 
+    const isEmpty = field.type === 'checkbox'
       ? fieldValue.length === 0
       : fieldValue === undefined || fieldValue === null || fieldValue === '';
-    
+
     const hasError = validationErrors.has(field.tag) || (field.required && isEmpty && touchedFields.has(field.tag));
-    
+    const hasRangeError = rangeErrors[field.tag] && touchedFields.has(field.tag);
+
     // Get dynamically processed label with fee type replacements
     const dynamicLabel = replaceLabelPlaceholders(field.label, formData);
 
     switch (field.type) {
       case 'radio':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-6 ${(hasError || hasRangeError) ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
-            <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
+            <Text className={`text-base font-medium mb-3 ${(hasError || hasRangeError) ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
               {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
+            {field.hint && (
+              <Text className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">
+                {field.hint}
+              </Text>
+            )}
             {hasError && (
               <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -583,15 +620,20 @@ export default function TeleFormPage() {
 
       case 'checkbox':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-6 ${(hasError || hasRangeError) ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
-            <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
+            <Text className={`text-base font-medium mb-3 ${(hasError || hasRangeError) ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
               {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
+            {field.hint && (
+              <Text className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">
+                {field.hint}
+              </Text>
+            )}
             {hasError && (
               <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -621,29 +663,91 @@ export default function TeleFormPage() {
       case 'date':
       case 'datetime-local':
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-6 ${(hasError || hasRangeError) ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
             <Input
               type={field.type}
               label={dynamicLabel}
               value={fieldValue as string}
               onChange={(e) => {
-                handleInputChange(field.tag, e.target.value, field);
-                setTouchedFields(prev => new Set(prev).add(field.tag));
+                const val = e.target.value;
+                handleInputChange(field.tag, val, field);
+                // Mark as touched immediately so validation can show
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Validate immediately on change for better UX
+                if (field.required) {
+                  if (val === '' || val === undefined || val === null) {
+                    setValidationErrors(prev => {
+                      const newErrors = new Set(prev);
+                      newErrors.add(field.tag);
+                      return newErrors;
+                    });
+                  } else {
+                    setValidationErrors(prev => {
+                      const newErrors = new Set(prev);
+                      newErrors.delete(field.tag);
+                      return newErrors;
+                    });
+                  }
+                }
               }}
-              required={field.required}
+              onBlur={() => {
+                // Mark field as touched and validate
+                setTouchedFields(prev => {
+                  const newTouched = new Set(prev);
+                  newTouched.add(field.tag);
+                  return newTouched;
+                });
+                // Validate range on blur for number fields
+                if (field.type === 'number') {
+                  const rangeError = validateRange(field, fieldValue);
+                  if (rangeError) {
+                    setRangeErrors(prev => ({ ...prev, [field.tag]: rangeError }));
+                  } else {
+                    setRangeErrors(prev => {
+                      const newErrors = { ...prev };
+                      delete newErrors[field.tag];
+                      return newErrors;
+                    });
+                  }
+                }
+                // Trigger validation check on blur for required fields
+                if (field.required && isEmpty) {
+                  setValidationErrors(prev => {
+                    const newErrors = new Set(prev);
+                    newErrors.add(field.tag);
+                    return newErrors;
+                  });
+                }
+              }}
               placeholder={field.placeholder}
               min={field.min}
               max={field.max}
               maxLength={field.maxLength}
+              className={(hasError || hasRangeError) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
             />
+            {field.hint && (
+              <Text className="text-sm text-gray-600 dark:text-gray-400 mt-2 mb-2 italic">
+                {field.hint}
+              </Text>
+            )}
             {hasError && (
               <div className="mt-2 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
+              </div>
+            )}
+            {hasRangeError && (
+              <div className="mt-2 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                {rangeErrors[field.tag]}
               </div>
             )}
           </div>
@@ -664,17 +768,22 @@ export default function TeleFormPage() {
             }));
           }
         }
-        
+
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-6 ${(hasError || hasRangeError) ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
-            <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
+            <Text className={`text-base font-medium mb-3 ${(hasError || hasRangeError) ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
               {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
+            {field.hint && (
+              <Text className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">
+                {field.hint}
+              </Text>
+            )}
             {hasError && (
               <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
@@ -683,9 +792,9 @@ export default function TeleFormPage() {
             )}
             <div className="w-full">
               <SelectDropdown
-                options={selectOptions.map((opt: any) => ({ 
-                  value: typeof opt === 'string' ? opt : (opt.value || opt), 
-                  label: typeof opt === 'string' ? opt : (opt.label || opt.name || opt.value || opt) 
+                options={selectOptions.map((opt: any) => ({
+                  value: typeof opt === 'string' ? opt : (opt.value || opt),
+                  label: typeof opt === 'string' ? opt : (opt.label || opt.name || opt.value || opt)
                 }))}
                 value={fieldValue as string}
                 onChange={(value) => handleInputChange(field.tag, value, field)}
@@ -699,21 +808,32 @@ export default function TeleFormPage() {
         // Number input with radio button options (like "Don't know", "Prefer not to say")
         const isRadioOptionSelected = field.options?.some(opt => fieldValue === opt.value);
         const numericValue = isRadioOptionSelected ? '' : (fieldValue || '');
-        
+
         return (
-          <div 
-            key={index} 
-            id={`${field.tag}_container`} 
-            className={`mb-6 ${hasError ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
+          <div
+            key={index}
+            id={`${field.tag}_container`}
+            className={`mb-6 ${(hasError || hasRangeError) ? 'border-2 border-red-500 rounded-lg p-4 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
-            <Text className={`text-base font-medium mb-3 ${hasError ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
+            <Text className={`text-base font-medium mb-3 ${(hasError || hasRangeError) ? 'text-red-700 dark:text-red-300' : 'text-blue-600 dark:text-blue-400'}`}>
               {dynamicLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </Text>
+            {field.hint && (
+              <Text className="text-sm text-gray-600 dark:text-gray-400 mb-3 italic">
+                {field.hint}
+              </Text>
+            )}
             {hasError && (
               <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
                 <i className="fa fa-exclamation-triangle mr-2"></i>
                 This field is required
+              </div>
+            )}
+            {hasRangeError && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-600 rounded text-sm text-red-700 dark:text-red-300">
+                <i className="fa fa-exclamation-triangle mr-2"></i>
+                {rangeErrors[field.tag]}
               </div>
             )}
             <div className="space-y-3">
@@ -724,12 +844,60 @@ export default function TeleFormPage() {
                 onChange={(e) => {
                   const val = e.target.value;
                   handleInputChange(field.tag, val, field);
-                  setTouchedFields(prev => new Set(prev).add(field.tag));
+                  // Mark as touched immediately so validation can show
+                  setTouchedFields(prev => {
+                    const newTouched = new Set(prev);
+                    newTouched.add(field.tag);
+                    return newTouched;
+                  });
+                  // Validate immediately on change for better UX
+                  if (field.required) {
+                    if (val === '' || val === undefined || val === null) {
+                      setValidationErrors(prev => {
+                        const newErrors = new Set(prev);
+                        newErrors.add(field.tag);
+                        return newErrors;
+                      });
+                    } else {
+                      setValidationErrors(prev => {
+                        const newErrors = new Set(prev);
+                        newErrors.delete(field.tag);
+                        return newErrors;
+                      });
+                    }
+                  }
+                }}
+                onBlur={() => {
+                  // Mark field as touched and validate range
+                  setTouchedFields(prev => {
+                    const newTouched = new Set(prev);
+                    newTouched.add(field.tag);
+                    return newTouched;
+                  });
+                  // Validate range on blur
+                  const rangeError = validateRange(field, numericValue);
+                  if (rangeError) {
+                    setRangeErrors(prev => ({ ...prev, [field.tag]: rangeError }));
+                  } else {
+                    setRangeErrors(prev => {
+                      const newErrors = { ...prev };
+                      delete newErrors[field.tag];
+                      return newErrors;
+                    });
+                  }
+                  // Trigger validation check on blur for required fields
+                  if (field.required && isEmpty) {
+                    setValidationErrors(prev => {
+                      const newErrors = new Set(prev);
+                      newErrors.add(field.tag);
+                      return newErrors;
+                    });
+                  }
                 }}
                 placeholder={field.placeholder}
                 min={field.min}
                 max={field.max}
-                className={hasError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
+                className={(hasError || hasRangeError) ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}
               />
               {field.options && field.options.length > 0 && (
                 <div className="mt-3 pt-3">
@@ -786,8 +954,8 @@ export default function TeleFormPage() {
       }
       // Section 1 questions (Borrower Profile) - questions starting with q0_, q1_
       // Include resp_name, resp_age, resp_gender, and q1_04a, q1_04b, etc.
-      else if (field.tag.startsWith('q0_') || field.tag.startsWith('q1_') || 
-               field.tag === 'resp_name' || field.tag === 'resp_age' || field.tag === 'resp_gender') {
+      else if (field.tag.startsWith('q0_') || field.tag.startsWith('q1_') ||
+        field.tag === 'resp_name' || field.tag === 'resp_age' || field.tag === 'resp_gender') {
         sections.section1.push(field);
       }
       // Section 2 questions (Purpose and Impact) - questions starting with q2_
@@ -795,9 +963,9 @@ export default function TeleFormPage() {
         sections.section2.push(field);
       }
       // Section 3 questions (Impact of loan features) - questions starting with q3_, q4_, q5_, q6_, q7_, q8_, q9_
-      else if (field.tag.startsWith('q3_') || field.tag.startsWith('q4_') || field.tag.startsWith('q5_') || 
-               field.tag.startsWith('q6_') || field.tag.startsWith('q7_') || field.tag.startsWith('q8_') || 
-               field.tag.startsWith('q9_')) {
+      else if (field.tag.startsWith('q3_') || field.tag.startsWith('q4_') || field.tag.startsWith('q5_') ||
+        field.tag.startsWith('q6_') || field.tag.startsWith('q7_') || field.tag.startsWith('q8_') ||
+        field.tag.startsWith('q9_')) {
         sections.section3.push(field);
       }
       // Other questions
@@ -812,11 +980,12 @@ export default function TeleFormPage() {
   // Validate all required fields
   const validateForm = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
-    
+    const rangeErrorFields: string[] = [];
+
     processedQuestions.forEach((field) => {
       if (field.required && isFieldVisible(field)) {
         const fieldValue = formData[field.tag];
-        
+
         if (field.type === 'checkbox') {
           // For checkboxes, ensure it's an array with at least one value
           const checkboxValue = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : []);
@@ -827,70 +996,98 @@ export default function TeleFormPage() {
           // For other fields, check if value exists and is not empty
           if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
             errors.push(field.label);
+          } else {
+            // Check min/max for number fields
+            const rangeError = validateRange(field, fieldValue);
+            if (rangeError) {
+              rangeErrorFields.push(field.label);
+            }
+          }
+        }
+      } else if (isFieldVisible(field)) {
+        const fieldValue = formData[field.tag];
+        // Check min/max for non-required fields that have values
+        if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+          const rangeError = validateRange(field, fieldValue);
+          if (rangeError) {
+            rangeErrorFields.push(field.label);
           }
         }
       }
     });
-    
+
     return {
-      isValid: errors.length === 0,
-      errors
+      isValid: errors.length === 0 && rangeErrorFields.length === 0,
+      errors: [...errors, ...rangeErrorFields]
     };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form before submission
     const validation = validateForm();
-    
+
     if (!validation.isValid) {
       const errorFields = new Set<string>();
       const touched = new Set<string>();
+      const rangeErrorMessages: Record<string, string> = {};
+
       processedQuestions.forEach((field) => {
-        if (field.required && isFieldVisible(field)) {
+        if (isFieldVisible(field)) {
           touched.add(field.tag);
           const fieldValue = formData[field.tag];
-          
-          let isEmpty: boolean;
-          if (field.type === 'checkbox') {
-            // For checkboxes, ensure it's an array with at least one value
-            const checkboxValue = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : []);
-            isEmpty = checkboxValue.length === 0;
-          } else {
-            isEmpty = fieldValue === undefined || fieldValue === null || fieldValue === '';
+
+          if (field.required) {
+            let isEmpty: boolean;
+            if (field.type === 'checkbox') {
+              // For checkboxes, ensure it's an array with at least one value
+              const checkboxValue = Array.isArray(fieldValue) ? fieldValue : (fieldValue ? [fieldValue] : []);
+              isEmpty = checkboxValue.length === 0;
+            } else {
+              isEmpty = fieldValue === undefined || fieldValue === null || fieldValue === '';
+            }
+
+            if (isEmpty) {
+              errorFields.add(field.tag);
+            }
           }
-          
-          if (isEmpty) {
-            errorFields.add(field.tag);
+
+          // Check min/max for all visible fields with values
+          if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+            const rangeError = validateRange(field, fieldValue);
+            if (rangeError) {
+              rangeErrorMessages[field.tag] = rangeError;
+            }
           }
         }
       });
       setValidationErrors(errorFields);
+      setRangeErrors(rangeErrorMessages);
       setTouchedFields(touched);
-      
+
       showToast(`Please fill all required fields. Missing: ${validation.errors.slice(0, 3).join(', ')}${validation.errors.length > 3 ? ` and ${validation.errors.length - 3} more...` : ''}`, 'error');
-      
+
       const firstErrorField = processedQuestions.find(
-        field => field.required && isFieldVisible(field) && 
-        (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
+        field => field.required && isFieldVisible(field) &&
+          (formData[field.tag] === undefined || formData[field.tag] === null || formData[field.tag] === '')
       );
-      
+
       if (firstErrorField) {
         const element = document.getElementById(`${firstErrorField.tag}_container`);
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
-      
+
       return;
     }
-    
+
     setValidationErrors(new Set());
-    
+
     showToast('Saving form data...', 'info');
     showToast('Form submitted successfully! Data has been saved.', 'success');
-    
+
     setTimeout(() => {
       router.push('/cati/ss/start-form-filling');
     }, 1500);
@@ -899,7 +1096,7 @@ export default function TeleFormPage() {
   const handleCallDropped = async () => {
     showToast('Saving partial data...', 'info');
     showToast('Call dropped. Partial data has been saved.', 'success');
-    
+
     setTimeout(() => {
       router.push('/cati/ss/start-form-filling');
     }, 1500);
@@ -923,11 +1120,11 @@ export default function TeleFormPage() {
         </Card>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Render sections and questions */}
         {(() => {
           const questionSections = groupQuestionsBySection();
-          
+
           return (
             <>
               {/* Call Status Section */}
@@ -945,7 +1142,7 @@ export default function TeleFormPage() {
                 // Show borrower type only when it's visible (conditional: call_status === '1' which maps to q_call_status)
                 const borrowerTypeField = questionSections.borrowerType[0];
                 if (!borrowerTypeField || !isFieldVisible(borrowerTypeField)) return null;
-                
+
                 return (
                   <Card className="p-6 mb-6">
                     {questionSections.borrowerType.map((field, index) => renderField(field, index))}
@@ -960,13 +1157,13 @@ export default function TeleFormPage() {
                 // They can also be shown by showFields rule from borrower_type
                 const visibleConsentQuestions = questionSections.consent.filter(field => isFieldVisible(field));
                 if (visibleConsentQuestions.length === 0) return null;
-                
+
                 // Find intro section based on borrower type
-                const introSection = sections.find(s => 
-                  (s.id === 'intro_1' && formData.borrower_type === '1') || 
+                const introSection = sections.find(s =>
+                  (s.id === 'intro_1' && formData.borrower_type === '1') ||
                   (s.id === 'intro_2' && formData.borrower_type === '2')
                 );
-                
+
                 return (
                   <Card className="p-6 mb-6">
                     {introSection && isSectionVisible(introSection) && (
@@ -987,11 +1184,11 @@ export default function TeleFormPage() {
                 // Show section 1 if consent is accepted
                 const showSection1 = formData.consent === '1';
                 if (!showSection1) return null;
-                
+
                 // Check if there are any visible questions in this section
                 const visibleQuestions = questionSections.section1.filter(field => isFieldVisible(field));
                 if (visibleQuestions.length === 0) return null;
-                
+
                 return (
                   <Card className="p-6 mb-6">
                     {section1Config && (
@@ -1030,13 +1227,13 @@ export default function TeleFormPage() {
                 const section2Config = sections.find(s => s.id === 'section_2');
                 const showSection2 = formData.consent === '1';
                 if (!showSection2) return null;
-                
+
                 // Filter visible questions for this section
                 const visibleQuestions = questionSections.section2.filter(field => isFieldVisible(field));
-                
+
                 // Show section only if there are visible questions
                 if (visibleQuestions.length === 0) return null;
-                
+
                 return (
                   <Card className="p-6 mb-6">
                     {section2Config && (
@@ -1061,13 +1258,13 @@ export default function TeleFormPage() {
                 const section3Config = sections.find(s => s.id === 'section_3');
                 const showSection3 = formData.consent === '1';
                 if (!showSection3) return null;
-                
+
                 // Filter visible questions for this section
                 const visibleQuestions = questionSections.section3.filter(field => isFieldVisible(field));
-                
+
                 // Show section only if there are visible questions
                 if (visibleQuestions.length === 0) return null;
-                
+
                 return (
                   <Card className="p-6 mb-6">
                     {section3Config && (
@@ -1083,15 +1280,249 @@ export default function TeleFormPage() {
                       </>
                     )}
                     {questionSections.section3.map((field, index) => {
-                      // Show info_1 heading before q4_01d_01 when it becomes visible
-                      if (field.tag === 'q4_01d_01' && isFieldVisible(field)) {
-                        const infoSection = sections.find(s => s.id === 'info_1');
+                      // Show info_2 heading before q3_01 when it becomes visible
+                      if (field.tag === 'q3_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_2');
                         return (
-                          <React.Fragment key={`info_${index}`}>
+                          <React.Fragment key={`info_2_${index}`}>
                             {infoSection && (
                               <div className="mb-6 mt-4">
                                 <Heading level={4} className="text-gray-900 dark:text-white mb-2">
                                   {infoSection.title}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show info_3 heading and heading_1 before q4_01a_i when it becomes visible
+                      if (field.tag === 'q4_01a_i' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_3');
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`info_3_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                                {infoSection.sub_title && (
+                                  <Text className="text-gray-600 dark:text-gray-400 mb-6">
+                                    {infoSection.sub_title}
+                                  </Text>
+                                )}
+                              </div>
+                            )}
+                            {questionHeadingSection && (questionHeadingSection as any).heading_1 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_1}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_2 before q4_01b_i when it becomes visible
+                      if (field.tag === 'q4_01b_i' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_2_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_2 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_2}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show info_1 heading before q4_01d_01 when it becomes visible
+                      if (field.tag === 'q4_01d_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_1');
+                        return (
+                          <React.Fragment key={`info_1_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show info_4 heading before q5_01 when it becomes visible
+                      if (field.tag === 'q5_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_4');
+                        return (
+                          <React.Fragment key={`info_4_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show info_5 heading before q6_01 when it becomes visible
+                      if (field.tag === 'q6_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_5');
+                        return (
+                          <React.Fragment key={`info_5_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show info_6 heading before q7_01 when it becomes visible
+                      if (field.tag === 'q7_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_6');
+                        return (
+                          <React.Fragment key={`info_6_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show info_7 heading, subtitle, and heading_3 before q8_01 when it becomes visible
+                      if (field.tag === 'q8_01' && isFieldVisible(field)) {
+                        const infoSection = sections.find(s => s.id === 'info_7');
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`info_7_${index}`}>
+                            {infoSection && (
+                              <div className="mb-6 mt-4">
+                                <Heading level={4} className="text-gray-900 dark:text-white mb-2">
+                                  {infoSection.title}
+                                </Heading>
+                                {infoSection.sub_title && (
+                                  <Text className="text-gray-600 dark:text-gray-400 mb-6">
+                                    {infoSection.sub_title}
+                                  </Text>
+                                )}
+                              </div>
+                            )}
+                            {questionHeadingSection && (questionHeadingSection as any).heading_3 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_3}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_4 before q8_01a_i when it becomes visible
+                      if (field.tag === 'q8_01a_i' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_4_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_4 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_4}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_5 before q8_01b_i when it becomes visible
+                      if (field.tag === 'q8_01b_i' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_5_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_5 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_5}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_6 before q8_01c_i when it becomes visible
+                      if (field.tag === 'q8_01c_i' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_6_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_6 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_6}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_7 before q8_01d_i when it becomes visible
+                      if (field.tag === 'q8_01d_i' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_7_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_7 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_7}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_8 before q8_01e_i when it becomes visible
+                      if (field.tag === 'q8_01e_i' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_8_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_8 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_8}
+                                </Heading>
+                              </div>
+                            )}
+                            {renderField(field, index)}
+                          </React.Fragment>
+                        );
+                      }
+                      // Show heading_9 before q8_01g_i_a when it becomes visible
+                      if (field.tag === 'q8_01g_i_a' && isFieldVisible(field)) {
+                        const questionHeadingSection = sections.find(s => s.id === 'question_heading');
+                        return (
+                          <React.Fragment key={`heading_9_${index}`}>
+                            {questionHeadingSection && (questionHeadingSection as any).heading_9 && (
+                              <div className="mb-4 mt-2">
+                                <Heading level={5} className="text-gray-800 dark:text-gray-200 mb-2">
+                                  {(questionHeadingSection as any).heading_9}
                                 </Heading>
                               </div>
                             )}
@@ -1118,8 +1549,8 @@ export default function TeleFormPage() {
         {/* Submit Buttons */}
         <Card className="p-6">
           <div className="flex gap-4">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               size="lg"
               disabled={isSubmitting}
               className="min-w-[150px] bg-green-600 hover:bg-green-700 text-white"
@@ -1127,7 +1558,7 @@ export default function TeleFormPage() {
               <i className="fa fa-save mr-2"></i>
               {isSubmitting ? 'Submitting...' : 'Submit'}
             </Button>
-            <Button 
+            <Button
               type="button"
               onClick={handleCallDropped}
               size="lg"
@@ -1140,7 +1571,7 @@ export default function TeleFormPage() {
           </div>
         </Card>
       </form>
-      
+
       {/* Toast Container */}
       <ToastContainer
         toasts={toasts}

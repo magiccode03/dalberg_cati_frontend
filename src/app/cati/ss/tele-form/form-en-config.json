@@ -30,7 +30,7 @@
     {
       "id": "section_2",
       "title": "Section 2: Purpose and Impact of Loan",
-      "sub_title": "In this section, we will aim to understand some basic details about yourself and the work you do."
+      "sub_title": "In this section, we would like to understand your experience of applying for a loan from [insert name of FSP]. Let’s talk about the most recent time you applied for a loan with them"
     },
     {
       "id": "section_3",
@@ -40,6 +40,44 @@
     {
       "id": "info_1",
       "title": "Q 4.01d. Understanding of other applicable fees"
+    },
+    {
+      "id": "info_2",
+      "title": "3: Assistance "
+    },
+    {
+      "id": "info_3",
+      "title": "4: Transparency ",
+      "sub_title": "Understanding of rates and fees"
+    },
+    {
+      "id": "info_4",
+      "title": "5: Disbursal"
+    },
+    {
+      "id": "info_5",
+      "title": "6: Flexibility "
+    },
+    {
+      "id": "info_6",
+      "title": "7: Loan feature prioritisation"
+    },
+    {
+      "id": "info_7",
+      "title": "Section 8: Loans from other channels",
+      "sub_title": "In this section, we will aim to understand if you have taken loans from other channels and what your experience has been with those channels."
+    },
+    {
+      "id": "question_heading",
+      "heading_1": "Q 4.01a. Understanding of processing fees",
+      "heading_2": "Q 4.01b. Understanding of late fees",
+      "heading_3": "Understanding of other channels",
+      "heading_4": "Q 8.01a. Understanding of “Friends and Family” Channel",
+      "heading_5": "Q 8.01b. Understanding of “Moneylenders” Channel",
+      "heading_6": "Q 8.01c. Understanding of “Employers” Channel",
+      "heading_7": "Q 8.01d. Understanding of “Microfinance Institutions” Channel",
+      "heading_8": "Q 8.01e. Understanding of “Commercial Banks” Channel",
+      "heading_9": "Q 8.01g. Understanding of Other Channels"
     }
   ],
   "questions": [
@@ -488,7 +526,7 @@
     "required": true,
     "placeholder": "Please specify (years complete)",
     "min": 1,
-    "max": 120,
+    "max": 100,
     "tag": "resp_age"
   },
   {
@@ -540,6 +578,7 @@
   {
     "type": "radio",
     "label": "Q 1.05. What type of work do you do?",
+    "hint": "Do not read out options",
     "conditional": "consent === '1'",
     "required": true,
     "options": [
@@ -620,7 +659,8 @@
   {
     "type": "radio",
     "label": "Q 1.06. What industry do you work in?",
-    "conditional": "(q1_05 === '1' || q1_05 === '2' || q1_05 === '3' || q1_05 === '4' || q1_05 === '5' || q1_05 === '8' || q1_05 === '98' || q1_05 === '99')",
+    "conditional": "(q1_05 === '1' || q1_05 === '2' || q1_05 === '3' || q1_05 === '4' || q1_05 === '5' || q1_05 === '8' )",
+    "hint": "Read out answer options",
     "required": true,
     "options": [
       {
@@ -733,7 +773,7 @@
   {
     "type": "number-radio",
     "label": "Q 1.07. How many hours a day on average do you do paid work?",
-    "conditional": "q1_06",
+    "conditional": "(q1_05 === '1' || q1_05 === '2' || q1_05 === '3' || q1_05 === '4' || q1_05 === '5' || q1_05 === '8' )",
     "options": [
       {
         "label": "Don't know",
@@ -748,14 +788,13 @@
     ],
     "required": true,
     "placeholder": "Enter hours",
-    "min": 0,
-    "max": 24,
     "tag": "q1_07"
   },
   {
     "type": "radio",
     "label": "Q 1.08. How often are you paid?",
-    "conditional": "q1_07",
+    "conditional": "(q1_05 === '1' || q1_05 === '2' || q1_05 === '3' || q1_05 === '4' || q1_05 === '5' || q1_05 === '8' )",
+    "hint": "Do not read out options",
     "required": true,
     "options": [
       {
@@ -2002,7 +2041,7 @@
     "tag": "q3_02"
   },
   {
-    "type": "checkbox",
+    "type": "radio",
     "label": "Q 3.02a. From where did you get help?",
     "conditional": "q3_02 === '1' && borrower_type === '1'",
     "required": true,
@@ -2067,7 +2106,7 @@
   {
     "type": "radio",
     "label": "Q 3.02b. After you received help, did you feel that the application process:",
-    "conditional": "q3_02a && borrower_type === '1'",
+    "conditional": "q3_02 === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -6324,7 +6363,7 @@
   {
     "type": "radio",
     "label": "Q 8.01f. Have you ever taken a loan from any other channels, apart from the ones mentioned above?",
-    "conditional": "(q8_01a_xiv || q8_01b_xiv || q8_01c_xiv || q8_01d_xiv || q8_01e_xiv || q8_01) && borrower_type === '1'",
+    "conditional": "consent === '1' && borrower_type === '1'",
     "required": true,
     "options": [
       {
@@ -6357,7 +6396,7 @@
   },
   {
     "type": "text",
-    "label": "Q 8.01g.i.a. Which other lenders have you taken a loan from?",
+    "label": "Q 8.01g.i.a. Which other lenders have you taken a loan from - other 1?",
     "conditional": "q8_01f === '1' && borrower_type === '1'",
     "required": true,
     "placeholder": "Please specify",
@@ -6366,9 +6405,9 @@
   },
   {
     "type": "text",
-    "label": "Q 8.01g.i.b. Which other lenders have you taken a loan from?",
+    "label": "Q 8.01g.i.b. Which other lenders have you taken a loan from - other 2?",
     "conditional": "q8_01f === '1' && borrower_type === '1'",
-    "required": true,
+    "required": false,
     "placeholder": "Please specify",
     "maxLength": 150,
     "tag": "q8_01g_i_b"
