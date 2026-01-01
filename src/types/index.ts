@@ -102,7 +102,7 @@ export interface BaseComponentProps {
 export interface ButtonProps
   extends BaseComponentProps,
     React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'|'orange';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
 }

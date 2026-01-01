@@ -1419,6 +1419,33 @@ export const menuData: MenuItem[] = [
     roles: ['ppm'],
     system: 'cati',
   },
+  {
+    id: 'cati-ppm-masterdata',
+    label: 'Master Data',
+    href: '/cati/ppm/master-data',
+    icon: 'BarChart3',
+    roles: ['ppm'],
+    system: 'cati',
+    children: [
+      {
+        id: 'cati-ppm-call-outcome-tracker',
+        label: 'Call Outcome Tracker',
+        href: '/cati/ppm/masterdata/call-outcome-tracker',
+        icon: 'TrendingUp',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+      {
+        id: 'cati-ppm-master-data',
+        label: 'Master Data',
+        href: '/cati/ppm/masterdata/master-data',
+        icon: 'FileText',
+        roles: ['ppm'],
+        system: 'cati',
+      },
+    ],
+  },
+  
 
 // end ppm menu
   //  ===========================================Team (PPMT) Menu
