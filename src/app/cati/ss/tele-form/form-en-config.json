@@ -5582,9 +5582,379 @@
     "tag": "q8_01c_xiv"
   },
   {
+    "type": "checkbox",
+    "label": "Q 8.01d.i. Why did you take a loan from \"Microfinance Institutions\"?",
+    "conditional": "q8_01.includes('4') && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Less documents needed",
+        "value": "1",
+        "tag": "opt_less_documents"
+      },
+      {
+        "label": "Fast receiving the loan",
+        "value": "2",
+        "tag": "opt_fast_receiving"
+      },
+      {
+        "label": "Lower cost/No cost",
+        "value": "3",
+        "tag": "opt_lower_cost"
+      },
+      {
+        "label": "I trust them more",
+        "value": "4",
+        "tag": "opt_trust_more"
+      },
+      {
+        "label": "There was no other alternative",
+        "value": "5",
+        "tag": "opt_no_alternative"
+      },
+      {
+        "label": "Could give more money",
+        "value": "6",
+        "tag": "opt_more_money"
+      },
+      {
+        "label": "Other",
+        "value": "7",
+        "tag": "opt_others"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_others": ["q8_01d_i_oth"]
+      }
+    },
+    "tag": "q8_01d_i"
+  },
+  {
+    "type": "text",
+    "label": "Others (specify)",
+    "conditional": "q8_01d_i.includes('7')",
+    "required": true,
+    "placeholder": "Please specify",
+    "maxLength": 150,
+    "tag": "q8_01d_i_oth"
+  },
+  {
+    "type": "radio",
+    "label": "Q 8.01d.ii. Do you currently have a loan from \"Microfinance Institutions\"?",
+    "conditional": "q8_01.includes('4') && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      },
+      {
+        "label": "I don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q8_01d_iii"]
+      }
+    },
+    "tag": "q8_01d_ii"
+  },
+  {
+    "type": "number",
+    "label": "Q 8.01d.iii. How many loans do you currently have from \"Microfinance Institutions\"?",
+    "conditional": "q8_01d_ii === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Enter number",
+    "min": 0,
+    "tag": "q8_01d_iii"
+  },
+  {
+    "type": "radio",
+    "label": "Q 8.01d.iv. Are you ok to share the terms of the loans you just mentioned?",
+    "conditional": "q8_01d_ii === '1' && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Yes",
+        "value": "1",
+        "tag": "opt_yes"
+      },
+      {
+        "label": "No",
+        "value": "2",
+        "tag": "opt_no"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_yes": ["q8_01d_v"]
+      }
+    },
+    "tag": "q8_01d_iv"
+  },
+  {
+    "type": "number",
+    "label": "Q 8.01d.v. In which year did you take the most recent loan from \"Microfinance Institutions\"?",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Enter year (e.g., 2024)",
+    "min": 2000,
+    "max": 2100,
+    "tag": "q8_01d_v"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 8.01d.vi. What was the loan amount?",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_vi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 8.01d.vii. What is/was the total amount to be paid to the lender",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_vii"
+  },
+  {
+    "type": "radio",
+    "label": "Q 8.01d.ix. What is/was the duration of the loan",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Days",
+        "value": "1",
+        "tag": "opt_days"
+      },
+      {
+        "label": "Weeks",
+        "value": "2",
+        "tag": "opt_weeks"
+      },
+      {
+        "label": "Months",
+        "value": "3",
+        "tag": "opt_months"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "rules": {
+      "showFields": {
+        "opt_days": ["q8_01d_ix_days"],
+        "opt_weeks": ["q8_01d_ix_weeks"],
+        "opt_months": ["q8_01d_ix_months"]
+      }
+    },
+    "tag": "q8_01d_ix"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in days",
+    "conditional": "q8_01d_ix === '1'",
+    "required": true,
+    "placeholder": "Enter days",
+    "min": 0,
+    "tag": "q8_01d_ix_days"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in weeks",
+    "conditional": "q8_01d_ix === '2'",
+    "required": true,
+    "placeholder": "Enter weeks",
+    "min": 0,
+    "tag": "q8_01d_ix_weeks"
+  },
+  {
+    "type": "number-radio",
+    "label": "Duration in months",
+    "conditional": "q8_01d_ix === '3'",
+    "required": true,
+    "placeholder": "Enter months",
+    "min": 0,
+    "tag": "q8_01d_ix_months"
+  },
+  {
+    "type": "radio",
+    "label": "Q 8.01d.x. What is/was the instalment frequency",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "required": true,
+    "options": [
+      {
+        "label": "Every day",
+        "value": "1",
+        "tag": "opt_daily"
+      },
+      {
+        "label": "Every week",
+        "value": "2",
+        "tag": "opt_weekly"
+      },
+      {
+        "label": "Every 2 weeks",
+        "value": "3",
+        "tag": "opt_biweekly"
+      },
+      {
+        "label": "Every month",
+        "value": "4",
+        "tag": "opt_monthly"
+      },
+      {
+        "label": "Just one payment at the end when the loan is due",
+        "value": "5",
+        "tag": "opt_end_payment"
+      },
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_x"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 8.01d.xi. What is/was the instalment value",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "required": true,
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_xi"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 8.01d.xii. What is/was the interest rate",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "placeholder": "Percentage",
+    "min": 0,
+    "max": 100,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_xii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 8.01d.xiii. What is/was the processing fee",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_xiii"
+  },
+  {
+    "type": "number-radio",
+    "label": "Q 8.01d.xiv. What was the late fee",
+    "conditional": "q8_01d_iv === '1' && borrower_type === '1'",
+    "placeholder": "Rupees",
+    "min": 0,
+    "options": [
+      {
+        "label": "Don't know",
+        "value": "98",
+        "tag": "opt_dont_know"
+      },
+      {
+        "label": "Prefer not to say",
+        "value": "99",
+        "tag": "opt_prefer_not_to_say"
+      }
+    ],
+    "tag": "q8_01d_xiv"
+  },
+  {
     "type": "radio",
     "label": "Q 8.01f. Have you ever taken a loan from any other channels, apart from the ones mentioned above?",
-    "conditional": "(q8_01a_xiv || q8_01b_xiv || q8_01c_xiv || q8_01) && borrower_type === '1'",
+    "conditional": "(q8_01a_xiv || q8_01b_xiv || q8_01c_xiv || q8_01d_xiv || q8_01) && borrower_type === '1'",
     "required": true,
     "options": [
       {
