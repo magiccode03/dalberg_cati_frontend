@@ -269,15 +269,7 @@ const MasterData = () => {
             />
           </div>
 
-          <Button onClick={() => console.log(filters)}>
-            <Search className="w-4 h-4 mr-2" />
-            Search
-          </Button>
-
-        </div>
-      </Card>
-
-        <Button
+          <Button
             variant="orange"
             onClick={() => {}}
 
@@ -285,6 +277,11 @@ const MasterData = () => {
             >
             <span className="hidden sm:inline">View</span>
         </Button>
+
+        </div>
+      </Card>
+
+
 
       {/* Metrics Card */}
       <TraderOutcomeMetrics

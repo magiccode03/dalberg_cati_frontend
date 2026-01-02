@@ -225,22 +225,17 @@ const CallOutcomeTracker = () => {
             />
           </div>
 
-          <Button onClick={() => console.log(filters)}>
-            <Search className="w-4 h-4 mr-2" />
-            Search
-          </Button>
-
-        </div>
-      </Card>
-
-        <Button
+          <Button
             variant="orange"
             onClick={() => {}}
 
             className="flex items-center gap-2 cursor-not-allowed opacity-80 "
             >
             <span className="hidden sm:inline">View</span>
-        </Button>
+          </Button>
+
+        </div>
+      </Card>
 
       {/* Metrics Card */}
       <TraderOutcomeMetrics

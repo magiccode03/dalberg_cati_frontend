@@ -9,6 +9,7 @@ import Card from '@/components/ui/Card';
 import PaginationStandard from '@/components/ui/PaginationStandard';
 import Input from '@/components/ui/Input';
 import SelectDropdown from '@/components/ui/SelectDropdown';
+import { Eye } from 'lucide-react';
 
 /* ============================================================
    TYPES
@@ -353,7 +354,13 @@ const TelecallerCompletedNumbers = () => {
                             <td className="px-4 py-2">{row.status}</td>
                             <td className="px-4 py-2">{row.talkDuration}</td>
                             <td className="px-4 py-2">{row.response}</td>
-                            <td className="px-4 py-2">{row.edit}</td>
+                            <td className="px-4 py-2 text-center">
+                                <button
+                                    className="bg-blue-500 text-white h-6 w-7 flex items-center justify-center cursor-pointer rounded-sm"
+                                >
+                                    <Eye className="h-5 w-5" />
+                                </button>
+                            </td>
                             </tr>
                         ))}
                     </tbody>
