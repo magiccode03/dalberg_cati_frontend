@@ -1367,6 +1367,14 @@ export const menuData: MenuItem[] = [
         roles: ['ppm'],
         system: 'cati',
       },
+      {
+        id: 'cati-ppm-telecaller-completed-numbers',
+        label: 'Telecaller Completed Numbers',
+        href: '/cati/ppm/progress/telecaller-completed-numbers',
+        icon: 'TrendingUp',
+        roles: ['ppm'],
+        system: 'cati',
+      },
     ],
   },
   // {
